@@ -306,8 +306,8 @@ default is 256000.
 ## Distribution Buffer
 
 You can set the size of the Erlang VM's distribution buffer busy limit
-(denoted by `+zdbbl` on the VM and in `vm.args`) using
-`erlang.distribution_buffer_size`.  Modifying this setting can be useful
+(denoted by `+zdbbl` on the VM and in `vm.args`) by adding
+`erlang.distribution_buffer_size` to `riak.conf`.  Modifying this setting can be useful
 on nodes with many `busy_dist_port` events, i.e. instances when the
 Erlang distribution is overloaded. The default is 32 MB (i.e. `32MB`),
 but this may be insufficient for some workloads. The maximum value is
