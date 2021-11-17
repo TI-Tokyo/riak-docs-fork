@@ -54,7 +54,7 @@ New metrics have been added that enable you to determine the health of your Riak
   * Memory information about the riak-cs virtual machine
   * HTTP listener information: active sockets and waiting acceptors
 
-**Note:** stats item names from prior to 2.0.x are not preserved; they have been renamed or removed. No backward consistency is maintained. Please see [the documentation]({{<baseurl>}}riak/cs/latest/cookbooks/Monitoring-and-Metrics/) for more information.
+**Note:** stats item names from prior to 2.0.x are not preserved; they have been renamed or removed. No backward consistency is maintained. Please see [the documentation]({{<baseurl>}}riak/cs/latest/cookbooks/monitoring-and-metrics/) for more information.
 
 * [[PR 1189](https://github.com/basho/riak_cs/pull/1189)]
 * [[PR 1180](https://github.com/basho/riak_cs/pull/1180)]
@@ -589,7 +589,7 @@ venues:
 
 ### Additions
 
-* Bucket restrictions --- Similar to S3, you can now limit the number of buckets created per user to prevent users from creating an unusually large number of buckets. More details are included [here]({{< baseurl >}}riak/cs/latest/cookbooks/configuration/Configuring-Riak-CS/).
+* Bucket restrictions --- Similar to S3, you can now limit the number of buckets created per user to prevent users from creating an unusually large number of buckets. More details are included [here]({{< baseurl >}}riak/cs/latest/cookbooks/configuration/riak-cs/).
 
 ### Changes
 

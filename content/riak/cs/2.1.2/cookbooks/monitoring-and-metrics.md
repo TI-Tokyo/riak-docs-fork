@@ -10,7 +10,7 @@ menu:
 project: "riak_cs"
 project_version: "2.1.2"
 aliases:
-  - /riakcs/2.1.2/cookbooks/Monitoring-and-Metrics/
+  - /riakcs/2.1.2/cookbooks/monitoring-and-metrics/
   - /riak/cs/latest/cookbooks/monitoring-and-metrics/
 ---
 

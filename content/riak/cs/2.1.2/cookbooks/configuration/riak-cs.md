@@ -10,8 +10,8 @@ menu:
 project: "riak_cs"
 project_version: "2.1.2"
 aliases:
-  - /riakcs/2.1.2/cookbooks/configuration/Configuring-Riak-CS/
-  - /riak/cs/2.1.2/cookbooks/configuration/Configuring-Riak-CS/
+  - /riakcs/2.1.2/cookbooks/configuration/riak-cs/
+  - /riak/cs/2.1.2/cookbooks/configuration/riak-cs/
   - /riak/cs/latest/cookbooks/configuration/riak-cs/
 ---
 

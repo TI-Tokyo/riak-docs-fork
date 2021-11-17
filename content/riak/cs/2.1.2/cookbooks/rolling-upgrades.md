@@ -161,7 +161,7 @@ for a more detailed description.{{% /note %}}
   ]},
   ```
   
-and so on. More details can be found at [configuring Riak CS]({{<baseurl>}}riak/cs/2.1.  1/cookbooks/configuration/riak-cs).
+and so on. More details can be found at [configuring Riak CS]({{<baseurl>}}riak/cs/2.1.2/cookbooks/configuration/riak-cs).
 {{% /note %}}
 
 {{% note title="Note on Memory Sizing" %}}
