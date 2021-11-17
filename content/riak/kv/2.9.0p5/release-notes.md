@@ -46,11 +46,11 @@ Release 2.9 will have an initial private release candidate available in early De
 
 Release 2.9 is intended to be a stepping stone towards migrating to Release 3.0, but for users of features that will be terminated in Release 3.0, it is possible that community-led updates may continue on the 2.9 release branch for some time beyond the availability of Release 3.0.
 
-[Improvements](#Improvements)
+[Improvements](#improvements)
 
-[New features](#New-features)
+[New features](#additions)
 
-[Known Issues](#known-issues) - please read **before upgrading** from a previous Riak release
+[Known Issues](#transition-configuration-guidance) - please read **before upgrading** from a previous Riak release
 
 [Log of Changes](#change-log-for-this-release)
 
