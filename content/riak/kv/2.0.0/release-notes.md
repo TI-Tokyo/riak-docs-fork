@@ -335,10 +335,9 @@ be found in the **Termination Notices** section below.
 * `riak-admin backup` has been disabled; see
   [our documentation]({{< baseurl >}}riak/kv/2.0.0/ops/running/backups/)
   for a detailed look at running backup and restore operations.
-* [Client ID-based vector clocks]({{< baseurl >}}riak/kv/1.4.10/ops/advanced/configs/configuration-files/#-code-riak_kv-code-Settings)
-  have been removed; they were previously turned off by default in
-  favor of node-based vector clocks via the `vnode_vclocks`
-  configuration flag.
+* Client ID-based vector clocks have been removed; they were previously 
+  turned off by default in favor of node-based vector clocks via 
+  the `vnode_vclocks` configuration flag.
 * LevelDB configuration values `cache_size` and `max_open_files` have
   been disabled in favor of `leveldb.maximum_memory.percent`. See
   [Configuring eLevelDB]({{< baseurl >}}riak/kv/2.0.0/ops/advanced/backends/leveldb/#Configuring-eLevelDB)

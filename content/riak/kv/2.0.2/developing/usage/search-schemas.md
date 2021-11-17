@@ -20,7 +20,7 @@ aliases:
 >
 > This document refers to the new Riak Search 2.0 with
 [Solr](http://lucene.apache.org/solr/) integration (codenamed
-Yokozuna). For information about the deprecated Riak Search, visit [the old Using Riak Search docs]({{< baseurl >}}riak/kv/1.4.10/dev/using/search/).
+Yokozuna).
 
 Riak Search is built for ease of use, allowing you to write values into
 Riak and query for values using Solr. Riak Search does a lot of work

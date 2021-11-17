@@ -22,7 +22,7 @@ aliases:
 >
 > This document refers to Riak search 2.0 with
 [Solr](http://lucene.apache.org/solr/) integration (codenamed
-Yokozuna). For information about the deprecated Riak search, visit [the old Using Riak search docs]({{< baseurl >}}riak/kv/1.4.10/dev/using/search/).
+Yokozuna).
 
 The project that implements Riak search is codenamed Yokozuna. This is a
 more detailed overview of the concepts and reasons behind the design of
