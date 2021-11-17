@@ -220,8 +220,7 @@ and `-name` in `vm.args`. If you are upgrading from a previous version
 of Riak to 2.0 and are using `-sname` in your `vm.args`, the below steps
 are required to migrate away from `-sname`.
 
-1. Upgrade to Riak
-[1.4.12]({{< baseurl >}}riak/kv/1.4.12/downloads/).
+1. Upgrade to Riak 1.4.12.
 2. Back up the ring directory on each node, typically located in
 `/var/lib/riak/ring`.
 3. Stop all nodes in your cluster.

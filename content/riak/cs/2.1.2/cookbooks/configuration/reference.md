@@ -959,4 +959,4 @@ error logger.</td>
 </table>
 -->
 
-[config_your_code]: {{< baseurl >}}riak/kv/1.4.12/ops/advanced/configs/configuration-files/#Configuring-Your-code-vm-args-code-
+[config_your_code]: {{< baseurl >}}riak/kv/2.1.2/configuring/basic/#erlang-vm-tunings
