@@ -2,15 +2,25 @@
 title: "Cluster Metadata"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Cluster Metadata"
     identifier: "app_guide_cluster_metadata"
     weight: 104
     parent: "developing_app_guide"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/app-guide/cluster-metadata/
+  - /riak/2.9.0/developing/app-guide/cluster-metadata/
+  - /riak/kv/2.9.0/developing/app-guide/cluster-metadata/
+  - /riak/kv/2.9.0p1/developing/app-guide/cluster-metadata/
+  - /riak/kv/2.9.0p2/developing/app-guide/cluster-metadata/
+  - /riak/kv/2.9.0p3/developing/app-guide/cluster-metadata/
+  - /riak/kv/2.9.0p4/developing/app-guide/cluster-metadata/
+  - /riak/kv/latest/developing/app-guide/cluster-metadata/
 ---
+
 
 Cluster metadata is a subsystem inside of Riak that enables systems
 built on top of
@@ -19,7 +29,7 @@ to work with information that is stored cluster wide and can be read
 without blocking on communication over the network.
 
 One notable example of a subsystem of Riak relying on cluster metadata
-is Riak's [bucket types]({{<baseurl>}}riak/kv/2.9.0/using/reference/bucket-types) feature. This feature
+is Riak's [bucket types]({{<baseurl>}}riak/kv/2.9.0p5/using/reference/bucket-types) feature. This feature
 requires that a particular form of key/value pairs, namely bucket type
 names (the key) and their associated bucket properties (the value), be
 asynchronously broadcast to all nodes in a Riak cluster.
@@ -54,7 +64,7 @@ already reached all nodes in the previous set of members.
 
 All cluster metadata is eventually stored both in memory and on disk,
 but it should be noted that reads are only from memory, while writes are
-made both to memory and to disk. Logical clocks, namely [dotted version vectors]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#dotted-version-vectors), are used in place of [vector clocks]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#vector-clocks) or timestamps to resolve value conflicts. Values stored as cluster metadata are opaque Erlang
+made both to memory and to disk. Logical clocks, namely [dotted version vectors]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#dotted-version-vectors), are used in place of [vector clocks]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#vector-clocks) or timestamps to resolve value conflicts. Values stored as cluster metadata are opaque Erlang
 terms addressed by both prefix and a key.
 
 ## Erlang Code Interface

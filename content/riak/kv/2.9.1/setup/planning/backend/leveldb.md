@@ -11,8 +11,8 @@ menu:
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/advanced/backends/leveldb/
-  - /riak-docs/riak/kv/2.9.1/ops/advanced/backends/leveldb/
+  - /riak/2.9.1/ops/advanced/backends/leveldb/
+  - /riak/kv/2.9.1/ops/advanced/backends/leveldb/
 ---
 
 [upgrade 2.0#upgrading-leveldB]: {{<baseurl>}}

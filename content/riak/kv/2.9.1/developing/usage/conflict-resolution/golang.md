@@ -12,8 +12,8 @@ menu:
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/conflict-resolution/golang
-  - /riak-docs/riak/kv/2.9.1/dev/using/conflict-resolution/golang
+  - /riak/2.9.1/dev/using/conflict-resolution/golang
+  - /riak/kv/2.9.1/dev/using/conflict-resolution/golang
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that

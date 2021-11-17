@@ -2,30 +2,39 @@
 title: "Creating Search Schemas"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Creating Search Schemas"
     identifier: "usage_search_schemas"
     weight: 110
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/advanced/search-schema
-  - /riak-docs/riak/kv/2.9.0/dev/advanced/search-schema
+  - /riak/2.9.0p5/dev/advanced/search-schema
+  - /riak/kv/2.9.0p5/dev/advanced/search-schema
+  - /riak/2.9.0p5/developing/usage/search-schemas/
+  - /riak/2.9.0/developing/usage/search-schemas/
+  - /riak/kv/2.9.0/developing/usage/search-schemas/
+  - /riak/kv/2.9.0p1/developing/usage/search-schemas/
+  - /riak/kv/2.9.0p2/developing/usage/search-schemas/
+  - /riak/kv/2.9.0p3/developing/usage/search-schemas/
+  - /riak/kv/2.9.0p4/developing/usage/search-schemas/
+  - /riak/kv/latest/developing/usage/search-schemas/
 ---
 
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
+
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
 
 > **Note on Search 2.0 vs. Legacy Search**
 >
 > This document refers to the new Riak Search 2.0 with
 [Solr](http://lucene.apache.org/solr/) integration (codenamed
-Yokozuna). For information about the deprecated Riak Search, visit [the old Using Riak Search docs](http://docs.basho.com/riak/1.4.10/dev/using/search/).
+Yokozuna). For information about the deprecated Riak Search, visit [the old Using Riak Search docs]({{< baseurl >}}riak/kv/1.4.10/dev/using/search/).
 
 Riak Search is built for ease of use, allowing you to write values into
 Riak and query for values using Solr. Riak Search does a lot of work
-under the hood to convert your values---plain text, JSON, XML, [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/), and [more]({{<baseurl>}}riak/kv/2.9.0/developing/usage/custom-extractors)---into something that can be indexed and searched later.
+under the hood to convert your values---plain text, JSON, XML, [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/), and [more]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/custom-extractors)---into something that can be indexed and searched later.
 Nonetheless, you must still instruct Riak/Solr how to index a value. Are
 you providing and array of strings? An integer? A date? Is your text in
 English or Russian? You can provide such instructions to Riak Search by
@@ -65,7 +74,7 @@ client.create_search_schema("cartoons", schema_data)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\Search\StoreSchema($riak))
+(new /Basho/Riak/Command/Builder/Search/StoreSchema($riak))
   ->withName('users')
   ->withSchemaFile('path/to/file.xml')
   ->build()
@@ -114,8 +123,8 @@ riakc_pb_socket:create_search_schema(Pid, <<"cartoons">>, SchemaData).
 ```
 
 ```curl
-curl -XPUT http://localhost:8098/search/schema/cartoons \
-     -H 'Content-Type:application/xml' \
+curl -XPUT http://localhost:8098/search/schema/cartoons /
+     -H 'Content-Type:application/xml' /
      --data-binary @cartoons.xml
 ```
 
@@ -223,7 +232,7 @@ Malformed JSON or XML will cause Riak Search to index a key and set
 Field   | Name | Description
 :-------|:-----|:-----------
 `_yz_id`  | ID | Unique identifier of this Solr document
-`_yz_ed`  | Entropy Data | Data related to [active anti-entropy]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy)
+`_yz_ed`  | Entropy Data | Data related to [active anti-entropy]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy)
 `_yz_pn`  | Partition Number | Used as a filter query parameter to remove duplicate replicas across nodes
 `_yz_fpn` | First Partition Number | The first partition in this doc's preflist, used for further filtering on overlapping partitions
 `_yz_vtag`| VTag | If there is a sibling, use vtag to differentiate them
@@ -369,8 +378,8 @@ date/time value, an exception similar to this will be logged to
 Once you have decided on the format of your custom schema as an .xml file, it can be uploaded to Riak KV as follows:
 
 ```curl
-curl -v -XPUT $RIAK_HOST/search/schema/thundercats \
-     -H 'Content-Type:application/xml' \
+curl -v -XPUT $RIAK_HOST/search/schema/thundercats /
+     -H 'Content-Type:application/xml' /
      --data-binary @thundercats_schema.xml
 ```
 

@@ -2,15 +2,25 @@
 title: "Riak KV Usage Reference"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Reference"
     identifier: "managing_ref"
     weight: 208
     parent: "managing"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/reference/
+  - /riak/2.9.0/using/reference/
+  - /riak/kv/2.9.0/using/reference/
+  - /riak/kv/2.9.0p1/using/reference/
+  - /riak/kv/2.9.0p2/using/reference/
+  - /riak/kv/2.9.0p3/using/reference/
+  - /riak/kv/2.9.0p4/using/reference/
+  - /riak/kv/latest/using/reference/
 ---
+
 
 [ref log]: ./logging
 [ref handoff]: ./handoff

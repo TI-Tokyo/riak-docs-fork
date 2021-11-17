@@ -3,20 +3,29 @@ title_supertext: "Conflict Resolution:"
 title: "PHP"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "PHP"
     identifier: "usage_conflict_resolution_php"
     weight: 105
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/conflict-resolution/php
-  - /riak-docs/riak/kv/2.9.0/dev/using/conflict-resolution/php
+  - /riak/2.9.0p5/dev/using/conflict-resolution/php
+  - /riak/kv/2.9.0p5/dev/using/conflict-resolution/php
+  - /riak/2.9.0p5/developing/usage/conflict-resolution/php/
+  - /riak/2.9.0/developing/usage/conflict-resolution/php/
+  - /riak/kv/2.9.0/developing/usage/conflict-resolution/php/
+  - /riak/kv/2.9.0p1/developing/usage/conflict-resolution/php/
+  - /riak/kv/2.9.0p2/developing/usage/conflict-resolution/php/
+  - /riak/kv/2.9.0p3/developing/usage/conflict-resolution/php/
+  - /riak/kv/2.9.0p4/developing/usage/conflict-resolution/php/
+  - /riak/kv/latest/developing/usage/conflict-resolution/php/
 ---
 
-For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution), we strongly recommend adopting a
+
+For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution), we strongly recommend adopting a
 conflict resolution strategy that requires applications to resolve
 siblings according to use-case-specific criteria. Here, we'll provide a
 brief guide to conflict resolution using the official [Riak PHP
@@ -24,20 +33,20 @@ client](https://github.com/basho/riak-php-client).
 
 ## How the PHP Client Handles Conflict Resolution
 
-Every `\Basho\Riak\Object` command returns a `\Basho\Riak\Command\Object\Response`
+Every `/Basho/Riak/Object` command returns a `/Basho/Riak/Command/Object/Response`
 object, which provides what is needed to handle object conflicts. If siblings exist
 and have been returned from the server within the response body, they will be
 available within the response object. See below:
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\FetchObject($riak))
+$response = (new /Basho/Riak/Command/Builder/FetchObject($riak))
     ->buildLocation('conflicted_key', 'bucket_name', 'bucket_type')
     ->build()
     ->execute();
 
 echo $response->getStatusCode(); // 300
 echo $response->hasSiblings(); // 1
-echo $response->getSiblings(); // \Basho\Riak\Object[]
+echo $response->getSiblings(); // /Basho/Riak/Object[]
 ```
 
 ## Basic Conflict Resolution Example
@@ -46,7 +55,7 @@ Let's say that we're building a social network application and storing
 lists of usernames representing each user's "friends" in the network.
 Each user will bear the class `User`, which we'll create below. All of
 the data for our application will be stored in buckets that bear the
-[bucket type]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types) `siblings`, and for this bucket type
+[bucket type]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types) `siblings`, and for this bucket type
 `allow_mult` is set to `true`, which means that Riak will generate
 siblings in certain cases---siblings that our application will need to
 be equipped to resolve when they arise.
@@ -113,7 +122,7 @@ explained above) under the key `bashobunny`. We can fetch the object
 that is stored there and see if it has siblings:
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\FetchObject($riak))
+$response = (new /Basho/Riak/Command/Builder/FetchObject($riak))
     ->buildLocation('bashobunny', 'users', 'siblings')
     ->build()
     ->execute();
@@ -130,10 +139,10 @@ of the object, and returns a single value. For our example use case here, we'll
 return the sibling with the longest `friends` list:
 
 ```php
-use \Basho\Riak;
-use \Basho\Riak\Command;
+use /Basho/Riak;
+use /Basho/Riak/Command;
 
-function longest_friends_list_resolver(Command\Object\Response $response)
+function longest_friends_list_resolver(Command/Object/Response $response)
 {
     if ($response->hasSiblings()) {
         $siblings = $response->getSiblings();
@@ -155,7 +164,7 @@ objects from the users bucket:
 ```php
 function fetch_user_by_username($username, Riak $riak)
 {
-    $response = (new Command\Builder\FetchObject($riak))
+    $response = (new Command/Builder/FetchObject($riak))
       ->buildLocation($username, 'users', 'siblings')
       ->build()
       ->execute();
@@ -196,7 +205,7 @@ step is the subject of this tutorial)
 made
 
 You can find more on writing objects to Riak, including examples from
-the official PHP client library, in the [Developing with Riak KV: Usage]({{<baseurl>}}riak/kv/2.9.0/developing/usage) section.
+the official PHP client library, in the [Developing with Riak KV: Usage]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage) section.
 
 ## More Advanced Example
 
@@ -226,9 +235,9 @@ always carry potential drawbacks of this sort.
 ## Riak Data Types
 
 An important thing to always bear in mind when working with conflict
-resolution is that Riak offers a variety of [Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/) that have
+resolution is that Riak offers a variety of [Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/) that have
 specific conflict resolution mechanics built in. If you have data that
-can be modeled as a [counter]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#counters), [set]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets), or [map]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps), then you should seriously
+can be modeled as a [counter]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#counters), [set]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets), or [map]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps), then you should seriously
 consider using those Data Types instead of creating your own
 application-side resolution logic.
 
@@ -237,4 +246,4 @@ set, in particular the `friends` list associated with each `User`
 object. The merge operation that we built to handle conflict resolution
 is analogous to the resolution logic that is built into Riak sets. For
 more information on how you could potentially replace the client-side
-resolution that we implemented above, see our [tutorial on Riak sets]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets).
+resolution that we implemented above, see our [tutorial on Riak sets]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets).

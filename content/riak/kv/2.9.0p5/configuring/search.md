@@ -2,28 +2,37 @@
 title: "Riak Search Settings"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Riak Search Settings"
     identifier: "configuring_search"
     weight: 160
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/advanced/configs/search/
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/configs/search/
+  - /riak/2.9.0p5/ops/advanced/configs/search/
+  - /riak/kv/2.9.0p5/ops/advanced/configs/search/
+  - /riak/2.9.0p5/configuring/search/
+  - /riak/2.9.0/configuring/search/
+  - /riak/kv/2.9.0/configuring/search/
+  - /riak/kv/2.9.0p1/configuring/search/
+  - /riak/kv/2.9.0p2/configuring/search/
+  - /riak/kv/2.9.0p3/configuring/search/
+  - /riak/kv/2.9.0p4/configuring/search/
+  - /riak/kv/latest/configuring/search/
 ---
 
-[usage search]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/search
-[usage search schema]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/search-schemas
-[usage search data types]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/searching-data-types
-[usage custom extractors]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/custom-extractors
-[cluster-ops aae throttle]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/active-anti-entropy/#throttling
-[config reference]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
-[config reference#search]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#search
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#active-anti-entropy-aae
-[security index]: {{<baseurl>}}riak/kv/2.9.0/using/security/
+
+[usage search]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search
+[usage search schema]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search-schemas
+[usage search data types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/searching-data-types
+[usage custom extractors]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/custom-extractors
+[cluster-ops aae throttle]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/active-anti-entropy/#throttling
+[config reference]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
+[config reference#search]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#search
+[glossary aae]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#active-anti-entropy-aae
+[security index]: {{<baseurl>}}riak/kv/2.9.0p5/using/security/
 
 [java se downloads]: http://www.oracle.com/technetwork/java/javase/downloads
 [java se docs]: http://www.oracle.com/technetwork/java/javase/documentation

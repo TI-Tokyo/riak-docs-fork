@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/reset-bucket-props
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/reset-bucket-props
+  - /riak/2.9.1/dev/references/protocol-buffers/reset-bucket-props
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/reset-bucket-props
 ---
 
 Request to reset the properties of a given bucket or bucket type.

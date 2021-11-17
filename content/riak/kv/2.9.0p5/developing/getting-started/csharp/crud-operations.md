@@ -3,15 +3,25 @@ title_supertext: "Getting Started:"
 title: "CRUD Operations with C Sharp"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "CRUD Operations"
     identifier: "getting_started_csharp_crud"
     weight: 100
     parent: "getting_started_csharp"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/getting-started/csharp/crud-operations/
+  - /riak/2.9.0/developing/getting-started/csharp/crud-operations/
+  - /riak/kv/2.9.0/developing/getting-started/csharp/crud-operations/
+  - /riak/kv/2.9.0p1/developing/getting-started/csharp/crud-operations/
+  - /riak/kv/2.9.0p2/developing/getting-started/csharp/crud-operations/
+  - /riak/kv/2.9.0p3/developing/getting-started/csharp/crud-operations/
+  - /riak/kv/2.9.0p4/developing/getting-started/csharp/crud-operations/
+  - /riak/kv/latest/developing/getting-started/csharp/crud-operations/
 ---
+
 
 ### Creating Objects In Riak
 

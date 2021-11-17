@@ -2,17 +2,27 @@
 title: "Creating Objects in Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Creating Objects"
     identifier: "usage_creating_objects"
     weight: 100
     parent: "developing_usage"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/usage/creating-objects/
+  - /riak/2.9.0/developing/usage/creating-objects/
+  - /riak/kv/2.9.0/developing/usage/creating-objects/
+  - /riak/kv/2.9.0p1/developing/usage/creating-objects/
+  - /riak/kv/2.9.0p2/developing/usage/creating-objects/
+  - /riak/kv/2.9.0p3/developing/usage/creating-objects/
+  - /riak/kv/2.9.0p4/developing/usage/creating-objects/
+  - /riak/kv/latest/developing/usage/creating-objects/
 ---
 
-[usage content types]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/content-types
+
+[usage content types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/content-types
 
 Writes in Riak KV (storing or modifying objects) are like HTTP `PUT`
 requests. Here is the basic form of writes:
@@ -23,7 +33,7 @@ PUT /types/<type>/buckets/<bucket>/keys/<key>
 # If you're using HTTP to interact with Riak, you can also use POST
 ```
 
-As an example, let's store an object containing information about a dog named Rufus. We'll store that object in the key `rufus` in the bucket `dogs`, which bears the `animals` [bucket type]({{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/bucket-types).
+As an example, let's store an object containing information about a dog named Rufus. We'll store that object in the key `rufus` in the bucket `dogs`, which bears the `animals` [bucket type]({{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/bucket-types).
 
 The object we're storing will be very simple, just a basic text snippet
 of something that Rufus might say. Let's build the object and then store
@@ -51,7 +61,7 @@ obj.store
 ```
 
 ``` php
-$response = (new \Basho\Riak\Command\Builder\StoreObject($riak))
+$response = (new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildLocation('rufus', 'users', 'animals')
   ->buildObject('WOOF!', 'text/plain')
   ->build()
@@ -118,7 +128,7 @@ rsp := svc.Response
 Notice that we specified both a value for the object, i.e. `WOOF!`, and
 a content type, `text/plain`. See [content types][usage content types] for more information.
 
-Now, you run the same read operation as in [Reading Objects]({{<baseurl>}}riak/kv/2.9.0/developing/usage/reading-objects). If the write operation was successful, you should be able to successfully read the object. Please note that the operation will fail if you don't first create the bucket-type `animals` as per the page on [bucket types]({{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/bucket-types).
+Now, you run the same read operation as in [Reading Objects]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/reading-objects). If the write operation was successful, you should be able to successfully read the object. Please note that the operation will fail if you don't first create the bucket-type `animals` as per the page on [bucket types]({{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/bucket-types).
 
 ### Store an Object
 
@@ -138,7 +148,7 @@ PUT /types/TYPE/buckets/BUCKET/keys/KEY
 There is no need to intentionally create buckets in Riak. They pop into
 existence when keys are added to them, and disappear when all keys have
 been removed from them. If you don't specify a bucket's type, the type
-[`default`]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types) will be applied.
+[`default`]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types) will be applied.
 
 #### Write Parameters
 
@@ -176,7 +186,7 @@ obj.store(w: 3)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildLocation('viper', 'dodge', 'cars')
   ->buildObject('vroom', 'text/plain')
   ->withParameter('w', 3)
@@ -253,9 +263,9 @@ if err := cluster.Execute(cmd); err != nil {
 ```
 
 ```curl
-curl -XPUT \
-  -H "Content-Type: text/plain" \
-  -d "vroom" \
+curl -XPUT /
+  -H "Content-Type: text/plain" /
+  -d "vroom" /
   http://localhost:8098/types/cars/buckets/dodge/keys/viper?w=3
 ```
 
@@ -298,7 +308,7 @@ obj.store(w: 3, returnbody: true)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildLocation('viper', 'dodge', 'cars')
   ->buildObject('vroom', 'text/plain')
   ->withParameter('w', 3)
@@ -380,9 +390,9 @@ if err := cluster.Execute(cmd); err != nil {
 ```
 
 ```curl
-curl -XPUT \
-  -H "Content-Type: text/plain" \
-  -d "vroom" \
+curl -XPUT /
+  -H "Content-Type: text/plain" /
+  -d "vroom" /
   http://localhost:8098/types/cars/buckets/dodge/keys/viper?w=3&returnbody=true
 ```
 
@@ -439,7 +449,7 @@ obj.key
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\StoreObject($riak))
+$response = (new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildBucket('random_user_keys', 'users')
   ->buildJsonObject(['user'=>'data'])
   ->build()
@@ -531,16 +541,16 @@ if err := cluster.Execute(cmd); err != nil {
 
 svc := cmd.(*riak.StoreValueCommand)
 rsp := svc.Response
-fmt.Printf("Generated key: %v\n", rsp.GeneratedKey)
+fmt.Printf("Generated key: %v/n", rsp.GeneratedKey)
 
 // Output:
 // Generated key: QSHkZjFdWwfrxtKl3wtUhL2gz7N
 ```
 
 ```curl
-curl -i -XPOST \
-  -H "Content-Type: text/plain" \
-  -d "this is a test" \
+curl -i -XPOST /
+  -H "Content-Type: text/plain" /
+  -d "this is a test" /
   http://localhost:8098/types/users/buckets/random_user_keys/keys
 
 # In the output, you should see a Location header that will give you the

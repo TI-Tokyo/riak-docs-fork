@@ -2,23 +2,32 @@
 title: "Installing Erlang"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Installing Erlang"
     identifier: "installing_source_erlang"
     weight: 301
     parent: "installing_source"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/installing/erlang
-  - /riak-docs/riak/kv/2.9.0/ops/building/installing/erlang
-  - /riak-docs/riak/2.9.0/installing/source/erlang/
-  - /riak-docs/riak/kv/2.9.0/installing/source/erlang/
+  - /riak/2.9.0p5/ops/building/installing/erlang
+  - /riak/kv/2.9.0p5/ops/building/installing/erlang
+  - /riak/2.9.0p5/installing/source/erlang/
+  - /riak/kv/2.9.0p5/installing/source/erlang/
+  - /riak/2.9.0p5/setup/installing/source/erlang/
+  - /riak/2.9.0/setup/installing/source/erlang/
+  - /riak/kv/2.9.0/setup/installing/source/erlang/
+  - /riak/kv/2.9.0p1/setup/installing/source/erlang/
+  - /riak/kv/2.9.0p2/setup/installing/source/erlang/
+  - /riak/kv/2.9.0p3/setup/installing/source/erlang/
+  - /riak/kv/2.9.0p4/setup/installing/source/erlang/
+  - /riak/kv/latest/setup/installing/source/erlang/
 ---
 
-[install index]: {{<baseurl>}}riak/kv/2.9.0/setup/installing
-[security basics]: {{<baseurl>}}riak/kv/2.9.0/using/security/basics
+
+[install index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing
+[security basics]: {{<baseurl>}}riak/kv/2.9.0p5/using/security/basics
 
 Pre-packaged versions of Riak include an Erlang installation. If you are building Riak from source, you will need to install [Basho's patched version of Erlang](https://files.tiot.jp/riak/erlang/otp_src_R16B02-basho10.tar.gz). **If you do not use this version of Erlang, you will not be able to use Riak's [security features][security basics].**
 
@@ -424,15 +433,15 @@ If you're on Mavericks (OS X 10.9), Mountain Lion (OS X 10.8), or Lion
 Using LLVM:
 
 ```bash
-CFLAGS=-O0 ./configure --disable-hipe --enable-smp-support --enable-threads \
+CFLAGS=-O0 ./configure --disable-hipe --enable-smp-support --enable-threads /
 --enable-kernel-poll --enable-darwin-64bit
 ```
 
 Or if you prefer GCC:
 
 ```bash
-CC=gcc-4.2 CPPFLAGS='-DNDEBUG' MAKEFLAGS='-j 3' \
-./configure --disable-hipe --enable-smp-support --enable-threads \
+CC=gcc-4.2 CPPFLAGS='-DNDEBUG' MAKEFLAGS='-j 3' /
+./configure --disable-hipe --enable-smp-support --enable-threads /
 --enable-kernel-poll --enable-darwin-64bit
 ```
 
@@ -442,7 +451,7 @@ If you're on Snow Leopard (OS X 10.6) or Leopard (OS X 10.5) with an
 Intel processor:
 
 ```bash
-./configure --disable-hipe --enable-smp-support --enable-threads \
+./configure --disable-hipe --enable-smp-support --enable-threads /
 --enable-kernel-poll  --enable-darwin-64bit
 ```
 
@@ -451,7 +460,7 @@ Intel processor:
 If you're on a non-Intel processor or older version of OS X:
 
 ```bash
-./configure --disable-hipe --enable-smp-support --enable-threads \
+./configure --disable-hipe --enable-smp-support --enable-threads /
 --enable-kernel-poll
 ```
 

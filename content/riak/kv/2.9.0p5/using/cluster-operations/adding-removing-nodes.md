@@ -2,20 +2,29 @@
 title: "Adding / Removing Nodes"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Adding/Removing Nodes"
     identifier: "cluster_operations_add_remove_nodes"
     weight: 100
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/running/nodes/adding-removing
-  - /riak-docs/riak/kv/2.9.0/ops/running/nodes/adding-removing
+  - /riak/2.9.0p5/ops/running/nodes/adding-removing
+  - /riak/kv/2.9.0p5/ops/running/nodes/adding-removing
+  - /riak/2.9.0p5/using/cluster-operations/adding-removing-nodes/
+  - /riak/2.9.0/using/cluster-operations/adding-removing-nodes/
+  - /riak/kv/2.9.0/using/cluster-operations/adding-removing-nodes/
+  - /riak/kv/2.9.0p1/using/cluster-operations/adding-removing-nodes/
+  - /riak/kv/2.9.0p2/using/cluster-operations/adding-removing-nodes/
+  - /riak/kv/2.9.0p3/using/cluster-operations/adding-removing-nodes/
+  - /riak/kv/2.9.0p4/using/cluster-operations/adding-removing-nodes/
+  - /riak/kv/latest/using/cluster-operations/adding-removing-nodes/
 ---
 
-[use running cluster]: {{<baseurl>}}riak/kv/2.9.0/using/running-a-cluster
+
+[use running cluster]: {{<baseurl>}}riak/kv/2.9.0p5/using/running-a-cluster
 
 This page describes the process of adding and removing nodes to and from
 a Riak KV cluster. For information on creating a cluster check out [Running a Cluster][use running cluster].
@@ -26,7 +35,7 @@ Just like the initial configuration steps, this step has to be repeated
 for every node in your cluster. Before a node can join an existing
 cluster it needs to be started. Depending on your mode of installation,
 use either the init scripts installed by the Riak binary packages or
-simply the script [`riak`]({{<baseurl>}}riak/kv/2.9.0/using/admin/riak-cli/):
+simply the script [`riak`]({{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-cli/):
 
 ```bash
 /etc/init.d/riak start

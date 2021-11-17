@@ -2,16 +2,25 @@
 title: "Configure Global Object Expiration"
 description: "Enabling and configuring global object expiration for Riak KV."
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Global Object Expiration"
     identifier: "config_expiry"
     weight: 180
     parent: "configuring"
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 toc: true
-canonical_link: "riak/kv/latest/configuring/global-object-expiration"
+aliases:
+  - /riak/2.9.0p5/configuring/global-object-expiration/
+  - /riak/2.9.0/configuring/global-object-expiration/
+  - /riak/kv/2.9.0/configuring/global-object-expiration/
+  - /riak/kv/2.9.0p1/configuring/global-object-expiration/
+  - /riak/kv/2.9.0p2/configuring/global-object-expiration/
+  - /riak/kv/2.9.0p3/configuring/global-object-expiration/
+  - /riak/kv/2.9.0p4/configuring/global-object-expiration/
+  - /riak/kv/latest/configuring/global-object-expiration/
 ---
+
 
 [ttl]: https://en.wikipedia.org/wiki/Time_to_live
 

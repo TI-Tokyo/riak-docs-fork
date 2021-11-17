@@ -2,25 +2,34 @@
 title: "Verifying a Riak KV Installation"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Verifying an Installation"
     identifier: "installing_verify"
     weight: 311
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/installing/Post-Installation
-  - /riak-docs/riak/kv/2.9.0/ops/installing/Post-Installation
-  - /riak-docs/riak/2.9.0/installing/verify-install/
-  - /riak-docs/riak/kv/2.9.0/installing/verify-install/
+  - /riak/2.9.0p5/ops/installing/Post-Installation
+  - /riak/kv/2.9.0p5/ops/installing/Post-Installation
+  - /riak/2.9.0p5/installing/verify-install/
+  - /riak/kv/2.9.0p5/installing/verify-install/
+  - /riak/2.9.0p5/setup/installing/verify/
+  - /riak/2.9.0/setup/installing/verify/
+  - /riak/kv/2.9.0/setup/installing/verify/
+  - /riak/kv/2.9.0p1/setup/installing/verify/
+  - /riak/kv/2.9.0p2/setup/installing/verify/
+  - /riak/kv/2.9.0p3/setup/installing/verify/
+  - /riak/kv/2.9.0p4/setup/installing/verify/
+  - /riak/kv/latest/setup/installing/verify/
 ---
 
-[client libraries]: {{<baseurl>}}riak/kv/2.9.0/developing/client-libraries
-[perf open files]: {{<baseurl>}}riak/kv/2.9.0/using/performance/open-files-limit
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/bucket-types
-[cluster ops inspect node]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/inspecting-node
+
+[client libraries]: {{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries
+[perf open files]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance/open-files-limit
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/bucket-types
+[cluster ops inspect node]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/inspecting-node
 
 After you've installed Riak KV, we recommend checking the liveness of
 each node to ensure that requests are being properly served.

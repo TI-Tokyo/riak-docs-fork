@@ -3,26 +3,35 @@ title_supertext: "Installing on"
 title: "FreeBSD"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "FreeBSD"
     identifier: "installing_freebsd"
     weight: 303
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/installing/Installing-on-FreeBSD
-  - /riak-docs/riak/kv/2.9.0/ops/building/installing/Installing-on-FreeBSD
-  - /riak-docs/riak/2.9.0/installing/freebsd/
-  - /riak-docs/riak/kv/2.9.0/installing/freebsd/
+  - /riak/2.9.0p5/ops/building/installing/Installing-on-FreeBSD
+  - /riak/kv/2.9.0p5/ops/building/installing/Installing-on-FreeBSD
+  - /riak/2.9.0p5/installing/freebsd/
+  - /riak/kv/2.9.0p5/installing/freebsd/
+  - /riak/2.9.0p5/setup/installing/freebsd/
+  - /riak/2.9.0/setup/installing/freebsd/
+  - /riak/kv/2.9.0/setup/installing/freebsd/
+  - /riak/kv/2.9.0p1/setup/installing/freebsd/
+  - /riak/kv/2.9.0p2/setup/installing/freebsd/
+  - /riak/kv/2.9.0p3/setup/installing/freebsd/
+  - /riak/kv/2.9.0p4/setup/installing/freebsd/
+  - /riak/kv/latest/setup/installing/freebsd/
 ---
 
 
 
-[install source erlang]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source/erlang
-[downloads]: {{<baseurl>}}riak/kv/2.9.0/downloads/
-[install verify]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/verify
+
+[install source erlang]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source/erlang
+[downloads]: {{<baseurl>}}riak/kv/2.9.0p5/downloads/
+[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
 
 You can install Riak on FreeBSD for the AMD64 architecture with a binary package or by building from source code.
 
@@ -42,14 +51,14 @@ You can install the Riak binary package on FreeBSD remotely using the
 ### For FreeBSD 11.x
 
 ```bash
-sudo pkg_add -r https://files.tiot.jp/riak/kv/2.2/2.9.0/freebsd/11.1/riak-2.9.0.txz
+sudo pkg_add -r https://files.tiot.jp/riak/kv/2.2/2.9.0p5/freebsd/11.1/riak-2.9.0.txz
 ```
 
 
 ### For FreeBSD 10.x
 
 ```bash
-sudo pkg_add -r https://files.tiot.jp/riak/kv/2.2/2.9.0/freebsd/10.4/riak-2.9.0.txz
+sudo pkg_add -r https://files.tiot.jp/riak/kv/2.2/2.9.0p5/freebsd/10.4/riak-2.9.0.txz
 ```
 
 When Riak is installed, a message is displayed with information about the installation and available documentation.

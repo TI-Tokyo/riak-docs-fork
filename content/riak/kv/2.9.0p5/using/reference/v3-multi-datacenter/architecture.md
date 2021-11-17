@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter Replication Reference:"
 title: "Architecture"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Architecture"
     identifier: "managing_ref_v3_architecture"
     weight: 100
@@ -13,12 +13,21 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/v3/architecture
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/v3/architecture
+  - /riak/2.9.0p5/ops/mdc/v3/architecture
+  - /riak/kv/2.9.0p5/ops/mdc/v3/architecture
+  - /riak/2.9.0p5/using/reference/v3-multi-datacenter/architecture/
+  - /riak/2.9.0/using/reference/v3-multi-datacenter/architecture/
+  - /riak/kv/2.9.0/using/reference/v3-multi-datacenter/architecture/
+  - /riak/kv/2.9.0p1/using/reference/v3-multi-datacenter/architecture/
+  - /riak/kv/2.9.0p2/using/reference/v3-multi-datacenter/architecture/
+  - /riak/kv/2.9.0p3/using/reference/v3-multi-datacenter/architecture/
+  - /riak/kv/2.9.0p4/using/reference/v3-multi-datacenter/architecture/
+  - /riak/kv/latest/using/reference/v3-multi-datacenter/architecture/
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
+
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
 
 ## How Version 3 Replication Works
 

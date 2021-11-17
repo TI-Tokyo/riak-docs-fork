@@ -2,18 +2,27 @@
 title: "Amazon Web Services Performance Tuning"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Amazon Web Services"
     identifier: "performance_aws"
     weight: 106
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/tuning/aws
-  - /riak-docs/riak/kv/2.9.0/ops/tuning/aws
+  - /riak/2.9.0p5/ops/tuning/aws
+  - /riak/kv/2.9.0p5/ops/tuning/aws
+  - /riak/2.9.0p5/using/performance/amazon-web-services/
+  - /riak/2.9.0/using/performance/amazon-web-services/
+  - /riak/kv/2.9.0/using/performance/amazon-web-services/
+  - /riak/kv/2.9.0p1/using/performance/amazon-web-services/
+  - /riak/kv/2.9.0p2/using/performance/amazon-web-services/
+  - /riak/kv/2.9.0p3/using/performance/amazon-web-services/
+  - /riak/kv/2.9.0p4/using/performance/amazon-web-services/
+  - /riak/kv/latest/using/performance/amazon-web-services/
 ---
+
 
 This guide introduces best practices for tuning Riak cluster performance
 in the Amazon Web Services (AWS) Elastic Compute Cloud (EC2) environment.

@@ -2,29 +2,38 @@
 title: "Vnodes"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Vnodes"
     identifier: "learn_concepts_vnodes"
     weight: 109
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/theory/concepts/vnodes
-  - /riak-docs/riak/kv/2.9.0/theory/concepts/vnodes
+  - /riak/2.9.0p5/theory/concepts/vnodes
+  - /riak/kv/2.9.0p5/theory/concepts/vnodes
+  - /riak/2.9.0p5/learn/concepts/vnodes/
+  - /riak/2.9.0/learn/concepts/vnodes/
+  - /riak/kv/2.9.0/learn/concepts/vnodes/
+  - /riak/kv/2.9.0p1/learn/concepts/vnodes/
+  - /riak/kv/2.9.0p2/learn/concepts/vnodes/
+  - /riak/kv/2.9.0p3/learn/concepts/vnodes/
+  - /riak/kv/2.9.0p4/learn/concepts/vnodes/
+  - /riak/kv/latest/learn/concepts/vnodes/
 ---
 
 
-[concept causal context]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context
-[concept clusters ring]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters/#the-ring
-[concept replication]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/replication
-[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/strong-consistency
-[glossary node]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#node
-[glossary ring]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#ring
-[plan backend]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend
-[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/cluster-capacity
-[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-cli
+
+[concept causal context]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context
+[concept clusters ring]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters/#the-ring
+[concept replication]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/replication
+[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/strong-consistency
+[glossary node]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#node
+[glossary ring]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#ring
+[plan backend]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend
+[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/cluster-capacity
+[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-cli
 
 
 Virtual nodes, more commonly referred to as **vnodes**, are processes
@@ -102,7 +111,7 @@ asynchronous tasks on behalf of the vnode.
 
 If you're navigating through the file system of a Riak node, you'll
 notice that each node's `/data` directory holds a variety of
-subdirectories. If you're using, say, [Bitcask]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask) as a backend, navigate
+subdirectories. If you're using, say, [Bitcask]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask) as a backend, navigate
 into the `/bitcask` directory (you'll also see a `/ring` directory and
 several others). If you open up the `/bitcask` directory, you'll see a
 wide assortment of directories with numbers as names, e.g. `0` or
@@ -144,7 +153,7 @@ Status:
  {status,[{"./data/bitcask/1278813932664540053428224228626747642198940975104/2.bitcask.data",
            0,0,335}]}]
 Status:
-{vnodeid,<<"ÅR±\vi80\f">>}
+{vnodeid,<<"ÅR±/vi80/f">>}
 ```
 
 The meaning of each field is given in the table below.

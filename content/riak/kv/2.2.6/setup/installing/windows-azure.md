@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/installing/Installing-on-Windows-Azure
-  - /riak-docs/riak/kv/2.2.6/ops/building/installing/Installing-on-Windows-Azure
-  - /riak-docs/riak/2.2.6/installing/windows-azure/
-  - /riak-docs/riak/kv/2.2.6/installing/windows-azure/
+  - /riak/2.2.6/ops/building/installing/Installing-on-Windows-Azure
+  - /riak/kv/2.2.6/ops/building/installing/Installing-on-Windows-Azure
+  - /riak/2.2.6/installing/windows-azure/
+  - /riak/kv/2.2.6/installing/windows-azure/
 ---
 
 ## Creating CentOS VMs

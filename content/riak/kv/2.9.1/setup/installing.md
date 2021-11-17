@@ -12,10 +12,10 @@ menu:
     pre: cog
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/installing
-  - /riak-docs/riak/kv/2.9.1/ops/building/installing
-  - /riak-docs/riak/2.9.1/installing/
-  - /riak-docs/riak/kv/2.9.1/installing/
+  - /riak/2.9.1/ops/building/installing
+  - /riak/kv/2.9.1/ops/building/installing
+  - /riak/2.9.1/installing/
+  - /riak/kv/2.9.1/installing/
 ---
 
 [install aws]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/amazon-web-services

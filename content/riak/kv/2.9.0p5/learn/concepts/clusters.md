@@ -2,31 +2,40 @@
 title: "Clusters"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Clusters"
     identifier: "learn_concepts_clusters"
     weight: 103
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/theory/concepts/Clusters
-  - /riak-docs/riak/kv/2.9.0/theory/concepts/Clusters
-  - /riak-docs/riak/2.9.0/theory/concepts/clusters
-  - /riak-docs/riak/kv/2.9.0/theory/concepts/clusters
+  - /riak/2.9.0p5/theory/concepts/Clusters
+  - /riak/kv/2.9.0p5/theory/concepts/Clusters
+  - /riak/2.9.0p5/theory/concepts/clusters
+  - /riak/kv/2.9.0p5/theory/concepts/clusters
+  - /riak/2.9.0p5/learn/concepts/clusters/
+  - /riak/2.9.0/learn/concepts/clusters/
+  - /riak/kv/2.9.0/learn/concepts/clusters/
+  - /riak/kv/2.9.0p1/learn/concepts/clusters/
+  - /riak/kv/2.9.0p2/learn/concepts/clusters/
+  - /riak/kv/2.9.0p3/learn/concepts/clusters/
+  - /riak/kv/2.9.0p4/learn/concepts/clusters/
+  - /riak/kv/latest/learn/concepts/clusters/
 ---
 
 
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/buckets
-[concept keys objects]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/keys-and-objects
-[concept replication]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/replication
-[glossary node]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#node
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[learn dynamo]: {{<baseurl>}}riak/kv/2.9.0/learn/dynamo
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution
-[usage replication]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/replication
+
+[concept buckets]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/buckets
+[concept keys objects]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/keys-and-objects
+[concept replication]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/replication
+[glossary node]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#node
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[learn dynamo]: {{<baseurl>}}riak/kv/2.9.0p5/learn/dynamo
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution
+[usage replication]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/replication
 
 
 Riak's default mode of operation is to work as a cluster consisting of

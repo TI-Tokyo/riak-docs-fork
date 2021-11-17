@@ -2,32 +2,41 @@
 title: "Search Reference"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Search"
     identifier: "managing_ref_search"
     weight: 109
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/advanced/search
-  - /riak-docs/riak/kv/2.9.0/dev/advanced/search
+  - /riak/2.9.0p5/dev/advanced/search
+  - /riak/kv/2.9.0p5/dev/advanced/search
+  - /riak/2.9.0p5/using/reference/search/
+  - /riak/2.9.0/using/reference/search/
+  - /riak/kv/2.9.0/using/reference/search/
+  - /riak/kv/2.9.0p1/using/reference/search/
+  - /riak/kv/2.9.0p2/using/reference/search/
+  - /riak/kv/2.9.0p3/using/reference/search/
+  - /riak/kv/2.9.0p4/using/reference/search/
+  - /riak/kv/latest/using/reference/search/
 ---
 
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
-[configuring search]: {{<baseurl>}}riak/kv/2.9.0/configuring/search
+
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
+[configuring search]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/search
 
 > **Note on search 2.0 vs. legacy search**
 >
 > This document refers to Riak search 2.0 with
 [Solr](http://lucene.apache.org/solr/) integration (codenamed
-Yokozuna). For information about the deprecated Riak search, visit [the old Using Riak search docs](http://docs.basho.com/riak/1.4.10/dev/using/search/).
+Yokozuna). For information about the deprecated Riak search, visit [the old Using Riak search docs]({{< baseurl >}}riak/kv/1.4.10/dev/using/search/).
 
 The project that implements Riak search is codenamed Yokozuna. This is a
 more detailed overview of the concepts and reasons behind the design of
 Yokozuna, for those interested. If you're simply looking to use Riak
-search, you should check out the [Using Search]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search) document.
+search, you should check out the [Using Search]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search) document.
 
 ![Yokozuna]({{<baseurl>}}images/yokozuna.png)
 
@@ -127,7 +136,7 @@ but logically partition them in KV by using a date as the bucket name.
 A bucket _cannot_ be associated with many indexes---the `search_index`
 property must be a single name, not a list.
 
-See the [main Search documentation]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search/#simple-setup) for details on creating an index.
+See the [main Search documentation]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search/#simple-setup) for details on creating an index.
 
 ## Extractors
 
@@ -243,8 +252,8 @@ can use the extract HTTP endpoint. This will do a dry-run extraction and
 return the document structure as `application/json`.
 
 ```curl
-curl -XPUT http://localhost:8098/search/extract \
-     -H 'Content-Type: application/json' \
+curl -XPUT http://localhost:8098/search/extract /
+     -H 'Content-Type: application/json' /
      --data-binary @object.json
 ```
 
@@ -289,7 +298,7 @@ The corresponding date type is declared under `<types>` like so.
 <fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
 ```
 
-You can also find more information on to how customize your own [search schema]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search-schemas).
+You can also find more information on to how customize your own [search schema]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search-schemas).
 
 Yokozuna comes bundled with a [default schema](https://github.com/basho/yokozuna/blob/develop/priv/default_schema.xml)
 called `_yz_default`. This is an extremely general schema which makes
@@ -299,7 +308,7 @@ indexed.
 
 ## Active Anti-Entropy (AAE)
 
-[Active Anti-Entropy]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/) \(AAE) is the process of discovering and
+[Active Anti-Entropy]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/) /(AAE) is the process of discovering and
 correcting entropy (divergence) between the data stored in Riak's
 key-value backend and the indexes stored in Solr. The impetus for AAE is
 that failures come in all shapes and sizes---disk failure, dropped
@@ -354,7 +363,7 @@ _analysis_.
 Solr provides many different field types which analyze data in different
 ways, and custom analyzer chains may be built by stringing together XML
 in the schema file, allowing custom analysis for each field. For more
-information on analysis, see [Search Schema]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search-schemas).
+information on analysis, see [Search Schema]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search-schemas).
 
 ## Tagging
 

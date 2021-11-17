@@ -3,20 +3,29 @@ title_supertext: "Conflict Resolution:"
 title: "Ruby"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Ruby"
     identifier: "usage_conflict_resolution_ruby"
     weight: 101
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/conflict-resolution/ruby
-  - /riak-docs/riak/kv/2.9.0/dev/using/conflict-resolution/ruby
+  - /riak/2.9.0p5/dev/using/conflict-resolution/ruby
+  - /riak/kv/2.9.0p5/dev/using/conflict-resolution/ruby
+  - /riak/2.9.0p5/developing/usage/conflict-resolution/ruby/
+  - /riak/2.9.0/developing/usage/conflict-resolution/ruby/
+  - /riak/kv/2.9.0/developing/usage/conflict-resolution/ruby/
+  - /riak/kv/2.9.0p1/developing/usage/conflict-resolution/ruby/
+  - /riak/kv/2.9.0p2/developing/usage/conflict-resolution/ruby/
+  - /riak/kv/2.9.0p3/developing/usage/conflict-resolution/ruby/
+  - /riak/kv/2.9.0p4/developing/usage/conflict-resolution/ruby/
+  - /riak/kv/latest/developing/usage/conflict-resolution/ruby/
 ---
 
-For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution), we strongly recommend adopting a
+
+For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution), we strongly recommend adopting a
 conflict resolution strategy that requires applications to resolve
 siblings according to use-case-specific criteria. Here, we'll provide a
 brief guide to conflict resolution using the official [Riak Ruby
@@ -49,7 +58,7 @@ below.
 Let's say that we're building a social network application and storing
 lists of usernames representing each user's "friends." Each user will be
 of the class `User`, which we'll create below. All of the data for our
-application will be stored in buckets that bear the [bucket type]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types) `siblings`, and for this bucket type `allow_mult` is set
+application will be stored in buckets that bear the [bucket type]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types) `siblings`, and for this bucket type `allow_mult` is set
 to `true`, which means that Riak will generate siblings in certain
 cases---siblings that our application will need to be equipped to
 resolve when necessary.
@@ -175,7 +184,7 @@ step is the subject of this tutorial)
 made
 
 You can find more on writing objects to Riak, including examples from
-the official Ruby client library, in the [Developing with Riak KV: Usage]({{<baseurl>}}riak/kv/2.9.0/developing/usage) section.
+the official Ruby client library, in the [Developing with Riak KV: Usage]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage) section.
 
 ## More Advanced Example
 
@@ -235,9 +244,9 @@ always carry potential drawbacks of this sort.
 ## Riak Data Types
 
 An important thing to always bear in mind when working with conflict
-resolution is that Riak offers a variety of [Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/) that have
+resolution is that Riak offers a variety of [Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/) that have
 specific conflict resolution mechanics built in. If you have data that
-can be modeled as a [counter]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#counters), [set]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets), or [map]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps), then you should seriously
+can be modeled as a [counter]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#counters), [set]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets), or [map]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps), then you should seriously
 consider using those Data Types instead of creating your own
 application-side resolution logic.
 
@@ -247,4 +256,4 @@ set, in particular the `friends` list associated with each `User`
 object. The merge operation that we built to handle conflict resolution
 is analogous to the resolution logic that is built into Riak sets. For
 more information on how you could potentially replace the client-side
-resolution that we implemented above, see our [tutorial on Riak sets]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets).
+resolution that we implemented above, see our [tutorial on Riak sets]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets).

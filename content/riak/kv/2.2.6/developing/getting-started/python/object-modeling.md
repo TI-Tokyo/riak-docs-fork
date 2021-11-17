@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_python"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/object-modeling-python
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/object-modeling-python
+  - /riak/2.2.6/dev/taste-of-riak/object-modeling-python
+  - /riak/kv/2.2.6/dev/taste-of-riak/object-modeling-python
 ---
 
 To get started, let's create the data structures that we'll be using.

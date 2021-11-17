@@ -11,8 +11,8 @@ menu:
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/advanced/backends/multi/
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/backends/multi/
+  - /riak/2.2.6/ops/advanced/backends/multi/
+  - /riak/kv/2.2.6/ops/advanced/backends/multi/
 ---
 
 [concept buckets]: {{<baseurl>}}riak/kv/2.2.6/learn/concepts/buckets

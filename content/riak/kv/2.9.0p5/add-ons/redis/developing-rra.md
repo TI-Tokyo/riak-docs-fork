@@ -2,24 +2,34 @@
 title: "Developing with Riak Redis Add-on"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Develop with Redis Add-on"
     identifier: "add-ons_redis_develop"
     weight: 403
     parent: "add-ons_redis"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/2.9.0p5/add-ons/redis/developing-rra/
+  - /riak/2.9.0/add-ons/redis/developing-rra/
+  - /riak/kv/2.9.0/add-ons/redis/developing-rra/
+  - /riak/kv/2.9.0p1/add-ons/redis/developing-rra/
+  - /riak/kv/2.9.0p2/add-ons/redis/developing-rra/
+  - /riak/kv/2.9.0p3/add-ons/redis/developing-rra/
+  - /riak/kv/2.9.0p4/add-ons/redis/developing-rra/
+  - /riak/kv/latest/add-ons/redis/developing-rra/
 ---
 
+
 [redis-clients]: http://redis.io/clients
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types/
-[dev api http]: {{<baseurl>}}riak/kv/2.9.0/developing/api/http
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types/
+[dev api http]: {{<baseurl>}}riak/kv/2.9.0p5/developing/api/http
 [config-behaviors]: http://basho.com/posts/technical/riaks-config-behaviors-part-4/
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties
-[usage commit hooks]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/commit-hooks/
-[concept causal context]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties
+[usage commit hooks]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/commit-hooks/
+[concept causal context]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context
 [ee]: https://www.tiot.jp/en/about-us/contact-us/
 
 This page will walk you through setting up your environment for development with Riak Redis Add-on (RRA), as well as present examples and configuration parameters for basic development operations.
@@ -83,8 +93,8 @@ fi
 The following is an example, using Riak KV's default HTTP port, of setting `allow_mult` to 'true' and `last_write_wins` to 'false':
 
 ```sh
-curl -XPUT -H 'Content-Type: application/json' \
-         -d '{"props": {"allow_mult": true, "last_write_wins": false}}' \
+curl -XPUT -H 'Content-Type: application/json' /
+         -d '{"props": {"allow_mult": true, "last_write_wins": false}}' /
          'http://127.0.0.1:8098/types/rra/buckets/test/props'
 ```
 

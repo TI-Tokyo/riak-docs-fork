@@ -2,14 +2,23 @@
 title: "Learn About Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Learning"
     identifier: "learn"
     weight: 400
     pre: beaker
 toc: true
+aliases:
+  - /riak/2.9.0p5/learn/
+  - /riak/2.9.0/learn/
+  - /riak/kv/2.9.0/learn/
+  - /riak/kv/2.9.0p1/learn/
+  - /riak/kv/2.9.0p2/learn/
+  - /riak/kv/2.9.0p3/learn/
+  - /riak/kv/2.9.0p4/learn/
+  - /riak/kv/latest/learn/
 ---
 
 [learn why riak]: ./why-riak-kv/

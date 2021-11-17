@@ -2,20 +2,29 @@
 title: "HTTP Secondary Indexes"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Secondary Indexes"
     identifier: "http_2i"
     weight: 109
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/secondary-indexes
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/secondary-indexes
+  - /riak/2.9.0p5/dev/references/http/secondary-indexes
+  - /riak/kv/2.9.0p5/dev/references/http/secondary-indexes
+  - /riak/2.9.0p5/developing/api/http/secondary-indexes/
+  - /riak/2.9.0/developing/api/http/secondary-indexes/
+  - /riak/kv/2.9.0/developing/api/http/secondary-indexes/
+  - /riak/kv/2.9.0p1/developing/api/http/secondary-indexes/
+  - /riak/kv/2.9.0p2/developing/api/http/secondary-indexes/
+  - /riak/kv/2.9.0p3/developing/api/http/secondary-indexes/
+  - /riak/kv/2.9.0p4/developing/api/http/secondary-indexes/
+  - /riak/kv/latest/developing/api/http/secondary-indexes/
 ---
 
-[Secondary Indexes]({{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes) allows an application to tag a Riak object with one or more field/value pairs. The object is indexed under these field/value pairs, and the application can later query the index to retrieve a list of matching keys.
+
+[Secondary Indexes]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes) allows an application to tag a Riak object with one or more field/value pairs. The object is indexed under these field/value pairs, and the application can later query the index to retrieve a list of matching keys.
 
 ## Request
 

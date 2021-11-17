@@ -3,15 +3,25 @@ draft: true
 title: "Security Best Practices"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Best Practices"
     identifier: "security_best_practices"
     weight: 102
     parent: "managing_security"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/security/best-practices/
+  - /riak/2.9.0/using/security/best-practices/
+  - /riak/kv/2.9.0/using/security/best-practices/
+  - /riak/kv/2.9.0p1/using/security/best-practices/
+  - /riak/kv/2.9.0p2/using/security/best-practices/
+  - /riak/kv/2.9.0p3/using/security/best-practices/
+  - /riak/kv/2.9.0p4/using/security/best-practices/
+  - /riak/kv/latest/using/security/best-practices/
 ---
+
 
 ## Hanc capellae
 

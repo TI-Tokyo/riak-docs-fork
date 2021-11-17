@@ -2,15 +2,25 @@
 title: "Deleting Objects"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Deleting Objects"
     identifier: "usage_deleting_objects"
     weight: 103
     parent: "developing_usage"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/usage/deleting-objects/
+  - /riak/2.9.0/developing/usage/deleting-objects/
+  - /riak/kv/2.9.0/developing/usage/deleting-objects/
+  - /riak/kv/2.9.0p1/developing/usage/deleting-objects/
+  - /riak/kv/2.9.0p2/developing/usage/deleting-objects/
+  - /riak/kv/2.9.0p3/developing/usage/deleting-objects/
+  - /riak/kv/2.9.0p4/developing/usage/deleting-objects/
+  - /riak/kv/latest/developing/usage/deleting-objects/
 ---
+
 
 The delete command follows a predictable pattern and looks like this:
 
@@ -38,7 +48,7 @@ bucket.delete('genius')
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\DeleteObject($riak))
+(new /Basho/Riak/Command/Builder/DeleteObject($riak))
   ->buildBucket('oscar_wilde', 'quotes')
   ->build()
   ->execute();
@@ -103,9 +113,9 @@ curl -XDELETE http://localhost:8098/types/quotes/buckets/oscar_wilde/keys/genius
 
 If you are updating an object that has been deleted---or if an update 
 might target a deleted object---we recommend that
-you first fetch the [causal context]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context) of the object prior to updating.
+you first fetch the [causal context]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context) of the object prior to updating.
 This can be done by setting the `deletedvclock` parameter to `true` as
-part of the [fetch operation]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/fetch-object). This can also be done
+part of the [fetch operation]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/fetch-object). This can also be done
 with the official Riak clients for Ruby, Java, and Erlang, as in the
 example below:
 
@@ -143,7 +153,7 @@ System.out.println(response.getVclock().asString());
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\FetchObject($riak))
+$response = (new /Basho/Riak/Command/Builder/FetchObject($riak))
   ->buildLocation('deleted_key', 'in_some_bucket', 'of_a_certain_type')
   ->build()
   ->execute();

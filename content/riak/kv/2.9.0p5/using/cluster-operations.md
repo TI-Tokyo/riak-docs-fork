@@ -2,15 +2,25 @@
 title: "Cluster Operations"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Cluster Operations"
     identifier: "managing_cluster_operations"
     weight: 203
     parent: "managing"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/cluster-operations/
+  - /riak/2.9.0/using/cluster-operations/
+  - /riak/kv/2.9.0/using/cluster-operations/
+  - /riak/kv/2.9.0p1/using/cluster-operations/
+  - /riak/kv/2.9.0p2/using/cluster-operations/
+  - /riak/kv/2.9.0p3/using/cluster-operations/
+  - /riak/kv/2.9.0p4/using/cluster-operations/
+  - /riak/kv/latest/using/cluster-operations/
 ---
+
 
 [ops add remove node]: ./adding-removing-nodes
 [ops change info]: ./changing-cluster-info

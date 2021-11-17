@@ -3,26 +3,35 @@ title_supertext: "Installing on"
 title: "Mac OS X"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Mac OS X"
     identifier: "installing_macosx"
     weight: 303
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/installing/Installing-on-Mac-OS-X
-  - /riak-docs/riak/kv/2.9.0/ops/building/installing/Installing-on-Mac-OS-X
-  - /riak-docs/riak/2.9.0/installing/mac-osx/
-  - /riak-docs/riak/kv/2.9.0/installing/mac-osx/
+  - /riak/2.9.0p5/ops/building/installing/Installing-on-Mac-OS-X
+  - /riak/kv/2.9.0p5/ops/building/installing/Installing-on-Mac-OS-X
+  - /riak/2.9.0p5/installing/mac-osx/
+  - /riak/kv/2.9.0p5/installing/mac-osx/
+  - /riak/2.9.0p5/setup/installing/mac-osx/
+  - /riak/2.9.0/setup/installing/mac-osx/
+  - /riak/kv/2.9.0/setup/installing/mac-osx/
+  - /riak/kv/2.9.0p1/setup/installing/mac-osx/
+  - /riak/kv/2.9.0p2/setup/installing/mac-osx/
+  - /riak/kv/2.9.0p3/setup/installing/mac-osx/
+  - /riak/kv/2.9.0p4/setup/installing/mac-osx/
+  - /riak/kv/latest/setup/installing/mac-osx/
 ---
 
 
 
-[perf open files]: {{<baseurl>}}riak/kv/2.9.0/using/performance/open-files-limit
-[install source erlang]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/verify
+
+[perf open files]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance/open-files-limit
+[install source erlang]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
 
 The following steps are known to work with Mac OS X 10.8 and higher. You can install from source or download a precompiled tarball.
 
@@ -41,7 +50,7 @@ appropriate platform:
 ### 64-bit
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.0/osx/10.11/riak-2.9.0-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.2/2.9.0p5/osx/10.11/riak-2.9.0-OSX-x86_64.tar.gz
 tar xzvf riak-2.9.0-osx-x86_64.tar.gz
 ```
 
@@ -101,7 +110,7 @@ If you do not have Erlang already installed, see [Installing Erlang][install sou
 Next, download and unpack the source distribution.
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.0/riak-2.9.0.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.2/2.9.0p5/riak-2.9.0.tar.gz
 tar zxvf riak-2.9.0.tar.gz
 cd riak-2.9.0
 make rel

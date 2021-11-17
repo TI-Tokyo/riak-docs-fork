@@ -2,25 +2,34 @@
 title: "Choosing a Backend"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Choosing a Backend"
     identifier: "planning_choose_backend"
     weight: 102
     parent: "planning"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/planning/backends/
-  - /riak-docs/riak/kv/2.9.0/ops/building/planning/backends/
+  - /riak/2.9.0p5/ops/building/planning/backends/
+  - /riak/kv/2.9.0p5/ops/building/planning/backends/
+  - /riak/2.9.0p5/setup/planning/backend/
+  - /riak/2.9.0/setup/planning/backend/
+  - /riak/kv/2.9.0/setup/planning/backend/
+  - /riak/kv/2.9.0p1/setup/planning/backend/
+  - /riak/kv/2.9.0p2/setup/planning/backend/
+  - /riak/kv/2.9.0p3/setup/planning/backend/
+  - /riak/kv/2.9.0p4/setup/planning/backend/
+  - /riak/kv/latest/setup/planning/backend/
 ---
 
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/multi
-[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveled
-[dev api backend]: {{<baseurl>}}riak/kv/2.9.0/developing/api/backend
+
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb
+[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory
+[plan backend multi]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/multi
+[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveled
+[dev api backend]: {{<baseurl>}}riak/kv/2.9.0p5/developing/api/backend
 
 Pluggable storage backends are a key feature of Riak KV. They enable you to
 choose a low-level storage engine that suits specific operational needs.
@@ -40,17 +49,17 @@ The following backends are supported:
 Riak KV supports the use of custom storage backends as well. See the
 storage [Backend API][dev api backend] for more details.
 
-Feature or Characteristic                      |Bitcask|LevelDB|Memory|
-:----------------------------------------------|:-----:|:-----:|:----:|
-Default Riak KV backend                        |✓      |       |      |
-Persistent                                     |✓      |✓      |      |
-Keyspace in RAM                                |✓      |       |✓     |
-Keyspace can be greater than available RAM     |       |✓      |      |
-Keyspace loaded into RAM on startup<sup>1</sup>|✓      |       |      |
-Objects in RAM                                 |       |       |✓     |
-Object expiration                              |✓      |       |✓     |
-Secondary indexes                              |       |✓      |✓     |
-Tiered storage
+Feature or Characteristic                      |Bitcask|LevelDB|Memory|Leveled|
+:----------------------------------------------|:-----:|:-----:|:----:|:----:|
+Default Riak KV backend                        |✓      |       |      |      |
+Persistent                                     |✓      |✓      |      |✓     |
+Keyspace in RAM                                |✓      |       |✓     |      |
+Keyspace can be greater than available RAM     |       |✓      |      |✓     |
+Keyspace loaded into RAM on startup<sup>1</sup>|✓      |       |      |      |
+Objects in RAM                                 |       |       |✓     |      |
+Object expiration                              |✓      |       |✓     |      |
+Secondary indexes                              |       |✓      |✓     |✓     |
+Tiered storage                                 |       |✓      |      |✓     |
 
 <sup>1</sup> Noted here since this can affect Riak start times for large
 keyspaces.

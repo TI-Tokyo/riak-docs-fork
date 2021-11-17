@@ -12,10 +12,10 @@ menu:
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/data-types/gsets
-  - /riak-docs/riak/kv/2.9.1/dev/using/data-types/gsets
-  - /riak-docs/riak/2.9.1/dev/data-modeling/data-types/gsets
-  - /riak-docs/riak/kv/2.9.1/dev/data-modeling/data-types/gsets
+  - /riak/2.9.1/dev/using/data-types/gsets
+  - /riak/kv/2.9.1/dev/using/data-types/gsets
+  - /riak/2.9.1/dev/data-modeling/data-types/gsets
+  - /riak/kv/2.9.1/dev/data-modeling/data-types/gsets
 ---
 
 GSets are a bucket-level Riak data type that can be used by themselves or associated with a bucket/key pair. They do not yet have the ability to be used [within a map like regular sets](../maps#sets-within-maps).

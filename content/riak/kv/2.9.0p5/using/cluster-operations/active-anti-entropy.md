@@ -2,25 +2,34 @@
 title: "Managing Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Managing Active Anti-Entropy"
     identifier: "cluster_operations_aae"
     weight: 111
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/aae/
-  - /riak-docs/riak/2.9.0/ops/advanced/aae/
+  - /riak/kv/2.9.0p5/ops/advanced/aae/
+  - /riak/2.9.0p5/ops/advanced/aae/
+  - /riak/2.9.0p5/using/cluster-operations/active-anti-entropy/
+  - /riak/2.9.0/using/cluster-operations/active-anti-entropy/
+  - /riak/kv/2.9.0/using/cluster-operations/active-anti-entropy/
+  - /riak/kv/2.9.0p1/using/cluster-operations/active-anti-entropy/
+  - /riak/kv/2.9.0p2/using/cluster-operations/active-anti-entropy/
+  - /riak/kv/2.9.0p3/using/cluster-operations/active-anti-entropy/
+  - /riak/kv/2.9.0p4/using/cluster-operations/active-anti-entropy/
+  - /riak/kv/latest/using/cluster-operations/active-anti-entropy/
 ---
 
-[config search#throttledelay]: {{<baseurl>}}riak/kv/2.9.0/configuring/search/#search-anti-entropy-throttle-$tier-delay
-[config search#throttle]: riak/kv/2.9.0/configuring/search/#search-anti-entropy-throttle
 
-Riak's [active anti-entropy](../../../learn/concepts/active-anti-entropy/) \(AAE) subsystem is a set of background processes that repair object inconsistencies stemming from missing or divergent object values across nodes. Riak operators can turn AAE on and off and configure and monitor its functioning.
+[config search#throttledelay]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/search/#search-anti-entropy-throttle-$tier-delay
+[config search#throttle]: riak/kv/2.9.0p5/configuring/search/#search-anti-entropy-throttle
 
-In Riak versions 2.9.0 and later, [TicTac AAE](/riak/kv/2.9.0/using/cluster-operations/TicTac-Active-Anti-Entropy) is included with releases as an option to be used in addition to or instead of traditional AAE in Riak.
+Riak's [active anti-entropy](../../../learn/concepts/active-anti-entropy/) /(AAE) subsystem is a set of background processes that repair object inconsistencies stemming from missing or divergent object values across nodes. Riak operators can turn AAE on and off and configure and monitor its functioning.
+
+In Riak versions 2.9.0 and later, [TicTac AAE]({{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/TicTac-Active-Anti-Entropy) is included with releases as an option to be used in addition to or instead of traditional AAE in Riak.
 
 ## Enabling Active Anti-Entropy
 

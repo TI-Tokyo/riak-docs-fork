@@ -2,39 +2,49 @@
 title: "Implementing Strong Consistency"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Implementing Strong Consistency"
     identifier: "configuring_strong_consistency"
     weight: 190
     parent: "configuring"
 toc: true
+aliases:
+  - /riak/2.9.0p5/configuring/strong-consistency/
+  - /riak/2.9.0/configuring/strong-consistency/
+  - /riak/kv/2.9.0/configuring/strong-consistency/
+  - /riak/kv/2.9.0p1/configuring/strong-consistency/
+  - /riak/kv/2.9.0p2/configuring/strong-consistency/
+  - /riak/kv/2.9.0p3/configuring/strong-consistency/
+  - /riak/kv/2.9.0p4/configuring/strong-consistency/
+  - /riak/kv/latest/configuring/strong-consistency/
 ---
 
-[apps strong consistency]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/strong-consistency
-[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/reference/strong-consistency
-[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/adding-removing-nodes
-[config reference#strong-cons]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#strong-consistency
-[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-cli
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/eventual-consistency
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/buckets
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/bucket-types
-[use admin riak-admin#ensemble]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#riak-admin-ensemble-status
-[use admin riak-admin]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin
-[config reference#advanced]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#advanced-configuration
-[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/cluster-capacity
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/strong-consistency
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties
-[concept causal context]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context
-[dev data types]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#active-anti-entropy-aae
-[cluster ops 2i]: {{<baseurl>}}riak/kv/2.9.0/using/reference/secondary-indexes
-[usage commit hooks]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/commit-hooks
-[cluster ops obj del]: {{<baseurl>}}riak/kv/2.9.0/using/reference/object-deletion
-[dev client libraries]: {{<baseurl>}}riak/kv/2.9.0/developing/client-libraries
+
+[apps strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/strong-consistency
+[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/strong-consistency
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/adding-removing-nodes
+[config reference#strong-cons]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#strong-consistency
+[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-cli
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/eventual-consistency
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[concept buckets]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/buckets
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/bucket-types
+[use admin riak-admin#ensemble]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#ensemble-status
+[use admin riak-admin]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin
+[config reference#advanced]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#advanced-configuration
+[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/cluster-capacity
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/strong-consistency
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties
+[concept causal context]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context
+[dev data types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types
+[glossary aae]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#active-anti-entropy-aae
+[cluster ops 2i]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/secondary-indexes
+[usage commit hooks]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/commit-hooks
+[cluster ops obj del]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/object-deletion
+[dev client libraries]: {{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries
 
 > **Please Note:**
 >
@@ -139,7 +149,7 @@ consistency enabled---we'll call the bucket type
 [commands][use admin riak-admin]:
 
 ```bash
-riak-admin bucket-type create consistent_and_fault_tolerant \
+riak-admin bucket-type create consistent_and_fault_tolerant /
   '{"props": {"consistent":true,"n_val":5}}'
 riak-admin bucket-type activate consistent_and_fault_tolerant
 ```
@@ -308,11 +318,11 @@ The following table provides a guide to `ensemble-status` output:
 
 Item | Meaning
 :----|:-------
-`Enabled` | Whether the consensus subsystem is enabled on the current node, i.e. whether the `strong_consistency` parameter in [`riak.conf`][config reference#strong-cons] has been set to `on`. If this reads `off` and you wish to enable strong consistency, see our documentation on <a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0/configuring/reference/#strong-consistency">enabling strong consistency</a>.
+`Enabled` | Whether the consensus subsystem is enabled on the current node, i.e. whether the `strong_consistency` parameter in [`riak.conf`][config reference#strong-cons] has been set to `on`. If this reads `off` and you wish to enable strong consistency, see our documentation on <a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0p5/configuring/reference/#strong-consistency">enabling strong consistency</a>.
 `Active` | Whether the consensus subsystem is active, i.e. whether there are enough nodes in the cluster to use strong consistency, which requires at least three nodes.
-`Ring Ready` | If `true`, then all of the [vnodes][glossary vnode] in the cluster have seen the current <a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0/learn/concepts/clusters/#the-ring">ring</a>, which means that the strong consistency subsystem can be used; if `false`, then the system is not yet ready. If you have recently added or removed one or more nodes to/from the cluster, it may take some time for `Ring Ready` to change.
-`Validation` | This will display `strong` if the `tree_validation` setting in <code><a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0/configuring/reference/#strong-consistency">riak.conf</a></code> has been set to `on` and `weak` if set to `off`.
-`Metadata` | This depends on the value of the `synchronous_tree_updates` setting in <code><a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0/configuring/reference/#strong-consistency">riak.conf</a></code>, which determines whether strong consistency-related Merkle trees are updated synchronously or asynchronously. If `best-effort replication (asynchronous)`, then `synchronous_tree_updates` is set to `false`; if `guaranteed replication (synchronous)` then `synchronous_tree_updates` is set to `true`.
+`Ring Ready` | If `true`, then all of the [vnodes][glossary vnode] in the cluster have seen the current <a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0p5/learn/concepts/clusters/#the-ring">ring</a>, which means that the strong consistency subsystem can be used; if `false`, then the system is not yet ready. If you have recently added or removed one or more nodes to/from the cluster, it may take some time for `Ring Ready` to change.
+`Validation` | This will display `strong` if the `tree_validation` setting in <code><a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0p5/configuring/reference/#strong-consistency">riak.conf</a></code> has been set to `on` and `weak` if set to `off`.
+`Metadata` | This depends on the value of the `synchronous_tree_updates` setting in <code><a href="https://www.tiot.jp/riak-docs/riak/kv/2.9.0p5/configuring/reference/#strong-consistency">riak.conf</a></code>, which determines whether strong consistency-related Merkle trees are updated synchronously or asynchronously. If `best-effort replication (asynchronous)`, then `synchronous_tree_updates` is set to `false`; if `guaranteed replication (synchronous)` then `synchronous_tree_updates` is set to `true`.
 `Ensembles` | This displays a list of all of the currently existing ensembles active in the cluster.<br /><ul><li><code>Ensemble</code> --- The ID of the ensemble</li><li><code>Quorum</code> --- The number of ensemble peers that are either leading or following</li><li><code>Nodes</code> --- The number of nodes currently online</li><li><code>Leader</code> --- The current leader node for the ensemble</li></ul>
 
 **Note**: The **root ensemble**, designated by `root` in the sample
@@ -596,7 +606,7 @@ is highly unlikely.
 
 ## Strong Consistency and Active Anti-Entropy
 
-Riak's [active anti-entropy][glossary aae] \(AAE) feature _can_ repair strongly
+Riak's [active anti-entropy][glossary aae] /(AAE) feature _can_ repair strongly
 consistent data. Although it is not necessary to use active anti-entropy
 if you are using strong consistency, we nonetheless recommend doing so.
 
@@ -651,12 +661,12 @@ latest version of strong consistency.
   non-strongly-consistent keys, it does present an issue for strong
   consistency due to the tombstone issues mentioned above.
 * **Secondary indexes not supported** --- Strongly consistent
-  operations do not support [secondary indexes][cluster ops 2i] \(2i) at this time. Furthermore, any other metadata
+  operations do not support [secondary indexes][cluster ops 2i] /(2i) at this time. Furthermore, any other metadata
   attached to objects, even if not related to 2i, will be silently
   ignored by Riak in strongly consistent buckets.
 * **Multi-Datacenter Replication not supported** --- At this time,
   consistent keys are *not* replicated across clusters using Multi-
-  Datacenter Replication \(MDC). This is because MDC Replication currently supports only eventually consistent replication across clusters. Mixing strongly
+  Datacenter Replication /(MDC). This is because MDC Replication currently supports only eventually consistent replication across clusters. Mixing strongly
   consistent data within a cluster with eventually consistent data
   between clusters is difficult to reason about from the perspective of
   applications. In a future version of Riak, we will add support for

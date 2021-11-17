@@ -2,32 +2,41 @@
 title: "HTTP List Resources"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "List Resources"
     identifier: "http_list_resources"
     weight: 112
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/list-resources
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/list-resources
+  - /riak/2.9.0p5/dev/references/http/list-resources
+  - /riak/kv/2.9.0p5/dev/references/http/list-resources
+  - /riak/2.9.0p5/developing/api/http/list-resources/
+  - /riak/2.9.0/developing/api/http/list-resources/
+  - /riak/kv/2.9.0/developing/api/http/list-resources/
+  - /riak/kv/2.9.0p1/developing/api/http/list-resources/
+  - /riak/kv/2.9.0p2/developing/api/http/list-resources/
+  - /riak/kv/2.9.0p3/developing/api/http/list-resources/
+  - /riak/kv/2.9.0p4/developing/api/http/list-resources/
+  - /riak/kv/latest/developing/api/http/list-resources/
 ---
+
 
 List available HTTP resources for the Riak node. This can be used by clients to
 automatically recognize the location of the resources for specific operations.
 
 The standard resources are:
 
-* `riak_kv_wm_buckets` - [Bucket Operations]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/#bucket-operations)
-* `riak_kv_wm_index` - [HTTP Secondary Indexes]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/secondary-indexes)
-* `riak_kv_wm_link_walker` - [HTTP Link Walking]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/link-walking)
-* `riak_kv_wm_mapred` - [HTTP MapReduce]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/mapreduce)
-* `riak_kv_wm_object`- [Object/Key Operations]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/#object-key-operations)
-* `riak_kv_wm_ping` - [HTTP Ping]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/ping)
-* `riak_kv_wm_props` - [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/set-bucket-props)
-* `riak_kv_wm_stats` - [HTTP Status]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/status)
+* `riak_kv_wm_buckets` - [Bucket Operations]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/#bucket-operations)
+* `riak_kv_wm_index` - [HTTP Secondary Indexes]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/secondary-indexes)
+* `riak_kv_wm_link_walker` - [HTTP Link Walking]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/link-walking)
+* `riak_kv_wm_mapred` - [HTTP MapReduce]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/mapreduce)
+* `riak_kv_wm_object`- [Object/Key Operations]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/#object-key-operations)
+* `riak_kv_wm_ping` - [HTTP Ping]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/ping)
+* `riak_kv_wm_props` - [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/set-bucket-props)
+* `riak_kv_wm_stats` - [HTTP Status]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/status)
 
 ## Request
 

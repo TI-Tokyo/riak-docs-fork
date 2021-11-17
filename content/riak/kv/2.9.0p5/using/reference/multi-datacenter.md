@@ -2,16 +2,26 @@
 title: "Multi-Datacenter Reference"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Multi-Datacenter"
     identifier: "managing_ref_mdc"
     weight: 113
     parent: "managing_ref"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/2.9.0p5/using/reference/multi-datacenter/
+  - /riak/2.9.0/using/reference/multi-datacenter/
+  - /riak/kv/2.9.0/using/reference/multi-datacenter/
+  - /riak/kv/2.9.0p1/using/reference/multi-datacenter/
+  - /riak/kv/2.9.0p2/using/reference/multi-datacenter/
+  - /riak/kv/2.9.0p3/using/reference/multi-datacenter/
+  - /riak/kv/2.9.0p4/using/reference/multi-datacenter/
+  - /riak/kv/latest/using/reference/multi-datacenter/
 ---
+
 
 [ref mdc stats]: ./statistics
 [ref mdc per bucket]: ./per-bucket-replication

@@ -2,28 +2,37 @@
 title: "Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Active Anti-Entropy"
     identifier: "learn_concepts_aae"
     weight: 100
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/theory/concepts/aae
-  - /riak-docs/riak/kv/2.9.0/theory/concepts/aae
+  - /riak/2.9.0p5/theory/concepts/aae
+  - /riak/kv/2.9.0p5/theory/concepts/aae
+  - /riak/2.9.0p5/learn/concepts/active-anti-entropy/
+  - /riak/2.9.0/learn/concepts/active-anti-entropy/
+  - /riak/kv/2.9.0/learn/concepts/active-anti-entropy/
+  - /riak/kv/2.9.0p1/learn/concepts/active-anti-entropy/
+  - /riak/kv/2.9.0p2/learn/concepts/active-anti-entropy/
+  - /riak/kv/2.9.0p3/learn/concepts/active-anti-entropy/
+  - /riak/kv/2.9.0p4/learn/concepts/active-anti-entropy/
+  - /riak/kv/latest/learn/concepts/active-anti-entropy/
 ---
 
-[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/v3-multi-datacenter
-[cluster ops aae]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/active-anti-entropy
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/eventual-consistency
-[config aae]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#active-anti-entropy
-[glossary read rep]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#read-repair
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
+
+[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/v3-multi-datacenter
+[cluster ops aae]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/active-anti-entropy
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/eventual-consistency
+[config aae]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#active-anti-entropy
+[glossary read rep]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#read-repair
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
 [Merkle tree]: http://en.wikipedia.org/wiki/Merkle_tree
-[usage search]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/search
+[usage search]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search
 
 
 In a [clustered][concept clusters], [eventually consistent][concept eventual consistency] system like Riak, conflicts between object replicas stored

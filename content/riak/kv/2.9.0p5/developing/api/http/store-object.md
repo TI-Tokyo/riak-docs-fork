@@ -2,18 +2,27 @@
 title: "HTTP Store Object"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Store Object"
     identifier: "http_store_object"
     weight: 106
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/store-object
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/store-object
+  - /riak/2.9.0p5/dev/references/http/store-object
+  - /riak/kv/2.9.0p5/dev/references/http/store-object
+  - /riak/2.9.0p5/developing/api/http/store-object/
+  - /riak/2.9.0/developing/api/http/store-object/
+  - /riak/kv/2.9.0/developing/api/http/store-object/
+  - /riak/kv/2.9.0p1/developing/api/http/store-object/
+  - /riak/kv/2.9.0p2/developing/api/http/store-object/
+  - /riak/kv/2.9.0p3/developing/api/http/store-object/
+  - /riak/kv/2.9.0p4/developing/api/http/store-object/
+  - /riak/kv/latest/developing/api/http/store-object/
 ---
+
 
 Stores an object under the specified bucket / key. Storing an object comes in
 two forms, depending on whether you want to use a key of your choosing, or let
@@ -40,8 +49,8 @@ object when read.
 * `X-Riak-Meta-*` - any additional metadata headers that should be stored with
 the object.
 * `X-Riak-Index-*` - index entries under which this object should be indexed.
-[Read more about Secondary Indexing]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/secondary-indexes)
-* `Link` - user and system-defined links to other resources. [Read more about Links.]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/link-walking)
+[Read more about Secondary Indexing]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/secondary-indexes)
+* `Link` - user and system-defined links to other resources. [Read more about Links.]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/link-walking)
 
 Optional headers (only valid on `PUT`):
 
@@ -85,14 +94,14 @@ Important headers:
 * `Location` a relative URL to the newly-created object (when submitting without
 a key)
 
-If `returnbody=true`, any of the response headers expected from [HTTP Fetch Object]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/fetch-object) may be present. Like when fetching the object, `300 Multiple Choices`
+If `returnbody=true`, any of the response headers expected from [HTTP Fetch Object]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/fetch-object) may be present. Like when fetching the object, `300 Multiple Choices`
 may be returned if siblings existed or were created as part of the operation,
 and the response can be dealt with similarly.
 
 ## Example: Storing Without Key
 
 ```curl
-$ curl -v http://127.0.0.1:8098/buckets/test/keys \
+$ curl -v http://127.0.0.1:8098/buckets/test/keys /
        -H "Content-Type: text/plain" -d 'this is a test'
 * About to connect() to 127.0.0.1 port 8098 (#0)
 *   Trying 127.0.0.1... connected

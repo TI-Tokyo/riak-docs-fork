@@ -57,7 +57,7 @@ This is an LTS (long term support) bugfix release that includes improvements to 
     * Logging has been added to clear and exchange trees for audit of administrative operations.
     * All above work captured in [yokozuna PR 704](https://github.com/basho/yokozuna/pull/704).
 
-* Additional [Cuttlefish parameters](/riak/kv/2.0.9/configuring/reference/#search) have been added to support the Riak search batching updates. These configs will allow you to set batching parameters based on your needs and have, in certain cases, led to significantly higher write throughput to Solr.
+* Additional [Cuttlefish parameters]({{<baseurl>}}riak/kv/2.0.9/configuring/reference/#search) have been added to support the Riak search batching updates. These configs will allow you to set batching parameters based on your needs and have, in certain cases, led to significantly higher write throughput to Solr.
     * [[yokozuna PR 704](https://github.com/basho/yokozuna/pull/704)]
 
 

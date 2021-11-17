@@ -2,9 +2,9 @@
 title: "Simple Network Management Protocol"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "SNMP"
     identifier: "managing_ref_snmp"
     weight: 107
@@ -12,9 +12,18 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/running/monitoring/snmp
-  - /riak-docs/riak/kv/2.9.0/ops/running/monitoring/snmp
+  - /riak/2.9.0p5/ops/running/monitoring/snmp
+  - /riak/kv/2.9.0p5/ops/running/monitoring/snmp
+  - /riak/2.9.0p5/using/reference/snmp/
+  - /riak/2.9.0/using/reference/snmp/
+  - /riak/kv/2.9.0/using/reference/snmp/
+  - /riak/kv/2.9.0p1/using/reference/snmp/
+  - /riak/kv/2.9.0p2/using/reference/snmp/
+  - /riak/kv/2.9.0p3/using/reference/snmp/
+  - /riak/kv/2.9.0p4/using/reference/snmp/
+  - /riak/kv/latest/using/reference/snmp/
 ---
+
 
 Riak Enterprise provided a built-in SNMP server that allows an external system, such as Hyperic, to query the Riak node for statistics such as the average get and put times as well as the number of puts and gets. This document only covers SNMP v2c support at this time which was the last supported version. After the release of Riak KV 2.2.3 Enterprise Edition, support for SNMP has been dropped. The below configuration examples are left for people analysing legacy settings and only work with the Enterprise Edition of Riak KV 2.2.3 or lower.
 
@@ -97,8 +106,8 @@ If you would like to query the OIDs associated with Riak you will need to refere
 This folder can be referenced in the snmpwalk command as follows:
 
 ```bash
-$ snmpwalk -OS -c public -v 2c -m ALL \
-  -M +/usr/lib64/riak/lib/riak_snmp-0.2/priv/mibs \
+$ snmpwalk -OS -c public -v 2c -m ALL /
+  -M +/usr/lib64/riak/lib/riak_snmp-0.2/priv/mibs /
   192.168.52.129:4000 RIAK 
 ```
 

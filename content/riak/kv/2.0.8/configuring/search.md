@@ -15,15 +15,15 @@ aliases:
   - /riak/kv/2.0.8/ops/advanced/configs/search/
 ---
 
-[usage search]: /riak/kv/2.0.8/developing/usage/search
-[usage search schema]: /riak/kv/2.0.8/developing/usage/search-schemas
-[usage search data types]: /riak/kv/2.0.8/developing/usage/searching-data-types
-[usage custom extractors]: /riak/kv/2.0.8/developing/usage/custom-extractors
-[cluster-ops aae throttle]: /riak/kv/2.0.8/using/cluster-operations/active-anti-entropy/#throttling
-[config reference]: /riak/kv/2.0.8/configuring/reference
-[config reference#search]: /riak/kv/2.0.8/configuring/reference/#search
-[glossary aae]: /riak/kv/2.0.8/learn/glossary/#active-anti-entropy-aae
-[security index]: /riak/kv/2.0.8/using/security/
+[usage search]: {{<baseurl>}}riak/kv/2.0.8/developing/usage/search
+[usage search schema]: {{<baseurl>}}riak/kv/2.0.8/developing/usage/search-schemas
+[usage search data types]: {{<baseurl>}}riak/kv/2.0.8/developing/usage/searching-data-types
+[usage custom extractors]: {{<baseurl>}}riak/kv/2.0.8/developing/usage/custom-extractors
+[cluster-ops aae throttle]: {{<baseurl>}}riak/kv/2.0.8/using/cluster-operations/active-anti-entropy/#throttling
+[config reference]: {{<baseurl>}}riak/kv/2.0.8/configuring/reference
+[config reference#search]: {{<baseurl>}}riak/kv/2.0.8/configuring/reference/#search
+[glossary aae]: {{<baseurl>}}riak/kv/2.0.8/learn/glossary/#active-anti-entropy-aae
+[security index]: {{<baseurl>}}riak/kv/2.0.8/using/security/
 
 [java se downloads]: http://www.oracle.com/technetwork/java/javase/downloads
 [java se docs]: http://www.oracle.com/technetwork/java/javase/documentation

@@ -3,18 +3,28 @@ title_supertext: "Multi Data Center Replication:"
 title: "System Tuning"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Multi-Datacenter Replication"
     identifier: "performance_multi_datacenter_tuning"
     weight: 110
     parent: "managing_performance"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/2.9.0p5/using/performance/multi-datacenter-tuning/
+  - /riak/2.9.0/using/performance/multi-datacenter-tuning/
+  - /riak/kv/2.9.0/using/performance/multi-datacenter-tuning/
+  - /riak/kv/2.9.0p1/using/performance/multi-datacenter-tuning/
+  - /riak/kv/2.9.0p2/using/performance/multi-datacenter-tuning/
+  - /riak/kv/2.9.0p3/using/performance/multi-datacenter-tuning/
+  - /riak/kv/2.9.0p4/using/performance/multi-datacenter-tuning/
+  - /riak/kv/latest/using/performance/multi-datacenter-tuning/
 ---
 
-[perf index]: {{<baseurl>}}riak/kv/2.9.0/using/performance
+
+[perf index]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance
 
 Depending on the size of your objects and your replication latency
 needs, you may need to configure your kernel settings to optimize

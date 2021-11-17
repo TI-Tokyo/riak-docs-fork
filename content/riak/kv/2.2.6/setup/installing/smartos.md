@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/installing/Installing-on-SmartOS
-  - /riak-docs/riak/kv/2.2.6/ops/building/installing/Installing-on-SmartOS
-  - /riak-docs/riak/2.2.6/installing/smartos/
-  - /riak-docs/riak/kv/2.2.6/installing/smartos/
+  - /riak/2.2.6/ops/building/installing/Installing-on-SmartOS
+  - /riak/kv/2.2.6/ops/building/installing/Installing-on-SmartOS
+  - /riak/2.2.6/installing/smartos/
+  - /riak/kv/2.2.6/installing/smartos/
 ---
 
 [install verify]: {{<baseurl>}}riak/kv/2.2.6/setup/installing/verify

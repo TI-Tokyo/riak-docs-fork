@@ -2,15 +2,25 @@
 title: "Developing with Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Developing"
     identifier: "developing"
     weight: 300
     pre: lambda
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/
+  - /riak/2.9.0/developing/
+  - /riak/kv/2.9.0/developing/
+  - /riak/kv/2.9.0p1/developing/
+  - /riak/kv/2.9.0p2/developing/
+  - /riak/kv/2.9.0p3/developing/
+  - /riak/kv/2.9.0p4/developing/
+  - /riak/kv/latest/developing/
 ---
+
 
 [getting started]: ../developing/getting-started
 [usage index]: ../developing/usage

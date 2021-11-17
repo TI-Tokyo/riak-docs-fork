@@ -3,26 +3,36 @@ title_supertext: "Getting Started:"
 title: "CRUD Operations with PHP"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "CRUD Operations"
     identifier: "getting_started_php_crud"
     weight: 100
     parent: "getting_started_php"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/getting-started/php/crud-operations/
+  - /riak/2.9.0/developing/getting-started/php/crud-operations/
+  - /riak/kv/2.9.0/developing/getting-started/php/crud-operations/
+  - /riak/kv/2.9.0p1/developing/getting-started/php/crud-operations/
+  - /riak/kv/2.9.0p2/developing/getting-started/php/crud-operations/
+  - /riak/kv/2.9.0p3/developing/getting-started/php/crud-operations/
+  - /riak/kv/2.9.0p4/developing/getting-started/php/crud-operations/
+  - /riak/kv/latest/developing/getting-started/php/crud-operations/
 ---
+
 
 ## Creating Objects In Riak
 First, let’s create a few objects and a bucket to keep them in.
 
 ```php
-$bucket = new Riak\Bucket('testBucket');
+$bucket = new Riak/Bucket('testBucket');
 
 $val1 = 1;
-$location1 = new Riak\Location('one', $bucket);
+$location1 = new Riak/Location('one', $bucket);
 
-$storeCommand1 = (new Command\Builder\StoreObject($riak))
+$storeCommand1 = (new Command/Builder/StoreObject($riak))
                     ->buildObject($val1)
                     ->atLocation($location1)
                     ->build();
@@ -33,9 +43,9 @@ In this first example we have stored the integer 1 with the lookup key of ‘one
 
 ```php
 $val2 = 'two';
-$location2 = new Riak\Location('two', $bucket);
+$location2 = new Riak/Location('two', $bucket);
 
-$storeCommand2 = (new Command\Builder\StoreObject($riak))
+$storeCommand2 = (new Command/Builder/StoreObject($riak))
                     ->buildObject($val2)
                     ->atLocation($location2)
                     ->build();
@@ -46,9 +56,9 @@ That was easy.  Finally, let’s store an associative array.  You will probably 
 
 ```php
 $val3 = ['myValue' => 3];
-$location3 = new Riak\Location('three', $bucket);
+$location3 = new Riak/Location('three', $bucket);
 
-$storeCommand3 = (new Command\Builder\StoreObject($riak))
+$storeCommand3 = (new Command/Builder/StoreObject($riak))
                     ->buildJsonObject($val3)
                     ->atLocation($location3)
                     ->build();
@@ -59,17 +69,17 @@ $storeCommand3->execute();
 Now that we have a few objects stored, let’s retrieve them and make sure they contain the values we expect.
 
 ```php
-$response1 = (new Command\Builder\FetchObject($riak))
+$response1 = (new Command/Builder/FetchObject($riak))
                 ->atLocation($location1)
                 ->build()
                 ->execute();
 
-$response2 = (new Command\Builder\FetchObject($riak))
+$response2 = (new Command/Builder/FetchObject($riak))
                 ->atLocation($location2)
                 ->build()
                 ->execute();
 
-$response3 = (new Command\Builder\FetchObject($riak))
+$response3 = (new Command/Builder/FetchObject($riak))
                 ->atLocation($location3)
                 ->withDecodeAsAssociative()
                 ->build()
@@ -95,7 +105,7 @@ $data3 = $object3->getData();
 $data3['myValue'] = 42;
 $object3 = $object3->setData(json_encode($data3));
 
-$updateCommand = (new Command\Builder\StoreObject($riak))
+$updateCommand = (new Command/Builder/StoreObject($riak))
     ->withObject($object3)
     ->atLocation($location3)
     ->build();
@@ -110,9 +120,9 @@ To store it we use the same pattern as before, but this time we use the [`withOb
 As a last step, we’ll demonstrate how to delete data.  We just build a [Delete Command](http://basho.github.io/riak-php-client/class-Basho.Riak.Command.Object.Delete.html) from a [DeleteObject Builder](http://basho.github.io/riak-php-client/class-Basho.Riak.Command.Builder.DeleteObject.html), and execute it.  
 
 ```php
-(new Command\Builder\DeleteObject($riak))->atLocation($location1)->build()->execute();
-(new Command\Builder\DeleteObject($riak))->atLocation($location2)->build()->execute();
-(new Command\Builder\DeleteObject($riak))->atLocation($location3)->build()->execute();
+(new Command/Builder/DeleteObject($riak))->atLocation($location1)->build()->execute();
+(new Command/Builder/DeleteObject($riak))->atLocation($location2)->build()->execute();
+(new Command/Builder/DeleteObject($riak))->atLocation($location3)->build()->execute();
 ```
 
 ### Working With Complex Objects
@@ -139,9 +149,9 @@ $book->copiesOwned = 3;
 Ok, so we have some information about our Moby Dick collection that we want to save.  Storing this to Riak should look familiar by now:
 
 ```php
-$bookLocation = new Riak\Location($book->isbn, new Riak\Bucket('books'));
+$bookLocation = new Riak/Location($book->isbn, new Riak/Bucket('books'));
 
-$storeCommand1 = (new Command\Builder\StoreObject($riak))
+$storeCommand1 = (new Command/Builder/StoreObject($riak))
     ->buildJsonObject($book)
     ->atLocation($bookLocation)
     ->build();
@@ -152,7 +162,7 @@ $storeCommand1->execute();
 Some of you may be thinking “But how does the Riak client encode/decode my object”?  If we fetch the binary version of our book back and print it as a string, we shall know:
 
 ```php
-$fetchBookResponse = (new Command\Builder\FetchObject($riak))
+$fetchBookResponse = (new Command/Builder/FetchObject($riak))
                         ->atLocation($bookLocation)
                         ->build()
                         ->execute();
@@ -171,7 +181,7 @@ JSON!  The library encodes PHP objects as JSON strings when you use the [`buildJ
 Now that we’ve ruined the magic of object encoding, let’s clean up our mess:
 
 ```php
-(new Command\Builder\DeleteObject($riak))
+(new Command/Builder/DeleteObject($riak))
     ->atLocation($bookLocation)
     ->build()
     ->execute();
@@ -179,4 +189,4 @@ Now that we’ve ruined the magic of object encoding, let’s clean up our mess:
 
 ## Next Steps
 
-More complex use cases can be composed from these initial create, read, update, and delete (CRUD) operations. [In the next chapter]({{<baseurl>}}riak/kv/2.9.0/developing/getting-started/php/querying) we will look at how to store and query more complicated and interconnected data, such as documents. 
+More complex use cases can be composed from these initial create, read, update, and delete (CRUD) operations. [In the next chapter]({{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/php/querying) we will look at how to store and query more complicated and interconnected data, such as documents. 

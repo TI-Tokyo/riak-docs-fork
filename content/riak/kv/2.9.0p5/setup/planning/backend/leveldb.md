@@ -2,24 +2,33 @@
 title: "LevelDB"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "LevelDB"
     identifier: "planning_backend_leveldb"
     weight: 101
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/advanced/backends/leveldb/
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/backends/leveldb/
+  - /riak/2.9.0p5/ops/advanced/backends/leveldb/
+  - /riak/kv/2.9.0p5/ops/advanced/backends/leveldb/
+  - /riak/2.9.0p5/setup/planning/backend/leveldb/
+  - /riak/2.9.0/setup/planning/backend/leveldb/
+  - /riak/kv/2.9.0/setup/planning/backend/leveldb/
+  - /riak/kv/2.9.0p1/setup/planning/backend/leveldb/
+  - /riak/kv/2.9.0p2/setup/planning/backend/leveldb/
+  - /riak/kv/2.9.0p3/setup/planning/backend/leveldb/
+  - /riak/kv/2.9.0p4/setup/planning/backend/leveldb/
+  - /riak/kv/latest/setup/planning/backend/leveldb/
 ---
 
+
 [upgrade 2.0#upgrading-leveldB]: {{<baseurl>}}
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
-[perf index]: {{<baseurl>}}riak/kv/2.9.0/using/performance
-[config reference#aae]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#active-anti-entropy
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
+[perf index]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance
+[config reference#aae]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#active-anti-entropy
 
 > **Note on upgrading to 2.0**
 >

@@ -3,30 +3,39 @@ title_supertext: "Installing"
 title: "Riak KV From Source"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Installing From Source"
     identifier: "installing_source"
     weight: 310
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/Installing-Riak-from-Source
-  - /riak-docs/riak/kv/2.9.0/ops/building/Installing-Riak-from-Source
-  - /riak-docs/riak/2.9.0/installing/source/
-  - /riak-docs/riak/kv/2.9.0/installing/source/
+  - /riak/2.9.0p5/ops/building/Installing-Riak-from-Source
+  - /riak/kv/2.9.0p5/ops/building/Installing-Riak-from-Source
+  - /riak/2.9.0p5/installing/source/
+  - /riak/kv/2.9.0p5/installing/source/
+  - /riak/2.9.0p5/setup/installing/source/
+  - /riak/2.9.0/setup/installing/source/
+  - /riak/kv/2.9.0/setup/installing/source/
+  - /riak/kv/2.9.0p1/setup/installing/source/
+  - /riak/kv/2.9.0p2/setup/installing/source/
+  - /riak/kv/2.9.0p3/setup/installing/source/
+  - /riak/kv/2.9.0p4/setup/installing/source/
+  - /riak/kv/latest/setup/installing/source/
 ---
 
 
 
-[install source erlang]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source/erlang
-[downloads]: {{<baseurl>}}riak/kv/2.9.0/downloads/
-[install debian & ubuntu#source]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/debian-ubuntu/#installing-from-source
-[install freebsd#source]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/freebsd/#installing-from-source
-[install mac osx#source]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/mac-osx/#installing-from-source
-[install rhel & centos#source]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/rhel-centos/#installing-from-source
-[install verify]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/verify
+
+[install source erlang]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source/erlang
+[downloads]: {{<baseurl>}}riak/kv/2.9.0p5/downloads/
+[install debian & ubuntu#source]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/debian-ubuntu/#installing-from-source
+[install freebsd#source]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/freebsd/#installing-from-source
+[install mac osx#source]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/mac-osx/#installing-from-source
+[install rhel & centos#source]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/rhel-centos/#installing-from-source
+[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
 
 Riak should be installed from source if you are building on a platform
 for which a package does not exist or if you are interested in
@@ -60,7 +69,7 @@ or cloned source.
 Download the Riak source package from the [Download Center][downloads] and build:
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.0/riak-2.9.0.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.2/2.9.0p5/riak-2.9.0.tar.gz
 tar zxvf riak-2.9.0.tar.gz
 cd riak-2.9.0
 make locked-deps

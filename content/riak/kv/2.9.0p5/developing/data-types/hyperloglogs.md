@@ -3,20 +3,29 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: HyperLogLogs"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "HyperLogLogs"
     identifier: "data_types_hyperloglogs"
     weight: 100
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/data-types/hyperloglogs
-  - /riak-docs/riak/kv/2.9.0/dev/using/data-types/hyperloglogs
-  - /riak-docs/riak/2.9.0/dev/data-modeling/data-types/hyperloglogs
-  - /riak-docs/riak/kv/2.9.0/dev/data-modeling/data-types/hyperloglogs
+  - /riak/2.9.0p5/dev/using/data-types/hyperloglogs
+  - /riak/kv/2.9.0p5/dev/using/data-types/hyperloglogs
+  - /riak/2.9.0p5/dev/data-modeling/data-types/hyperloglogs
+  - /riak/kv/2.9.0p5/dev/data-modeling/data-types/hyperloglogs
+  - /riak/2.9.0p5/developing/data-types/hyperloglogs/
+  - /riak/2.9.0/developing/data-types/hyperloglogs/
+  - /riak/kv/2.9.0/developing/data-types/hyperloglogs/
+  - /riak/kv/2.9.0p1/developing/data-types/hyperloglogs/
+  - /riak/kv/2.9.0p2/developing/data-types/hyperloglogs/
+  - /riak/kv/2.9.0p3/developing/data-types/hyperloglogs/
+  - /riak/kv/2.9.0p4/developing/data-types/hyperloglogs/
+  - /riak/kv/latest/developing/data-types/hyperloglogs/
 ---
+
 
 The examples in this section will show you how to use hyperloglogs on their own.
 
@@ -124,7 +133,7 @@ import (
 ```
 
 ```php
-$command = (new Command\Builder\FetchHll($riak_client))
+$command = (new Command/Builder/FetchHll($riak_client))
     ->buildLocation('<key>', '<bucket>', 'hlls')
     ->build();
 ```
@@ -195,7 +204,7 @@ hll = Hll(bucket, key)
 // Note that "hlls" is just an example HLL bucket type name used
 // in these examples
 
-$command = (new Command\Builder\UpdateHll($riak_client))
+$command = (new Command/Builder/UpdateHll($riak_client))
     ->add('gosabres poked you.')
     ->add('phprocks viewed your profile.')
     ->add('phprocks started following you.')
@@ -299,7 +308,7 @@ if (response.NotFound)
 ```
 
 ```php
-$command = (new Command\Builder\FetchHll($riak_client))
+$command = (new Command/Builder/FetchHll($riak_client))
     ->buildLocation('darkness', 'hello', 'hlls')
     ->build();
 
@@ -369,7 +378,7 @@ myhll.store()
 ```
 
 ```php
-$command = (new Command\Builder\UpdateHll($riak_client))
+$command = (new Command/Builder/UpdateHll($riak_client))
     ->add('Jokes')
     ->add('Are')
     ->add('Better')
@@ -385,8 +394,8 @@ $response = $command->execute();
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/hlls/buckets/hello/datatypes/darkness \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/hlls/buckets/hello/datatypes/darkness /
+  -H "Content-Type: application/json" /
   -d '{"add_all":["my", "old", "friend"]}'
 ```
 
@@ -482,7 +491,7 @@ RiakResult rslt = client.Execute(update);
 ```
 
 ```php
-$command = (new Command\Builder\UpdateHll($riak_client))
+$command = (new Command/Builder/UpdateHll($riak_client))
     ->add('Jokes')
     ->add('Are')
     ->add('Better')
@@ -612,7 +621,7 @@ else
 ```
 
 ```php
-$command = (new Command\Builder\FetchHll($riak_client))
+$command = (new Command/Builder/FetchHll($riak_client))
     ->buildLocation('darkness', 'hello', 'hlls')
     ->build();
 

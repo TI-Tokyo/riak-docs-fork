@@ -12,7 +12,7 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/kv/2.2.6/add-ons/redis/get-started-with-rra
+  - /riak/kv/2.2.6/add-ons/redis/get-started-with-rra
 ---
 
 [addon redis develop]: ../developing-rra/

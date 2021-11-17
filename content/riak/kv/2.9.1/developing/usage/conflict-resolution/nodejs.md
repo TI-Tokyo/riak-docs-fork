@@ -12,8 +12,8 @@ menu:
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/conflict-resolution/nodejs
-  - /riak-docs/riak/kv/2.9.1/dev/using/conflict-resolution/nodejs
+  - /riak/2.9.1/dev/using/conflict-resolution/nodejs
+  - /riak/kv/2.9.1/dev/using/conflict-resolution/nodejs
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that

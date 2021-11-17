@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/yz-index-put
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/yz-index-put
+  - /riak/2.9.1/dev/references/protocol-buffers/yz-index-put
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/yz-index-put
 ---
 
 Create a new index or modify an existing index.

@@ -11,8 +11,8 @@ menu:
     parent: "developing_apis"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http
-  - /riak-docs/riak/kv/2.9.1/dev/references/http
+  - /riak/2.9.1/dev/references/http
+  - /riak/kv/2.9.1/dev/references/http
 ---
 
 Riak has a rich, full-featured HTTP 1.1 API. This is an overview of the

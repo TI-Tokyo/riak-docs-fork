@@ -2,18 +2,27 @@
 title: "Riak KV Configuration Reference"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Configuration Reference"
     identifier: "configuring_reference"
     weight: 140
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/advanced/configs/configuration-files/
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/configs/configuration-files/
+  - /riak/2.9.0p5/ops/advanced/configs/configuration-files/
+  - /riak/kv/2.9.0p5/ops/advanced/configs/configuration-files/
+  - /riak/2.9.0p5/configuring/reference/
+  - /riak/2.9.0/configuring/reference/
+  - /riak/kv/2.9.0/configuring/reference/
+  - /riak/kv/2.9.0p1/configuring/reference/
+  - /riak/kv/2.9.0p2/configuring/reference/
+  - /riak/kv/2.9.0p3/configuring/reference/
+  - /riak/kv/2.9.0p4/configuring/reference/
+  - /riak/kv/latest/configuring/reference/
 ---
+
 
 [concept clusters]: ../../learn/concepts/clusters
 [plan backend bitcask]: ../../setup/planning/backend/bitcask
@@ -203,7 +212,7 @@ executables are stored.</td>
 <tr>
 <td><code>platform_data_dir</code></td>
 <td>The directory in which Riak stores its storage backend data, as well
-as <a href="http://docs.basho.com/riak/kv/2.9.0/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
+as <a href="{{< baseurl >}}riak/kv/2.9.0p5/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
 <td><code>./data</code></td>
 </tr>
 
@@ -1582,7 +1591,7 @@ abandons the leader (in milliseconds). This must be set greater than the
 <tr>
 <td><code>alive_tokens</code></td>
 <td>Determines the number of ticks the leader will wait to hear from its
-associated <a href="http://docs.basho.com/riak/kv/2.9.0/learn/glossary/#vnode">vnode</a> before assuming that the vnode
+associated <a href="{{< baseurl >}}riak/kv/2.9.0p5/learn/glossary/#vnode">vnode</a> before assuming that the vnode
 is unhealthy and stepping down as leader. If the vnode does not respond
 to the leader before <code>ensemble_tick</code> *
 <code>alive_tokens</code> milliseconds have elapsed, the leader will
@@ -1731,8 +1740,8 @@ package) and in R14B04 via a custom repository and branch.</td>
 <tr>
 <td><code>vnode_management_timer</code></td>
 <td>Sets the frequency with which <a
-href="http://docs.basho.com/riak/kv/2.9.0/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
-href="http://docs.basho.com/riak/kv/2.9.0/learn/glossary/#hinted-handoff">handoff</a> between
+href="{{< baseurl >}}riak/kv/2.9.0p5/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
+href="{{< baseurl >}}riak/kv/2.9.0p5/learn/glossary/#hinted-handoff">handoff</a> between
 this node and other nodes in the cluster.</td>
 <td><code>10s</code> (10 seconds)</td>
 </tr>
@@ -1916,7 +1925,7 @@ only in Riak KV Enterprise Edition 2.0 and later as well as Riak KV 2.9.0 onward
 
 #### Upgrading Riak Search with `advanced.config`
 
-If you are upgrading to Riak 2.x and wish to upgrade to the new [Riak Search][use ref search]\(codename Yokozuna), you will need to enable
+If you are upgrading to Riak 2.x and wish to upgrade to the new [Riak Search][use ref search]/(codename Yokozuna), you will need to enable
 legacy Search while the upgrade is underway. You can add the following
 snippet to your `advanced.config` configuration to do so:
 

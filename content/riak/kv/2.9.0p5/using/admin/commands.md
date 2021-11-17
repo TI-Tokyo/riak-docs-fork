@@ -2,24 +2,33 @@
 title: "Cluster Administration Commands"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Cluster Admin Commands"
     identifier: "cluster_admin_commands"
     weight: 100
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/running/cluster-admin
-  - /riak-docs/riak/kv/2.9.0/ops/running/cluster-admin
+  - /riak/2.9.0p5/ops/running/cluster-admin
+  - /riak/kv/2.9.0p5/ops/running/cluster-admin
+  - /riak/2.9.0p5/using/admin/commands/
+  - /riak/2.9.0/using/admin/commands/
+  - /riak/kv/2.9.0/using/admin/commands/
+  - /riak/kv/2.9.0p1/using/admin/commands/
+  - /riak/kv/2.9.0p2/using/admin/commands/
+  - /riak/kv/2.9.0p3/using/admin/commands/
+  - /riak/kv/2.9.0p4/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
 ---
 
-[use admin riak-admin#cluster]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#cluster
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
-[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/adding-removing-nodes
-[use admin riak-admin#cluster-plan]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#cluster-plan
-[use admin riak-admin#cluster-commit]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#cluster-commit
+
+[use admin riak-admin#cluster]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#cluster
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/adding-removing-nodes
+[use admin riak-admin#cluster-plan]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#cluster-plan
+[use admin riak-admin#cluster-commit]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#cluster-commit
 
 
 This document explains usage of the [`riak-admin cluster`][use admin riak-admin#cluster] interface, which enables you to perform a wide

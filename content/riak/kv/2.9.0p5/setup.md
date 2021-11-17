@@ -2,15 +2,25 @@
 title: "Setup Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Setup"
     identifier: "setup_index"
     weight: 110
     pre: install
 toc: false
+aliases:
+  - /riak/2.9.0p5/setup/
+  - /riak/2.9.0/setup/
+  - /riak/kv/2.9.0/setup/
+  - /riak/kv/2.9.0p1/setup/
+  - /riak/kv/2.9.0p2/setup/
+  - /riak/kv/2.9.0p3/setup/
+  - /riak/kv/2.9.0p4/setup/
+  - /riak/kv/latest/setup/
 ---
+
 
 [plan index]: ../setup/planning
 [install index]: ../setup/installing

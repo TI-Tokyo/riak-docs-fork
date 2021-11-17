@@ -13,7 +13,6 @@ toc: true
 aliases:
   - /riak/2.1.4/dev/references/protocol-buffers/coverage-queries
   - /riak/kv/2.1.4/dev/references/protocol-buffers/coverage-queries
-canonical_link: "https://docs.basho.com/riak/kv/latest/developing/api/protocol-buffers/coverage-queries"
 ---
 
 Prepare for parallelizable

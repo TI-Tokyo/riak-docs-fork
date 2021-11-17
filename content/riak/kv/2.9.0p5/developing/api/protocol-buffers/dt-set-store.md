@@ -2,21 +2,30 @@
 title: "PBC Data Type Set Store"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Data Type Set Store"
     identifier: "pbc_dt_set_store"
     weight: 118
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers/dt-set-store
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers/dt-set-store
+  - /riak/2.9.0p5/dev/references/protocol-buffers/dt-set-store
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers/dt-set-store
+  - /riak/2.9.0p5/developing/api/protocol-buffers/dt-set-store/
+  - /riak/2.9.0/developing/api/protocol-buffers/dt-set-store/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/dt-set-store/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/dt-set-store/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/dt-set-store/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/dt-set-store/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/dt-set-store/
+  - /riak/kv/latest/developing/api/protocol-buffers/dt-set-store/
 ---
 
+
 An operation to update a set, either on its own (at the bucket/key
-level) or [inside of a map]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/dt-map-store).
+level) or [inside of a map]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/dt-map-store).
 
 ## Request
 

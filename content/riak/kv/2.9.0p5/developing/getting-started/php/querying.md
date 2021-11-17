@@ -3,18 +3,27 @@ title_supertext: "Getting Started:"
 title: "Querying with PHP"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Querying"
     identifier: "getting_started_php_query"
     weight: 101
     parent: "getting_started_php"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/querying-php
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/querying-php
+  - /riak/2.9.0p5/dev/taste-of-riak/querying-php
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/querying-php
+  - /riak/2.9.0p5/developing/getting-started/php/querying/
+  - /riak/2.9.0/developing/getting-started/php/querying/
+  - /riak/kv/2.9.0/developing/getting-started/php/querying/
+  - /riak/kv/2.9.0p1/developing/getting-started/php/querying/
+  - /riak/kv/2.9.0p2/developing/getting-started/php/querying/
+  - /riak/kv/2.9.0p3/developing/getting-started/php/querying/
+  - /riak/kv/2.9.0p4/developing/getting-started/php/querying/
+  - /riak/kv/latest/developing/getting-started/php/querying/
 ---
+
 
 ## A Quick Note on Querying and Schemas
 _Schemas_? Yes we said that correctly, S-C-H-E-M-A-S. It's not a dirty word.  
@@ -39,12 +48,12 @@ The simplest way to split up data would be to use the same identity key across d
 
 include_once 'vendor/autoload.php';
 
-use Basho\Riak;
-use Basho\Riak\Location;
-use Basho\Riak\Node;
-use Basho\Riak\Command;
+use Basho/Riak;
+use Basho/Riak/Location;
+use Basho/Riak/Node;
+use Basho/Riak/Command;
 
-$node = (new Node\Builder)
+$node = (new Node/Builder)
     ->atHost('127.0.0.1')
     ->onPort(8098)
     ->build();
@@ -196,7 +205,7 @@ unset($order);
 
 
 // Starting Client
-$node = (new Node\Builder)
+$node = (new Node/Builder)
     ->atHost('127.0.0.1')
     ->onPort(8098)
     ->build();
@@ -204,19 +213,19 @@ $node = (new Node\Builder)
 $riak = new Riak([$node]);
 
 // Creating Buckets
-$customersBucket = new Riak\Bucket('Customers');
-$ordersBucket = new Riak\Bucket('Orders');
-$orderSummariesBucket = new Riak\Bucket('OrderSummaries');
+$customersBucket = new Riak/Bucket('Customers');
+$ordersBucket = new Riak/Bucket('Orders');
+$orderSummariesBucket = new Riak/Bucket('OrderSummaries');
 
 // Storing Data
-$storeCustomer = (new Command\Builder\StoreObject($riak))
+$storeCustomer = (new Command/Builder/StoreObject($riak))
     ->buildJsonObject($customer)
     ->atLocation(new Location($customer->customerId, $customersBucket))
     ->build();
 $storeCustomer->execute();
 
 foreach ($orders as $order) {
-    $storeOrder = (new Command\Builder\StoreObject($riak))
+    $storeOrder = (new Command/Builder/StoreObject($riak))
         ->buildJsonObject($order)
         ->atLocation(new Location($order->orderId, $ordersBucket))
         ->build();
@@ -224,7 +233,7 @@ foreach ($orders as $order) {
 }
 unset($order);
 
-$storeSummary = (new Command\Builder\StoreObject($riak))
+$storeSummary = (new Command/Builder/StoreObject($riak))
     ->buildJsonObject($orderSummary)
     ->atLocation(new Location($orderSummary->customerId, $orderSummariesBucket))
     ->build();
@@ -235,16 +244,16 @@ $storeSummary->execute();
 
 ```php
 // Fetching related data by shared key
-$fetched_customer = (new Command\Builder\FetchObject($riak))
+$fetched_customer = (new Command/Builder/FetchObject($riak))
                     ->atLocation(new Location('1', $customersBucket))
                     ->build()->execute()->getObject()->getData();
 
 $fetched_customer->orderSummary =
-    (new Command\Builder\FetchObject($riak))
+    (new Command/Builder/FetchObject($riak))
     ->atLocation(new Location('1', $orderSummariesBucket))
     ->build()->execute()->getObject()->getData();
 
-print("Customer with OrderSummary data: \n");
+print("Customer with OrderSummary data: /n");
 print_r($fetched_customer);
 ```
 
@@ -298,9 +307,9 @@ While this pattern is very easy and extremely fast with respect to queries and c
 ## Secondary Indexes
 
 {{% note %}}
-Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask) does not support secondary indexes.
+Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask) does not support secondary indexes.
 
-See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
+See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
 {{% /note %}}
 
 If you're coming from a SQL world, Secondary Indexes (2i) are a lot like SQL indexes.  They are a way to quickly lookup objects based on a secondary key, without scanning through the whole dataset.  This makes it very easy to find groups of related data by values, or even ranges of values.  To properly show this off, we will now add some more data to our application, and add some secondary index entries at the same time.
@@ -310,7 +319,7 @@ If you're coming from a SQL world, Secondary Indexes (2i) are a lot like SQL ind
 $keys = array(1,2,3);
 foreach ($keys as $key) {
     $orderLocation = new Location($key, $ordersBucket);
-    $orderObject = (new Command\Builder\FetchObject($riak))
+    $orderObject = (new Command/Builder/FetchObject($riak))
                     ->atLocation($orderLocation)
                     ->build()->execute()->getObject();
 
@@ -319,7 +328,7 @@ foreach ($keys as $key) {
     $orderObject->addValueToIndex('SalespersonId_int', $order->salespersonId);
     $orderObject->addValueToIndex('OrderDate_bin', $order->orderDate);
 
-    $storeOrder = (new Command\Builder\StoreObject($riak))
+    $storeOrder = (new Command/Builder/StoreObject($riak))
                     ->withObject($orderObject)
                     ->atLocation($orderLocation)
                     ->build();
@@ -334,13 +343,13 @@ Now let's find all of Jane Appleseed's processed orders, we'll lookup the orders
 
 ```php
 // Query for orders where the SalespersonId int index is set to 9000
-$fetchIndex = (new Command\Builder\QueryIndex($riak))
+$fetchIndex = (new Command/Builder/QueryIndex($riak))
                 ->inBucket($ordersBucket)
                 ->withIndexName('SalespersonId_int')
                 ->withScalarValue(9000)->build();
 $janes_orders = $fetchIndex->execute()->getResults();
 
-print("\n\nJane's Orders: \n");
+print("/n/nJane's Orders: /n");
 print_r($janes_orders);
 ```
 
@@ -362,7 +371,7 @@ Now, let's say that the VP of Sales wants to know how many orders came in during
 ```php
 // Query for orders where the OrderDate bin index is
 // between 2013-10-01 and 2013-10-31
-$fetchOctoberOrders = (new Command\Builder\QueryIndex($riak))
+$fetchOctoberOrders = (new Command/Builder/QueryIndex($riak))
                         ->inBucket($ordersBucket)
                         ->withIndexName('OrderDate_bin')
                         ->withRangeValue('2013-10-01','2013-10-31')
@@ -371,7 +380,7 @@ $fetchOctoberOrders = (new Command\Builder\QueryIndex($riak))
 
 $octobers_orders = $fetchOctoberOrders->execute()->getResults();
 
-print("\n\nOctober's Orders: \n");
+print("/n/nOctober's Orders: /n");
 print_r($octobers_orders);
 ?>
 ```

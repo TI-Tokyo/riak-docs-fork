@@ -2,15 +2,25 @@
 title: "Bucket Types"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Bucket Types"
     identifier: "cluster_operations_bucket_types"
     weight: 104
     parent: "managing_cluster_operations"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/cluster-operations/bucket-types/
+  - /riak/2.9.0/using/cluster-operations/bucket-types/
+  - /riak/kv/2.9.0/using/cluster-operations/bucket-types/
+  - /riak/kv/2.9.0p1/using/cluster-operations/bucket-types/
+  - /riak/kv/2.9.0p2/using/cluster-operations/bucket-types/
+  - /riak/kv/2.9.0p3/using/cluster-operations/bucket-types/
+  - /riak/kv/2.9.0p4/using/cluster-operations/bucket-types/
+  - /riak/kv/latest/using/cluster-operations/bucket-types/
 ---
+
 
 Buckets are essentially a flat namespace in Riak. They allow the same
 key name to exist in multiple buckets and enable you to apply
@@ -24,7 +34,7 @@ words, buckets using the `default` bucket type are free. More on that in the
 next section.
 {{% /note %}}
 
-In Riak versions 2.0 and later, Basho suggests that you [use bucket types]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types) to namespace and configure all buckets you use. Bucket types have a lower overhead within the cluster than the
+In Riak versions 2.0 and later, Basho suggests that you [use bucket types]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types) to namespace and configure all buckets you use. Bucket types have a lower overhead within the cluster than the
 default bucket namespace but require an additional setup step on the
 command line.
 
@@ -43,8 +53,8 @@ And this step applies the index to the `cats` bucket, which bears the
 `animals` bucket type we just created and activated:
 
 ```curl
-curl -XPUT $RIAK_HOST/types/animals/buckets/cats/props \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/props /
+     -H 'Content-Type: application/json' /
      -d '{"props":{"search_index":"famous"}}'
 ```
 

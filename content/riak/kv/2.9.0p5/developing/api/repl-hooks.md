@@ -3,9 +3,9 @@ title_supertext: "Riak Multi-Datacenter Replication:"
 title: "Hooks API"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Multi-Datacenter REPL Hooks API"
     identifier: "apis_repl_hooks"
     weight: 100
@@ -13,9 +13,18 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/v2/hooks
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/v2/hooks
+  - /riak/2.9.0p5/ops/mdc/v2/hooks
+  - /riak/kv/2.9.0p5/ops/mdc/v2/hooks
+  - /riak/2.9.0p5/developing/api/repl-hooks/
+  - /riak/2.9.0/developing/api/repl-hooks/
+  - /riak/kv/2.9.0/developing/api/repl-hooks/
+  - /riak/kv/2.9.0p1/developing/api/repl-hooks/
+  - /riak/kv/2.9.0p2/developing/api/repl-hooks/
+  - /riak/kv/2.9.0p3/developing/api/repl-hooks/
+  - /riak/kv/2.9.0p4/developing/api/repl-hooks/
+  - /riak/kv/latest/developing/api/repl-hooks/
 ---
+
 [object]: https://github.com/basho/riak_kv/blob/master/src/riak_object.erl 
 
 This document is a guide to developing extensions for Riak's

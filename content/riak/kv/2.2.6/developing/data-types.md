@@ -12,10 +12,10 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/using/data-types
-  - /riak-docs/riak/kv/2.2.6/dev/using/data-types
-  - /riak-docs/riak/2.2.6/dev/data-modeling/data-types
-  - /riak-docs/riak/kv/2.2.6/dev/data-modeling/data-types
+  - /riak/2.2.6/dev/using/data-types
+  - /riak/kv/2.2.6/dev/using/data-types
+  - /riak/2.2.6/dev/data-modeling/data-types
+  - /riak/kv/2.2.6/dev/data-modeling/data-types
 ---
 
 [wiki crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#Others

@@ -2,15 +2,25 @@
 title: "V3 Multi-Datacenter Replication Reference"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "V3 Replication"
     identifier: "managing_ref_v3"
     weight: 114
     parent: "managing_ref"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/reference/v3-multi-datacenter/
+  - /riak/2.9.0/using/reference/v3-multi-datacenter/
+  - /riak/kv/2.9.0/using/reference/v3-multi-datacenter/
+  - /riak/kv/2.9.0p1/using/reference/v3-multi-datacenter/
+  - /riak/kv/2.9.0p2/using/reference/v3-multi-datacenter/
+  - /riak/kv/2.9.0p3/using/reference/v3-multi-datacenter/
+  - /riak/kv/2.9.0p4/using/reference/v3-multi-datacenter/
+  - /riak/kv/latest/using/reference/v3-multi-datacenter/
 ---
+
 
 [v3 mdc arch]: ./architecture
 [v3 mdc aae]: ./aae

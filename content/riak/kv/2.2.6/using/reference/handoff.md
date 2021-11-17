@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/handoff/
-  - /riak-docs/riak/kv/2.2.6/ops/running/handoff/
+  - /riak/2.2.6/ops/running/handoff/
+  - /riak/kv/2.2.6/ops/running/handoff/
 ---
 
 [cluster ops handoff]: {{<baseurl>}}riak/kv/2.2.6/using/cluster-operations/handoff

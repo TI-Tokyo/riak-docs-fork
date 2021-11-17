@@ -11,8 +11,8 @@ menu:
     parent: "managing"
 toc: true
 aliases:
-  - /riak-docs/riak/kv/2.9.1/ops/tuning/linux/
-  - /riak-docs/riak/2.9.1/ops/tuning/linux/
+  - /riak/kv/2.9.1/ops/tuning/linux/
+  - /riak/2.9.1/ops/tuning/linux/
 ---
 
 Many Unix-like operating systems and distributions are tuned for desktop

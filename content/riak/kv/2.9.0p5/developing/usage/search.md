@@ -2,18 +2,27 @@
 title: "Using Search"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Searching"
     identifier: "usage_searching"
     weight: 105
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/search
-  - /riak-docs/riak/kv/2.9.0/dev/using/search
+  - /riak/2.9.0p5/dev/using/search
+  - /riak/kv/2.9.0p5/dev/using/search
+  - /riak/2.9.0p5/developing/usage/search/
+  - /riak/2.9.0/developing/usage/search/
+  - /riak/kv/2.9.0/developing/usage/search/
+  - /riak/kv/2.9.0p1/developing/usage/search/
+  - /riak/kv/2.9.0p2/developing/usage/search/
+  - /riak/kv/2.9.0p3/developing/usage/search/
+  - /riak/kv/2.9.0p4/developing/usage/search/
+  - /riak/kv/latest/developing/usage/search/
 ---
+
 
 [usage search schema]: ../search-schemas/
 [bucket types]: ../bucket-types/
@@ -68,7 +77,7 @@ support.
 All `curl` examples in this document assume that you have set an
 environment variable named `RIAK_HOST`, which points to a Riak base URL,
 such as `http://localhost:8098`. The appropriate value for `RIAK_HOST`
-will depend on your [configuration]({{<baseurl>}}riak/kv/2.9.0/configuring/reference#client-interfaces).
+will depend on your [configuration]({{<baseurl>}}riak/kv/2.9.0p5/configuring/reference#client-interfaces).
 
 ## Creating an Index
 
@@ -87,7 +96,7 @@ client.create_search_index('famous')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\StoreIndex($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/StoreIndex($riak))
   ->withName('famouse')
   ->build()
   ->execute();
@@ -144,7 +153,7 @@ curl -XPUT $RIAK_HOST/search/index/famous
 
 > **Getting started with Riak clients**
 >
-> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/2.9.0/developing/client-libraries), you can find more information about getting started with your client in the [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/2.9.0/developing/getting-started) section.
+> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries), you can find more information about getting started with your client in the [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started) section.
 
 
 Note that the above command is exactly the same as the following, which
@@ -162,7 +171,7 @@ client.create_search_index("famous", "_yz_default")
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\StoreIndex($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/StoreIndex($riak))
   ->withName('scores')
   ->usingSchema('_yz_default')
   ->build()
@@ -206,8 +215,8 @@ err = cluster.Execute(cmd)
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/index/famous \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/search/index/famous /
+     -H 'Content-Type: application/json' /
      -d '{"schema":"_yz_default"}'
 ```
 
@@ -244,8 +253,8 @@ And this step applies the index to the `cats` bucket, which bears the
 `animals` bucket type we just created and activated:
 
 ```curl
-curl -XPUT $RIAK_HOST/types/animals/buckets/cats/props \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/props /
+     -H 'Content-Type: application/json' /
      -d '{"props":{"search_index":"famous"}}'
 ```
 
@@ -282,7 +291,7 @@ bucket.properties = {'search_index' => 'famous'}
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\Search\AssociateIndex($riak))
+(new /Basho/Riak/Command/Builder/Search/AssociateIndex($riak))
     ->withName('famous')
     ->buildBucket('cats')
     ->build()
@@ -335,8 +344,8 @@ err = cluster.Execute(cmd)
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/buckets/cats/props \
-     -H'content-type:application/json' \
+curl -XPUT $RIAK_HOST/buckets/cats/props /
+     -H'content-type:application/json' /
      -d'{"props":{"search_index":"famous"}}'
 ```
 
@@ -345,7 +354,7 @@ ingest according to your schema.
 
 ## Riak Search Security Setup
 
-[Security]({{<baseurl>}}riak/kv/2.9.0/using/security/) is a new feature as of
+[Security]({{<baseurl>}}riak/kv/2.9.0p5/using/security/) is a new feature as of
 Riak 2.0 that lets an administrator limit access to certain resources.
 In the case of search, your options are to limit administration of
 schemas or indexes (the `search.admin` permission) to certain users, and
@@ -394,16 +403,16 @@ String json = "application/json";
 
 RiakObject liono = new RiakObject()
         .setContentType(json)
-        .setValue(BinaryValue.create("{\"name_s\":\"Lion-o\",\"age_i\":30,\"leader_b\":true}"));
+        .setValue(BinaryValue.create("{/"name_s/":/"Lion-o/",/"age_i/":30,/"leader_b/":true}"));
 RiakObject cheetara = new RiakObject()
         .setContentType(json)
-        .setValue(BinaryValue.create("{\"name_s\":\"Cheetara\",\"age_i\":30,\"leader_b\":false}"));
+        .setValue(BinaryValue.create("{/"name_s/":/"Cheetara/",/"age_i/":30,/"leader_b/":false}"));
 RiakObject snarf = new RiakObject()
         .setContentType(json)
-        .setValue(BinaryValue.create("{\"name_s\":\"Snarf\",\"age_i\":43,\"leader_b\":false}"));
+        .setValue(BinaryValue.create("{/"name_s/":/"Snarf/",/"age_i/":43,/"leader_b/":false}"));
 RiakObject panthro = new RiakObject()
         .setContentType(json)
-        .setValue(BinaryValue.create("{\"name_s\":\"Panthro\",\"age_i\":36,\"leader_b\":false}"));
+        .setValue(BinaryValue.create("{/"name_s/":/"Panthro/",/"age_i/":36,/"leader_b/":false}"));
 Location lionoLoc = new Location(animalsBucket, "liono");
 Location cheetaraLoc = new Location(animalsBucket, "cheetara");
 Location snarfLoc = new Location(animalsBucket, "snarf");
@@ -437,25 +446,25 @@ cat.store
 ```
 
 ```php
-$bucket = new \Basho\Riak\Bucket('cats', 'animals');
+$bucket = new /Basho/Riak/Bucket('cats', 'animals');
 
-$storeObjectBuilder = (new \Basho\Riak\Command\Builder\StoreObject($riak))
-  ->withLocation(new \Basho\Riak\Location('liono', $bucket))
+$storeObjectBuilder = (new /Basho/Riak/Command/Builder/StoreObject($riak))
+  ->withLocation(new /Basho/Riak/Location('liono', $bucket))
   ->buildJsonObject(['name_s' => 'Lion-o', 'age_i' => 30, 'leader_b' => true]);
 
 $storeObjectBuilder->build()->execute();
 
-$storeObjectBuilder->withLocation(new \Basho\Riak\Location('cheetara', $bucket))
+$storeObjectBuilder->withLocation(new /Basho/Riak/Location('cheetara', $bucket))
   ->buildJsonObject(['name_s' => 'Cheetara', 'age_i' => 28, 'leader_b' => false]);
 
 $storeObjectBuilder->build()->execute();
 
-$storeObjectBuilder->withLocation(new \Basho\Riak\Location('snarf', $bucket))
+$storeObjectBuilder->withLocation(new /Basho/Riak/Location('snarf', $bucket))
   ->buildJsonObject(['name_s' => 'Snarf', 'age_i' => 43]);
 
 $storeObjectBuilder->build()->execute();
 
-$storeObjectBuilder->withLocation(new \Basho\Riak\Location('panthro', $bucket))
+$storeObjectBuilder->withLocation(new /Basho/Riak/Location('panthro', $bucket))
   ->buildJsonObject(['name_s' => 'Panthro', 'age_i' => 36]);
 
 $storeObjectBuilder->build()->execute();
@@ -542,22 +551,22 @@ async.parallel(storeFuncs, function (err, rslts) {
 
 ```erlang
 CO = riakc_obj:new({<<"animals">>, <<"cats">>}, <<"liono">>,
-    <<"{\"name_s\":\"Lion-o\", \"age_i\":30, \"leader_b\":true}">>,
+    <<"{/"name_s/":/"Lion-o/", /"age_i/":30, /"leader_b/":true}">>,
     "application/json"),
 riakc_pb_socket:put(Pid, CO),
 
 C1 = riakc_obj:new({<<"animals">>, <<"cats">>}, <<"cheetara">>,
-    <<"{\"name_s\":\"Cheetara\", \"age_i\":28, \"leader_b\":false}">>,
+    <<"{/"name_s/":/"Cheetara/", /"age_i/":28, /"leader_b/":false}">>,
     "application/json"),
 riakc_pb_socket:put(Pid, C1),
 
 C2 = riakc_obj:new({<<"animals">>, <<"cats">>}, <<"snarf">>,
-    <<"{\"name_s\":\"Snarf\", \"age_i\":43}">>,
+    <<"{/"name_s/":/"Snarf/", /"age_i/":43}">>,
     "application/json"),
 riakc_pb_socket:put(Pid, C2),
 
 C3 = riakc_obj:new({<<"animals">>, <<"cats">>}, <<"panthro">>,
-    <<"{\"name_s\":\"Panthro\", \"age_i\":36}">>,
+    <<"{/"name_s/":/"Panthro/", /"age_i/":36}">>,
     "application/json"),
 riakc_pb_socket:put(Pid, C3),
 ```
@@ -565,19 +574,19 @@ riakc_pb_socket:put(Pid, C3),
 ```golang
 o1 := &riak.Object{
     Key:             "liono",
-    Value:           []byte("{\"name_s\":\"Lion-o\",\"age_i\":30,\"leader_b\":true}"),
+    Value:           []byte("{/"name_s/":/"Lion-o/",/"age_i/":30,/"leader_b/":true}"),
 }
 o2 := &riak.Object{
     Key:             "cheetara",
-    Value:           []byte("{\"name_s\":\"Cheetara\",\"age_i\":30,\"leader_b\":false}"),
+    Value:           []byte("{/"name_s/":/"Cheetara/",/"age_i/":30,/"leader_b/":false}"),
 }
 o3 := &riak.Object{
     Key:             "snarf",
-    Value:           []byte("{\"name_s\":\"Snarf\",\"age_i\":43,\"leader_b\":false}"),
+    Value:           []byte("{/"name_s/":/"Snarf/",/"age_i/":43,/"leader_b/":false}"),
 }
 o4 := &riak.Object{
     Key:             "panthro",
-    Value:           []byte("{\"name_s\":\"Panthro\",\"age_i\":36,\"leader_b\":false}"),
+    Value:           []byte("{/"name_s/":/"Panthro/",/"age_i/":36,/"leader_b/":false}"),
 }
 
 objs := [...]*riak.Object{o1, o2, o3, o4}
@@ -610,20 +619,20 @@ wg.Wait()
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/liono \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/liono /
+     -H 'Content-Type: application/json' /
      -d '{"name_s":"Lion-o", "age_i":30, "leader_b":true}'
 
-curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/cheetara \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/cheetara /
+     -H 'Content-Type: application/json' /
      -d '{"name_s":"Cheetara", "age_i":28, "leader_b":false}'
 
-curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/snarf \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/snarf /
+     -H 'Content-Type: application/json' /
      -d '{"name_s":"Snarf", "age_i":43}'
 
-curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/panthro \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/keys/panthro /
+     -H 'Content-Type: application/json' /
      -d '{"name_s":"Panthro", "age_i":36}'
 ```
 
@@ -641,7 +650,7 @@ store opaque values in Riak? For that, we employ extractors.
 Extractors are modules in Riak that accept a Riak value with a certain
 content type and convert it into a list of fields that can be indexed by
 Solr. This is done transparently and automatically as part of the
-indexing process. You can even create your own [custom extractors]({{<baseurl>}}riak/kv/2.9.0/developing/usage/custom-extractors).
+indexing process. You can even create your own [custom extractors]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/custom-extractors).
 
 Our current example uses the JSON extractor, but Riak Search also
 extracts indexable fields from the following content types:
@@ -649,13 +658,13 @@ extracts indexable fields from the following content types:
 * JSON (`application/json`)
 * XML (`application/xml`, `text/xml`)
 * Plain text (`text/plain`)
-* [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/)
+* [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/)
   * counter (`application/riak_counter`)
   * map (`application/riak_map`)
   * set (`application/riak_set`)
 * noop (unknown content type)
 
-More on Riak Data Types can be found in [Riak Data Types and Search]({{<baseurl>}}riak/kv/2.9.0/developing/usage/searching-data-types).
+More on Riak Data Types can be found in [Riak Data Types and Search]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/searching-data-types).
 
 In the examples we've seen, the JSON field `name_s` is translated to a
 Solr index document field insert. Solr will index any field that it
@@ -689,7 +698,7 @@ The above JSON will insert a list of three values into Solr to be
 indexed: `people_ss=Ryan`, `people_ss=Eric`, `people_ss=Brett`.
 
 You can also create your own custom extractors if your data doesn't fit
-one of the default types. A full tutorial can be found in [Custom Search Extractors]({{<baseurl>}}riak/kv/2.9.0/developing/usage/custom-extractors).
+one of the default types. A full tutorial can be found in [Custom Search Extractors]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/custom-extractors).
 
 ### Automatic Fields
 
@@ -742,7 +751,7 @@ p results['docs']
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('famous')
   ->withQuery('name_s:Lion*')
   ->build()
@@ -910,7 +919,7 @@ $bucket = $doc->_yz_rb; // cats
 $key = $doc->_yz_rk; // liono
 $name = $doc->name_s; // Lion-o
 
-$object = (new \Basho\Riak\Command\Builder\FetchObject($riak))
+$object = (new /Basho/Riak/Command/Builder/FetchObject($riak))
   ->buildLocation($key, $bucket, $btype)
   ->build()
   ->execute()
@@ -1026,7 +1035,7 @@ client.search("famous", "age_i:[30 TO *]")
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('famous')
   ->withQuery('age_i:[30 TO *]')
   ->build()
@@ -1107,7 +1116,7 @@ client.search("famous", "leader_b:true AND age_i:[30 TO *]")
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('famous')
   ->withQuery('leader_b:true AND age_i:[30 TO *]')
   ->build()
@@ -1174,7 +1183,7 @@ client.delete_search_index('famous')
 ```
 
 ```php
-(new Command\Builder\Search\DeleteIndex($riak))
+(new Command/Builder/Search/DeleteIndex($riak))
   ->withName('famous')
   ->build()
   ->execute();
@@ -1247,8 +1256,8 @@ If an index does have a bucket associated with it, then that index's
 or to the sentinel value `_dont_index_`.
 
 ```curl
-curl -XPUT $RIAK_HOST/types/animals/buckets/cats/props \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/props /
+     -H 'Content-Type: application/json' /
      -d '{"props":{"search_index":"_dont_index_"}}'
 ```
 
@@ -1292,7 +1301,7 @@ $maxRows = 2;
 $page = 2;
 $start = $rowsPerPAge * (page - 1);
 
-(new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+(new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('famous')
   ->withQuery('*:*')
   ->withMaxRows($maxRows)
@@ -1406,7 +1415,7 @@ fix this shortcoming in a future version of Riak.
 ### MapReduce
 
 Riak Search allows for piping search results as inputs for
-[MapReduce]({{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce/) jobs. This is a useful cross-section for
+[MapReduce]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce/) jobs. This is a useful cross-section for
 performing post-calculations of results or aggregations of ad-hoc
 queries. The Riak Search MapReduce integration works similarly to
 regular MapReduce, with the notable exception that your input is not a
@@ -1445,7 +1454,7 @@ leaders and counting up the results using Javascript for both map and
 reduce. It should return the reduced sum of `[3]`.
 
 ```curl
-curl -XPOST $RIAK_HOST/mapred \
-     -H 'Content-Type: application/json' \
+curl -XPOST $RIAK_HOST/mapred /
+     -H 'Content-Type: application/json' /
      -d '{"inputs":{"module":"yokozuna","function":"mapred_search","arg":["famous","NOT leader_b:true"]},"query":[{"map":{"language":"javascript","keep":false,"source":"function(v) { return [1]; }"}},{"reduce":{"language":"javascript","keep":true,"name":"Riak.reduceSum"}}]}'
 ```

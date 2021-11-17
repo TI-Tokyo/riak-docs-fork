@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter"
 title: "Replication Operations"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "V3 Multi-Datacenter"
     identifier: "cluster_operations_v3"
     weight: 114
@@ -13,15 +13,24 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/v3/operations
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/v3/operations
+  - /riak/2.9.0p5/ops/mdc/v3/operations
+  - /riak/kv/2.9.0p5/ops/mdc/v3/operations
+  - /riak/2.9.0p5/using/cluster-operations/v3-multi-datacenter/
+  - /riak/2.9.0/using/cluster-operations/v3-multi-datacenter/
+  - /riak/kv/2.9.0/using/cluster-operations/v3-multi-datacenter/
+  - /riak/kv/2.9.0p1/using/cluster-operations/v3-multi-datacenter/
+  - /riak/kv/2.9.0p2/using/cluster-operations/v3-multi-datacenter/
+  - /riak/kv/2.9.0p3/using/cluster-operations/v3-multi-datacenter/
+  - /riak/kv/2.9.0p4/using/cluster-operations/v3-multi-datacenter/
+  - /riak/kv/latest/using/cluster-operations/v3-multi-datacenter/
 ---
 
-[config v3 mdc]: {{<baseurl>}}riak/kv/2.9.0/configuring/v3-multi-datacenter
-[config v3 nat]: {{<baseurl>}}riak/kv/2.9.0/configuring/v3-multi-datacenter/nat
-[config v3 quickstart]: {{<baseurl>}}riak/kv/2.9.0/configuring/v3-multi-datacenter/quick-start
-[config v3 ssl]: {{<baseurl>}}riak/kv/2.9.0/configuring/v3-multi-datacenter/ssl
-[ref v3 stats]: {{<baseurl>}}riak/kv/2.9.0/using/reference/multi-datacenter/statistics
+
+[config v3 mdc]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/v3-multi-datacenter
+[config v3 nat]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/v3-multi-datacenter/nat
+[config v3 quickstart]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/v3-multi-datacenter/quick-start
+[config v3 ssl]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/v3-multi-datacenter/ssl
+[ref v3 stats]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/multi-datacenter/statistics
 
 This document explains how to manage replication with the `riak-repl`
 command. Some of these commands can be set or behavior altered by

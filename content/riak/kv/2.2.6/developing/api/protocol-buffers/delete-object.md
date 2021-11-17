@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/delete-object
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/delete-object
+  - /riak/2.2.6/dev/references/protocol-buffers/delete-object
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/delete-object
 ---
 
 Delete an object in the specified [bucket type]({{<baseurl>}}riak/kv/2.2.6/using/cluster-operations/bucket-types)/bucket/key location.

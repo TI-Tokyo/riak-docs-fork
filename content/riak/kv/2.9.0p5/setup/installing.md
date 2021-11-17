@@ -2,9 +2,9 @@
 title: "Installing Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Installing"
     identifier: "installing"
     weight: 101
@@ -12,24 +12,33 @@ menu:
     pre: cog
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/installing
-  - /riak-docs/riak/kv/2.9.0/ops/building/installing
-  - /riak-docs/riak/2.9.0/installing/
-  - /riak-docs/riak/kv/2.9.0/installing/
+  - /riak/2.9.0p5/ops/building/installing
+  - /riak/kv/2.9.0p5/ops/building/installing
+  - /riak/2.9.0p5/installing/
+  - /riak/kv/2.9.0p5/installing/
+  - /riak/2.9.0p5/setup/installing/
+  - /riak/2.9.0/setup/installing/
+  - /riak/kv/2.9.0/setup/installing/
+  - /riak/kv/2.9.0p1/setup/installing/
+  - /riak/kv/2.9.0p2/setup/installing/
+  - /riak/kv/2.9.0p3/setup/installing/
+  - /riak/kv/2.9.0p4/setup/installing/
+  - /riak/kv/latest/setup/installing/
 ---
 
-[install aws]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/amazon-web-services
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/debian-ubuntu
-[install freebsd]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/freebsd
-[install mac osx]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/mac-osx
-[install rhel & centos]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/rhel-centos
-[install smartos]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/smartos
-[install solaris]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/solaris
-[install suse]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/suse
-[install windows azure]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/windows-azure
-[install source index]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source
+
+[install aws]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/amazon-web-services
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/debian-ubuntu
+[install freebsd]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/freebsd
+[install mac osx]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/mac-osx
+[install rhel & centos]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/rhel-centos
+[install smartos]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/smartos
+[install solaris]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/solaris
+[install suse]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/suse
+[install windows azure]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/windows-azure
+[install source index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source
 [community projects]: {{<baseurl>}}community/projects
-[upgrade index]: {{<baseurl>}}riak/kv/2.9.0/setup/upgrading
+[upgrade index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/upgrading
 
 ## Supported Platforms
 

@@ -2,18 +2,27 @@
 title: "PBC List Keys"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "List Keys"
     identifier: "pbc_list_keys"
     weight: 101
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers/list-keys
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers/list-keys
+  - /riak/2.9.0p5/dev/references/protocol-buffers/list-keys
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers/list-keys
+  - /riak/2.9.0p5/developing/api/protocol-buffers/list-keys/
+  - /riak/2.9.0/developing/api/protocol-buffers/list-keys/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/list-keys/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/list-keys/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/list-keys/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/list-keys/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/list-keys/
+  - /riak/kv/latest/developing/api/protocol-buffers/list-keys/
 ---
+
 
 List all of the keys in a bucket. This is a streaming call, with
 multiple response messages sent for each request.

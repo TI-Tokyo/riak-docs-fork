@@ -3,18 +3,27 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with NodeJS"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Object Modeling"
     identifier: "getting_started_nodejs_object"
     weight: 102
     parent: "getting_started_nodejs"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/object-modeling-nodejs
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/object-modeling-nodejs
+  - /riak/2.9.0p5/dev/taste-of-riak/object-modeling-nodejs
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/object-modeling-nodejs
+  - /riak/2.9.0p5/developing/getting-started/nodejs/object-modeling/
+  - /riak/2.9.0/developing/getting-started/nodejs/object-modeling/
+  - /riak/kv/2.9.0/developing/getting-started/nodejs/object-modeling/
+  - /riak/kv/2.9.0p1/developing/getting-started/nodejs/object-modeling/
+  - /riak/kv/2.9.0p2/developing/getting-started/nodejs/object-modeling/
+  - /riak/kv/2.9.0p3/developing/getting-started/nodejs/object-modeling/
+  - /riak/kv/2.9.0p4/developing/getting-started/nodejs/object-modeling/
+  - /riak/kv/latest/developing/getting-started/nodejs/object-modeling/
 ---
+
 
 To get started, let's create the models that we'll be using.
 

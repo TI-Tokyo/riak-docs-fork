@@ -11,10 +11,10 @@ menu:
     parent: "installing_source"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/installing/erlang
-  - /riak-docs/riak/kv/2.9.1/ops/building/installing/erlang
-  - /riak-docs/riak/2.9.1/installing/source/erlang/
-  - /riak-docs/riak/kv/2.9.1/installing/source/erlang/
+  - /riak/2.9.1/ops/building/installing/erlang
+  - /riak/kv/2.9.1/ops/building/installing/erlang
+  - /riak/2.9.1/installing/source/erlang/
+  - /riak/kv/2.9.1/installing/source/erlang/
 ---
 
 [install index]: {{<baseurl>}}riak/kv/2.9.1/setup/installing

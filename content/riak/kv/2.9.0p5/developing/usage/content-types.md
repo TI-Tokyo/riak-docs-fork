@@ -2,15 +2,25 @@
 title: "Content Types"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Content Types"
     identifier: "usage_content_types"
     weight: 104
     parent: "developing_usage"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/usage/content-types/
+  - /riak/2.9.0/developing/usage/content-types/
+  - /riak/kv/2.9.0/developing/usage/content-types/
+  - /riak/kv/2.9.0p1/developing/usage/content-types/
+  - /riak/kv/2.9.0p2/developing/usage/content-types/
+  - /riak/kv/2.9.0p3/developing/usage/content-types/
+  - /riak/kv/2.9.0p4/developing/usage/content-types/
+  - /riak/kv/latest/developing/usage/content-types/
 ---
+
 
 Riak KV is a fundamentally content-agnostic database. You can use it to
 store anything you want, from JSON to XML to HTML to binaries to images
@@ -103,7 +113,7 @@ obj.store
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\StoreObject($riak))
+$response = (new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildLocation('genius', 'oscar_wilde', 'quotes')
   ->buildObject('I have nothing to declare but my genius!', 'text/plain')
   ->build()
@@ -177,9 +187,9 @@ rsp := svc.Response
 ```
 
 ```curl
-curl -XPUT \
-  -H "Content-Type: text/plain" \
-  -d "I have nothing to declare but my genius" \
+curl -XPUT /
+  -H "Content-Type: text/plain" /
+  -d "I have nothing to declare but my genius" /
   http://localhost:8098/types/quotes/buckets/oscar_wilde/keys/genius
 
 # Please note that POST is also a valid method for writes, for the sake

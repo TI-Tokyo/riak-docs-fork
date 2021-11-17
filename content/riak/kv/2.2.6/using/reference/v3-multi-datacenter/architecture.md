@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v3/architecture
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v3/architecture
+  - /riak/2.2.6/ops/mdc/v3/architecture
+  - /riak/kv/2.2.6/ops/mdc/v3/architecture
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.2.6/learn/glossary/#vnode

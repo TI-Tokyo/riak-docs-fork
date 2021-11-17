@@ -2,18 +2,27 @@
 title: "Multi-Datacenter Replication Reference: Statistics"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Statistics"
     identifier: "managing_ref_mdc_stats"
     weight: 100
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/statistics
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/statistics
+  - /riak/2.9.0p5/ops/mdc/statistics
+  - /riak/kv/2.9.0p5/ops/mdc/statistics
+  - /riak/2.9.0p5/using/reference/multi-datacenter/statistics/
+  - /riak/2.9.0/using/reference/multi-datacenter/statistics/
+  - /riak/kv/2.9.0/using/reference/multi-datacenter/statistics/
+  - /riak/kv/2.9.0p1/using/reference/multi-datacenter/statistics/
+  - /riak/kv/2.9.0p2/using/reference/multi-datacenter/statistics/
+  - /riak/kv/2.9.0p3/using/reference/multi-datacenter/statistics/
+  - /riak/kv/2.9.0p4/using/reference/multi-datacenter/statistics/
+  - /riak/kv/latest/using/reference/multi-datacenter/statistics/
 ---
+
 
 The following definitions describe the output of `riak-repl status`.
 Both Version 2 and Version 3 Replication statistics can be obtained

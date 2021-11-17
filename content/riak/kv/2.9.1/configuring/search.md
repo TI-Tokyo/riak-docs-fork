@@ -11,8 +11,8 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/advanced/configs/search/
-  - /riak-docs/riak/kv/2.9.1/ops/advanced/configs/search/
+  - /riak/2.9.1/ops/advanced/configs/search/
+  - /riak/kv/2.9.1/ops/advanced/configs/search/
 ---
 
 [usage search]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/search

@@ -2,21 +2,31 @@
 title: "Reading Objects"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Reading Objects"
     identifier: "usage_reading_objects"
     weight: 101
     parent: "developing_usage"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/usage/reading-objects/
+  - /riak/2.9.0/developing/usage/reading-objects/
+  - /riak/kv/2.9.0/developing/usage/reading-objects/
+  - /riak/kv/2.9.0p1/developing/usage/reading-objects/
+  - /riak/kv/2.9.0p2/developing/usage/reading-objects/
+  - /riak/kv/2.9.0p3/developing/usage/reading-objects/
+  - /riak/kv/2.9.0p4/developing/usage/reading-objects/
+  - /riak/kv/latest/developing/usage/reading-objects/
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
+
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
 
 You can think of reads in Riak as analogous to HTTP `GET` requests. You
 specify a bucket type, bucket, and key, and Riak either returns the
-object that's stored there---including its [siblings]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution/#siblings) \(more on that later)---or it returns `not found` (the
+object that's stored there---including its [siblings]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution/#siblings) /(more on that later)---or it returns `not found` (the
 equivalent of an HTTP `404 Object Not Found`).
 
 Here is the basic command form for retrieving a specific key from a
@@ -27,7 +37,7 @@ GET /types/<type>/buckets/<bucket>/keys/<key>
 ```
 
 Here is an example of a read performed on the key `rufus` in the bucket
-`dogs`, which bears the bucket type `animals`. Please note that for this example to work, you must have first created the bucket-type `animals` as per the instructions on the [bucket type]({{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/bucket-types) page.
+`dogs`, which bears the bucket type `animals`. Please note that for this example to work, you must have first created the bucket-type `animals` as per the instructions on the [bucket type]({{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/bucket-types) page.
 
 ```java
 // In the Java client, it is best to specify a bucket type/bucket/key
@@ -42,7 +52,7 @@ obj = bucket.get('rufus')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\FetchObject($riak))
+$response = (new /Basho/Riak/Command/Builder/FetchObject($riak))
   ->buildLocation('rufus', 'users', 'animals')
   ->build()
   ->execute();
@@ -119,7 +129,7 @@ p obj.data
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\FetchObject($riak))
+$response = (new /Basho/Riak/Command/Builder/FetchObject($riak))
   ->buildLocation('rufus', 'dogs', 'animals')
   ->build()
   ->execute();

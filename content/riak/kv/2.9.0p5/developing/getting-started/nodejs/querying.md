@@ -3,18 +3,27 @@ title_supertext: "Getting Started:"
 title: "Querying with NodeJS"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Querying"
     identifier: "getting_started_nodejs_query"
     weight: 101
     parent: "getting_started_nodejs"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/querying-nodejs
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/querying-nodejs
+  - /riak/2.9.0p5/dev/taste-of-riak/querying-nodejs
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/querying-nodejs
+  - /riak/2.9.0p5/developing/getting-started/nodejs/querying/
+  - /riak/2.9.0/developing/getting-started/nodejs/querying/
+  - /riak/kv/2.9.0/developing/getting-started/nodejs/querying/
+  - /riak/kv/2.9.0p1/developing/getting-started/nodejs/querying/
+  - /riak/kv/2.9.0p2/developing/getting-started/nodejs/querying/
+  - /riak/kv/2.9.0p3/developing/getting-started/nodejs/querying/
+  - /riak/kv/2.9.0p4/developing/getting-started/nodejs/querying/
+  - /riak/kv/latest/developing/getting-started/nodejs/querying/
 ---
+
 
 ## Node.js Version Setup
 
@@ -87,9 +96,9 @@ intrinsic relationships.
 ## Secondary Indexes
 
 {{% note %}}
-Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask) does not support secondary indexes.
+Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask) does not support secondary indexes.
 
-See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
+See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
 {{% /note %}}
 
 If you're coming from an SQL world, Secondary Indexes (2i) are a lot

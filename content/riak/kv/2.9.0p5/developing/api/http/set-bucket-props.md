@@ -2,18 +2,27 @@
 title: "HTTP Set Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Set Bucket Properties"
     identifier: "http_set_bucket_props"
     weight: 101
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/set-bucket-props
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/set-bucket-props
+  - /riak/2.9.0p5/dev/references/http/set-bucket-props
+  - /riak/kv/2.9.0p5/dev/references/http/set-bucket-props
+  - /riak/2.9.0p5/developing/api/http/set-bucket-props/
+  - /riak/2.9.0/developing/api/http/set-bucket-props/
+  - /riak/kv/2.9.0/developing/api/http/set-bucket-props/
+  - /riak/kv/2.9.0p1/developing/api/http/set-bucket-props/
+  - /riak/kv/2.9.0p2/developing/api/http/set-bucket-props/
+  - /riak/kv/2.9.0p3/developing/api/http/set-bucket-props/
+  - /riak/kv/2.9.0p4/developing/api/http/set-bucket-props/
+  - /riak/kv/latest/developing/api/http/set-bucket-props/
 ---
+
 
 Sets bucket properties like "n_val" and "allow_mult".
 
@@ -37,8 +46,8 @@ Available properties:
 (concurrent updates)
 * `last_write_wins` (true or false) - whether to ignore object history (vector
 clock) when writing
-* `precommit` - [precommit hooks]({{<baseurl>}}riak/kv/2.9.0/developing/usage/commit-hooks)
-* `postcommit` - [postcommit hooks]({{<baseurl>}}riak/kv/2.9.0/developing/usage/commit-hooks)
+* `precommit` - [precommit hooks]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/commit-hooks)
+* `postcommit` - [postcommit hooks]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/commit-hooks)
 * `r, w, dw, rw` - default quorum values for operations on keys in the bucket.
 Valid values are:
   * `"all"` - all nodes must respond
@@ -76,7 +85,7 @@ If successful, no content will be returned in the response body.
 ## Example
 
 ```curl
-$ curl -v -XPUT http://127.0.0.1:8098/buckets/test/props \
+$ curl -v -XPUT http://127.0.0.1:8098/buckets/test/props /
        -H "Content-Type: application/json" -d '{"props":{"n_val":5}}'
 * About to connect() to 127.0.0.1 port 8098 (#0)
 *   Trying 127.0.0.1... connected

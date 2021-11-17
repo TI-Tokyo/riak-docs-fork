@@ -11,8 +11,8 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/configuration/
-  - /riak-docs/riak/kv/2.2.6/ops/building/configuration/
+  - /riak/2.2.6/ops/building/configuration/
+  - /riak/kv/2.2.6/ops/building/configuration/
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.2.6/configuring/reference

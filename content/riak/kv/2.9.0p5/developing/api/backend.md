@@ -2,20 +2,29 @@
 title: "Backend API"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Backend API"
     identifier: "apis_backend"
     weight: 101
     parent: "developing_apis"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/backend-api
-  - /riak-docs/riak/kv/2.9.0/dev/references/backend-api
+  - /riak/2.9.0p5/dev/references/backend-api
+  - /riak/kv/2.9.0p5/dev/references/backend-api
+  - /riak/2.9.0p5/developing/api/backend/
+  - /riak/2.9.0/developing/api/backend/
+  - /riak/kv/2.9.0/developing/api/backend/
+  - /riak/kv/2.9.0p1/developing/api/backend/
+  - /riak/kv/2.9.0p2/developing/api/backend/
+  - /riak/kv/2.9.0p3/developing/api/backend/
+  - /riak/kv/2.9.0p4/developing/api/backend/
+  - /riak/kv/latest/developing/api/backend/
 ---
 
-[plan backend]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend
+
+[plan backend]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend
 
 Riak's storage API uniformly applies to all of the
 [supported backends][plan backend]. This page presents the details of

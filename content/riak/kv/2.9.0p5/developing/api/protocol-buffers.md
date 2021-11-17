@@ -2,18 +2,27 @@
 title: "Protocol Buffers Client API"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Protocol Buffers API"
     identifier: "apis_pbc"
     weight: 103
     parent: "developing_apis"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers
+  - /riak/2.9.0p5/dev/references/protocol-buffers
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers
+  - /riak/2.9.0p5/developing/api/protocol-buffers/
+  - /riak/2.9.0/developing/api/protocol-buffers/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/
+  - /riak/kv/latest/developing/api/protocol-buffers/
 ---
+
 
 This is an overview of the operations you can perform using the
 [Protocol Buffers](https://code.google.com/p/protobuf/) Client (PBC)
@@ -139,47 +148,47 @@ message RpbErrorResp {
 
 ## Bucket Operations
 
-* [PBC List Buckets]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/list-buckets)
-* [PBC List Keys]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/list-keys)
-* [PBC Get Bucket Properties]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/get-bucket-props)
-* [PBC Set Bucket Properties]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/set-bucket-props)
-* [PBC Reset Bucket Properties]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/reset-bucket-props)
+* [PBC List Buckets]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/list-buckets)
+* [PBC List Keys]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/list-keys)
+* [PBC Get Bucket Properties]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/get-bucket-props)
+* [PBC Set Bucket Properties]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/set-bucket-props)
+* [PBC Reset Bucket Properties]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/reset-bucket-props)
 
 ## Object/Key Operations
 
-* [PBC Fetch Object]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/fetch-object)
-* [PBC Store Object]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/store-object)
-* [PBC Delete Object]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/delete-object)
+* [PBC Fetch Object]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/fetch-object)
+* [PBC Store Object]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/store-object)
+* [PBC Delete Object]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/delete-object)
 
 ## Query Operations
 
-* [PBC MapReduce]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/mapreduce)
-* [PBC Secondary Indexes]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/secondary-indexes)
-* [PBC Search]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/search)
+* [PBC MapReduce]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/mapreduce)
+* [PBC Secondary Indexes]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/secondary-indexes)
+* [PBC Search]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/search)
 
 ## Server Operations
 
-* [PBC Ping]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/ping)
-* [PBC Server Info]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/server-info)
+* [PBC Ping]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/ping)
+* [PBC Server Info]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/server-info)
 
 ## Bucket Type Operations
 
-* [PBC Get Bucket Type]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/get-bucket-type)
-* [PBC Set Bucket Type]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/set-bucket-type)
+* [PBC Get Bucket Type]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/get-bucket-type)
+* [PBC Set Bucket Type]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/set-bucket-type)
 
 ## Data Type Operations
 
-* [PBC Data Type Fetch]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/dt-fetch)
-* [PBC Data Type Union]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/dt-union)
-* [PBC Data Type Store]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/dt-store)
-* [PBC Data Type Counter Store]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/dt-counter-store)
-* [PBC Data Type Set Store]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/dt-set-store)
-* [PBC Data Type Map Store]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/dt-map-store)
+* [PBC Data Type Fetch]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/dt-fetch)
+* [PBC Data Type Union]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/dt-union)
+* [PBC Data Type Store]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/dt-store)
+* [PBC Data Type Counter Store]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/dt-counter-store)
+* [PBC Data Type Set Store]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/dt-set-store)
+* [PBC Data Type Map Store]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/dt-map-store)
 
 ## Yokozuna Operations
 
-* [PBC Yokozuna Index Get]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/yz-index-get)
-* [PBC Yokozuna Index Put]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/yz-index-put)
-* [PBC Yokozuna Index Delete]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/yz-index-delete)
-* [PBC Yokozuna Schema Get]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/yz-schema-get)
-* [PBC Yokozuna Schema Put]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/yz-schema-put)
+* [PBC Yokozuna Index Get]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/yz-index-get)
+* [PBC Yokozuna Index Put]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/yz-index-put)
+* [PBC Yokozuna Index Delete]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/yz-index-delete)
+* [PBC Yokozuna Schema Get]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/yz-schema-get)
+* [PBC Yokozuna Schema Put]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/yz-schema-put)

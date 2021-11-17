@@ -11,10 +11,10 @@ menu:
     parent: index
 toc: false
 aliases:
-  - /riak-docs/riak/2.9.1/community/release-notes
-  - /riak-docs/riak/kv/2.9.1/intro-v20
-  - /riak-docs/riak/2.9.1/intro-v20
-  - /riak-docs/riak/kv/2.9.1/introduction
+  - /riak/2.9.1/community/release-notes
+  - /riak/kv/2.9.1/intro-v20
+  - /riak/2.9.1/intro-v20
+  - /riak/kv/2.9.1/introduction
 ---
 
 Released Feb 15, 2020.

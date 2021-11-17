@@ -11,8 +11,8 @@ menu:
     parent: "planning"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/planning/backends/
-  - /riak-docs/riak/kv/2.9.1/ops/building/planning/backends/
+  - /riak/2.9.1/ops/building/planning/backends/
+  - /riak/kv/2.9.1/ops/building/planning/backends/
 ---
 
 [plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/bitcask

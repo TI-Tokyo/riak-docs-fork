@@ -2,32 +2,42 @@
 title: "Repairs"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Repairs"
     identifier: "repair_recover_repairs"
     weight: 102
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/running/recovery/repairing-indexes
-  - /riak-docs/riak/kv/2.9.0/ops/running/recovery/repairing-indexes
-  - /riak-docs/riak/2.9.0/ops/running/recovery/failed-node
-  - /riak-docs/riak/kv/2.9.0/ops/running/recovery/failed-node
-  - /riak-docs/riak/2.9.0/ops/running/recovery/repairing-leveldb
-  - /riak-docs/riak/kv/2.9.0/ops/running/recovery/repairing-leveldb
-  - /riak-docs/riak/2.9.0/ops/running/recovery/repairing-partitions
-  - /riak-docs/riak/kv/2.9.0/ops/running/recovery/repairing-partitions
+  - /riak/2.9.0p5/ops/running/recovery/repairing-indexes
+  - /riak/kv/2.9.0p5/ops/running/recovery/repairing-indexes
+  - /riak/2.9.0p5/ops/running/recovery/failed-node
+  - /riak/kv/2.9.0p5/ops/running/recovery/failed-node
+  - /riak/2.9.0p5/ops/running/recovery/repairing-leveldb
+  - /riak/kv/2.9.0p5/ops/running/recovery/repairing-leveldb
+  - /riak/2.9.0p5/ops/running/recovery/repairing-partitions
+  - /riak/kv/2.9.0p5/ops/running/recovery/repairing-partitions
+  - /riak/2.9.0p5/using/repair-recovery/repairs/
+  - /riak/2.9.0/using/repair-recovery/repairs/
+  - /riak/kv/2.9.0/using/repair-recovery/repairs/
+  - /riak/kv/2.9.0p1/using/repair-recovery/repairs/
+  - /riak/kv/2.9.0p2/using/repair-recovery/repairs/
+  - /riak/kv/2.9.0p3/using/repair-recovery/repairs/
+  - /riak/kv/2.9.0p4/using/repair-recovery/repairs/
+  - /riak/kv/latest/using/repair-recovery/repairs/
+  - /riak/latest/ops/running/recovery/repairing-partitions/  
 ---
 
-[cluster ops aae]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/active-anti-entropy/
-[config ref]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/
+
+[cluster ops aae]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/active-anti-entropy/
+[config ref]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/
 [Erlang shell]: http://learnyousomeerlang.com/starting-out
-[glossary AAE]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#active-anti-entropy-aae
-[glossary readrep]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#read-repair
-[search config]: {{<baseurl>}}riak/kv/2.9.0/configuring/search/#search-config-settings
-[tiered storage]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb/#tiered-storage
+[glossary AAE]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#active-anti-entropy-aae
+[glossary readrep]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#read-repair
+[search config]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/search/#search-config-settings
+[tiered storage]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb/#tiered-storage
 
 
 
@@ -92,7 +102,7 @@ Compaction error messages take the following form:
 To check whether your node has experienced such errors, you will need to run a script that searches for `Compaction Error` in each `LOG` file. Here is an example script:
 
 ```bash
-find . -name "LOG" -exec grep -l 'Compaction error' {} \;
+find . -name "LOG" -exec grep -l 'Compaction error' {} /;
 ```
 
 If there are compaction errors in any of your vnodes, those will be listed in the console. If any vnode has experienced such errors, you would see output like this:
@@ -121,13 +131,13 @@ Choose your setup below:
 
 Follow the steps below to heal your corrupted LevelDB.
 
-1\. Stop the node:
+1/. Stop the node:
 
 ```bash
 riak stop
 ```
 
-2\. To repair the corrupted LevelDB through the [Erlang shell],  you will run the the `riak ertspath` command to output the path to Riak's internal Erlang runtime, and the `erl` command to start the Erlang shell. You can run them in a single command: 
+2/. To repair the corrupted LevelDB through the [Erlang shell],  you will run the the `riak ertspath` command to output the path to Riak's internal Erlang runtime, and the `erl` command to start the Erlang shell. You can run them in a single command: 
 
 ```bash
 `riak ertspath`/erl
@@ -137,19 +147,19 @@ riak stop
 Note, you must start up the Erlang shell using the same version of Erlang packaged with Riak. The above command will make sure you do so. If you choose not to use the above command please pay close attention to the version and location you use with the `erl` command.
 {{% /note %}}
 
-3\. Once in the shell, run the following command:
+3/. Once in the shell, run the following command:
 
 ```erlang
 application:set_env(eleveldb, data_root, "").
 ```
 
-4\. Then set `Options` equal to an empty list:
+4/. Then set `Options` equal to an empty list:
 
 ```erlang
 Options = [].
 ```
 
-5\. Set some supportive variables for the repair process.  These will be custom to your environment and specific repair needs.
+5/. Set some supportive variables for the repair process.  These will be custom to your environment and specific repair needs.
 VNodeList should be a list of each corrupted LevelDB that you found using the [`find` command above](#checking-for-compaction-errors).
 
 ```erlang
@@ -157,14 +167,14 @@ DataRoot = "»path to your data root«".
 VNodeList = ["»vnode id you want to repair«", ...].
 ```
 
-6\. Run the following commands, which will parse the information you provided and run eleveldb:repair over all of the VNode IDs that you listed in VNodeList.
+6/. Run the following commands, which will parse the information you provided and run eleveldb:repair over all of the VNode IDs that you listed in VNodeList.
 
 ```erlang
 RepairPath = fun(DataRoot, VNodeNumber) -> Path = lists:flatten(DataRoot ++ "/" ++ VNodeNumber), io:format("Repairing ~s.~n",[Path]), Path end.
 [eleveldb:repair(RepairPath(DataRoot, VNodeList), Options) || VNodeNumber <- VNodeList].
 ```
 
-7\. This process may take several minutes. When it has completed successfully, you can restart the node and continue as usual.
+7/. This process may take several minutes. When it has completed successfully, you can restart the node and continue as usual.
 
 ```bash
 riak start
@@ -174,19 +184,19 @@ riak start
 
 Follow the steps below to heal your corrupted LevelDB.
 
-1\. Stop the node:
+1/. Stop the node:
 
 ```bash
 riak stop
 ```
 
-2\. Check your riak.conf file and make note of the following values:
+2/. Check your riak.conf file and make note of the following values:
 
 * leveldb.tiered (integer)
 * leveldb.tiered.path.fast
 * leveldb.tiered.path.slow
 
-3\. To repair the corrupted LevelDB through the [Erlang shell],  you will run the the `riak ertspath` command to output the path to Riak's internal Erlang runtime, and the `erl` command to start the Erlang shell. You can run them in a single command: 
+3/. To repair the corrupted LevelDB through the [Erlang shell],  you will run the the `riak ertspath` command to output the path to Riak's internal Erlang runtime, and the `erl` command to start the Erlang shell. You can run them in a single command: 
 
 ```bash
 `riak ertspath`/erl
@@ -196,13 +206,13 @@ riak stop
 Note, you must start up the Erlang shell using the same version of Erlang packaged with Riak. The above command will make sure you do so. If you choose not to use the above command please pay close attention to the version and location you use with the `erl` command.
 {{% /note %}}
 
-4\. Once in the shell, run the following command:
+4/. Once in the shell, run the following command:
 
 ```erlang
 application:set_env(eleveldb, data_root, "").
 ```
 
-5\. Then supply the information you noted in Step 2:
+5/. Then supply the information you noted in Step 2:
 
 ```erlang
 Options = [
@@ -212,7 +222,7 @@ Options = [
 ].
 ```
 
-6\. Set some supportive variables for the repair process.  These will be custom to your environment and specific repair needs.
+6/. Set some supportive variables for the repair process.  These will be custom to your environment and specific repair needs.
 VNodeList should be a list of each corrupted LevelDB partitions that you found using the [`find` command above](#checking-for-compaction-errors) provided in double quotes.
 
 ```erlang
@@ -220,13 +230,13 @@ DataRoot = "»path to your data root«".
 VNodeList = ["»vnode id you want to repair«", ...].
 ```
 
-7\. Run the following commands, which will parse the information you provided and run eleveldb:repair over all of the VNode IDs that you listed in VNodeList.
+7/. Run the following commands, which will parse the information you provided and run eleveldb:repair over all of the VNode IDs that you listed in VNodeList.
 
 ```erlang
 RepairPath = fun(DataRoot, VNodeNumber) -> Path = lists:flatten(DataRoot ++ "/" ++ VNodeNumber), io:format("Repairing ~s.~n",[Path]), Path end.
 [eleveldb:repair(RepairPath(DataRoot, VNodeList), Options) || VNodeNumber <- VNodeList].
 ```
-8\. This process may take several minutes. When it has completed successfully, you can restart the node and continue as usual.
+8/. This process may take several minutes. When it has completed successfully, you can restart the node and continue as usual.
 
 ```bash
 riak start
@@ -237,23 +247,23 @@ riak start
 
 If you have experienced a loss of object replicas in your cluster, you
 may need to perform a repair operation on one or more of your data
-[partitions]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters/#the-ring). Repairs of Riak KV data are typically
+[partitions]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters/#the-ring). Repairs of Riak KV data are typically
 run in situations where partitions or whole nodes are lost due to
 corruption or hardware failure. In these cases, nodes or partitions are
 brought back online without any data, which means that the need to
-repair data will depend mainly on your use case and on whether [active anti-entropy]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/) is enabled.
+repair data will depend mainly on your use case and on whether [active anti-entropy]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/) is enabled.
 
 You will need to run a repair if the following are both true:
 
-* Active anti-entropy is [disabled]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/#disabling-active-anti-entropy)
+* Active anti-entropy is [disabled]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/#disabling-active-anti-entropy)
 * You have both non-expiring data and keys that are not accessed
   frequently (which means that they are not likely to be subject to
-  [read repair]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy))
+  [read repair]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy))
 
 You will most likely not need to run a repair operation if _any_ of the
 following is true:
 
-* Active anti-entropy is [enabled]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/#enabling-active-anti-entropy)
+* Active anti-entropy is [enabled]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/#enabling-active-anti-entropy)
 * Your entire key set is accessed frequently, allowing passive read
   repair to repair the partitions
 * Your data expires frequently

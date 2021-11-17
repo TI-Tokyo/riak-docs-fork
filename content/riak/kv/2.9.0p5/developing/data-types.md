@@ -3,20 +3,29 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Data Types"
     identifier: "developing_data_types"
     weight: 102
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/data-types
-  - /riak-docs/riak/kv/2.9.0/dev/using/data-types
-  - /riak-docs/riak/2.9.0/dev/data-modeling/data-types
-  - /riak-docs/riak/kv/2.9.0/dev/data-modeling/data-types
+  - /riak/2.9.0p5/dev/using/data-types
+  - /riak/kv/2.9.0p5/dev/using/data-types
+  - /riak/2.9.0p5/dev/data-modeling/data-types
+  - /riak/kv/2.9.0p5/dev/data-modeling/data-types
+  - /riak/2.9.0p5/developing/data-types/
+  - /riak/2.9.0/developing/data-types/
+  - /riak/kv/2.9.0/developing/data-types/
+  - /riak/kv/2.9.0p1/developing/data-types/
+  - /riak/kv/2.9.0p2/developing/data-types/
+  - /riak/kv/2.9.0p3/developing/data-types/
+  - /riak/kv/2.9.0p4/developing/data-types/
+  - /riak/kv/latest/developing/data-types/
 ---
+
 
 [wiki crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#Others
 [concept crdt]: ../../learn/concepts/crdts
@@ -139,11 +148,11 @@ bucket = client.bucket('users')
 ahmed_map = Riak::Crdt::Map.new(bucket, 'ahmed_info', 'maps')
 ahmed_map.instance_variable_get(:@context)
 
-# => "\x83l\x00\x00\x00\x01h\x02m\x00\x00\x00\b#\t\xFE\xF9S\x95\xBD3a\x01j"
+# => "/x83l/x00/x00/x00/x01h/x02m/x00/x00/x00/b#/t/xFE/xF9S/x95/xBD3a/x01j"
 ```
 
 ```php
-$map = (new \Basho\Riak\Command\Builder\FetchMap($riak))
+$map = (new /Basho/Riak/Command/Builder/FetchMap($riak))
     ->atLocation($location)
     ->build()
     ->execute()
@@ -234,16 +243,16 @@ client.execute(update);
 
 
 ```php
-$map = (new \Basho\Riak\Command\Builder\FetchMap($riak))
+$map = (new /Basho/Riak/Command/Builder/FetchMap($riak))
     ->atLocation($location)
     ->build()
     ->execute()
     ->getMap();
 
-$updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$updateSet = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->remove('opera');
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateSet('interests', $updateSet)
     ->atLocation($location)
     ->withContext($map->getContext())

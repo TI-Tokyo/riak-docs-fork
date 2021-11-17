@@ -2,23 +2,32 @@
 title: "Capability Negotiation"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Capability Negotiation"
     identifier: "learn_concepts_cap_negot"
     weight: 102
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/theory/concepts/capability-negotiation
-  - /riak-docs/riak/kv/2.9.0/theory/concepts/capability-negotiation
+  - /riak/2.9.0p5/theory/concepts/capability-negotiation
+  - /riak/kv/2.9.0p5/theory/concepts/capability-negotiation
+  - /riak/2.9.0p5/learn/concepts/capability-negotiation/
+  - /riak/2.9.0/learn/concepts/capability-negotiation/
+  - /riak/kv/2.9.0/learn/concepts/capability-negotiation/
+  - /riak/kv/2.9.0p1/learn/concepts/capability-negotiation/
+  - /riak/kv/2.9.0p2/learn/concepts/capability-negotiation/
+  - /riak/kv/2.9.0p3/learn/concepts/capability-negotiation/
+  - /riak/kv/2.9.0p4/learn/concepts/capability-negotiation/
+  - /riak/kv/latest/learn/concepts/capability-negotiation/
 ---
 
 
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[upgrade cluster]: {{<baseurl>}}riak/kv/2.9.0/setup/upgrading/cluster
-[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce
+
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[upgrade cluster]: {{<baseurl>}}riak/kv/2.9.0p5/setup/upgrading/cluster
+[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce
 
 
 In early versions of Riak KV, [rolling upgrades][upgrade cluster] from an older version to a newer involved (a) disabling all new features associated with the newer version, and then (b) re-enabling those features once all nodes in the cluster were upgraded.

@@ -2,28 +2,37 @@
 title: "Why Riak KV?"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Why Riak KV?"
     identifier: "learn_why_riak_kv"
     weight: 100
     parent: "learn"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/theory/why-riak/
-  - /riak-docs/riak/kv/2.9.0/theory/why-riak/
+  - /riak/2.9.0p5/theory/why-riak/
+  - /riak/kv/2.9.0p5/theory/why-riak/
+  - /riak/2.9.0p5/learn/why-riak-kv/
+  - /riak/2.9.0/learn/why-riak-kv/
+  - /riak/kv/2.9.0/learn/why-riak-kv/
+  - /riak/kv/2.9.0p1/learn/why-riak-kv/
+  - /riak/kv/2.9.0p2/learn/why-riak-kv/
+  - /riak/kv/2.9.0p3/learn/why-riak-kv/
+  - /riak/kv/2.9.0p4/learn/why-riak-kv/
+  - /riak/kv/latest/learn/why-riak-kv/
 ---
 
 
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties
-[Basho Bench]: {{<baseurl>}}riak/kv/2.9.0/using/performance/benchmarking
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/strong-consistency
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/eventual-consistency
+
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties
+[Basho Bench]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance/benchmarking
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/strong-consistency
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/eventual-consistency
 [convergent replicated data types]: http://hal.upmc.fr/docs/00/55/55/88/PDF/techreport.pdf
 [Datomic]: http://www.datomic.com/overview.html
-[dev data types]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types
-[glossary read rep]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#read-repair
+[dev data types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types
+[glossary read rep]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#read-repair
 
 
 ## What is Riak?

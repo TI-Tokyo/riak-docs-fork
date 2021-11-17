@@ -3,15 +3,25 @@ draft: true
 title: "Failure & Recovery Reference"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Failure & Recovery"
     identifier: "managing_ref_failure_recovery"
     weight: 105
     parent: "managing_ref"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/reference/failure-recovery/
+  - /riak/2.9.0/using/reference/failure-recovery/
+  - /riak/kv/2.9.0/using/reference/failure-recovery/
+  - /riak/kv/2.9.0p1/using/reference/failure-recovery/
+  - /riak/kv/2.9.0p2/using/reference/failure-recovery/
+  - /riak/kv/2.9.0p3/using/reference/failure-recovery/
+  - /riak/kv/2.9.0p4/using/reference/failure-recovery/
+  - /riak/kv/latest/using/reference/failure-recovery/
 ---
+
 
 ## Hanc capellae
 

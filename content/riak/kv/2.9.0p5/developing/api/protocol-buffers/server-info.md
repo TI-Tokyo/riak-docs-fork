@@ -2,18 +2,27 @@
 title: "PBC Server Info"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Server Info"
     identifier: "pbc_server_info"
     weight: 111
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers/server-info
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers/server-info
+  - /riak/2.9.0p5/dev/references/protocol-buffers/server-info
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers/server-info
+  - /riak/2.9.0p5/developing/api/protocol-buffers/server-info/
+  - /riak/2.9.0/developing/api/protocol-buffers/server-info/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/server-info/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/server-info/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/server-info/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/server-info/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/server-info/
+  - /riak/kv/latest/developing/api/protocol-buffers/server-info/
 ---
+
 
 A message from Riak that contains two pieces of information about the
 server: the name of the node and the version of Riak in use on that

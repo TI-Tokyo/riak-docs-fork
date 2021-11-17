@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/installing/Installing-on-Debian-and-Ubuntu
-  - /riak-docs/riak/kv/2.9.1/ops/building/installing/Installing-on-Debian-and-Ubuntu
-  - /riak-docs/riak/2.9.1/installing/debian-ubuntu/
-  - /riak-docs/riak/kv/2.9.1/installing/debian-ubuntu/
+  - /riak/2.9.1/ops/building/installing/Installing-on-Debian-and-Ubuntu
+  - /riak/kv/2.9.1/ops/building/installing/Installing-on-Debian-and-Ubuntu
+  - /riak/2.9.1/installing/debian-ubuntu/
+  - /riak/kv/2.9.1/installing/debian-ubuntu/
 ---
 
 [install source index]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/source/

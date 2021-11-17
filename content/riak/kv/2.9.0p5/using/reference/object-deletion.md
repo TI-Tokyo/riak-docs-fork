@@ -2,17 +2,26 @@
 title: "Object Deletion Reference"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Object Deletion"
     identifier: "managing_ref_object_deletion"
     weight: 103
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/advanced/deletion
+  - /riak/2.9.0p5/ops/advanced/deletion
+  - /riak/2.9.0p5/using/reference/object-deletion/
+  - /riak/2.9.0/using/reference/object-deletion/
+  - /riak/kv/2.9.0/using/reference/object-deletion/
+  - /riak/kv/2.9.0p1/using/reference/object-deletion/
+  - /riak/kv/2.9.0p2/using/reference/object-deletion/
+  - /riak/kv/2.9.0p3/using/reference/object-deletion/
+  - /riak/kv/2.9.0p4/using/reference/object-deletion/
+  - /riak/kv/latest/using/reference/object-deletion/
 ---
+
 
 [concept eventual consistency]: ../../../learn/concepts/eventual-consistency
 [concept clusters]: ../../../learn/concepts/clusters

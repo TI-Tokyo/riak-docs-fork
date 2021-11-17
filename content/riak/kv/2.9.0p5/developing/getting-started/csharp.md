@@ -2,22 +2,31 @@
 title: "Getting Started with C Sharp"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "C Sharp"
     identifier: "getting_started_csharp"
     weight: 103
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/csharp
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/csharp
+  - /riak/2.9.0p5/dev/taste-of-riak/csharp
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/csharp
+  - /riak/2.9.0p5/developing/getting-started/csharp/
+  - /riak/2.9.0/developing/getting-started/csharp/
+  - /riak/kv/2.9.0/developing/getting-started/csharp/
+  - /riak/kv/2.9.0p1/developing/getting-started/csharp/
+  - /riak/kv/2.9.0p2/developing/getting-started/csharp/
+  - /riak/kv/2.9.0p3/developing/getting-started/csharp/
+  - /riak/kv/2.9.0p4/developing/getting-started/csharp/
+  - /riak/kv/latest/developing/getting-started/csharp/
 ---
 
 
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.0/using/running-a-cluster) first.
+
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.0p5/using/running-a-cluster) first.
 
 To try this flavor of Riak, a working installation of the .NET Framework or Mono is required. 
 
@@ -79,4 +88,4 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/2.9.0/developing/getting-started/csharp/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/csharp/crud-operations)

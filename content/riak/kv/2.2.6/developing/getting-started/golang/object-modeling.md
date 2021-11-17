@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_go"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/object-modeling-golang
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/object-modeling-golang
+  - /riak/2.2.6/dev/taste-of-riak/object-modeling-golang
+  - /riak/kv/2.2.6/dev/taste-of-riak/object-modeling-golang
 ---
 
 {{% note title="Code Download" %}}

@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/mdc/v2/ssl
-  - /riak-docs/riak/kv/2.9.1/ops/mdc/v2/ssl
+  - /riak/2.9.1/ops/mdc/v2/ssl
+  - /riak/kv/2.9.1/ops/mdc/v2/ssl
 ---
 
 {{% note title="Deprecation Warning" %}}

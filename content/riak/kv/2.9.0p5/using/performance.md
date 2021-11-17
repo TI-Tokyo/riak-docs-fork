@@ -2,18 +2,27 @@
 title: "Improving Performance"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Performance"
     identifier: "managing_performance"
     weight: 206
     parent: "managing"
 toc: true
 aliases:
-  - /riak-docs/riak/kv/2.9.0/ops/tuning/linux/
-  - /riak-docs/riak/2.9.0/ops/tuning/linux/
+  - /riak/kv/2.9.0p5/ops/tuning/linux/
+  - /riak/2.9.0p5/ops/tuning/linux/
+  - /riak/2.9.0p5/using/performance/
+  - /riak/2.9.0/using/performance/
+  - /riak/kv/2.9.0/using/performance/
+  - /riak/kv/2.9.0p1/using/performance/
+  - /riak/kv/2.9.0p2/using/performance/
+  - /riak/kv/2.9.0p3/using/performance/
+  - /riak/kv/2.9.0p4/using/performance/
+  - /riak/kv/latest/using/performance/
 ---
+
 
 Many Unix-like operating systems and distributions are tuned for desktop
 or light use out of the box and not for a production database. This
@@ -24,7 +33,7 @@ changes are made and when in order to measure the impact of those
 changes.
 
 For performance and tuning recommendations specific to running Riak
-clusters on the Amazon Web Services EC2 environment, see [AWS Performance Tuning]({{<baseurl>}}riak/kv/2.9.0/using/performance/amazon-web-services).
+clusters on the Amazon Web Services EC2 environment, see [AWS Performance Tuning]({{<baseurl>}}riak/kv/2.9.0p5/using/performance/amazon-web-services).
 
 {{% note title="Note on other operating systems" %}}
 Unless otherwise specified, the tunings recommended below are for Linux
@@ -253,12 +262,12 @@ These settings have been tested and benchmarked by Basho in nodes with
 
 Riak and supporting tools can consume a large number of open file
 handles during normal operation. For stability, increasing the number of
-open files limit is necessary. See [Open Files Limit]({{<baseurl>}}riak/kv/2.9.0/using/performance/open-files-limit/) for more
+open files limit is necessary. See [Open Files Limit]({{<baseurl>}}riak/kv/2.9.0p5/using/performance/open-files-limit/) for more
 details.
 
 ## Other Tuning Docs
 
-* [AWS Performance Tuning]({{<baseurl>}}riak/kv/2.9.0/using/performance/amazon-web-services)
-* [Erlang VM Tuning]({{<baseurl>}}riak/kv/2.9.0/using/performance/erlang)
-* [Latency Reduction]({{<baseurl>}}riak/kv/2.9.0/using/performance/latency-reduction)
-* [Open Files Limit]({{<baseurl>}}riak/kv/2.9.0/using/performance/open-files-limit/)
+* [AWS Performance Tuning]({{<baseurl>}}riak/kv/2.9.0p5/using/performance/amazon-web-services)
+* [Erlang VM Tuning]({{<baseurl>}}riak/kv/2.9.0p5/using/performance/erlang)
+* [Latency Reduction]({{<baseurl>}}riak/kv/2.9.0p5/using/performance/latency-reduction)
+* [Open Files Limit]({{<baseurl>}}riak/kv/2.9.0p5/using/performance/open-files-limit/)

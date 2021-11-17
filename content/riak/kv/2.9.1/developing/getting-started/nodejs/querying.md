@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_nodejs"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/querying-nodejs
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/querying-nodejs
+  - /riak/2.9.1/dev/taste-of-riak/querying-nodejs
+  - /riak/kv/2.9.1/dev/taste-of-riak/querying-nodejs
 ---
 
 ## Node.js Version Setup

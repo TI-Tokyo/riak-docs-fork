@@ -12,8 +12,8 @@ menu:
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/using/conflict-resolution/csharp
-  - /riak-docs/riak/kv/2.2.6/dev/using/conflict-resolution/csharp
+  - /riak/2.2.6/dev/using/conflict-resolution/csharp
+  - /riak/kv/2.2.6/dev/using/conflict-resolution/csharp
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.2.6/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that requires applications to resolve siblings according to use-case-specific

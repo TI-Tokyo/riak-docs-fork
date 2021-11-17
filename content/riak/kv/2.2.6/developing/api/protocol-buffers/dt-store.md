@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/dt-store
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/dt-store
+  - /riak/2.2.6/dev/references/protocol-buffers/dt-store
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/dt-store
 ---
 
 A request to update the value of a [Riak Data Type]({{<baseurl>}}riak/kv/2.2.6/developing/data-types).

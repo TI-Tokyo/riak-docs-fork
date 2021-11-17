@@ -2,18 +2,27 @@
 title: "Failure & Recovery"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Failure & Recovery"
     identifier: "repair_recover_failure"
     weight: 100
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/running/recovery/failure-recovery
-  - /riak-docs/riak/kv/2.9.0/ops/running/recovery/failure-recovery
+  - /riak/2.9.0p5/ops/running/recovery/failure-recovery
+  - /riak/kv/2.9.0p5/ops/running/recovery/failure-recovery
+  - /riak/2.9.0p5/using/repair-recovery/failure-recovery/
+  - /riak/2.9.0/using/repair-recovery/failure-recovery/
+  - /riak/kv/2.9.0/using/repair-recovery/failure-recovery/
+  - /riak/kv/2.9.0p1/using/repair-recovery/failure-recovery/
+  - /riak/kv/2.9.0p2/using/repair-recovery/failure-recovery/
+  - /riak/kv/2.9.0p3/using/repair-recovery/failure-recovery/
+  - /riak/kv/2.9.0p4/using/repair-recovery/failure-recovery/
+  - /riak/kv/latest/using/repair-recovery/failure-recovery/
 ---
+
 
 Riak was built to withstand---or at the very least reduce the severity
 of---many types of system failure. Nonetheless, bugs are a reality,
@@ -38,7 +47,7 @@ does not necessarily cause data loss, as other replicas of every key are
 available elsewhere in the cluster. Once the node is detected as down,
 other nodes in the cluster will take over its responsibilities
 temporarily and transmit the updated data to it when it eventually
-returns to service (also called [hinted handoff]({{<baseurl>}}riak/kv/2.9.0/learn/glossary/#hinted-handoff)).
+returns to service (also called [hinted handoff]({{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#hinted-handoff)).
 
 More severe data loss scenarios usually relate to hardware failure.
 If data is lost, several options are available for restoring it.
@@ -92,7 +101,7 @@ too much data and growing the cluster may be necessary. Additional RAM
 may also improve latency because more of the active dataset will be
 cached by the operating system.
 
-Sometimes extreme latency spikes can be caused by [sibling explosion]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution#siblings). This condition occurs when the client application does not resolve conflicts properly or in a timely fashion. In that scenario, the size of the value on disk grows in proportion to
+Sometimes extreme latency spikes can be caused by [sibling explosion]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution#siblings). This condition occurs when the client application does not resolve conflicts properly or in a timely fashion. In that scenario, the size of the value on disk grows in proportion to
 the number of siblings, causing longer disk service times and slower
 network responses.
 
@@ -116,7 +125,7 @@ spreading load and increasing available CPU and IOPS.
 
 ## Cluster Recovery From Backups
 
-See [Changing Cluster Information]({{<baseurl>}}riak/kv/2.1.4/using/cluster-operations/changing-cluster-info/#clusters-from-backups) for instructions on cluster recovery.
+See [Changing Cluster Information]({{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/changing-cluster-info/#clusters-from-backups) for instructions on cluster recovery.
 
 {{% note title="Tip" %}}
 If you are a TI Tokyo Riak supprt customer and require assistance or

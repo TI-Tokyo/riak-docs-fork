@@ -13,8 +13,8 @@ toc: true
 version_history:
   in: "2.1.0+"
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/write-once
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/write-once
+  - /riak/2.2.6/dev/advanced/write-once
+  - /riak/kv/2.2.6/dev/advanced/write-once
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.2.6/learn/glossary/#vnode

@@ -2,22 +2,31 @@
 title: "MapReduce Settings"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "MapReduce Settings"
     identifier: "configuring_mapreduce"
     weight: 170
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/advanced/configs/mapreduce/
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/configs/mapreduce/
+  - /riak/2.9.0p5/ops/advanced/configs/mapreduce/
+  - /riak/kv/2.9.0p5/ops/advanced/configs/mapreduce/
+  - /riak/2.9.0p5/configuring/mapreduce/
+  - /riak/2.9.0/configuring/mapreduce/
+  - /riak/kv/2.9.0/configuring/mapreduce/
+  - /riak/kv/2.9.0p1/configuring/mapreduce/
+  - /riak/kv/2.9.0p2/configuring/mapreduce/
+  - /riak/kv/2.9.0p3/configuring/mapreduce/
+  - /riak/kv/2.9.0p4/configuring/mapreduce/
+  - /riak/kv/latest/configuring/mapreduce/
 ---
 
-[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce
-[config reference#appconfig]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#app-config
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes
+
+[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce
+[config reference#appconfig]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#app-config
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes
 
 ## Configuring MapReduce
 

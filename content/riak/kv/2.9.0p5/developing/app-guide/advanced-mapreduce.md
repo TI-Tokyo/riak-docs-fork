@@ -2,25 +2,34 @@
 title: "Advanced MapReduce"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Advanced MapReduce"
     identifier: "app_guide_mapreduce"
     weight: 103
     parent: "developing_app_guide"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/advanced/mapreduce/
-  - /riak-docs/riak/kv/2.9.0/dev/advanced/mapreduce/
+  - /riak/2.9.0p5/dev/advanced/mapreduce/
+  - /riak/kv/2.9.0p5/dev/advanced/mapreduce/
+  - /riak/2.9.0p5/developing/app-guide/advanced-mapreduce/
+  - /riak/2.9.0/developing/app-guide/advanced-mapreduce/
+  - /riak/kv/2.9.0/developing/app-guide/advanced-mapreduce/
+  - /riak/kv/2.9.0p1/developing/app-guide/advanced-mapreduce/
+  - /riak/kv/2.9.0p2/developing/app-guide/advanced-mapreduce/
+  - /riak/kv/2.9.0p3/developing/app-guide/advanced-mapreduce/
+  - /riak/kv/2.9.0p4/developing/app-guide/advanced-mapreduce/
+  - /riak/kv/latest/developing/app-guide/advanced-mapreduce/
 ---
 
-[usage 2i]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties
-[use ref custom code]: {{<baseurl>}}riak/kv/2.9.0/using/reference/custom-code
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
+
+[usage 2i]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties
+[use ref custom code]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/custom-code
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
 [google mr]: http://research.google.com/archive/mapreduce.html
 [mapping list]: http://hackage.haskell.org/package/base-4.7.0.0/docs/Prelude.html#v:map
 [function contrib]: https://github.com/basho/riak_function_contrib
@@ -253,8 +262,8 @@ example, let's return keys contained within a bucket named `messages`
 (please pick a bucket which contains keys in your environment).
 
 ```curl
-curl -XPOST localhost:8098/mapred \
-  -H 'Content-Type: application/json'   \
+curl -XPOST localhost:8098/mapred /
+  -H 'Content-Type: application/json'   /
   -d '{"inputs":"messages","query":[{"map":{"language":"erlang","module":"mr_example","function":"get_keys"}}]}'
 ```
 
@@ -381,7 +390,7 @@ Erlang client.
 {{% note title="Distributing Erlang MapReduce Code" %}}
 Any modules and functions you use in your Erlang MapReduce calls must be
 available on all nodes in the cluster. Please read about
-[installing custom code]({{<baseurl>}}riak/kv/2.9.0/using/reference/custom-code).
+[installing custom code]({{<baseurl>}}riak/kv/2.9.0p5/using/reference/custom-code).
 {{% /note %}}
 
 ### Erlang Example
@@ -537,11 +546,11 @@ main([]) ->
     io:format("Requires one argument: filename with the CSV data~n");
 main([Filename]) ->
     {ok, Data} = file:read_file(Filename),
-    Lines = tl(re:split(Data, "\r?\n", [{return, binary},trim])),
+    Lines = tl(re:split(Data, "/r?/n", [{return, binary},trim])),
     lists:foreach(fun(L) -> LS = re:split(L, ","), format_and_insert(LS) end, Lines).
 
 format_and_insert(Line) ->
-    JSON = io_lib:format("{\"Date\":\"~s\",\"Open\":~s,\"High\":~s,\"Low\":~s,\"Close\":~s,\"Volume\":~s,\"Adj. Close\":~s}", Line),
+    JSON = io_lib:format("{/"Date/":/"~s/",/"Open/":~s,/"High/":~s,/"Low/":~s,/"Close/":~s,/"Volume/":~s,/"Adj. Close/":~s}", Line),
     Command = io_lib:format("curl -XPUT http://127.0.0.1:8098/buckets/goog/keys/~s -d '~s' -H 'content-type: application/json'", [hd(Line),JSON]),
     io:format("Inserting: ~s~n", [hd(Line)]),
     os:cmd(Command).
@@ -742,11 +751,11 @@ more time-consuming.
 ### Module not in path
 
 ```bash
-$ curl -XPOST localhost:8098/mapred \
->   -H 'Content-Type: application/json'   \
+$ curl -XPOST localhost:8098/mapred /
+>   -H 'Content-Type: application/json'   /
 >   -d '{"inputs":"messages","query":[{"map":{"language":"erlang","module":"mr_example","function":"get_keys"}}]}'
 
-{"phase":0,"error":"invalid module named in PhaseSpec function:\n must be a valid module name (failed to load mr_example: nofile)"}
+{"phase":0,"error":"invalid module named in PhaseSpec function:/n must be a valid module name (failed to load mr_example: nofile)"}
 ```
 
 ### Node in process of starting
@@ -767,7 +776,7 @@ $ curl -XPOST localhost:8098/mapred   -H 'Content-Type: application/json'     -d
 
 ```erlang
 > riakc_pb_socket:mapred_bucket(Riak, <<"goog">>, [{map, {qfun, DailyFun}, none, true}]).
-{error,<<"{\"phase\":0,\"error\":\"function_clause\",\"input\":\"{ok,{r_object,<<\\\"goog\\\">>,<<\\\"2009-06-10\\\">>,[{r_content,{dic"...>>}
+{error,<<"{/"phase/":0,/"error/":/"function_clause/",/"input/":/"{ok,{r_object,<<///"goog///">>,<<///"2009-06-10///">>,[{r_content,{dic"...>>}
 ```
 
 The Erlang shell truncates error messages; when using MapReduce, typically the information you need is buried more deeply within the stack.
@@ -776,14 +785,14 @@ We can get a longer error message this way:
 
 ```erlang
 > {error, ErrorMsg} = riakc_pb_socket:mapred_bucket(Riak, <<"goog">>, [{map, {qfun, DailyFun}, none, true}]).
-{error,<<"{\"phase\":0,\"error\":\"function_clause\",\"input\":\"{ok,{r_object,<<\\\"goog\\\">>,<<\\\"2009-06-10\\\">>,[{r_content,{dic"...>>}
+{error,<<"{/"phase/":0,/"error/":/"function_clause/",/"input/":/"{ok,{r_object,<<///"goog///">>,<<///"2009-06-10///">>,[{r_content,{dic"...>>}
 
 > io:format("~p~n", [ErrorMsg]).
-<<"{\"phase\":0,\"error\":\"function_clause\",\"input\":\"{ok,{r_object,<<\\\"goog\\\">>,<<\\\"2009-06-10\\\">>,[{r_content,{dict,6,16,16,8,80,48,{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},{{[],[],[[<<\\\"Links\\\">>]],[],[],[],[],[],[],[],[[<<\\\"content-type\\\">>,97,112,112,108,105,99,97,116,105,111,110,47,106,115,111,110],[<<\\\"X-Riak-VTag\\\">>,55,87,101,79,53,120,65,121,50,67,49,77,72,104,54,100,89,65,67,74,55,70]],[[<<\\\"index\\\">>]],[],[[<<\\\"X-Riak-Last-Modified\\\">>|{1405,709865,48668}]],[],[[<<\\\"X-Riak-Meta\\\">>]]}}},<<\\\"{\\\\\\\"Date\\\\\\\":\\\\\\\"2009-06-10\\\\\\\",\\\\\\\"Open\\\\\\\":436.23,\\\\\\\"High\\\\\\\":437.89,\\\\\\\"L...\\\">>}],...},...}\",\"type\":\"error\",\"stack\":\"[{string,substr,[\\\"2009-06-10\\\",0,7],[{file,\\\"string.erl\\\"},{line,207}]},{erl_eval,do_apply,6,[{file,\\\"erl_eval.erl\\\"},{line,573}]},{erl_eval,expr,5,[{file,\\\"erl_eval.erl\\\"},{line,364}]},{erl_eval,exprs,5,[{file,\\\"erl_eval.erl\\\"},{line,118}]},{riak_kv_mrc_map,map,3,[{file,\\\"src/riak_kv_mrc_map.erl\\\"},{line,172}]},{riak_kv_mrc_map,process,3,[{file,\\\"src/riak_kv_mrc_map.erl\\\"},{line,144}]},{riak_pipe_vnode_worker,process_input,3,[{file,\\\"src/riak_pipe_vnode_worker.erl\\\"},{line,446}]},{riak_pipe_vnode_worker,wait_for_input,...}]\"}">>
+<<"{/"phase/":0,/"error/":/"function_clause/",/"input/":/"{ok,{r_object,<<///"goog///">>,<<///"2009-06-10///">>,[{r_content,{dict,6,16,16,8,80,48,{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},{{[],[],[[<<///"Links///">>]],[],[],[],[],[],[],[],[[<<///"content-type///">>,97,112,112,108,105,99,97,116,105,111,110,47,106,115,111,110],[<<///"X-Riak-VTag///">>,55,87,101,79,53,120,65,121,50,67,49,77,72,104,54,100,89,65,67,74,55,70]],[[<<///"index///">>]],[],[[<<///"X-Riak-Last-Modified///">>|{1405,709865,48668}]],[],[[<<///"X-Riak-Meta///">>]]}}},<<///"{///////"Date///////":///////"2009-06-10///////",///////"Open///////":436.23,///////"High///////":437.89,///////"L...///">>}],...},...}/",/"type/":/"error/",/"stack/":/"[{string,substr,[///"2009-06-10///",0,7],[{file,///"string.erl///"},{line,207}]},{erl_eval,do_apply,6,[{file,///"erl_eval.erl///"},{line,573}]},{erl_eval,expr,5,[{file,///"erl_eval.erl///"},{line,364}]},{erl_eval,exprs,5,[{file,///"erl_eval.erl///"},{line,118}]},{riak_kv_mrc_map,map,3,[{file,///"src/riak_kv_mrc_map.erl///"},{line,172}]},{riak_kv_mrc_map,process,3,[{file,///"src/riak_kv_mrc_map.erl///"},{line,144}]},{riak_pipe_vnode_worker,process_input,3,[{file,///"src/riak_pipe_vnode_worker.erl///"},{line,446}]},{riak_pipe_vnode_worker,wait_for_input,...}]/"}">>
 ```
 
 Still truncated, but this provides enough context to see the problem:
-`string,substr,[\\\"2009-06-10\\\",0,7]`. Erlang's `string:substr`
+`string,substr,[///"2009-06-10///",0,7]`. Erlang's `string:substr`
 function starts indexing strings at 1, not 0.
 
 ### Exceptional tip

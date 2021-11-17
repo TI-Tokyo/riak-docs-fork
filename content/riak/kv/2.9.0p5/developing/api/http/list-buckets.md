@@ -2,17 +2,25 @@
 title: "HTTP List Buckets"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "List Buckets"
     identifier: "http_list_buckets"
     weight: 103
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/list-buckets
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/list-buckets
+  - /riak/2.9.0p5/dev/references/http/list-buckets
+  - /riak/kv/2.9.0p5/dev/references/http/list-buckets
+  - /riak/2.9.0p5/developing/api/http/list-buckets/
+  - /riak/2.9.0/developing/api/http/list-buckets/
+  - /riak/kv/2.9.0/developing/api/http/list-buckets/
+  - /riak/kv/2.9.0p1/developing/api/http/list-buckets/
+  - /riak/kv/2.9.0p2/developing/api/http/list-buckets/
+  - /riak/kv/2.9.0p3/developing/api/http/list-buckets/
+  - /riak/kv/2.9.0p4/developing/api/http/list-buckets/
+  - /riak/kv/latest/developing/api/http/list-buckets/
 ---
 
 Lists all known buckets (ones that have keys stored in them).

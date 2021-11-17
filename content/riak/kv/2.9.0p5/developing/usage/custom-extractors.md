@@ -2,18 +2,27 @@
 title: "Custom Extractors"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Custom Extractors"
     identifier: "usage_custom_extractors"
     weight: 113
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/search/custom-extractors
-  - /riak-docs/riak/kv/2.9.0/dev/search/custom-extractors
+  - /riak/2.9.0p5/dev/search/custom-extractors
+  - /riak/kv/2.9.0p5/dev/search/custom-extractors
+  - /riak/2.9.0p5/developing/usage/custom-extractors/
+  - /riak/2.9.0/developing/usage/custom-extractors/
+  - /riak/kv/2.9.0/developing/usage/custom-extractors/
+  - /riak/kv/2.9.0p1/developing/usage/custom-extractors/
+  - /riak/kv/2.9.0p2/developing/usage/custom-extractors/
+  - /riak/kv/2.9.0p3/developing/usage/custom-extractors/
+  - /riak/kv/2.9.0p4/developing/usage/custom-extractors/
+  - /riak/kv/latest/developing/usage/custom-extractors/
 ---
+
 
 Solr, and by extension Riak Search, has default extractors for a wide
 variety of data types, including JSON, XML, and plaintext. Riak Search
@@ -27,7 +36,7 @@ Content Type | Erlang Module
 `text/xml` | `yz_xml_extractor`
 No specified type | `yz_noop_extractor`
 
-There are also built-in extractors for [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/usage/searching-data-types).
+There are also built-in extractors for [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/searching-data-types).
 
 If you're working with a data format that does not have a default Solr
 extractor, you can create your own and register it with Riak Search.
@@ -145,7 +154,7 @@ erlc search_test_extractor.erl
 To instruct Riak where to find the resulting
 `search_test_extractor.beam` file, we'll need to add a line to an
 `advanced.config` file in the node's `/etc` directory (more information
-can be found in our documentation on [advanced]({{<baseurl>}}riak/kv/2.9.0/configuring/reference/#advanced-configuration)). Here's an
+can be found in our documentation on [advanced]({{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#advanced-configuration)). Here's an
 example:
 
 ```advancedconfig
@@ -201,8 +210,8 @@ packet data from above in a `google_packet.bin` file. Then, we'll `PUT`
 that binary to Riak's `/search/extract` endpoint:
 
 ```curl
-curl -XPUT $RIAK_HOST/search/extract \
-     -H 'Content-Type: application/httpheader' \ # Note that we used our custom MIME type
+curl -XPUT $RIAK_HOST/search/extract /
+     -H 'Content-Type: application/httpheader' / # Note that we used our custom MIME type
      --data-binary @google_packet.bin
 ```
 
@@ -220,7 +229,7 @@ We can also verify this in the Erlang shell (whether in a Riak node's
 Erlang shell or otherwise):
 
 ```erlang
-yz_extractor:run(<<"GET http://www.google.com HTTP/1.1\n">>, yz_httpheader_extractor).
+yz_extractor:run(<<"GET http://www.google.com HTTP/1.1/n">>, yz_httpheader_extractor).
 
 %% Console output:
 [{method,'GET'},{host,<<"www.google.com">>},{uri,<<"/">>}]
@@ -229,7 +238,7 @@ yz_extractor:run(<<"GET http://www.google.com HTTP/1.1\n">>, yz_httpheader_extra
 ## Indexing and Searching HTTP Header Packet Data
 
 Now that Solr knows how to extract HTTP header packet data, we need to
-create a schema that extends the [default schema]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search-schemas/#creating-a-custom-schema). The following fields should be added
+create a schema that extends the [default schema]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search-schemas/#creating-a-custom-schema). The following fields should be added
 to `<fields>` in the schema, which we'll name `http_header_schema` and
 store in a `http_header_schema.xml` file:
 
@@ -264,7 +273,7 @@ client.create_search_schema('http_header_schema', schema_xml)
 
 ```php
 $schema_string = file_get_contents('http_header_schema.xml');
-(new \Basho\Riak\Command\Builder\StoreSchema($riak))
+(new /Basho/Riak/Command/Builder/StoreSchema($riak))
   ->withName('http_header_schema')
   ->withSchemaString($schema_string)
   ->build()
@@ -279,8 +288,8 @@ client.create_search_schema('http_header_schema', schema_xml)
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/schema/http_header_schema \
-     -H 'Content-Type: application/xml' \
+curl -XPUT $RIAK_HOST/search/schema/http_header_schema /
+     -H 'Content-Type: application/xml' /
      --data-binary @http_header_schema.xml
 ```
 
@@ -299,7 +308,7 @@ client.create_search_index('header_data', 'http_header_schema')
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\StoreIndex($riak))
+(new /Basho/Riak/Command/Builder/StoreIndex($riak))
   ->withName('header_data')
   ->usingSchema('http_header_schema')
   ->build()
@@ -311,12 +320,12 @@ client.create_search_index('header_data', 'http_header_schema')
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/index/header_data \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/search/index/header_data /
+     -H 'Content-Type: application/json' /
      -d '{"schema":"http_header_schema"}'
 ```
 
-Now, we can create and activate a [bucket type]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types)
+Now, we can create and activate a [bucket type]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types)
 for all of the HTTP header data that we plan to store. Any bucket that
 bears this type will be associated with our `header_data` search index.
 We'll call our bucket type `http_data_store`.
@@ -357,7 +366,7 @@ obj.store
 ```php
 $object = new Object(file_get_contents("google_packet.bin"), ['Content-Type' => 'application/httpheader']);
 
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildLocation('google', 'packets', 'http_data_store')
   ->withObject($object)
   ->build()
@@ -374,8 +383,8 @@ obj.store()
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/types/http_data_store/buckets/packets/keys/google \
-     -H 'Content-Type: application/httpheader' \
+curl -XPUT $RIAK_HOST/types/http_data_store/buckets/packets/keys/google /
+     -H 'Content-Type: application/httpheader' /
      --data-binary @google_packet.bin
 ```
 
@@ -398,7 +407,7 @@ results['num_found'] # 1
 ```
 
 ```php
-$response = (\Basho\Riak\Command\Search\FetchObjects($riak))
+$response = (/Basho/Riak/Command/Search/FetchObjects($riak))
   ->withQuery('method:GET')
   ->withIndexName('header_data')
   ->build()

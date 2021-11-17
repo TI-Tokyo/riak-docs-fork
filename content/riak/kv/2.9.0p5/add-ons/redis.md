@@ -2,16 +2,26 @@
 title: "Riak Redis Add-on"
 description: "Redis Add-on for Riak KV"
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Redis Add-on"
     identifier: "add-ons_redis"
     weight: 101
     parent: "add-ons"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/2.9.0p5/add-ons/redis/
+  - /riak/2.9.0/add-ons/redis/
+  - /riak/kv/2.9.0/add-ons/redis/
+  - /riak/kv/2.9.0p1/add-ons/redis/
+  - /riak/kv/2.9.0p2/add-ons/redis/
+  - /riak/kv/2.9.0p3/add-ons/redis/
+  - /riak/kv/2.9.0p4/add-ons/redis/
+  - /riak/kv/latest/add-ons/redis/
 ---
+
 
 
 [addon redis develop]: ./developing-rra/

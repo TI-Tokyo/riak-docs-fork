@@ -2,17 +2,25 @@
 title: "HTTP Delete Object"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Delete Object"
     identifier: "http_delete_object"
     weight: 107
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/delete-object
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/delete-object
+  - /riak/2.9.0p5/dev/references/http/delete-object
+  - /riak/kv/2.9.0p5/dev/references/http/delete-object
+  - /riak/2.9.0p5/developing/api/http/delete-object/
+  - /riak/2.9.0/developing/api/http/delete-object/
+  - /riak/kv/2.9.0/developing/api/http/delete-object/
+  - /riak/kv/2.9.0p1/developing/api/http/delete-object/
+  - /riak/kv/2.9.0p2/developing/api/http/delete-object/
+  - /riak/kv/2.9.0p3/developing/api/http/delete-object/
+  - /riak/kv/2.9.0p4/developing/api/http/delete-object/
+  - /riak/kv/latest/developing/api/http/delete-object/
 ---
 
 Deletes an object from the specified bucket / key.

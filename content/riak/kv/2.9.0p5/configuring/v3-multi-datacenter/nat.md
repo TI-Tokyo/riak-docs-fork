@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter Replication:"
 title: "With NAT"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "With NAT"
     identifier: "configuring_v3_replication_nat"
     weight: 101
@@ -13,11 +13,20 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/v3/nat
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/v3/nat
+  - /riak/2.9.0p5/ops/mdc/v3/nat
+  - /riak/kv/2.9.0p5/ops/mdc/v3/nat
+  - /riak/2.9.0p5/configuring/v3-multi-datacenter/nat/
+  - /riak/2.9.0/configuring/v3-multi-datacenter/nat/
+  - /riak/kv/2.9.0/configuring/v3-multi-datacenter/nat/
+  - /riak/kv/2.9.0p1/configuring/v3-multi-datacenter/nat/
+  - /riak/kv/2.9.0p2/configuring/v3-multi-datacenter/nat/
+  - /riak/kv/2.9.0p3/configuring/v3-multi-datacenter/nat/
+  - /riak/kv/2.9.0p4/configuring/v3-multi-datacenter/nat/
+  - /riak/kv/latest/configuring/v3-multi-datacenter/nat/
 ---
 
-[config v3 ssl]: {{<baseurl>}}riak/kv/2.9.0/configuring/v3-multi-datacenter/ssl
+
+[config v3 ssl]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/v3-multi-datacenter/ssl
 
 Riak's Version 3 Replication supports replication of data on
 networks that use static NAT.

@@ -270,4 +270,4 @@ search property is set to false.
 
 11. Finally, delete the merge index directories to reclaim disk space.
 
-For any questions reach out to the [Riak community](/community). Preferably, ask your questions up front rather than during the middle of a migration.
+For any questions reach out to the [Riak community]({{<baseurl>}}community). Preferably, ask your questions up front rather than during the middle of a migration.

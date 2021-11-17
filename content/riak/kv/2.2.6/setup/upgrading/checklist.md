@@ -11,8 +11,8 @@ menu:
     parent: "upgrading"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/upgrading/production-checklist/
-  - /riak-docs/riak/kv/2.2.6/ops/upgrading/production-checklist/
+  - /riak/2.2.6/ops/upgrading/production-checklist/
+  - /riak/kv/2.2.6/ops/upgrading/production-checklist/
 ---
 
 [perf open files]: {{<baseurl>}}riak/kv/2.2.6/using/performance/open-files-limit

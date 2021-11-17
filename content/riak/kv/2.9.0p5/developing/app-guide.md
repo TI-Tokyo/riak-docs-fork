@@ -2,61 +2,70 @@
 title: "Riak KV Application Guide"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Application Guide"
     identifier: "developing_app_guide"
     weight: 105
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/application-guide/
-  - /riak-docs/riak/kv/2.9.0/dev/using/application-guide/
+  - /riak/2.9.0p5/dev/using/application-guide/
+  - /riak/kv/2.9.0p5/dev/using/application-guide/
+  - /riak/2.9.0p5/developing/app-guide/
+  - /riak/2.9.0/developing/app-guide/
+  - /riak/kv/2.9.0/developing/app-guide/
+  - /riak/kv/2.9.0p1/developing/app-guide/
+  - /riak/kv/2.9.0p2/developing/app-guide/
+  - /riak/kv/2.9.0p3/developing/app-guide/
+  - /riak/kv/2.9.0p4/developing/app-guide/
+  - /riak/kv/latest/developing/app-guide/
 ---
 
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution
-[dev data model#log]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#log-data
-[dev data model#sensor]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#sensor-data
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/eventual-consistency
-[dev data model#user]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#user-data
-[dev kv model]: {{<baseurl>}}riak/kv/2.9.0/developing/key-value-modeling
-[dev data types]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types
-[dev data types#counters]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types/#counters
-[dev data types#sets]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets
-[dev data types#maps]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps
-[usage create objects]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/creating-objects
-[usage search]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/search
-[use ref search]: {{<baseurl>}}riak/kv/2.9.0/using/reference/search
-[usage 2i]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes
-[dev client libraries]: {{<baseurl>}}riak/kv/2.9.0/developing/client-libraries
-[concept crdts]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/crdts
-[dev data model]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling
-[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce
-[apps mapreduce]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/advanced-mapreduce
-[use ref 2i]: {{<baseurl>}}riak/kv/2.9.0/using/reference/secondary-indexes
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory
-[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveled
-[obj model java]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started/java/object-modeling
-[obj model ruby]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started/ruby/object-modeling
-[obj model python]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started/python/object-modeling
-[obj model csharp]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started/csharp/object-modeling
-[obj model nodejs]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started/nodejs/object-modeling
-[obj model erlang]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started/erlang/object-modeling
-[obj model golang]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started/golang/object-modeling
-[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/reference/strong-consistency
-[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/reference/strong-consistency
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/strong-consistency
-[config strong consistency]: {{<baseurl>}}riak/kv/2.9.0/configuring/strong-consistency
-[apps strong consistency]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/strong-consistency
-[usage update objects]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/updating-objects
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties
-[install index]: {{<baseurl>}}riak/kv/2.9.0/setup/installing
-[getting started]: {{<baseurl>}}riak/kv/2.9.0/developing/getting-started
-[usage index]: {{<baseurl>}}riak/kv/2.9.0/developing/usage
-[glossary]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary
+
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution
+[dev data model#log]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#log-data
+[dev data model#sensor]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#sensor-data
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/eventual-consistency
+[dev data model#user]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#user-data
+[dev kv model]: {{<baseurl>}}riak/kv/2.9.0p5/developing/key-value-modeling
+[dev data types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types
+[dev data types#counters]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#counters
+[dev data types#sets]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets
+[dev data types#maps]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps
+[usage create objects]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/creating-objects
+[usage search]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search
+[use ref search]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/search
+[usage 2i]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes
+[dev client libraries]: {{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries
+[concept crdts]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/crdts
+[dev data model]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling
+[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce
+[apps mapreduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/advanced-mapreduce
+[use ref 2i]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/secondary-indexes
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory
+[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveled
+[obj model java]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/java/object-modeling
+[obj model ruby]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/ruby/object-modeling
+[obj model python]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/python/object-modeling
+[obj model csharp]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/csharp/object-modeling
+[obj model nodejs]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/nodejs/object-modeling
+[obj model erlang]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/erlang/object-modeling
+[obj model golang]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/golang/object-modeling
+[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/strong-consistency
+[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/strong-consistency
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/strong-consistency
+[config strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/strong-consistency
+[apps strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/strong-consistency
+[usage update objects]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/updating-objects
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties
+[install index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing
+[getting started]: {{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started
+[usage index]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage
+[glossary]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary
 
 So you've decided to build an application using Riak as a data store. We
 think that this is a wise choice for a broad variety of use cases. But
@@ -167,7 +176,7 @@ using the Solr API.
   to the entirety of [Solr](http://lucene.apache.org/solr/)'s extremely
   broad API, which enables you to query on the basis of wildcards,
   strings, booleans, geolocation, ranges, language-specific fulltext,
-  and far more. You can even use Search in conjunction with [Riak Data Types][dev data types] \(documentation coming soon).
+  and far more. You can even use Search in conjunction with [Riak Data Types][dev data types] /(documentation coming soon).
 
 > **Search is preferred for querying**
 >

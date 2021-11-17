@@ -2,34 +2,43 @@
 title: "Use Cases For Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Use Cases"
     identifier: "learn_use_cases"
     weight: 101
     parent: "learn"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/data-modeling/
-  - /riak-docs/riak/kv/2.9.0/dev/data-modeling/
+  - /riak/2.9.0p5/dev/data-modeling/
+  - /riak/kv/2.9.0p5/dev/data-modeling/
+  - /riak/2.9.0p5/learn/use-cases/
+  - /riak/2.9.0/learn/use-cases/
+  - /riak/kv/2.9.0/learn/use-cases/
+  - /riak/kv/2.9.0p1/learn/use-cases/
+  - /riak/kv/2.9.0p2/learn/use-cases/
+  - /riak/kv/2.9.0p3/learn/use-cases/
+  - /riak/kv/2.9.0p4/learn/use-cases/
+  - /riak/kv/latest/learn/use-cases/
 ---
 
 
-[dev data model articles etc]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#articles-blog-posts-and-other-content
-[dev data model log data]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#log-data
-[dev data model sensor data]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#sensor-data
-[dev data model serve advertisements]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#serving-advertisements
-[dev data model sess storage]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#session-storage
-[dev data model user acct]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#user-accounts
-[dev data model user events]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#user-events-and-timelines
-[dev data model user settings]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#user-settings-and-preferences
-[dev data types]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[replication properties]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties
-[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce
-[usage search]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/search
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes
+
+[dev data model articles etc]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#articles-blog-posts-and-other-content
+[dev data model log data]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#log-data
+[dev data model sensor data]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#sensor-data
+[dev data model serve advertisements]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#serving-advertisements
+[dev data model sess storage]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#session-storage
+[dev data model user acct]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#user-accounts
+[dev data model user events]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#user-events-and-timelines
+[dev data model user settings]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#user-settings-and-preferences
+[dev data types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[replication properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties
+[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce
+[usage search]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes
 
 Riak is a flexible data storage technology capable of addressing a wide variety
 of problems in a scalable way. In this guide, we'll list a number of use cases
@@ -369,7 +378,7 @@ to call from the posts and comments buckets to assemble the view.
 Other possible cases may involve performing operations on content beyond
 key/value pairs. [Riak Search][usage search] is recommended for use cases
 involving full-text search. For lighter-weight querying,
-[using secondary indexes][usage secondary-indexes] \(2i) enables you to add
+[using secondary indexes][usage secondary-indexes] /(2i) enables you to add
 metadata to objects to either query for exact matches or to perform range
 queries. 2i also enables you to tag posts with dates, timestamps, topic areas,
 or other pieces of information useful for later retrieval.

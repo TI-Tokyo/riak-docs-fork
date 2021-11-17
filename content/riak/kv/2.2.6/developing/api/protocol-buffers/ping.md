@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/ping
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/ping
+  - /riak/2.2.6/dev/references/protocol-buffers/ping
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/ping
 ---
 
 Check if the server is alive

@@ -2,38 +2,47 @@
 title: "Rolling Restarts"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Rolling Restarts"
     identifier: "repair_recover_restart"
     weight: 103
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/running/recovery/rolling-restart
-  - /riak-docs/riak/kv/2.9.0/ops/running/recovery/rolling-restart
+  - /riak/2.9.0p5/ops/running/recovery/rolling-restart
+  - /riak/kv/2.9.0p5/ops/running/recovery/rolling-restart
+  - /riak/2.9.0p5/using/repair-recovery/rolling-restart/
+  - /riak/2.9.0/using/repair-recovery/rolling-restart/
+  - /riak/kv/2.9.0/using/repair-recovery/rolling-restart/
+  - /riak/kv/2.9.0p1/using/repair-recovery/rolling-restart/
+  - /riak/kv/2.9.0p2/using/repair-recovery/rolling-restart/
+  - /riak/kv/2.9.0p3/using/repair-recovery/rolling-restart/
+  - /riak/kv/2.9.0p4/using/repair-recovery/rolling-restart/
+  - /riak/kv/latest/using/repair-recovery/rolling-restart/
 ---
 
-Because Riak functions as a multi-node system, cluster-level [Riak version upgrades]({{<baseurl>}}riak/kv/2.9.0/setup/upgrading/cluster) and restarts can be performed on a node-by-node, "rolling" basis.
+
+Because Riak functions as a multi-node system, cluster-level [Riak version upgrades]({{<baseurl>}}riak/kv/2.9.0p5/setup/upgrading/cluster) and restarts can be performed on a node-by-node, "rolling" basis.
 
 The following steps should be undertaken on each Riak node that you wish to restart:
 
-1\. Stop Riak
+1/. Stop Riak
 
 ```bash
 riak stop
 ```
 
-2\. Perform any necessary maintenance, upgrade, or other work in your cluster.
+2/. Perform any necessary maintenance, upgrade, or other work in your cluster.
 
-3\. Start Riak again
+3/. Start Riak again
 
 ```bash
 riak start
 ```
 
-4\. Verify that the `riak_kv` service is once again available on the target node
+4/. Verify that the `riak_kv` service is once again available on the target node
 
 ```bash
 riak-admin wait-for-service riak_kv <nodename>
@@ -41,7 +50,7 @@ riak-admin wait-for-service riak_kv <nodename>
 
 If this responds with `riak_kv is up`, then the service is available and you can move on to the next step. Otherwise, the console will periodically return `riak_kv is not up` until the service is available.
 
-5\. Verify that all in-progress handoffs have been completed
+5/. Verify that all in-progress handoffs have been completed
 
 ```bash
 riak-admin transfers
@@ -57,4 +66,4 @@ do
 done
 ```
 
-6\. Repeat the above process for any other nodes that need to be restarted.
+6/. Repeat the above process for any other nodes that need to be restarted.

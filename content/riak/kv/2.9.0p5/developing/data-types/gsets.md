@@ -3,20 +3,29 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types:GSets"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "GSets"
     identifier: "data_types_gsets"
     weight: 101
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/data-types/gsets
-  - /riak-docs/riak/kv/2.9.0/dev/using/data-types/gsets
-  - /riak-docs/riak/2.9.0/dev/data-modeling/data-types/gsets
-  - /riak-docs/riak/kv/2.9.0/dev/data-modeling/data-types/gsets
+  - /riak/2.9.0p5/dev/using/data-types/gsets
+  - /riak/kv/2.9.0p5/dev/using/data-types/gsets
+  - /riak/2.9.0p5/dev/data-modeling/data-types/gsets
+  - /riak/kv/2.9.0p5/dev/data-modeling/data-types/gsets
+  - /riak/2.9.0p5/developing/data-types/gsets/
+  - /riak/2.9.0/developing/data-types/gsets/
+  - /riak/kv/2.9.0/developing/data-types/gsets/
+  - /riak/kv/2.9.0p1/developing/data-types/gsets/
+  - /riak/kv/2.9.0p2/developing/data-types/gsets/
+  - /riak/kv/2.9.0p3/developing/data-types/gsets/
+  - /riak/kv/2.9.0p4/developing/data-types/gsets/
+  - /riak/kv/latest/developing/data-types/gsets/
 ---
+
 
 GSets are a bucket-level Riak data type that can be used by themselves or associated with a bucket/key pair. They do not yet have the ability to be used [within a map like regular sets](../maps#sets-within-maps).
 
@@ -100,7 +109,7 @@ set = Riak::Crdt::Set.new(bucket, key)
 ```
 
 ```php
-$location = new \Basho\Riak\Location('key', new \Basho\Riak\Bucket('bucket_name', 'bucket_type'));
+$location = new /Basho/Riak/Location('key', new /Basho/Riak/Bucket('bucket_name', 'bucket_type'));
 ```
 
 ```python
@@ -185,7 +194,7 @@ cities_set = Riak::Crdt::Set.new(travel, 'cities')
 ```
 
 ```php
-$location = new \Basho\Riak\Location('2019-11-17', 'account-12345678', 'gsets');
+$location = new /Basho/Riak/Location('2019-11-17', 'account-12345678', 'gsets');
 ```
 
 ```python
@@ -255,7 +264,7 @@ cities_set.empty?
 
 ```php
 # use $location from earlier
-$gset = (new \Basho\Riak\Command\Builder\FetchSet($riak))
+$gset = (new /Basho/Riak/Command/Builder/FetchSet($riak))
     ->atLocation($location)
     ->build()
     ->execute()
@@ -337,7 +346,7 @@ cities_set.add('Montreal')
 
 ```php
 # use $location from earlier
-$response = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$response = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->add('transaction a')
     ->add('transaction b')
     ->atLocation($location)
@@ -397,8 +406,8 @@ client.execute(cmd);
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/gsets/buckets/account-12345678/datatypes/2019-11-17 \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/gsets/buckets/account-12345678/datatypes/2019-11-17 /
+  -H "Content-Type: application/json" /
   -d '{"add_all":["transaction a", "transaction b"]}'
 ```
 
@@ -430,7 +439,7 @@ cities_set.members
 
 ```php
 # use $location from earlier
-$gset = (new \Basho\Riak\Command\Builder\FetchSet($riak))
+$gset = (new /Basho/Riak/Command/Builder/FetchSet($riak))
     ->atLocation($location)
     ->build()
     ->execute()

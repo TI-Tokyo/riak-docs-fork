@@ -2,18 +2,27 @@
 title: "PBC Search"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Search"
     identifier: "pbc_search"
     weight: 109
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers/search
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers/search
+  - /riak/2.9.0p5/dev/references/protocol-buffers/search
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers/search
+  - /riak/2.9.0p5/developing/api/protocol-buffers/search/
+  - /riak/2.9.0/developing/api/protocol-buffers/search/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/search/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/search/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/search/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/search/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/search/
+  - /riak/kv/latest/developing/api/protocol-buffers/search/
 ---
+
 
 Send a Search request to retrieve a list of documents, along with a few
 stats.

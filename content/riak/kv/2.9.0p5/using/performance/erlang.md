@@ -2,17 +2,25 @@
 title: "Erlang VM Tuning"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Erlang VM"
     identifier: "performance_erlang"
     weight: 105
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/tuning/erlang
-  - /riak-docs/riak/kv/2.9.0/ops/tuning/erlang
+  - /riak/2.9.0p5/ops/tuning/erlang
+  - /riak/kv/2.9.0p5/ops/tuning/erlang
+  - /riak/2.9.0p5/using/performance/erlang/
+  - /riak/2.9.0/using/performance/erlang/
+  - /riak/kv/2.9.0/using/performance/erlang/
+  - /riak/kv/2.9.0p1/using/performance/erlang/
+  - /riak/kv/2.9.0p2/using/performance/erlang/
+  - /riak/kv/2.9.0p3/using/performance/erlang/
+  - /riak/kv/2.9.0p4/using/performance/erlang/
+  - /riak/kv/latest/using/performance/erlang/
 ---
 
 Riak was written almost exclusively in [Erlang](http://www.erlang.org)
@@ -324,7 +332,7 @@ setting.
 ## Erlang Built-in Storage
 
 Erlang uses a built-in database called
-[ets](http://www.erlang.org/doc/man/ets.html) \(Erlang Term Storage)
+[ets](http://www.erlang.org/doc/man/ets.html) /(Erlang Term Storage)
 for some processes that require fast access from memory in constant
 access time (rather than logarithmic access time).  The maximum number
 of tables can be set using the `erlang.max_ets_tables` setting. The

@@ -2,18 +2,27 @@
 title: "Getting Started with NodeJS"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "NodeJS"
     identifier: "getting_started_nodejs"
     weight: 104
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/nodejs
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/nodejs
+  - /riak/2.9.0p5/dev/taste-of-riak/nodejs
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/nodejs
+  - /riak/2.9.0p5/developing/getting-started/nodejs/
+  - /riak/2.9.0/developing/getting-started/nodejs/
+  - /riak/kv/2.9.0/developing/getting-started/nodejs/
+  - /riak/kv/2.9.0p1/developing/getting-started/nodejs/
+  - /riak/kv/2.9.0p2/developing/getting-started/nodejs/
+  - /riak/kv/2.9.0p3/developing/getting-started/nodejs/
+  - /riak/kv/2.9.0p4/developing/getting-started/nodejs/
+  - /riak/kv/latest/developing/getting-started/nodejs/
 ---
+
 
 [introduction.js]: https://github.com/basho/riak-nodejs-client-examples/blob/master/dev/taste-of-riak/introduction.js
 [npm]: https://www.npmjs.com/package/basho-riak-client
@@ -21,7 +30,7 @@ aliases:
 [nodejs_wiki]: https://github.com/basho/riak-nodejs-client/wiki
 
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.0/using/running-a-cluster) first.
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.0p5/using/running-a-cluster) first.
 
 To try this flavor of Riak, a working installation of Node.js 0.12 or later is
 required.
@@ -97,4 +106,4 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/2.9.0/developing/getting-started/nodejs/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/nodejs/crud-operations)

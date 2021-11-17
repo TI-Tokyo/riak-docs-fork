@@ -11,6 +11,8 @@ menu:
     parent: "addons"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/ts/latest/add-ons/redis/
 ---
 
 

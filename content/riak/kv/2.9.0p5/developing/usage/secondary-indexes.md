@@ -2,42 +2,51 @@
 title: "Using Secondary Indexes (2i)"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Using Secondary Indexes"
     identifier: "usage_2i"
     weight: 107
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/2i
-  - /riak-docs/riak/kv/2.9.0/dev/using/2i
+  - /riak/2.9.0p5/dev/using/2i
+  - /riak/kv/2.9.0p5/dev/using/2i
+  - /riak/2.9.0p5/developing/usage/secondary-indexes/
+  - /riak/2.9.0/developing/usage/secondary-indexes/
+  - /riak/kv/2.9.0/developing/usage/secondary-indexes/
+  - /riak/kv/2.9.0p1/developing/usage/secondary-indexes/
+  - /riak/kv/2.9.0p2/developing/usage/secondary-indexes/
+  - /riak/kv/2.9.0p3/developing/usage/secondary-indexes/
+  - /riak/kv/2.9.0p4/developing/usage/secondary-indexes/
+  - /riak/kv/latest/developing/usage/secondary-indexes/
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory
-[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/reference/strong-consistency
+
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb
+[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory
+[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/strong-consistency
 
 > **Note: Riak Search preferred for querying**
 >
 > If you're interested in non-primary-key-based querying in Riak, i.e. if
 you're looking to go beyond straightforward K/V operations, we now
-recommend [Riak Search]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search/) rather than secondary indexes for
+recommend [Riak Search]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search/) rather than secondary indexes for
 a variety of reasons. Most importantly, Riak Search has a far more
 capacious querying API and can be used with all of Riak's storage
 backends.
 
 Secondary indexes (2i) in Riak enable you to tag objects stored in Riak,
 at write time, with one or more queryable values. Those values can then
-be used to find multiple objects in Riak. If you're storing [user data]({{<baseurl>}}riak/kv/2.9.0/developing/data-modeling/#user-accounts), for example, you could tag each object
+be used to find multiple objects in Riak. If you're storing [user data]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling/#user-accounts), for example, you could tag each object
 associated with that user with a username or other unique marker. Once
 tagged, you could find all objects in a Riak bucket sharing that tag.
 Secondary indexes can be either a binary or string, such as
 `sensor_1_data` or `admin_user` or `click_event`, or an integer, such as
 `99` or `141121`.
 
-[Riak Search]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search/) serves analogous purposes but is quite
+[Riak Search]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search/) serves analogous purposes but is quite
 different because it parses key/value data itself and builds indexes on
 the basis of Solr schemas.
 
@@ -51,13 +60,13 @@ backends.
 * Allows querying by exact match or range on one index
 * Allows pagination of results
 * Allows streaming of results
-* Query results can be used as input to a [MapReduce]({{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce/)
+* Query results can be used as input to a [MapReduce]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce/)
   query
 
 > **Note on 2i and strong consistency**
 Secondary indexes do not currently work with the [strong consistency][use ref strong consistency]
 feature introduced in Riak version 2.0. If you store objects in
-[strongly consistent buckets]({{<baseurl>}}riak/kv/2.9.0/developing/app-guide/strong-consistency/#creating-a-strongly-consistent-bucket-type) and attach
+[strongly consistent buckets]({{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/strong-consistency/#creating-a-strongly-consistent-bucket-type) and attach
 secondary index metadata to those objects, you can still perform
 strongly consistent operations on those objects but the secondary
 indexes will be ignored.
@@ -75,7 +84,7 @@ you to discover them later. Indexing enables you to tag those objects
 and find all objects with the same tag in a specified bucket later on.
 
 2i is thus recommended when your use case requires an easy-to-use search
-mechanism that does not require a schema (as does [Riak Search]({{<baseurl>}}riak/kv/2.9.0/using/reference/search/#schemas)) and a basic query interface, i.e. an interface that
+mechanism that does not require a schema (as does [Riak Search]({{<baseurl>}}riak/kv/2.9.0p5/using/reference/search/#schemas)) and a basic query interface, i.e. an interface that
 enables an application to tell Riak things like "fetch all objects
 tagged with the string `Milwaukee_Bucks`" or "fetch all objects tagged
 with numbers between 1500 and 1509."
@@ -89,11 +98,11 @@ piggybacks off of read-repair.
 * If your ring size exceeds 512 partitions, 2i can cause performance
   issues in large clusters.
 * When you need more than the exact match and range searches that 2i
-  supports. If that's the case, we recommend checking out [Riak Search]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search/).
+  supports. If that's the case, we recommend checking out [Riak Search]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search/).
 * When you want to use composite queries. A query like
   `last_name=zezeski AND state=MD` would have to be split into two
   queries and the results merged (or it would need to involve
-  [MapReduce]({{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce/)).
+  [MapReduce]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce/)).
 
 ## Query Interfaces and Examples
 
@@ -151,11 +160,11 @@ obj.store
 ```
 
 ```php
-$object = (new \Basho\Riak\Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
+$object = (new /Basho/Riak/Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
   ->addValueToIndex('twitter_bin', 'jsmith123')
   ->addValueToIndex('email_bin', 'jsmith@basho.com');
 
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->withObject($object)
   ->buildLocation('john_smith', 'users', 'default')
   ->build()
@@ -250,17 +259,17 @@ if err := cluster.Execute(cmd); err != nil {
 ```
 
 ```curl
-curl -XPOST localhost:8098/types/default/buckets/users/keys/john_smith \
-  -H 'x-riak-index-twitter_bin: jsmith123' \
-  -H 'x-riak-index-email_bin: jsmith@basho.com' \
-  -H 'Content-Type: application/json' \
+curl -XPOST localhost:8098/types/default/buckets/users/keys/john_smith /
+  -H 'x-riak-index-twitter_bin: jsmith123' /
+  -H 'x-riak-index-email_bin: jsmith@basho.com' /
+  -H 'Content-Type: application/json' /
   -d '{"userData":"data"}'
 ```
 
 > **Getting started with Riak clients**
 >
-> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/2.9.0/developing/client-libraries), you can find more information about getting started with
-your client in the [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/2.9.0/developing/getting-started) section.
+> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries), you can find more information about getting started with
+your client in the [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started) section.
 
 This has accomplished the following:
 
@@ -297,7 +306,7 @@ bucket.get_index('twitter_bin', 'jsmith123')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\QueryIndex($riak))
+$response = (new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('users')
   ->withIndexName('twitter_bin')
   ->withScalarValue('jsmith123')
@@ -516,39 +525,39 @@ obj4.store
 ```
 
 ```php
-$bucket = new \Basho\Riak\Bucket('people', 'indexes');
+$bucket = new /Basho/Riak/Bucket('people', 'indexes');
 
-$object = (new \Basho\Riak\Object'My name is Larry', ['Content-type' => 'text/plain']))
+$object = (new /Basho/Riak/Object'My name is Larry', ['Content-type' => 'text/plain']))
   ->addValueToIndex('field1_bin', 'val1')
   ->addValueToIndex('field2_int', 1001);
 
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->withObject($object)
-  ->withLocation(new \Basho\Riak\Location('larry', $bucket))
+  ->withLocation(new /Basho/Riak/Location('larry', $bucket))
   ->build()
   ->execute();
 
-$object = (new \Basho\Riak\Object'My name is Moe', ['Content-type' => 'text/plain']))
+$object = (new /Basho/Riak/Object'My name is Moe', ['Content-type' => 'text/plain']))
   ->addValueToIndex('Field1_bin', 'val2')
   ->addValueToIndex('Field2_int', 1002);
 
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->withObject($object)
-  ->withLocation(new \Basho\Riak\Location('moe', $bucket))
+  ->withLocation(new /Basho/Riak/Location('moe', $bucket))
   ->build()
   ->execute();
 
-$object = (new \Basho\Riak\Object'My name is Curly', ['Content-type' => 'text/plain']))
+$object = (new /Basho/Riak/Object'My name is Curly', ['Content-type' => 'text/plain']))
   ->addValueToIndex('FIELD1_BIN', 'val3')
   ->addValueToIndex('FIELD2_int', 1003);
 
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->withObject($object)
-  ->withLocation(new \Basho\Riak\Location('curly', $bucket))
+  ->withLocation(new /Basho/Riak/Location('curly', $bucket))
   ->build()
   ->execute();
 
-$object = (new \Basho\Riak\Object'My name is Veronica', ['Content-type' => 'text/plain']))
+$object = (new /Basho/Riak/Object'My name is Veronica', ['Content-type' => 'text/plain']))
   ->addValueToIndex('field1_bin', 'val4')
   ->addValueToIndex('field1_bin', 'val4')
   ->addValueToIndex('field1_bin', 'val4a')
@@ -560,9 +569,9 @@ $object = (new \Basho\Riak\Object'My name is Veronica', ['Content-type' => 'text
   ->addValueToIndex('field2_int', 1004)
   ->addValueToIndex('field2_int', 1007);
 
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->withObject($object)
-  ->withLocation(new \Basho\Riak\Location('veronica', $bucket))
+  ->withLocation(new /Basho/Riak/Location('veronica', $bucket))
   ->build()
   ->execute();
 ```
@@ -829,28 +838,28 @@ wg.Wait()
 ```
 
 ```curl
-curl -v -XPUT localhost:8098/types/indexes/buckets/people/keys/larry \
-  -H "x-riak-index-field1_bin: val1" \
-  -H "x-riak-index-field2_int: 1001" \
+curl -v -XPUT localhost:8098/types/indexes/buckets/people/keys/larry /
+  -H "x-riak-index-field1_bin: val1" /
+  -H "x-riak-index-field2_int: 1001" /
   -d 'My name is Larry'
 
-curl -v -XPUT localhost:8098/types/indexes/buckets/people/keys/moe \
-  -H "x-riak-index-Field1_bin: val2" \
-  -H "x-riak-index-Field2_int: 1002" \
+curl -v -XPUT localhost:8098/types/indexes/buckets/people/keys/moe /
+  -H "x-riak-index-Field1_bin: val2" /
+  -H "x-riak-index-Field2_int: 1002" /
   -d 'My name is Moe'
 
-curl -v -XPUT localhost:8098/types/indexes/buckets/people/keys/curly \
-  -H "X-RIAK-INDEX-FIELD1_BIN: val3" \
-  -H "X-RIAK-INDEX-FIELD2_INT: 1003" \
+curl -v -XPUT localhost:8098/types/indexes/buckets/people/keys/curly /
+  -H "X-RIAK-INDEX-FIELD1_BIN: val3" /
+  -H "X-RIAK-INDEX-FIELD2_INT: 1003" /
   -d 'My name is Curly'
 
-curl -v -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/veronica \
-  -H "x-riak-index-field1_bin: val4, val4, val4a, val4b" \
-  -H "x-riak-index-field2_int: 1004, 1004, 1005, 1006" \
-  -H "x-riak-index-field2_int: 1004" \
-  -H "x-riak-index-field2_int: 1004" \
-  -H "x-riak-index-field2_int: 1004" \
-  -H "x-riak-index-field2_int: 1007" \
+curl -v -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/veronica /
+  -H "x-riak-index-field1_bin: val4, val4, val4a, val4b" /
+  -H "x-riak-index-field2_int: 1004, 1004, 1005, 1006" /
+  -H "x-riak-index-field2_int: 1004" /
+  -H "x-riak-index-field2_int: 1004" /
+  -H "x-riak-index-field2_int: 1004" /
+  -H "x-riak-index-field2_int: 1007" /
   -d 'My name is Veronica'
 ```
 
@@ -896,8 +905,8 @@ NoMethodError: undefined method 'map' for 1001:Fixnum
 ```
 
 ```php
-// throws \InvalidArgumentException
-$object = (new \Basho\Riak\Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
+// throws /InvalidArgumentException
+$object = (new /Basho/Riak/Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
   ->addValueToIndex('twitter', 'jsmith123');
 ```
 
@@ -987,8 +996,8 @@ error: query_cb err: 'Error processing incoming message: error:function_clause:[
 ```
 
 ```curl
-curl -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/larry \
-  -H "x-riak-index-field2_foo: 1001" \
+curl -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/larry /
+  -H "x-riak-index-field2_foo: 1001" /
   -d 'data1'
 
 # Response
@@ -1025,17 +1034,17 @@ NoMethodError: undefined method 'map' for 1001:Fixnum
 ```
 
 ```php
-// throws \InvalidArgumentException
-$object = (new \Basho\Riak\Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
+// throws /InvalidArgumentException
+$object = (new /Basho/Riak/Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
   ->addValueToIndex('twitter_int', 'not_an_int');
 
-// throws \InvalidArgumentException
-$object = (new \Basho\Riak\Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
+// throws /InvalidArgumentException
+$object = (new /Basho/Riak/Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
   ->addValueToIndex('twitter_int', ['arrays', 'are', 'not', 'strings']);
 
 // does not throw an exception, it will just write ints as a string
 // only requirement is that value is scalar (int, float, string, bool)
-$object = (new \Basho\Riak\Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
+$object = (new /Basho/Riak/Object('{"user_data":{ ... }}', ['Content-type' => 'application/json']))
   ->addValueToIndex('twitter_bin', 12);
 ```
 
@@ -1130,8 +1139,8 @@ if err := cluster.Execute(cmd); err != nil {
 ```
 
 ```curl
-curl -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/larry \
-  -H "x-riak-index-field2_int: bar" \
+curl -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/larry /
+  -H "x-riak-index-field2_int: bar" /
   -d 'data1'
 
 # Response
@@ -1144,8 +1153,8 @@ Could not parse field 'field2_int', value 'bar'.
 
 > **Note on 2i queries and the R parameter**
 >
-> For all 2i queries, the [R]({{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties#r-value-and-read-failure-tolerance) parameter is set to 1,
-which means that queries that are run while [handoffs]({{<baseurl>}}riak/kv/2.9.0/learn/glossary/#hinted-handoff) and related operations are underway may not
+> For all 2i queries, the [R]({{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties#r-value-and-read-failure-tolerance) parameter is set to 1,
+which means that queries that are run while [handoffs]({{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#hinted-handoff) and related operations are underway may not
 return all keys as expected.
 >
 > To avoid issues such as the above, a new option has been added to the `riak.conf` file to allow you to disable or enable node participation in 2i queries. `participate_in_coverage=disabled` will prevent the node in question from participating. Recommended usage of this feature is to prevent newly added nodes to the cluster that have yet to receive all of their data from participating in 2i queries and generating non-consistent results. Changing the `participate_in_coverage` setting requires Riak to be restarted on that node for the change to take effect. The default setting is `enabled`.
@@ -1168,7 +1177,7 @@ bucket.get_index('field1_bin', 'val1')
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\QueryIndex($riak))
+(new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('people', 'indexes')
   ->withIndexName('field1_bin')
   ->withScalarValue('val1')
@@ -1240,7 +1249,7 @@ bucket.get_index('field2_int', 1001)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\QueryIndex($riak))
+(new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('people', 'indexes')
   ->withIndexName('field2_int')
   ->withScalarValue(1001)
@@ -1301,8 +1310,8 @@ The following example performs an exact match query and pipes the
 results into a MapReduce job:
 
 ```curl
-curl -XPOST localhost:8098/mapred \
-  -H "Content-Type: application/json" \
+curl -XPOST localhost:8098/mapred /
+  -H "Content-Type: application/json" /
   -d @-<<EOF
 {
   "inputs": {
@@ -1343,7 +1352,7 @@ bucket.get_index('field1_bin', 'val2'..'val4')
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\QueryIndex($riak))
+(new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('people', 'indexes')
   ->withIndexName('field1_bin')
   ->withRangeValue('val2', 'val4')
@@ -1414,7 +1423,7 @@ bucket.get_index('field2_int', 1002..1004)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\QueryIndex($riak))
+(new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('people', 'indexes')
   ->withIndexName('field2_int')
   ->withRangeValue(1002, 1004)
@@ -1471,8 +1480,8 @@ The following example performs a range query and pipes the results into
 a MapReduce job:
 
 ```curl
-curl -XPOST localhost:8098/mapred\
-  -H "Content-Type: application/json" \
+curl -XPOST localhost:8098/mapred/
+  -H "Content-Type: application/json" /
   -d @-<<EOF
 {
   "inputs": {
@@ -1515,7 +1524,7 @@ bucket.get_index('hashtags_bin', 'rock'..'rocl', return_terms: true)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\QueryIndex($riak))
+(new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('tweets', 'indexes')
   ->withIndexName('hashtags')
   ->withRangeValue('rock', 'rocl')
@@ -1621,7 +1630,7 @@ bucket.get_index('hashtags_bin', 'ri'..'ru', max_results: 5)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\QueryIndex($riak))
+(new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('tweets', 'indexes')
   ->withIndexName('hashtags')
   ->withRangeValue('ri', 'ru')
@@ -1788,7 +1797,7 @@ bucket.get_index(
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\QueryIndex($riak))
+(new /Basho/Riak/Command/Builder/QueryIndex($riak))
   ->buildBucket('tweets', 'indexes')
   ->withIndexName('hashtags')
   ->withRangeValue('ri', 'ru')
@@ -1988,7 +1997,7 @@ The following example retrieves the keys for all objects stored in the
 bucket `people` using an exact match on the special `$bucket` index.
 
 ```curl
-curl localhost:8098/types/indexes/buckets/people/index/\$bucket/_
+curl localhost:8098/types/indexes/buckets/people/index//$bucket/_
 ```
 
 ### Count Bucket Objects via $bucket Index
@@ -2000,13 +2009,13 @@ improve efficiency, the batch size has been increased from the default
 size of 20.
 
 ```curl
-curl -XPOST localhost:8098/mapred\
-  -H "Content-Type: application/json" \
+curl -XPOST localhost:8098/mapred/
+  -H "Content-Type: application/json" /
   -d @-<<EOF
 {
   "inputs": {
     "bucket": "people",
-    "index": "\$bucket",
+    "index": "/$bucket",
     "key":"people"
   },
   "query": [

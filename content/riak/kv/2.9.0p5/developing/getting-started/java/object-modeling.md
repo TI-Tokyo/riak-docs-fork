@@ -3,18 +3,27 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with Java"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Object Modeling"
     identifier: "getting_started_java_object"
     weight: 102
     parent: "getting_started_java"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/object-modeling-java
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/object-modeling-java
+  - /riak/2.9.0p5/dev/taste-of-riak/object-modeling-java
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/object-modeling-java
+  - /riak/2.9.0p5/developing/getting-started/java/object-modeling/
+  - /riak/2.9.0/developing/getting-started/java/object-modeling/
+  - /riak/kv/2.9.0/developing/getting-started/java/object-modeling/
+  - /riak/kv/2.9.0p1/developing/getting-started/java/object-modeling/
+  - /riak/kv/2.9.0p2/developing/getting-started/java/object-modeling/
+  - /riak/kv/2.9.0p3/developing/getting-started/java/object-modeling/
+  - /riak/kv/2.9.0p4/developing/getting-started/java/object-modeling/
+  - /riak/kv/latest/developing/getting-started/java/object-modeling/
 ---
+
 
 To get started, let's create the models that we'll be using.
 

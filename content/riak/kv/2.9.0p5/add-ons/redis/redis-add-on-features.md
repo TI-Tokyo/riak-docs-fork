@@ -2,16 +2,26 @@
 title: "Riak Redis Add-on Features"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Redis Add-on Features"
     identifier: "add-ons_redis_features"
     weight: 504
     parent: "add-ons_redis"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/2.9.0p5/add-ons/redis/redis-add-on-features/
+  - /riak/2.9.0/add-ons/redis/redis-add-on-features/
+  - /riak/kv/2.9.0/add-ons/redis/redis-add-on-features/
+  - /riak/kv/2.9.0p1/add-ons/redis/redis-add-on-features/
+  - /riak/kv/2.9.0p2/add-ons/redis/redis-add-on-features/
+  - /riak/kv/2.9.0p3/add-ons/redis/redis-add-on-features/
+  - /riak/kv/2.9.0p4/add-ons/redis/redis-add-on-features/
+  - /riak/kv/latest/add-ons/redis/redis-add-on-features/
 ---
+
 
 [ee]: https://www.tiot.jp/en/about-us/contact-us/
 [GET-sequence]: {{<baseurl>}}images/redis/GET_seq.msc.png
@@ -19,7 +29,7 @@ commercial_offering: true
 [DEL-sequence]: {{<baseurl>}}images/redis/DEL_seq.msc.png
 [Object-lifetime]: {{<baseurl>}}images/redis/Object_lifetime.msc.png
 [redis docs]: http://redis.io/commands
-[twemproxy docs]: https://github.com/twitter/twemproxy/blob/master/notes/redis.md
+[twemproxy docs]: https://github.com/twitter/twemproxy/blob/master/notes/redis/
 
 ## Overview
 

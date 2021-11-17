@@ -2,18 +2,27 @@
 title: "PBC Set Client ID"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Set Client ID"
     identifier: "pbc_set_client_id"
     weight: 126
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers/set-client-id
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers/set-client-id
+  - /riak/2.9.0p5/dev/references/protocol-buffers/set-client-id
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers/set-client-id
+  - /riak/2.9.0p5/developing/api/protocol-buffers/set-client-id/
+  - /riak/2.9.0/developing/api/protocol-buffers/set-client-id/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/set-client-id/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/set-client-id/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/set-client-id/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/set-client-id/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/set-client-id/
+  - /riak/kv/latest/developing/api/protocol-buffers/set-client-id/
 ---
+
 
 {{% note title="Deprecation notice" %}}
 The use of client IDs in conflict resolution is now deprecated in Riak. If you

@@ -2,23 +2,32 @@
 title: "Memory"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Memory"
     identifier: "planning_backend_memory"
     weight: 102
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/advanced/backends/memory/
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/backends/memory/
+  - /riak/2.9.0p5/ops/advanced/backends/memory/
+  - /riak/kv/2.9.0p5/ops/advanced/backends/memory/
+  - /riak/2.9.0p5/setup/planning/backend/memory/
+  - /riak/2.9.0/setup/planning/backend/memory/
+  - /riak/kv/2.9.0/setup/planning/backend/memory/
+  - /riak/kv/2.9.0p1/setup/planning/backend/memory/
+  - /riak/kv/2.9.0p2/setup/planning/backend/memory/
+  - /riak/kv/2.9.0p3/setup/planning/backend/memory/
+  - /riak/kv/2.9.0p4/setup/planning/backend/memory/
+  - /riak/kv/latest/setup/planning/backend/memory/
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/multi
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb
+
+[config reference]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
+[plan backend multi]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/multi
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb
 
 The Memory storage backend uses in-memory tables to store all data.
 This data is never persisted to disk or to any other storage mechanism.

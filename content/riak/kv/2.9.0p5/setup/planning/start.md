@@ -2,23 +2,32 @@
 title: "Start Planning"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Start Planning"
     identifier: "planning_start"
     weight: 100
     parent: "planning"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/planning/system-planning
-  - /riak-docs/riak/kv/2.9.0/ops/building/planning/system-planning
+  - /riak/2.9.0p5/ops/building/planning/system-planning
+  - /riak/kv/2.9.0p5/ops/building/planning/system-planning
+  - /riak/2.9.0p5/setup/planning/start/
+  - /riak/2.9.0/setup/planning/start/
+  - /riak/kv/2.9.0/setup/planning/start/
+  - /riak/kv/2.9.0p1/setup/planning/start/
+  - /riak/kv/2.9.0p2/setup/planning/start/
+  - /riak/kv/2.9.0p3/setup/planning/start/
+  - /riak/kv/2.9.0p4/setup/planning/start/
+  - /riak/kv/latest/setup/planning/start/
 ---
 
-[plan backend]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend
-[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/cluster-capacity
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[plan bitcask capacity]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/bitcask-capacity-calc
+
+[plan backend]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend
+[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/cluster-capacity
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[plan bitcask capacity]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/bitcask-capacity-calc
 
 Here are some steps and recommendations designing and configuring your
 Riak cluster.

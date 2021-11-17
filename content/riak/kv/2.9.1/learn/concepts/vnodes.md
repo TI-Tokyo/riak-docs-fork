@@ -11,8 +11,8 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/vnodes
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/vnodes
+  - /riak/2.9.1/theory/concepts/vnodes
+  - /riak/kv/2.9.1/theory/concepts/vnodes
 ---
 
 

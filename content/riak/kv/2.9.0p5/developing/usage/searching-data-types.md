@@ -2,23 +2,32 @@
 title: "Searching with Data Types"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Searching with Data Types"
     identifier: "usage_search_data_types"
     weight: 111
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/search/search-data-types
-  - /riak-docs/riak/kv/2.9.0/dev/search/search-data-types
+  - /riak/2.9.0p5/dev/search/search-data-types
+  - /riak/kv/2.9.0p5/dev/search/search-data-types
+  - /riak/2.9.0p5/developing/usage/searching-data-types/
+  - /riak/2.9.0/developing/usage/searching-data-types/
+  - /riak/kv/2.9.0/developing/usage/searching-data-types/
+  - /riak/kv/2.9.0p1/developing/usage/searching-data-types/
+  - /riak/kv/2.9.0p2/developing/usage/searching-data-types/
+  - /riak/kv/2.9.0p3/developing/usage/searching-data-types/
+  - /riak/kv/2.9.0p4/developing/usage/searching-data-types/
+  - /riak/kv/latest/developing/usage/searching-data-types/
 ---
 
-Although [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types) function differently from other
+
+Although [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types) function differently from other
 Riak objects in some respects, when you're using Search you can think of
 them as normal Riak objects with special metadata attached (metadata
-that you don't need to worry about as a user). Riak's [counters]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#counters), [sets]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets), and [maps]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps)
+that you don't need to worry about as a user). Riak's [counters]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#counters), [sets]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets), and [maps]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps)
 can be indexed and have their contents searched just like other Riak
 objects.
 
@@ -69,7 +78,7 @@ to search Data Types, they are provided only for reference.
 
 ### Top-level Schemas
 
-The default schema for [counters]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#counters) indexes each
+The default schema for [counters]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#counters) indexes each
 counter as an integer.
 
 ```xml
@@ -86,7 +95,7 @@ Counters with a value below 10 and above 50 | `counter:[* TO 10] AND counter:[50
 Counters with a value of 15 | `counter:15`
 All counters within the index | `counter:*`
 
-The schema for [sets]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets) indexes each element of a set as
+The schema for [sets]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets) indexes each element of a set as
 a string and indexes the set itself as multi-valued.
 
 ```xml
@@ -105,7 +114,7 @@ All sets within the index | `set:*`
 
 ### Embedded Schemas
 
-For searching within [maps]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps), there are four schemas
+For searching within [maps]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps), there are four schemas
 for embedded, aka dynamic, fields. Flags are indexed as booleans:
 
 ```xml
@@ -155,7 +164,7 @@ slightly more complex map example.
 Let's say that we're storing scores in a multiplayer online game in
 Riak. The game is called Boulderdash and it involves smashing digital
 boulders armed with nothing but witty retorts and arcane trivia
-knowledge. We'll create and activate a [bucket type]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types) for [storing counters]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#counters) simply called
+knowledge. We'll create and activate a [bucket type]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types) for [storing counters]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#counters) simply called
 `counters`, like so:
 
 ```bash
@@ -178,7 +187,7 @@ client.create_search_index('scores', '_yz_default')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\StoreIndex($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/StoreIndex($riak))
   ->withName('scores')
   ->usingSchema('_yz_default')
   ->build()
@@ -208,8 +217,8 @@ riakc_pb_socket:create_search_index(Pid, <<"scores">>, <<"_yz_default">>, []).
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/index/hobbies \
-  -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/search/index/hobbies /
+  -H 'Content-Type: application/json' /
   -d '{"schema":"_yz_default"}'
 ```
 
@@ -253,7 +262,7 @@ joan_rivers_counter.increment(25)
 ```
 
 ```php
-$builder = (new \Basho\Riak\Command\Builder\IncrementCounter($riak))
+$builder = (new /Basho/Riak/Command/Builder/IncrementCounter($riak))
     ->withIncrement(10)
     ->buildLocation('chris_hitchens', 'people', 'counters');
 
@@ -376,7 +385,7 @@ results['num_found']
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('scores')
   ->withQuery('counter:[20 TO *]')
   ->build()
@@ -530,7 +539,7 @@ results = client.search('scores', 'counter:[* TO 15]')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('scores')
   ->withQuery('counter:[* TO 15]')
   ->build()
@@ -578,7 +587,7 @@ results = client.search('scores', 'counter:17')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('scores')
   ->withQuery('counter:17')
   ->build()
@@ -615,7 +624,7 @@ curl "$RIAK_HOST/search/query/scores?wt=json&q=counter:17" | json_pp
 ## Sets Example
 
 Let's say that we're storing information about the hobbies of a group of
-people in sets. We'll create and activate a [bucket type]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types) for [storing sets]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#sets) simply called `sets`,
+people in sets. We'll create and activate a [bucket type]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types) for [storing sets]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#sets) simply called `sets`,
 like so:
 
 ```bash
@@ -638,7 +647,7 @@ client.create_search_index('hobbies', '_yz_default')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\StoreIndex($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/StoreIndex($riak))
   ->withName('hobbies')
   ->usingSchema('_yz_default')
   ->build()
@@ -668,8 +677,8 @@ riakc_pb_socket:create_search_index(Pid, <<"hobbies">>, <<"_yz_default">>).
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/index/hobbies \
-  -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/search/index/hobbies /
+  -H 'Content-Type: application/json' /
   -d '{"schema": "_yz_default"}'
 ```
 
@@ -719,7 +728,7 @@ ronnie_james_dio_set.add('winning')
 ```
 
 ```php
-$builder = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$builder = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->add('football')
     ->add('winning')
     ->buildLocation('ditka', 'people', 'counters');
@@ -839,7 +848,7 @@ results = client.search('hobbies', 'set:football')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('hobbies')
   ->withQuery('set:football')
   ->build()
@@ -948,7 +957,7 @@ results['num_found']
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('hobbies')
   ->withQuery('set:winning')
   ->build()
@@ -987,9 +996,9 @@ Just as expected, both sets we stored contain the element `winning`.
 
 ## Maps Example
 
-This example will build on the example in the [Using Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types)
+This example will build on the example in the [Using Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types)
 tutorial. That tutorial walks you through storing CMS-style user data in
-Riak [maps]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps), and we'd suggest that you
+Riak [maps]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps), and we'd suggest that you
 familiarize yourself with that tutorial first. More specifically, user
 data is stored in the following fields in each user's map:
 
@@ -1024,7 +1033,7 @@ client.create_search_index('customers', '_yz_default')
 ```
 
 ```php
-(new Command\Builder\Search\StoreIndex($riak))
+(new Command/Builder/Search/StoreIndex($riak))
   ->withName('customers')
   ->usingSchema('_yz_default')
   ->build()
@@ -1054,8 +1063,8 @@ riakc_pb_socket:create_search_index(Pid, <<"customers">>, <<"_yz_default">>).
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/index/customers \
-  -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/search/index/customers /
+  -H 'Content-Type: application/json' /
   -d '{"schema":"_yz_default"}'
 ```
 
@@ -1124,16 +1133,16 @@ end
 ```
 
 ```php
-$counterBuilder = (new \Basho\Riak\Command\Builder\IncrementCounter($riak))
+$counterBuilder = (new /Basho/Riak/Command/Builder/IncrementCounter($riak))
   ->withIncrement(10);
 
-$setBuilder = (new \Basho\Riak\Command\Builder\UpdateSet($riak));
+$setBuilder = (new /Basho/Riak/Command/Builder/UpdateSet($riak));
   
 foreach(['acting', 'being Stringer Bell'] as $interest) {
   $setBuilder->add($interest);
 }
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
   ->updateRegister('first_name', 'Idres')
   ->updateRegister('last_name', 'Elba')
   ->updateFlag('enterprise_customer', true)
@@ -1143,13 +1152,13 @@ foreach(['acting', 'being Stringer Bell'] as $interest) {
   ->build()
   ->execute();
 
-$setBuilder = (new \Basho\Riak\Command\Builder\UpdateSet($riak));
+$setBuilder = (new /Basho/Riak/Command/Builder/UpdateSet($riak));
   
 foreach(['loving rock and roll', 'being in the Blackhearts'] as $interest) {
   $setBuilder->add($interest);
 }
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
   ->updateRegister('first_name', 'Joan')
   ->updateRegister('last_name', 'Jett')
   ->updateSet('interests', $setBuilder)
@@ -1287,7 +1296,7 @@ results['num_found']
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('customers')
   ->withQuery('page_visits_counter:[15 TO *]')
   ->build()
@@ -1383,7 +1392,7 @@ results = client.search('customers', 'interests_set:*')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('customers')
   ->withQuery('interests_set:*')
   ->build()
@@ -1433,7 +1442,7 @@ results['docs'][0]['first_name_register'] # 'Joan'
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('customers')
   ->withQuery('interests_set:loving*')
   ->build()
@@ -1489,10 +1498,10 @@ joan_jett.maps['alter_ego'].registers['name'] = 'Robert Plant'
 ```
 
 ```php
-$mapBuilder = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$mapBuilder = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
   ->updateRegister('name', 'John Luther')
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
   ->updateMap('alter_ego', $mapBuilder)
   ->buildLocation('idris_elba', 'customers', 'maps')
   ->build()
@@ -1500,7 +1509,7 @@ $mapBuilder = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
 
 $mapBuilder->updateRegister('name', 'Robert Plant')
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
   ->updateMap('alter_ego', $mapBuilder)
   ->buildLocation('joan_jett', 'customers', 'maps')
   ->build()
@@ -1598,7 +1607,7 @@ results['num_found'] # 2
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('customers')
   ->withQuery('alter_ego_map.name_register:*')
   ->build()
@@ -1649,7 +1658,7 @@ results['docs'][0]['first_name_register'] # 'Joan'
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('customers')
   ->withQuery('alter_ego_map.name_register:*Plant')
   ->build()

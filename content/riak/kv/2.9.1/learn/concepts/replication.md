@@ -11,10 +11,10 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/Replication
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/Replication
-  - /riak-docs/riak/2.9.1/theory/concepts/replication
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/replication
+  - /riak/2.9.1/theory/concepts/Replication
+  - /riak/kv/2.9.1/theory/concepts/Replication
+  - /riak/2.9.1/theory/concepts/replication
+  - /riak/kv/2.9.1/theory/concepts/replication
 ---
 
 

@@ -2,18 +2,27 @@
 title: "Multi-Datacenter Replication Reference: Monitoring"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Monitoring"
     identifier: "managing_ref_mdc_monitor"
     weight: 102
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/monitoring
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/monitoring
+  - /riak/2.9.0p5/ops/mdc/monitoring
+  - /riak/kv/2.9.0p5/ops/mdc/monitoring
+  - /riak/2.9.0p5/using/reference/multi-datacenter/monitoring/
+  - /riak/2.9.0/using/reference/multi-datacenter/monitoring/
+  - /riak/kv/2.9.0/using/reference/multi-datacenter/monitoring/
+  - /riak/kv/2.9.0p1/using/reference/multi-datacenter/monitoring/
+  - /riak/kv/2.9.0p2/using/reference/multi-datacenter/monitoring/
+  - /riak/kv/2.9.0p3/using/reference/multi-datacenter/monitoring/
+  - /riak/kv/2.9.0p4/using/reference/multi-datacenter/monitoring/
+  - /riak/kv/latest/using/reference/multi-datacenter/monitoring/
 ---
+
 
 Monitoring Riak's realtime replication allows you to identify trends and
 to receive alerts during times when replication is halted or delayed.

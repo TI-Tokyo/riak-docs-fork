@@ -11,8 +11,8 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/application-guide/
-  - /riak-docs/riak/kv/2.9.1/dev/using/application-guide/
+  - /riak/2.9.1/dev/using/application-guide/
+  - /riak/kv/2.9.1/dev/using/application-guide/
 ---
 
 [usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution

@@ -3,48 +3,57 @@ title_supertext: "Client Security:"
 title: "PHP"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "PHP"
     identifier: "usage_security_php"
     weight: 104
     parent: "usage_security"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/advanced/client-security/php
-  - /riak-docs/riak/kv/2.9.0/dev/advanced/client-security/php
+  - /riak/2.9.0p5/dev/advanced/client-security/php
+  - /riak/kv/2.9.0p5/dev/advanced/client-security/php
+  - /riak/2.9.0p5/developing/usage/security/php/
+  - /riak/2.9.0/developing/usage/security/php/
+  - /riak/kv/2.9.0/developing/usage/security/php/
+  - /riak/kv/2.9.0p1/developing/usage/security/php/
+  - /riak/kv/2.9.0p2/developing/usage/security/php/
+  - /riak/kv/2.9.0p3/developing/usage/security/php/
+  - /riak/kv/2.9.0p4/developing/usage/security/php/
+  - /riak/kv/latest/developing/usage/security/php/
 ---
+
 
 This tutorial shows you how to set up a Riak PHP client to authenticate
 itself when connecting to Riak.
 
-If you are using [trust-]({{<baseurl>}}riak/kv/2.9.0/using/security/managing-sources/#trust-based-authentication) or [PAM]({{<baseurl>}}riak/kv/2.9.0/using/security/managing-sources/#pam-based-authentication)-based authentication, you can use the
-security setup described [below](#php-client-basics). [Certificate]({{<baseurl>}}riak/kv/2.9.0/using/security/managing-sources/#certificate-based-authentication)-based authentication is not
+If you are using [trust-]({{<baseurl>}}riak/kv/2.9.0p5/using/security/managing-sources/#trust-based-authentication) or [PAM]({{<baseurl>}}riak/kv/2.9.0p5/using/security/managing-sources/#pam-based-authentication)-based authentication, you can use the
+security setup described [below](#php-client-basics). [Certificate]({{<baseurl>}}riak/kv/2.9.0p5/using/security/managing-sources/#certificate-based-authentication)-based authentication is not
 yet supported in the PHP client due to limitations of the HTTP interface of Riak.
 
 ## PHP Client Basics
 
 When connecting to Riak using a PHP-based client, you typically do so
-by instantiating separate `\Basho\Riak\Node` objects for each node in your
-cluster and passing those `\Basho\Riak\Node` objects as an array to a
-`\Basho\Riak` object as a dependency. In this document, we will be working with
+by instantiating separate `/Basho/Riak/Node` objects for each node in your
+cluster and passing those `/Basho/Riak/Node` objects as an array to a
+`/Basho/Riak` object as a dependency. In this document, we will be working with
 only one node.
 
 If you are using Riak security, _all_ connecting clients should have
 access to the same Certificate Authority (CA) used on the server side,
-regardless of which [security source]({{<baseurl>}}riak/kv/2.9.0/using/security/managing-sources/) you choose. All clients should also provide a username, regardless of
+regardless of which [security source]({{<baseurl>}}riak/kv/2.9.0p5/using/security/managing-sources/) you choose. All clients should also provide a username, regardless of
 security source. The example below sets up a single node object (we'll
 simply call it `node`) that connects to Riak on `localhost` and on port
 8087 and specifies `riakuser` as a username. That object will be used to
 create a Riak object. The setup below does not specify a CA and will throw
-an `\Basho\Riak\Node\Builder\Exception`:
+an `/Basho/Riak/Node/Builder/Exception`:
 
 ```php
-use \Basho\Riak;
-use \Basho\Riak\Node;
+use /Basho/Riak;
+use /Basho/Riak/Node;
 
-$node = (new Node\Builder())
+$node = (new Node/Builder())
     ->atHost('127.0.0.1')
     ->onPort('8087')
     ->usingPasswordAuthentication('riakuser')
@@ -67,10 +76,10 @@ pass the path of the CA file relative to the current working directory into
 the `withCertificateAuthorityFile` method.
 
 ```php
-use \Basho\Riak;
-use \Basho\Riak\Node;
+use /Basho/Riak;
+use /Basho/Riak/Node;
 
-$node = (new Node\Builder())
+$node = (new Node/Builder())
     ->atHost('127.0.0.1')
     ->onPort('8087')
     ->usingPasswordAuthentication('riakuser', 'rosebud')
@@ -89,11 +98,11 @@ password. There are helper methods that handle this for you,
 `usingPamAuthentication` and `usingTrustAuthentication`.
 
 ```php
-use \Basho\Riak;
-use \Basho\Riak\Node;
+use /Basho/Riak;
+use /Basho/Riak/Node;
 
 // PAM Example
-$node = (new Node\Builder())
+$node = (new Node/Builder())
     ->atHost('127.0.0.1')
     ->onPort('8087')
     ->usingPamAuthentication('riakuser')
@@ -101,7 +110,7 @@ $node = (new Node\Builder())
     ->build();
 
 // Trust Example
-$node = (new Node\Builder())
+$node = (new Node/Builder())
     ->atHost('127.0.0.1')
     ->onPort('8087')
     ->usingTrustAuthentication('riakuser')

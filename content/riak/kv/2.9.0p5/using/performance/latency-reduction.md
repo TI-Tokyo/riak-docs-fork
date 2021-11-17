@@ -2,18 +2,27 @@
 title: "Latency Reduction Checklist"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Latency Reduction"
     identifier: "performance_latency_reduction"
     weight: 104
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/tuning/latency-reduction
-  - /riak-docs/riak/kv/2.9.0/ops/tuning/latency-reduction
+  - /riak/2.9.0p5/ops/tuning/latency-reduction
+  - /riak/kv/2.9.0p5/ops/tuning/latency-reduction
+  - /riak/2.9.0p5/using/performance/latency-reduction/
+  - /riak/2.9.0/using/performance/latency-reduction/
+  - /riak/kv/2.9.0/using/performance/latency-reduction/
+  - /riak/kv/2.9.0p1/using/performance/latency-reduction/
+  - /riak/kv/2.9.0p2/using/performance/latency-reduction/
+  - /riak/kv/2.9.0p3/using/performance/latency-reduction/
+  - /riak/kv/2.9.0p4/using/performance/latency-reduction/
+  - /riak/kv/latest/using/performance/latency-reduction/
 ---
+
 
 Although latency is unavoidable in distributed systems like Riak, there
 are a number of actions that can be undertaken to reduce latency
@@ -113,7 +122,7 @@ latency issues in your cluster, you can start by checking the following:
 * Application errors are a common source of problems with
   siblings. Updating the same key over and over without passing a
   [causal context](../../../learn/concepts/causal-context) to Riak can cause sibling explosion. If this seems to be the issue, modify your application's [conflict resolution](../../../developing/usage/conflict-resolution)
-  strategy. Another possibility worth exploring is using [dotted version vectors](../../../learn/concepts/causal-context/#dotted-version-vectors) \(DVVs) in place of traditional vector clocks. DVVs can be enabled [using bucket types](../../../developing/usage/bucket-types) by setting the `dvv_enabled` parameter to `true` for buckets that seem to be experiencing sibling explosion.
+  strategy. Another possibility worth exploring is using [dotted version vectors](../../../learn/concepts/causal-context/#dotted-version-vectors) /(DVVs) in place of traditional vector clocks. DVVs can be enabled [using bucket types](../../../developing/usage/bucket-types) by setting the `dvv_enabled` parameter to `true` for buckets that seem to be experiencing sibling explosion.
 
 ## Compaction and Merging
 

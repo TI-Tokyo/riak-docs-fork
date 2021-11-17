@@ -2,19 +2,29 @@
 title: "Bucket Types"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Bucket Types"
     identifier: "managing_ref_bucket_types"
     weight: 102
     parent: "managing_ref"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/reference/bucket-types/
+  - /riak/2.9.0/using/reference/bucket-types/
+  - /riak/kv/2.9.0/using/reference/bucket-types/
+  - /riak/kv/2.9.0p1/using/reference/bucket-types/
+  - /riak/kv/2.9.0p2/using/reference/bucket-types/
+  - /riak/kv/2.9.0p3/using/reference/bucket-types/
+  - /riak/kv/2.9.0p4/using/reference/bucket-types/
+  - /riak/kv/latest/using/reference/bucket-types/
 ---
+
 
 Bucket types allow groups of buckets to share configuration details and
 for Riak users to manage bucket properties more efficiently than in the
-older configuration system based on [bucket properties]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types/#bucket-properties-and-operations).
+older configuration system based on [bucket properties]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types/#bucket-properties-and-operations).
 
 {{% note title="Important note on cluster downgrades" %}}
 If you upgrade a Riak to version 2.0 or later, you can still downgrade the
@@ -27,7 +37,7 @@ activated, you can no longer downgrade the cluster to a pre-2.0 version.
 
 The older configuration system, based on bucket properties, involves
 setting bucket properties for specific buckets either through
-[HTTP]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/set-bucket-props) or [Protocol Buffers]({{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers/set-bucket-props). With this approach, you can take any given bucket and
+[HTTP]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/set-bucket-props) or [Protocol Buffers]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers/set-bucket-props). With this approach, you can take any given bucket and
 modify a wide range of properties, from `n_val` to `allow_mult` and far
 beyond.
 
@@ -39,13 +49,13 @@ with a few crucial differences:
   previous system required configuration to be set on a per-bucket basis
 * Nearly all bucket properties can be updated using bucket types, except the
   `datatype` and `consistent` properties, related to
-  [Riak data types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types), and [strong consistency]({{<baseurl>}}riak/kv/2.9.0/developing/app-guide/strong-consistency) respectively
+  [Riak data types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types), and [strong consistency]({{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/strong-consistency) respectively
 * Bucket types are more performant than bucket properties because
   divergence from Riak's defaults doesn't have to be gossiped around the
   cluster for every bucket, which means less computational overhead
 
 It is important to note that buckets are not assigned types in the same
-way that they are configured when using [bucket properties]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types/#bucket-properties-and-operations). You cannot simply take a
+way that they are configured when using [bucket properties]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types/#bucket-properties-and-operations). You cannot simply take a
 bucket `my_bucket` and assign it a type the way that you would, say,
 set `allow_mult` to `false` or `n_val` to `5`, because there is no
 `type` parameter contained within the bucket's properties (i.e.
@@ -119,7 +129,7 @@ object of the following form:
 
 > **Getting started with Riak clients**
 >
-> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/2.9.0/developing/client-libraries), you can find more information about getting started with your client in our [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/2.9.0/developing/getting-started) section.
+> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries), you can find more information about getting started with your client in our [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started) section.
 
 If creation is successful, you should see the following output:
 
@@ -276,7 +286,7 @@ bucket.get('my_key')
 
 ```php
 $location = new Location('my_key', new Bucket('my_bucket'));
-(new \Basho\Riak\Command\Builder\FetchObject($riak))
+(new /Basho/Riak/Command/Builder/FetchObject($riak))
   ->atLocation($location)
   ->build()
   ->execute();
@@ -333,9 +343,9 @@ bucket2.get('my_key')
 ```
 
 ```php
-$location1 = new \Basho\Riak\Location('my_key', new Bucket('my_bucket', 'type1'));
+$location1 = new /Basho/Riak/Location('my_key', new Bucket('my_bucket', 'type1'));
 $location2 = new Location('my_key', new Bucket('my_bucket', 'type2'));
-$builder = new \Basho\Riak\Command\Builder\FetchObject($riak);
+$builder = new /Basho/Riak/Command/Builder/FetchObject($riak);
 $builder->atLocation($location1)
   ->build()
   ->execute();
@@ -413,9 +423,9 @@ bucket2.get('my_key')
 ```
 
 ```php
-$location1 = new \Basho\Riak\Location('my_key', new Bucket('my_bucket', 'default'));
-$location2 = new \Basho\Riak\Location('my_key', new Bucket('my_bucket'));
-$builder = new \Basho\Riak\Command\Builder\FetchObject($riak);
+$location1 = new /Basho/Riak/Location('my_key', new Bucket('my_bucket', 'default'));
+$location2 = new /Basho/Riak/Location('my_key', new Bucket('my_bucket'));
+$builder = new /Basho/Riak/Command/Builder/FetchObject($riak);
 $builder->atLocation($location1)
   ->build()
   ->execute();
@@ -521,7 +531,7 @@ associated with the `default` bucket type:
 
 ## Bucket Types and the `allow_mult` Setting
 
-Prior to Riak 2.0, Riak created [siblings]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#siblings) in the case of conflicting updates only when explicitly instructed to do so, i.e. when `allow_mult` is to `true`. The default `allow_mult` setting was `false`.
+Prior to Riak 2.0, Riak created [siblings]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#siblings) in the case of conflicting updates only when explicitly instructed to do so, i.e. when `allow_mult` is to `true`. The default `allow_mult` setting was `false`.
 
 In version 2.0, this is changing in a subtle way. Now, there are two
 different default settings for `allow_mult` in play:
@@ -534,7 +544,7 @@ different default settings for `allow_mult` in play:
 
 The consequence is that applications that have previously ignored
 conflict resolutions in certain buckets (or all buckets) can continue to
-do so. New applications, however, are encouraged to retain and [resolve siblings]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution) with the appropriate application-side business logic.
+do so. New applications, however, are encouraged to retain and [resolve siblings]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution) with the appropriate application-side business logic.
 
 To give an example, let's have a look at the properties associated with
 the `default` bucket type:
@@ -585,8 +595,8 @@ riak-admin bucket-type update n_val_of_2 '{"props":{"allow_mult":false}}'
 ## Bucket Type Example
 
 Let's say that you'd like to create a bucket type called
-`user_account_bucket` with a [pre-commit hook]({{<baseurl>}}riak/kv/2.9.0/developing/usage/commit-hooks/#pre-commit-hooks) called `syntax_check` and two [post-commit
-hooks]({{<baseurl>}}riak/kv/2.9.0/developing/usage/commit-hooks/#Post-Commit-Hooks) called `welcome_email` and `update_registry`. This would involve four steps:
+`user_account_bucket` with a [pre-commit hook]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/commit-hooks/#pre-commit-hooks) called `syntax_check` and two [post-commit
+hooks]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/commit-hooks/#Post-Commit-Hooks) called `welcome_email` and `update_registry`. This would involve four steps:
 
 1. Creating a JavaScript object containing the appropriate `props`
    settings:
@@ -663,7 +673,7 @@ obj.store
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildJsonObject("{ ... user data ... }")
   ->buildLocation('user19735', 'sensitive_user_data', 'no_siblings')
   ->build()
@@ -680,7 +690,7 @@ obj.store()
 
 ```csharp
 var id = new RiakObjectId("no_siblings", "sensitive_user_data", "user19735");
-var obj = new RiakObject(id, "{\"name\":\"Bob\"}");
+var obj = new RiakObject(id, "{/"name/":/"Bob/"}");
 var rslt = client.Put(obj);
 ```
 
@@ -705,16 +715,16 @@ riakc_pb_socket:put(Pid, Object).
 ```
 
 ```curl
-curl -XPUT \
-  -H "Content-Type: application/json" \
-  -d "{ ... user data ... }" \
+curl -XPUT /
+  -H "Content-Type: application/json" /
+  -d "{ ... user data ... }" /
   http://localhost:8098/types/no_siblings/buckets/sensitive_user_data/keys/user19735
 ```
 
 In this example, the bucket `sensitive_user_data` bears the
 configuration established by the `no_siblings` bucket type, and it bears
 that configuration _on the basis of the query's structure_. This is
-because buckets act as a [separate namespace](#buckets-as-namespaces) in Riak, in addition to [buckets]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/buckets) and [keys]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/keys-and-objects).
+because buckets act as a [separate namespace](#buckets-as-namespaces) in Riak, in addition to [buckets]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/buckets) and [keys]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/keys-and-objects).
 
 Let's say that we're using Riak to store internet memes. We've been
 using a bucket called `current_memes` using the bucket type
@@ -747,7 +757,7 @@ obj.store
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\StoreObject($riak))
+(new /Basho/Riak/Command/Builder/StoreObject($riak))
   ->buildObject("all your base are belong to us", ['Content-Type' => 'text/plain'])
   ->buildLocation('user19735', 'sensitive_user_data', 'no_siblings')
   ->build()
@@ -792,9 +802,9 @@ riakc_pb_socket:put(Pid, Object).
 ```
 
 ```curl
-curl -XPUT \
-  -H "Content-Type: text/plain" \
-  -d "all your base are belong to us" \
+curl -XPUT /
+  -H "Content-Type: text/plain" /
+  -d "all your base are belong to us" /
   http://localhost:8098/types/no_siblings/buckets/old_memes/keys/all_your_base
 ```
 

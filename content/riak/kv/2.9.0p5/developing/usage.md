@@ -2,15 +2,25 @@
 title: "Usage Overview"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Usage"
     identifier: "developing_usage"
     weight: 101
     parent: "developing"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/usage/
+  - /riak/2.9.0/developing/usage/
+  - /riak/kv/2.9.0/developing/usage/
+  - /riak/kv/2.9.0p1/developing/usage/
+  - /riak/kv/2.9.0p2/developing/usage/
+  - /riak/kv/2.9.0p3/developing/usage/
+  - /riak/kv/2.9.0p4/developing/usage/
+  - /riak/kv/latest/developing/usage/
 ---
+
 
 ## In This Section
 

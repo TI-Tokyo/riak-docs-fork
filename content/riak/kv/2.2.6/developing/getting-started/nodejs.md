@@ -11,8 +11,8 @@ menu:
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/nodejs
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/nodejs
+  - /riak/2.2.6/dev/taste-of-riak/nodejs
+  - /riak/kv/2.2.6/dev/taste-of-riak/nodejs
 ---
 
 [introduction.js]: https://github.com/basho/riak-nodejs-client-examples/blob/master/dev/taste-of-riak/introduction.js

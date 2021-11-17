@@ -2,15 +2,25 @@
 title: "Using Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Using"
     identifier: "managing"
     weight: 201
     pre: database
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/
+  - /riak/2.9.0/using/
+  - /riak/kv/2.9.0/using/
+  - /riak/kv/2.9.0p1/using/
+  - /riak/kv/2.9.0p2/using/
+  - /riak/kv/2.9.0p3/using/
+  - /riak/kv/2.9.0p4/using/
+  - /riak/kv/latest/using/
 ---
+
 
 [use running cluster]: ../using/running-a-cluster
 [use admin index]: ../using/admin/

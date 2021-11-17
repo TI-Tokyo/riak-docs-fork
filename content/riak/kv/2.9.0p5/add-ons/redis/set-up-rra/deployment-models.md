@@ -2,16 +2,26 @@
 title: "Riak Redis Add-on Deployment Models"
 description: "Explore the various models for deploying Riak Redis Add-on"
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Redis Add-on Deployment Models"
     identifier: "add-ons_redis_deployment"
     weight: 201
     parent: "add-ons_redis_setup"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/2.9.0p5/add-ons/redis/set-up-rra/deployment-models/
+  - /riak/2.9.0/add-ons/redis/set-up-rra/deployment-models/
+  - /riak/kv/2.9.0/add-ons/redis/set-up-rra/deployment-models/
+  - /riak/kv/2.9.0p1/add-ons/redis/set-up-rra/deployment-models/
+  - /riak/kv/2.9.0p2/add-ons/redis/set-up-rra/deployment-models/
+  - /riak/kv/2.9.0p3/add-ons/redis/set-up-rra/deployment-models/
+  - /riak/kv/2.9.0p4/add-ons/redis/set-up-rra/deployment-models/
+  - /riak/kv/latest/add-ons/redis/set-up-rra/deployment-models/
 ---
+
 
 [Local-deployment]: {{<baseurl>}}images/redis/rra_deployment_local.png
 [Colocated-deployment]: {{<baseurl>}}images/redis/rra_deployment_colocated.png

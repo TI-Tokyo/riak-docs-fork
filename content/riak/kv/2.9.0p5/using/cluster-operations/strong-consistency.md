@@ -2,15 +2,25 @@
 title: "Monitoring Strong Consistency"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Monitoring Strong Consistency"
     identifier: "cluster_operations_strong_consistency"
     weight: 110
     parent: "managing_cluster_operations"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/cluster-operations/strong-consistency/
+  - /riak/2.9.0/using/cluster-operations/strong-consistency/
+  - /riak/kv/2.9.0/using/cluster-operations/strong-consistency/
+  - /riak/kv/2.9.0p1/using/cluster-operations/strong-consistency/
+  - /riak/kv/2.9.0p2/using/cluster-operations/strong-consistency/
+  - /riak/kv/2.9.0p3/using/cluster-operations/strong-consistency/
+  - /riak/kv/2.9.0p4/using/cluster-operations/strong-consistency/
+  - /riak/kv/latest/using/cluster-operations/strong-consistency/
 ---
+
 
 {{% note title="Please Note:" %}}
 Riak KV's strong consistency is an experimental feature and may be removed
@@ -24,10 +34,10 @@ usage in any production environment.
 ## Monitoring Strong Consistency
 
 Riak provides a wide variety of data related to the current operating
-status of a node. This data is available by running the [`riak-admin status`]({{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#riak-admin-status) command. That data now
+status of a node. This data is available by running the [`riak-admin status`]({{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#status) command. That data now
 includes statistics specific to strongly consistent operations.
 
-A full listing of these stats is available in [Inspecting a Node]({{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/inspecting-node).
+A full listing of these stats is available in [Inspecting a Node]({{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/inspecting-node).
 All strong consistency-related stats are prefixed with `consistent_`,
 e.g. `consistent_gets`, `consistent_puts`, etc. Many of these stats are
 so-called "one-minute stats," meaning that they reflect node activity in

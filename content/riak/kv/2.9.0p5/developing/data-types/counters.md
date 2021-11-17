@@ -3,20 +3,29 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: Counters"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Counters"
     identifier: "data_types_counters"
     weight: 100
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/data-types/counters
-  - /riak-docs/riak/kv/2.9.0/dev/using/data-types/counters
-  - /riak-docs/riak/2.9.0/dev/data-modeling/data-types/counters
-  - /riak-docs/riak/kv/2.9.0/dev/data-modeling/data-types/counters
+  - /riak/2.9.0p5/dev/using/data-types/counters
+  - /riak/kv/2.9.0p5/dev/using/data-types/counters
+  - /riak/2.9.0p5/dev/data-modeling/data-types/counters
+  - /riak/kv/2.9.0p5/dev/data-modeling/data-types/counters
+  - /riak/2.9.0p5/developing/data-types/counters/
+  - /riak/2.9.0/developing/data-types/counters/
+  - /riak/kv/2.9.0/developing/data-types/counters/
+  - /riak/kv/2.9.0p1/developing/data-types/counters/
+  - /riak/kv/2.9.0p2/developing/data-types/counters/
+  - /riak/kv/2.9.0p3/developing/data-types/counters/
+  - /riak/kv/2.9.0p4/developing/data-types/counters/
+  - /riak/kv/latest/developing/data-types/counters/
 ---
+
 
 Counters are a bucket-level Riak data type that can be used by themselves, associated with a bucket/key pair, or used [within a map](../maps#counters-within-maps). A counter's value can only be a positive integer, negative integer, or zero.
 
@@ -86,7 +95,7 @@ bucket = client.bucket_type('counters').bucket('counters')
 ```
 
 ```php
-$bucket = new \Basho\Riak\Bucket('counters', 'counters');
+$bucket = new /Basho/Riak/Bucket('counters', 'counters');
 ```
 
 ```python
@@ -158,7 +167,7 @@ counter = Riak::Crdt::Counter.new(bucket, key)
 
 ```php
 # using the $bucket var created earlier
-$location = new \Basho\Riak\Location('key', $bucket);
+$location = new /Basho/Riak/Location('key', $bucket);
 ```
 
 ```python
@@ -199,8 +208,8 @@ var options = {
 ```curl
 # This will create a counter with an initial value of 0
 
-curl -XPOST http://localhost:8098/types/counters/buckets/<bucket>/datatypes/<key> \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/counters/buckets/<bucket>/datatypes/<key> /
+  -H "Content-Type: application/json" /
   -d '{"increment": 0}'
 ```
 
@@ -232,7 +241,7 @@ counter = Riak::Crdt::Counter.new(bucket, 'traffic_tickets')
 
 ```php
 # using the $bucket var created earlier
-$location = new \Basho\Riak\Location('traffic_tickets', $bucket);
+$location = new /Basho/Riak/Location('traffic_tickets', $bucket);
 ```
 
 ```python
@@ -268,8 +277,8 @@ Counter = riakc_counter:new().
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets /
+  -H "Content-Type: application/json" /
   -d '{"increment": 0}'
 ```
 
@@ -296,7 +305,7 @@ Riak
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\IncrementCounter($riak))
+(new /Basho/Riak/Command/Builder/IncrementCounter($riak))
     ->withIncrement(1)
     ->atLocation($location)
     ->build()
@@ -348,8 +357,8 @@ Counter1 = riakc_counter:increment(Counter).
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets /
+  -H "Content-Type: application/json" /
   -d '{"increment": 1}'
 ```
 
@@ -373,7 +382,7 @@ counter.increment(5)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\IncrementCounter($riak))
+(new /Basho/Riak/Command/Builder/IncrementCounter($riak))
     ->withIncrement(5)
     ->atLocation($location)
     ->build()
@@ -431,8 +440,8 @@ Counter2 = riakc_counter:increment(5, Counter1).
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets /
+  -H "Content-Type: application/json" /
   -d '{"increment": 5}'
 ```
 
@@ -455,7 +464,7 @@ counter.value
 ```
 
 ```php
-$trafficTickets = (new \Basho\Riak\Command\Builder\FetchCounter($riak))
+$trafficTickets = (new /Basho/Riak/Command/Builder/FetchCounter($riak))
     ->atLocation($location)
     ->build()
     ->execute()
@@ -562,7 +571,7 @@ counter.decrement(3)
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\IncrementCounter($riak))
+(new /Basho/Riak/Command/Builder/IncrementCounter($riak))
     ->withIncrement(-3)
     ->atLocation($location)
     ->build()
@@ -625,7 +634,7 @@ riakc_pb_socket:update_type(Pid, {<<"counters">>,<<"counters">>},
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/counters/buckets/counters/datatypes/traffic_tickets /
+  -H "Content-Type: application/json" /
   -d '{"decrement": 3}'
 ```

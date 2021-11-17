@@ -2,21 +2,30 @@
 title: "Keys and Objects"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Keys and Objects"
     identifier: "learn_concepts_keys_objects"
     weight: 106
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/theory/concepts/keys-and-values
-  - /riak-docs/riak/kv/2.9.0/theory/concepts/keys-and-values
+  - /riak/2.9.0p5/theory/concepts/keys-and-values
+  - /riak/kv/2.9.0p5/theory/concepts/keys-and-values
+  - /riak/2.9.0p5/learn/concepts/keys-and-objects/
+  - /riak/2.9.0/learn/concepts/keys-and-objects/
+  - /riak/kv/2.9.0/learn/concepts/keys-and-objects/
+  - /riak/kv/2.9.0p1/learn/concepts/keys-and-objects/
+  - /riak/kv/2.9.0p2/learn/concepts/keys-and-objects/
+  - /riak/kv/2.9.0p3/learn/concepts/keys-and-objects/
+  - /riak/kv/2.9.0p4/learn/concepts/keys-and-objects/
+  - /riak/kv/latest/learn/concepts/keys-and-objects/
 ---
 
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/buckets
-[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#vector-clocks
+
+[concept buckets]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/buckets
+[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#vector-clocks
 
 In an RDBMS, data is organized by tables that are individually
 identifiable entities. Within those tables exist rows of a data

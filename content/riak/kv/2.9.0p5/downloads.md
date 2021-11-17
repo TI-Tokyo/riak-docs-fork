@@ -2,21 +2,31 @@
 title: "Download for Riak KV 2.9.0"
 description: "Download some stuff!"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Download Riak KV"
     identifier: "download_riak_kv"
     weight: 101
     pre: download-alt
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 toc: false
 layout: downloads
 listed_projects:
     - project: "riak_kv"
-      version: "2.9.0"
+      version: "2.9.0p5"
       title: "Riak KV"
       install_instructions_set: "setup/installing"
 aliases:
-  - /riak-docs/riak/2.9.0/downloads
-  - /riak-docs/riak/kv/2.9.0/downloads
+  - /riak/2.9.0p5/downloads
+  - /riak/kv/2.9.0p5/downloads
+  - /riak/2.9.0p5/downloads/
+  - /riak/2.9.0/downloads/
+  - /riak/kv/2.9.0/downloads/
+  - /riak/kv/2.9.0p1/downloads/
+  - /riak/kv/2.9.0p2/downloads/
+  - /riak/kv/2.9.0p3/downloads/
+  - /riak/kv/2.9.0p4/downloads/
+  - /riak/kv/latest/downloads/
+  - /riak/latest/downloads/
 ---
+

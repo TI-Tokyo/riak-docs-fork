@@ -2,26 +2,35 @@
 title: "Backing Up"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Backing Up"
     identifier: "cluster_operations_backing_up"
     weight: 106
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/running/backups
-  - /riak-docs/riak/kv/2.9.0/ops/running/backups
+  - /riak/2.9.0p5/ops/running/backups
+  - /riak/kv/2.9.0p5/ops/running/backups
+  - /riak/2.9.0p5/using/cluster-operations/backing-up/
+  - /riak/2.9.0/using/cluster-operations/backing-up/
+  - /riak/kv/2.9.0/using/cluster-operations/backing-up/
+  - /riak/kv/2.9.0p1/using/cluster-operations/backing-up/
+  - /riak/kv/2.9.0p2/using/cluster-operations/backing-up/
+  - /riak/kv/2.9.0p3/using/cluster-operations/backing-up/
+  - /riak/kv/2.9.0p4/using/cluster-operations/backing-up/
+  - /riak/kv/latest/using/cluster-operations/backing-up/
 ---
 
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
-[config reference]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/reference/strong-consistency
-[concept aae]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/
-[aae read repair]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy
+
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
+[config reference]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/strong-consistency
+[concept aae]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/
+[aae read repair]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy
 
 Riak KV is a [clustered][concept clusters] system built to survive a wide range of failure scenarios, including the loss of nodes due to network or hardware failure. Although this is one of Riak KV's core strengths, it cannot withstand all failure scenarios.
 
@@ -46,7 +55,7 @@ Downtime of a node can be significantly reduced by using an OS feature or filesy
 {{% note title="Backups and eventual consistency" %}}
 Due to Riak KV's eventually consistent nature, backups can become slightly inconsistent from node to node.
 
-Data could exist on some nodes and not others at the exact time a backup is made. Any inconsistency will be corrected once a backup is restored, either by Riak's [active anti-entropy]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/) processes or when the object is read, via [read repair]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy).
+Data could exist on some nodes and not others at the exact time a backup is made. Any inconsistency will be corrected once a backup is restored, either by Riak's [active anti-entropy]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/) processes or when the object is read, via [read repair]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy).
 {{% /note %}}
 
 ## OS-Specific Directory Locations
@@ -131,7 +140,7 @@ Strong consistency | `/opt/riak/data/ensembles`
 ## Performing Backups
 
 {{% note title="Deprecation notice" %}}
-In previous versions of Riak KV, there was a [`riak-admin backup`]({{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#backup) command commonly used for
+In previous versions of Riak KV, there was a [`riak-admin backup`]({{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#backup) command commonly used for
 backups. This functionality is now deprecated. We strongly recommend using the backup procedure documented below instead.
 {{% /note %}}
 
@@ -149,28 +158,28 @@ Backups must be performed on while Riak KV is stopped to prevent data loss.
 ### Bitcask
 
 ```bash
-tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz \
+tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz /
   /var/lib/riak/bitcask /var/lib/riak/ring /etc/riak
 ```
 
 ### LevelDB
 
 ```bash
-tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz \
+tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz /
   /var/lib/riak/leveldb /var/lib/riak/ring /etc/riak
 ```
 
 ### Cluster Metadata
 
 ```bash
-tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz \
+tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz /
   /var/lib/riak/cluster_meta
 ```
 
 ### Search / Solr Data
 
 ```bash
-tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz \
+tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz /
   /var/lib/riak/yz
 ```
 
@@ -180,7 +189,7 @@ Persistently stored data used by Riak's [strong consistency][use ref strong cons
 can be stored in an analogous fashion:
 
 ```bash
-tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz \
+tar -czf /mnt/riak_backups/riak_data_`date +%Y%m%d_%H%M`.tar.gz /
   /var/lib/riak/ensembles
 ```
 
@@ -202,16 +211,16 @@ node that the restored backup was taken from, you will need to
 additionally:
 
 1. Mark the original instance down in the cluster using
-   [`riak-admin down <node>`]({{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#down)
+   [`riak-admin down <node>`]({{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#down)
 2. Join the restored node to the cluster using
-   [`riak-admin cluster join <node>`]({{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#cluster-join)
+   [`riak-admin cluster join <node>`]({{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#cluster-join)
 3. Replace the original instance with the renamed instance with
-   [`riak-admin cluster force-replace <node1> <node2>`]({{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#cluster-force-replace)
+   [`riak-admin cluster force-replace <node1> <node2>`]({{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#cluster-force-replace)
 4. Plan the changes to the cluster with `riak-admin cluster plan`
 5. Finally, commit the cluster changes with `riak-admin cluster commit`
 
 {{% note %}}
-For more information on the `riak-admin cluster` commands, refer to our documentation on [cluster administration]({{<baseurl>}}riak/kv/2.9.0/using/admin/).
+For more information on the `riak-admin cluster` commands, refer to our documentation on [cluster administration]({{<baseurl>}}riak/kv/2.9.0p5/using/admin/).
 {{% /note %}}
 
 For example, if there are five nodes in the cluster with the original node names `riak1.example.com` through `riak5.example.com` and you wish to restore `riak1.example.com` as `riak6.example.com`, you would execute the following commands on `riak6.example.com`.
@@ -231,7 +240,7 @@ For example, if there are five nodes in the cluster with the original node names
 3. Force-replace the original instance with the new one.
 
     ```bash
-    riak-admin cluster force-replace \
+    riak-admin cluster force-replace /
         riak@riak1.example.com riak@riak6.example.com
     ```
 
@@ -264,4 +273,4 @@ and for any other nodes whose names have changed:
 
 ## Restoring a Cluster
 
-Restoring a cluster from backups is documented [on its own page]({{<baseurl>}}riak/kv/2.9.0/using/repair-recovery/failure-recovery/#cluster-recovery-from-backups).
+Restoring a cluster from backups is documented [on its own page]({{<baseurl>}}riak/kv/2.9.0p5/using/repair-recovery/failure-recovery/#cluster-recovery-from-backups).

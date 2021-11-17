@@ -3,18 +3,27 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with Erlang"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Object Modeling"
     identifier: "getting_started_erlang_object"
     weight: 102
     parent: "getting_started_erlang"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/object-modeling-erlang
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/object-modeling-erlang
+  - /riak/2.9.0p5/dev/taste-of-riak/object-modeling-erlang
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/object-modeling-erlang
+  - /riak/2.9.0p5/developing/getting-started/erlang/object-modeling/
+  - /riak/2.9.0/developing/getting-started/erlang/object-modeling/
+  - /riak/kv/2.9.0/developing/getting-started/erlang/object-modeling/
+  - /riak/kv/2.9.0p1/developing/getting-started/erlang/object-modeling/
+  - /riak/kv/2.9.0p2/developing/getting-started/erlang/object-modeling/
+  - /riak/kv/2.9.0p3/developing/getting-started/erlang/object-modeling/
+  - /riak/kv/2.9.0p4/developing/getting-started/erlang/object-modeling/
+  - /riak/kv/latest/developing/getting-started/erlang/object-modeling/
 ---
+
 
 To get started, let's create the records that we'll be using.
 
@@ -43,7 +52,7 @@ here for brevity.
 -record(timeline, {owner, msg_type, msgs}).
 ```
 
-We'll be using the bucket `Users` to store our data. We won't be [using bucket types]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types) here, so we don't need to specify one.
+We'll be using the bucket `Users` to store our data. We won't be [using bucket types]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types) here, so we don't need to specify one.
 
 To use these records to store data, we will first have to create a user
 record. Then, when a user creates a message, we will append that message

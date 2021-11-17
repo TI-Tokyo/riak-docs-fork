@@ -3,18 +3,27 @@ title_supertext: "Getting Started:"
 title: "Querying with Java"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Querying"
     identifier: "getting_started_java_query"
     weight: 101
     parent: "getting_started_java"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/querying-java
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/querying-java
+  - /riak/2.9.0p5/dev/taste-of-riak/querying-java
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/querying-java
+  - /riak/2.9.0p5/developing/getting-started/java/querying/
+  - /riak/2.9.0/developing/getting-started/java/querying/
+  - /riak/kv/2.9.0/developing/getting-started/java/querying/
+  - /riak/kv/2.9.0p1/developing/getting-started/java/querying/
+  - /riak/kv/2.9.0p2/developing/getting-started/java/querying/
+  - /riak/kv/2.9.0p3/developing/getting-started/java/querying/
+  - /riak/kv/2.9.0p4/developing/getting-started/java/querying/
+  - /riak/kv/latest/developing/getting-started/java/querying/
 ---
+
 
 ## Java Version Setup
 
@@ -175,8 +184,8 @@ one extra request to get all the info.
     String key = "1";
     String fetchedCust = customersBucket.fetch(key).execute().getValueAsString();
     String fetchedOrdSum = orderSummariesBucket.fetch(key).execute().getValueAsString();
-    System.out.format("Customer     1: %s\n", fetchedCust);
-    System.out.format("OrderSummary 1: %s\n", fetchedOrdSum);
+    System.out.format("Customer     1: %s/n", fetchedCust);
+    System.out.format("OrderSummary 1: %s/n", fetchedOrdSum);
 ```
 
 Which returns our amalgamated objects:
@@ -194,9 +203,9 @@ intrinsic relationships.
 ## Secondary Indexes
 
 {{% note %}}
-Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask) does not support secondary indexes.
+Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask) does not support secondary indexes.
 
-See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
+See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
 {{% /note %}}
 
 If you're coming from an SQL world, Secondary Indexes (2i) are a lot
@@ -234,7 +243,7 @@ by searching the `SalespersonId` integer index for Jane's id of `9000`.
     List<String> janesOrders = ordersBucket.fetchIndex(IntIndex.named("SalespersonId"))
                                            .withValue(9000).execute();
 
-    System.out.format("Jane's Orders: %s\n", StringUtil.Join(", ", janesOrders));
+    System.out.format("Jane's Orders: %s/n", StringUtil.Join(", ", janesOrders));
 ```
 
 Which returns:
@@ -255,7 +264,7 @@ this case, we can exploit 2i's range queries. Let's search the
     List<String> octoberOrders = ordersBucket.fetchIndex(BinIndex.named("OrderDate"))
                                              .from("2013-10-01").to("2013-10-31").execute();
 
-    System.out.format("October's Orders: %s\n", StringUtil.Join(", ", octoberOrders));
+    System.out.format("October's Orders: %s/n", StringUtil.Join(", ", octoberOrders));
 ```
 
 Which returns:

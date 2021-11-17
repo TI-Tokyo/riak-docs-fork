@@ -8,7 +8,7 @@
 This repository contains all the bits and pieces, large and small required to
 render and deploy Basho's documentation.
 
-### http://docs.basho.com/
+### http://docs.riak.com/
 
 This is a Work In Progress!
 Please let us know if you'd like to help out!

@@ -2,17 +2,25 @@
 title: "HTTP Link Walking"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Link Walking"
     identifier: "http_link_walking"
     weight: 118
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/link-walking
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/link-walking
+  - /riak/2.9.0p5/dev/references/http/link-walking
+  - /riak/kv/2.9.0p5/dev/references/http/link-walking
+  - /riak/2.9.0p5/developing/api/http/link-walking/
+  - /riak/2.9.0/developing/api/http/link-walking/
+  - /riak/kv/2.9.0/developing/api/http/link-walking/
+  - /riak/kv/2.9.0p1/developing/api/http/link-walking/
+  - /riak/kv/2.9.0p2/developing/api/http/link-walking/
+  - /riak/kv/2.9.0p3/developing/api/http/link-walking/
+  - /riak/kv/2.9.0p4/developing/api/http/link-walking/
+  - /riak/kv/latest/developing/api/http/link-walking/
 ---
 
 {{% note title="Deprecation Warning" %}}
@@ -21,8 +29,8 @@ This feature is deprecated and will be removed in a future version.
 
 Link walking (traversal) finds and returns objects by following links attached
 to them, starting from the object specified by the bucket and key portion.  It
-is a special case of [MapReduce]({{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce), and can be expressed more verbosely as such.
-[Read more about Links]({{<baseurl>}}riak/kv/2.9.0/learn/glossary/#links).
+is a special case of [MapReduce]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce), and can be expressed more verbosely as such.
+[Read more about Links]({{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#links).
 
 ## Request
 
@@ -68,7 +76,7 @@ single object that was found. If no objects were found or "keep" was not set on
 the phase, no chunks will be present in that phase.  Objects inside phase
 results will include `Location` headers that can be used to determine
 bucket and key. In fact, you can treat each object-chunk similarly to a complete
-response from [fetching the object]({{<baseurl>}}riak/kv/2.9.0/developing/api/http/fetch-object), without the status
+response from [fetching the object]({{<baseurl>}}riak/kv/2.9.0p5/developing/api/http/fetch-object), without the status
 code.
 
 ## Example

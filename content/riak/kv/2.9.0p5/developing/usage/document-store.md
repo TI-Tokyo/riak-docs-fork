@@ -2,37 +2,46 @@
 title: "Implementing a Document Store"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Implementing a Document Store"
     identifier: "usage_document_store"
     weight: 112
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/search/document-store
-  - /riak-docs/riak/kv/2.9.0/dev/search/document-store
+  - /riak/2.9.0p5/dev/search/document-store
+  - /riak/kv/2.9.0p5/dev/search/document-store
+  - /riak/2.9.0p5/developing/usage/document-store/
+  - /riak/2.9.0/developing/usage/document-store/
+  - /riak/kv/2.9.0/developing/usage/document-store/
+  - /riak/kv/2.9.0p1/developing/usage/document-store/
+  - /riak/kv/2.9.0p2/developing/usage/document-store/
+  - /riak/kv/2.9.0p3/developing/usage/document-store/
+  - /riak/kv/2.9.0p4/developing/usage/document-store/
+  - /riak/kv/latest/developing/usage/document-store/
 ---
 
+
 Although Riak wasn't explicitly created as a document store, two
-features recently added to Riak---[Riak Search]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search/) and [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/)---make it possible to use Riak as a
+features recently added to Riak---[Riak Search]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search/) and [Riak Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/)---make it possible to use Riak as a
 highly scalable document store with rich querying capabilities. In this
 tutorial, we'll build a basic implementation of a document store using
-[Riak maps]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps).
+[Riak maps]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps).
 
 ## Basic Approach
 
 Riak Search enables you to implement a document store in Riak in a
 variety of ways. You could, for example, store and query JSON objects or
 XML and then retrieve them later via Solr queries. In this tutorial,
-however, we will store data in [Riak maps]({{<baseurl>}}riak/kv/2.9.0/developing/data-types/#maps),
+however, we will store data in [Riak maps]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#maps),
 index that data using Riak Search, and then run Solr queries against
 those stored objects.
 
 You can think of these Search indexes as **collections**. Each indexed
 document will have an ID generated automatically by Search, and because
-we're not interested in running normal [key/value queries]({{<baseurl>}}riak/kv/2.9.0/developing/key-value-modeling) on these objects, we'll allow Riak to assign [keys]({{<baseurl>}}riak/kv/2.9.0/learn/concepts/keys-and-objects) automatically. This means that all we have to do is worry about the bucket type and/or bucket when storing objects.
+we're not interested in running normal [key/value queries]({{<baseurl>}}riak/kv/2.9.0p5/developing/key-value-modeling) on these objects, we'll allow Riak to assign [keys]({{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/keys-and-objects) automatically. This means that all we have to do is worry about the bucket type and/or bucket when storing objects.
 
 ## Use Case
 
@@ -69,7 +78,7 @@ Riak Search with an appropriate index and schema.
 
 ## Creating a Schema and Index
 
-In the documentation on [search schemas]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search-schemas), you'll find a
+In the documentation on [search schemas]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search-schemas), you'll find a
 baseline schema to be used for creating custom schemas. We'll use that
 baseline schema here and add the following fields to the `<fields>`
 list:
@@ -105,7 +114,7 @@ client.create_search_schema('blog_post_schema', schema_data)
 
 ```php
 $schema_string = file_get_contents('blog_post_schema.xml');
-(new \Basho\Riak\Command\Builder\StoreSchema($riak))
+(new /Basho/Riak/Command/Builder/StoreSchema($riak))
   ->withName('blog_post_schema')
   ->withSchemaString($schema_string)
   ->build()
@@ -148,8 +157,8 @@ riakc_pb_socket:create_search_schema(Pid, <<"blog_post_schema">>, SchemaData).
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/schema/blog_post_schema \
-     -H 'Content-Type: application/xml' \
+curl -XPUT $RIAK_HOST/search/schema/blog_post_schema /
+     -H 'Content-Type: application/xml' /
      --data-binary @blog_post_schema.xml
 ```
 
@@ -167,7 +176,7 @@ client.create_search_index('blog_posts', 'blog_post_schema')
 ```
 
 ```php
-(new Command\Builder\Search\StoreIndex($riak))
+(new Command/Builder/Search/StoreIndex($riak))
   ->withName('blog_posts')
   ->usingSchema('blog_post_schema')
   ->build()
@@ -200,8 +209,8 @@ riakc_pb_socket:create_search_index(Pid, <<"blog_posts">>, <<"blog_post_schema">
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/search/index/blog_posts \
-     -H 'Content-Type: application/json' \
+curl -XPUT $RIAK_HOST/search/index/blog_posts /
+     -H 'Content-Type: application/json' /
      -d '{"schema": "blog_post_schema"}'
 ```
 
@@ -229,7 +238,7 @@ First, let's create our `cms` bucket type and associate it with the
 `blog_posts` index:
 
 ```bash
-riak-admin bucket-type create cms \
+riak-admin bucket-type create cms /
   '{"props":{"datatype":"map","search_index":"blog_posts"}}'
 riak-admin bucket-type activate cms
 ```
@@ -242,7 +251,7 @@ as part of our "collection."
 Now that we know how each element of a blog post can be translated into
 one of the Riak Data Types, we can create an interface in our
 application to serve as that translation layer. Using the method
-described in [Data Modeling with Riak Data Types]({{<baseurl>}}riak/kv/2.9.0/developing/data-modeling), we can construct a
+described in [Data Modeling with Riak Data Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling), we can construct a
 class that looks like this:
 
 ```java
@@ -341,7 +350,7 @@ class BlogPost {
 
   private $riak = null;
 
-  public function __construct(\Basho\Riak $riak, $bucket, $title, $author, $content, array $keywords, $date, $published)
+  public function __construct(/Basho/Riak $riak, $bucket, $title, $author, $content, array $keywords, $date, $published)
   {
     this->riak = $riak;
     this->bucket = new Bucket($bucket, $this->bucketType);
@@ -355,13 +364,13 @@ class BlogPost {
 
   public function store()
   {
-    $setBuilder = (new \Basho\Riak\Command\Builder\UpdateSet($this->riak));
+    $setBuilder = (new /Basho/Riak/Command/Builder/UpdateSet($this->riak));
       
     foreach($this->keywords as $keyword) {
       $setBuilder->add($keyword);
     }
 
-    (new \Basho\Riak\Command\Builder\UpdateMap($this->riak))
+    (new /Basho/Riak/Command/Builder/UpdateMap($this->riak))
       ->updateRegister('title', $this->title)
       ->updateRegister('author', $this->author)
       ->updateRegister('content', $this->content)
@@ -443,7 +452,7 @@ blog_post1 = BlogPost.new('cat_pics_quarterly',
 
 ```php
 $keywords = ['adorbs', 'cheshire'];
-$date = new \DateTime('now');
+$date = new /DateTime('now');
 
 $post1 = new BlogPost(
   $riak, // client object
@@ -526,7 +535,7 @@ results = client.search('blog_posts', 'keywords_set:funny')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('blog_posts')
   ->withQuery('keywords_set:funny')
   ->build()
@@ -574,7 +583,7 @@ results = client.search('blog_posts', 'content_register:furry')
 ```
 
 ```php
-$response = (new \Basho\Riak\Command\Builder\Search\FetchObjects($riak))
+$response = (new /Basho/Riak/Command/Builder/Search/FetchObjects($riak))
   ->withIndexName('blog_posts')
   ->withQuery('content_register:furry')
   ->build()

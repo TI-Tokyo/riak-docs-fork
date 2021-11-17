@@ -2,17 +2,25 @@
 title: "HTTP List Keys"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "List Keys"
     identifier: "http_list_keys"
     weight: 104
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/list-keys
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/list-keys
+  - /riak/2.9.0p5/dev/references/http/list-keys
+  - /riak/kv/2.9.0p5/dev/references/http/list-keys
+  - /riak/2.9.0p5/developing/api/http/list-keys/
+  - /riak/2.9.0/developing/api/http/list-keys/
+  - /riak/kv/2.9.0/developing/api/http/list-keys/
+  - /riak/kv/2.9.0p1/developing/api/http/list-keys/
+  - /riak/kv/2.9.0p2/developing/api/http/list-keys/
+  - /riak/kv/2.9.0p3/developing/api/http/list-keys/
+  - /riak/kv/2.9.0p4/developing/api/http/list-keys/
+  - /riak/kv/latest/developing/api/http/list-keys/
 ---
 
 Lists keys in a bucket.

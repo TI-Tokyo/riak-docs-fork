@@ -2,15 +2,25 @@
 title: "Upgrading Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Upgrading"
     identifier: "upgrading"
     weight: 102
     parent: "setup_index"
 toc: true
+aliases:
+  - /riak/2.9.0p5/setup/upgrading/
+  - /riak/2.9.0/setup/upgrading/
+  - /riak/kv/2.9.0/setup/upgrading/
+  - /riak/kv/2.9.0p1/setup/upgrading/
+  - /riak/kv/2.9.0p2/setup/upgrading/
+  - /riak/kv/2.9.0p3/setup/upgrading/
+  - /riak/kv/2.9.0p4/setup/upgrading/
+  - /riak/kv/latest/setup/upgrading/
 ---
+
 
 [upgrade checklist]: ./checklist
 [upgrade version]: ./version

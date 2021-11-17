@@ -11,8 +11,8 @@ menu:
     parent: "learn"
 toc: false
 aliases:
-  - /riak-docs/riak/2.2.6/theory/dynamo
-  - /riak-docs/riak/kv/2.2.6/theory/dynamo
+  - /riak/2.2.6/theory/dynamo
+  - /riak/kv/2.2.6/theory/dynamo
 ---
 
 <div style="text-align:center;font-style:italic">

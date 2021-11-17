@@ -11,8 +11,8 @@ menu:
     parent: "learn"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/data-modeling/
-  - /riak-docs/riak/kv/2.9.1/dev/data-modeling/
+  - /riak/2.9.1/dev/data-modeling/
+  - /riak/kv/2.9.1/dev/data-modeling/
 ---
 
 

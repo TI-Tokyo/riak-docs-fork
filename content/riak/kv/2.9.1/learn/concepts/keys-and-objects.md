@@ -11,8 +11,8 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/keys-and-values
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/keys-and-values
+  - /riak/2.9.1/theory/concepts/keys-and-values
+  - /riak/kv/2.9.1/theory/concepts/keys-and-values
 ---
 
 [concept buckets]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/buckets

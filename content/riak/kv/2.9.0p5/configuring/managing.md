@@ -2,19 +2,29 @@
 title: "Managing Your Configuration"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Managing Configuration"
     identifier: "configuring_managing"
     weight: 130
     parent: "configuring"
 toc: true
+aliases:
+  - /riak/2.9.0p5/configuring/managing/
+  - /riak/2.9.0/configuring/managing/
+  - /riak/kv/2.9.0/configuring/managing/
+  - /riak/kv/2.9.0p1/configuring/managing/
+  - /riak/kv/2.9.0p2/configuring/managing/
+  - /riak/kv/2.9.0p3/configuring/managing/
+  - /riak/kv/2.9.0p4/configuring/managing/
+  - /riak/kv/latest/configuring/managing/
 ---
 
-[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-cli
-[use admin riak cli#chkconfig]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-cli/#chkconfig
-[config reference#search]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#search
+
+[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-cli
+[use admin riak cli#chkconfig]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-cli/#chkconfig
+[config reference#search]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#search
 
 ## Retrieving a Configuration Listing
 

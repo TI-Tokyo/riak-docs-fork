@@ -2,18 +2,28 @@
 title: "Getting Started Overview"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Getting Started"
     identifier: "developing_getting_started"
     weight: 100
     parent: "developing"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/getting-started/
+  - /riak/2.9.0/developing/getting-started/
+  - /riak/kv/2.9.0/developing/getting-started/
+  - /riak/kv/2.9.0p1/developing/getting-started/
+  - /riak/kv/2.9.0p2/developing/getting-started/
+  - /riak/kv/2.9.0p3/developing/getting-started/
+  - /riak/kv/2.9.0p4/developing/getting-started/
+  - /riak/kv/latest/developing/getting-started/
 ---
 
-[install index]: {{<baseurl>}}riak/kv/2.9.0/setup/installing
-[dev client libraries]: {{<baseurl>}}riak/kv/2.9.0/developing/client-libraries
+
+[install index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing
+[dev client libraries]: {{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries
 
 Welcome, new Riak developer! This guide will get you started developing
 against Riak KV with minimal fuss.

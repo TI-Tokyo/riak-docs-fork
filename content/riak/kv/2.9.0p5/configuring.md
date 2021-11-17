@@ -2,14 +2,23 @@
 title: "Configuring Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Configuring"
     identifier: "configuring"
     weight: 200
     pre: cog
 toc: true
+aliases:
+  - /riak/2.9.0p5/configuring/
+  - /riak/2.9.0/configuring/
+  - /riak/kv/2.9.0/configuring/
+  - /riak/kv/2.9.0p1/configuring/
+  - /riak/kv/2.9.0p2/configuring/
+  - /riak/kv/2.9.0p3/configuring/
+  - /riak/kv/2.9.0p4/configuring/
+  - /riak/kv/latest/configuring/
 ---
 
 [config basic]: ../configuring/basic

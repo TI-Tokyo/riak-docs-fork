@@ -11,8 +11,8 @@ menu:
     parent: "developing_app_guide"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/strong-consistency
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/strong-consistency
+  - /riak/2.2.6/dev/advanced/strong-consistency
+  - /riak/kv/2.2.6/dev/advanced/strong-consistency
 ---
 
 [use ref strong consistency]: {{<baseurl>}}riak/kv/2.2.6/using/reference/strong-consistency

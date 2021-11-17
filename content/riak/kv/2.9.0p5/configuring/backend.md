@@ -2,21 +2,31 @@
 title: "Backend Configuration"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Backend Configuration"
     identifier: "configuring_backend"
     weight: 110
     parent: "configuring"
 toc: true
+aliases:
+  - /riak/2.9.0p5/configuring/backend/
+  - /riak/2.9.0/configuring/backend/
+  - /riak/kv/2.9.0/configuring/backend/
+  - /riak/kv/2.9.0p1/configuring/backend/
+  - /riak/kv/2.9.0p2/configuring/backend/
+  - /riak/kv/2.9.0p3/configuring/backend/
+  - /riak/kv/2.9.0p4/configuring/backend/
+  - /riak/kv/latest/configuring/backend/
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb
-[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveled
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/multi
+
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb
+[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveled
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[plan backend memory]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory
+[plan backend multi]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/multi
 
 ## LevelDB
 

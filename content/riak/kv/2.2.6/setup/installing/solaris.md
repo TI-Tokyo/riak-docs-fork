@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/installing/Installing-on-Solaris
-  - /riak-docs/riak/kv/2.2.6/ops/building/installing/Installing-on-Solaris
-  - /riak-docs/riak/2.2.6/installing/solaris/
-  - /riak-docs/riak/kv/2.2.6/installing/solaris/
+  - /riak/2.2.6/ops/building/installing/Installing-on-Solaris
+  - /riak/kv/2.2.6/ops/building/installing/Installing-on-Solaris
+  - /riak/2.2.6/installing/solaris/
+  - /riak/kv/2.2.6/installing/solaris/
 ---
 
 

@@ -3,19 +3,27 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: Maps"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Maps"
     identifier: "data_types_maps"
     weight: 102
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/data-types/maps
-  - /riak-docs/riak/kv/2.9.0/dev/using/data-types/maps
-  - /riak-docs/riak/2.9.0/dev/data-modeling/data-types/maps
-  - /riak-docs/riak/kv/2.9.0/dev/data-modeling/data-types/maps
+  - /riak/2.9.0p5/dev/using/data-types/maps
+  - /riak/kv/2.9.0p5/dev/using/data-types/maps
+  - /riak/2.9.0p5/dev/data-modeling/data-types/maps
+  - /riak/kv/2.9.0p5/dev/data-modeling/data-types/maps
+  - /riak/2.9.0p5/developing/data-types/maps/
+  - /riak/2.9.0/developing/data-types/maps/
+  - /riak/kv/2.9.0/developing/data-types/maps/
+  - /riak/kv/2.9.0p1/developing/data-types/maps/
+  - /riak/kv/2.9.0p2/developing/data-types/maps/
+  - /riak/kv/2.9.0p3/developing/data-types/maps/
+  - /riak/kv/2.9.0p4/developing/data-types/maps/
+  - /riak/kv/latest/developing/data-types/maps/
 ---
 
 Maps are the most versatile of the Riak data types because all other data types can be embedded within them, _including maps themselves_. This enables the creation of complex, custom data types from a few basic building blocks.
@@ -88,7 +96,7 @@ map = Riak::Crdt::Map.new(bucket, key)
 ```
 
 ```php
-$location = new \Basho\Riak\Location('key', 'bucket', 'bucket_type');
+$location = new /Basho/Riak/Location('key', 'bucket', 'bucket_type');
 ```
 
 ```python
@@ -163,7 +171,7 @@ map = Riak::Crdt::Map.new(customers, 'ahmed_info')
 ```
 
 ```php
-$location = new \Basho\Riak\Location('ahmed_info', 'customers', 'maps');
+$location = new /Basho/Riak/Location('ahmed_info', 'customers', 'maps');
 ```
 
 ```python
@@ -242,7 +250,7 @@ map.registers['phone_number'] = 5551234567.to_s
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateRegister('first_name', 'Ahmed')
     ->updateRegister('phone_number', '5551234567')
     ->atLocation($location)
@@ -320,8 +328,8 @@ Map2 = riakc_map:update({<<"phone_number">>, register},
 # registers in the map and also set the value of those registers to the
 # desired values
 
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -363,7 +371,7 @@ map.flags['enterprise_customer'] = false
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateFlag('enterprise_customer', false)
     ->atLocation($location)
     ->build()
@@ -426,8 +434,8 @@ curl http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info
 # Response
 {"type":"map","value":{"first_name_register":"Ahmed","phone_number_register":"5551234567"},"context":"g2wAAAABaAJtAAAADCMJ/vn2jOEXAAAAAWEBag=="}
 
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -455,7 +463,7 @@ map.flags['enterprise_customer']
 ```
 
 ```php
-$map = (new \Basho\Riak\Command\Builder\FetchMap($riak))
+$map = (new /Basho/Riak/Command/Builder/FetchMap($riak))
     ->atLocation($location)
     ->build()
     ->execute()
@@ -526,10 +534,10 @@ map.counters['page_visits'].increment
 ```
 
 ```php
-$updateCounter = (new \Basho\Riak\Command\Builder\IncrementCounter($riak))
+$updateCounter = (new /Basho/Riak/Command/Builder/IncrementCounter($riak))
     ->withIncrement(1);
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateCounter('page_visits', $updateCounter)
     ->atLocation($location)
     ->build()
@@ -586,8 +594,8 @@ Map3 = riakc_map:update({<<"page_visits">>, counter},
 ```curl
 # The following will create a new counter and increment it by 1
 
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -630,12 +638,12 @@ end
 ```
 
 ```php
-$updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$updateSet = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->add('robots')
     ->add('opera')
     ->add('motorcycles');
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateSet('interests', $updateSet)
     ->atLocation($location)
     ->build()
@@ -700,8 +708,8 @@ Map6 = riakc_map:update({<<"interests">>, set},
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -744,7 +752,7 @@ end
 ```
 
 ```php
-$map = (new \Basho\Riak\Command\Builder\FetchMap($riak))
+$map = (new /Basho/Riak/Command/Builder/FetchMap($riak))
     ->atLocation($location)
     ->build()
     ->execute()
@@ -820,11 +828,11 @@ end
 ```
 
 ```php
-$updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$updateSet = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->add('indie pop')
     ->remove('opera');
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateSet('interests', $updateSet)
     ->atLocation($location)
     ->withContext($map->getContext())
@@ -905,8 +913,8 @@ curl http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info
 # Response
 {"type":"map","value":{"enterprise_customer_flag":false,"first_name_register":"Ahmed","interests_set":["motorcycles","opera","robots"],"page_visits_counter":1,"phone_number_register":"5551234567"},"context":"g2wAAAABaAJtAAAADCMJ/vn2jOEXAAAAAWEEag=="}
 
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -962,12 +970,12 @@ end
 ```
 
 ```php
-$annikaMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$annikaMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateRegister('first_name', 'Annika')
     ->updateRegister('last_name', 'Weiss')
     ->updateRegister('phone_number', '5559876543');
 
-$response = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$response = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('annika_info', $annikaMap)
     ->atLocation($location)
     ->withParameter('returnbody', 'true')
@@ -1041,8 +1049,8 @@ Map14 = riakc_map:update(
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -1149,10 +1157,10 @@ map.maps['annika_info'].registers.remove('first_name')
 ```
 
 ```php
-$annikaMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$annikaMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->removeRegister('first_name');
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('annika_info', $annikaMap)
     ->atLocation($location)
     ->withContext($map->getContext())
@@ -1222,8 +1230,8 @@ curl http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info
 # Response
 {"type":"map","value":{"annika_info_map":{"first_name_register":"Annika","last_name_register":"Weiss","phone_number_register":"5559876543"},"enterprise_customer_flag":false,"first_name_register":"Ahmed","interests_set":["indie pop","motorcycles","robots"],"page_visits_counter":1,"phone_number_register":"5551234567"},"context":"g2wAAAABaAJtAAAADCMJ/vn2jOEXAAAAAWEGag=="}
 
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -1266,12 +1274,12 @@ end
 ```
 
 ```php
-$annikaMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$annikaMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateFlag('enterprise_plan', false)
     ->updateFlag('family_plan', false)
     ->updateFlag('free_plan', true);
 
-$response = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$response = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('annika_info', $annikaMap)
     ->atLocation($location)
     ->withParameter('returnbody', 'true')
@@ -1365,8 +1373,8 @@ curl http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info
 # Response
 {"type":"map","value":{"annika_info_map":{"first_name_register":"Annika","last_name_register":"Weiss"},"enterprise_customer_flag":false,"first_name_register":"Ahmed","interests_set":["indie pop","motorcycles","robots"],"page_visits_counter":1,"phone_number_register":"5551234567"},"context":"g2wAAAABaAJtAAAADCMJ/vn2jOEXAAAAAWEHag=="}
 
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -1466,13 +1474,13 @@ map.maps['annika_info'].counters['widget_purchases'].increment
 ```
 
 ```php
-$updateCounter = (new \Basho\Riak\Command\Builder\IncrementCounter($riak))
+$updateCounter = (new /Basho/Riak/Command/Builder/IncrementCounter($riak))
     ->withIncrement(1);
 
-$annikaMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$annikaMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateCounter('widget_purchases', $updateCounter);
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('annika_info', $annikaMap)
     ->atLocation($location)
     ->build()
@@ -1525,8 +1533,8 @@ Map19 = riakc_map:update(
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -1560,13 +1568,13 @@ map.maps['annika_info'].sets['interests'].add('tango dancing')
 ```
 
 ```php
-$updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$updateSet = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->add('tango dancing');
 
-$annikaMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$annikaMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateSet('interests', $updateSet);
 
-$response = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$response = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('annika_info', $annikaMap)
     ->atLocation($location)
     ->withParameter('returnbody', 'true')
@@ -1619,8 +1627,8 @@ Map20 = riakc_map:update(
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -1657,13 +1665,13 @@ map.maps['annika_info'].sets['interests'].remove('tango dancing')
 ```
 
 ```php
-$updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$updateSet = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->remove('tango dancing');
 
-$annikaMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$annikaMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateSet('interests', $updateSet);
 
-(new \Basho\Riak\Command\Builder\UpdateMap($riak))
+(new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('annika_info', $annikaMap)
     ->atLocation($location)
     ->withContext($response->getMap()->getContext())
@@ -1733,8 +1741,8 @@ curl http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info
 # Response
 {"type":"map","value":{"annika_info_map":{"enterprise_plan_flag":false,"family_plan_flag":false,"first_name_register":"Annika","free_plan_flag":true,"interests_set":["tango dancing"],"last_name_register":"Weiss","widget_purchases_counter":1},"enterprise_customer_flag":false,"first_name_register":"Ahmed","interests_set":["indie pop","motorcycles","robots"],"page_visits_counter":1,"phone_number_register":"5551234567"},"context":"g2wAAAABaAJtAAAADCMJ/vn2jOEXAAAAAWEKag=="}
 
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {
@@ -1780,18 +1788,18 @@ end
 ```
 
 ```php
-$updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
+$updateSet = (new /Basho/Riak/Command/Builder/UpdateSet($riak))
     ->add('large widget');
 
-$purchaseMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$purchaseMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateFlag('first_purchase', true)
     ->updateRegister('amount', '1271')
     ->updateSet('items', $updateSet);
 
-$annikaMap = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$annikaMap = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('purchase', $purchaseMap);
 
-$response = (new \Basho\Riak\Command\Builder\UpdateMap($riak))
+$response = (new /Basho/Riak/Command/Builder/UpdateMap($riak))
     ->updateMap('annika_info', $annikaMap)
     ->atLocation($location)
     ->withParameter('returnbody', 'true')
@@ -1857,8 +1865,8 @@ Map22 = riakc_map:update(
 ```
 
 ```curl
-curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info \
-  -H "Content-Type: application/json" \
+curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_info /
+  -H "Content-Type: application/json" /
   -d '
   {
     "update": {

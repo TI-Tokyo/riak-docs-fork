@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/mdc/statistics
-  - /riak-docs/riak/kv/2.9.1/ops/mdc/statistics
+  - /riak/2.9.1/ops/mdc/statistics
+  - /riak/kv/2.9.1/ops/mdc/statistics
 ---
 
 The following definitions describe the output of `riak-repl status`.

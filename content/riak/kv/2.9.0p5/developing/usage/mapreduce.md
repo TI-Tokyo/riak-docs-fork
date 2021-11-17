@@ -2,26 +2,35 @@
 title: "Using MapReduce"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Using MapReduce"
     identifier: "usage_mapreduce"
     weight: 106
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/mapreduce
-  - /riak-docs/riak/kv/2.9.0/dev/using/mapreduce
+  - /riak/2.9.0p5/dev/using/mapreduce
+  - /riak/kv/2.9.0p5/dev/using/mapreduce
+  - /riak/2.9.0p5/developing/usage/mapreduce/
+  - /riak/2.9.0/developing/usage/mapreduce/
+  - /riak/kv/2.9.0/developing/usage/mapreduce/
+  - /riak/kv/2.9.0p1/developing/usage/mapreduce/
+  - /riak/kv/2.9.0p2/developing/usage/mapreduce/
+  - /riak/kv/2.9.0p3/developing/usage/mapreduce/
+  - /riak/kv/2.9.0p4/developing/usage/mapreduce/
+  - /riak/kv/latest/developing/usage/mapreduce/
 ---
 
-[usage 2i]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes
-[usage search]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/search
-[usage types]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types
-[api http]: {{<baseurl>}}riak/kv/2.9.0/developing/api/http
-[api pb]: {{<baseurl>}}riak/kv/2.9.0/developing/api/protocol-buffers
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[guide mapreduce]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/advanced-mapreduce
+
+[usage 2i]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes
+[usage search]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search
+[usage types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types
+[api http]: {{<baseurl>}}riak/kv/2.9.0p5/developing/api/http
+[api pb]: {{<baseurl>}}riak/kv/2.9.0p5/developing/api/protocol-buffers
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[guide mapreduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/advanced-mapreduce
 
 {{% note title="Use MapReduce sparingly" %}}
 In Riak KV, MapReduce is the primary method for non-primary-key-based
@@ -132,20 +141,20 @@ For the sake of simplicity, we'll use [curl](http://curl.haxx.se/)
 in conjunction with Riak KV's [HTTP API][api http] to store the objects:
 
 ```curl
-curl -XPUT http://localhost:8098/buckets/training/keys/foo \
-  -H 'Content-Type: text/plain' \
+curl -XPUT http://localhost:8098/buckets/training/keys/foo /
+  -H 'Content-Type: text/plain' /
   -d 'caremad data goes here'
 
-curl -XPUT http://localhost:8098/buckets/training/keys/bar \
-  -H 'Content-Type: text/plain' \
+curl -XPUT http://localhost:8098/buckets/training/keys/bar /
+  -H 'Content-Type: text/plain' /
   -d 'caremad caremad caremad caremad'
 
-curl -XPUT http://localhost:8098/buckets/training/keys/baz \
-  -H 'Content-Type: text/plain' \
+curl -XPUT http://localhost:8098/buckets/training/keys/baz /
+  -H 'Content-Type: text/plain' /
   -d 'nothing to see here'
 
-curl -XPUT http://localhost:8098/buckets/training/keys/bam \
-  -H 'Content-Type: text/plain' \
+curl -XPUT http://localhost:8098/buckets/training/keys/bam /
+  -H 'Content-Type: text/plain' /
   -d 'caremad caremad caremad'
 ```
 

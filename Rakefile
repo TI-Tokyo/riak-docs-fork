@@ -19,7 +19,8 @@
 require_relative 'rake_libs/compile_js'
 require_relative 'rake_libs/compile_css'
 require_relative 'rake_libs/s3_deploy'
-require_relative 'rake_libs/downloads_metadata_generator'
+require_relative 'rake_libs/downloads_metadata_generator_sftp'
+#require_relative 'rake_libs/downloads_metadata_generator'
 require_relative 'rake_libs/projects_metadata_generator'
 
 $css_source = "./dynamic/css"
@@ -119,22 +120,23 @@ end
 ########
 # Build
 desc      "Compile compressed JS and compressed CSS"
-task      :build => ['clean', 'build:js', 'build:css']
+task      :build => ['clean', 'build:css', 'build:js']
 namespace :build do
-  task :js  => ["#{$js_dest}", 'clean:js']   do compile_js(debug: false); end
   task :css => ["#{$css_dest}", 'clean:css'] do compile_css(debug: false); end
+  task :js  => ["#{$js_dest}", 'clean:js']   do compile_js(debug: false); end
 
   ################
   # Build : Debug
   desc      "Compile human-readable JS and compile human-readable CSS"
-  task      :debug => ["#{$js_dest}", "#{$css_dest}",
-                       'build:debug:js', 'build:debug:css']
+  task      :debug => ["#{$css_dest}", "#{$js_dest}",
+                       'build:debug:css', 'build:debug:js']
   namespace :debug do
+    desc "Compile human-readable CSS"
+    task :css => ["#{$css_dest}"] do compile_css(debug: true); end
+
     desc "Compile human-readable JS"
     task :js  => ["#{$js_dest}"]  do compile_js(debug: true); end
 
-    desc "Compile human-readable CSS"
-    task :css => ["#{$css_dest}"] do compile_css(debug: true); end
   end
 end
 
@@ -200,7 +202,7 @@ namespace :metadata do
   task :all => ['metadata:generate_downloads', 'metadata:generate_projects']
 
   desc "Generate package URI information"
-  task :generate_downloads do generate_downloads_metadata(); end
+  task :generate_downloads do generate_downloads_metadata_sftp(); end
 
   desc "Generate JavaScript-readable project descriptions"
   task :generate_projects do generate_projects_metadata(); end

@@ -3,22 +3,31 @@ title_supertext: "Installing on"
 title: "SUSE"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "SUSE"
     identifier: "installing_suse"
     weight: 307
     parent: "installing"
 toc: false
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/installing/Installing-on-SUSE
-  - /riak-docs/riak/kv/2.9.0/ops/building/installing/Installing-on-SUSE
-  - /riak-docs/riak/2.9.0/installing/suse/
-  - /riak-docs/riak/kv/2.9.0/installing/suse/
+  - /riak/2.9.0p5/ops/building/installing/Installing-on-SUSE
+  - /riak/kv/2.9.0p5/ops/building/installing/Installing-on-SUSE
+  - /riak/2.9.0p5/installing/suse/
+  - /riak/kv/2.9.0p5/installing/suse/
+  - /riak/2.9.0p5/setup/installing/suse/
+  - /riak/2.9.0/setup/installing/suse/
+  - /riak/kv/2.9.0/setup/installing/suse/
+  - /riak/kv/2.9.0p1/setup/installing/suse/
+  - /riak/kv/2.9.0p2/setup/installing/suse/
+  - /riak/kv/2.9.0p3/setup/installing/suse/
+  - /riak/kv/2.9.0p4/setup/installing/suse/
+  - /riak/kv/latest/setup/installing/suse/
 ---
 
-[install verify]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/verify
+
+[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
 
 {{% note title="SUSE End of Life (EOL) for Riak KV 2.2.3" %}}
 SUSE is no longer supported in Riak KV 2.9.0+. If you are interested in using Riak KV on SUSE, you can still [build from source](../source). The steps below have been left here for reference only and are no longer maintained.

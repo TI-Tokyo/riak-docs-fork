@@ -3,25 +3,34 @@ title_supertext: "Installing on"
 title: "Debian and Ubuntu"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Debian & Ubuntu"
     identifier: "installing_debian_ubuntu"
     weight: 302
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/installing/Installing-on-Debian-and-Ubuntu
-  - /riak-docs/riak/kv/2.9.0/ops/building/installing/Installing-on-Debian-and-Ubuntu
-  - /riak-docs/riak/2.9.0/installing/debian-ubuntu/
-  - /riak-docs/riak/kv/2.9.0/installing/debian-ubuntu/
+  - /riak/2.9.0p5/ops/building/installing/Installing-on-Debian-and-Ubuntu
+  - /riak/kv/2.9.0p5/ops/building/installing/Installing-on-Debian-and-Ubuntu
+  - /riak/2.9.0p5/installing/debian-ubuntu/
+  - /riak/kv/2.9.0p5/installing/debian-ubuntu/
+  - /riak/2.9.0p5/setup/installing/debian-ubuntu/
+  - /riak/2.9.0/setup/installing/debian-ubuntu/
+  - /riak/kv/2.9.0/setup/installing/debian-ubuntu/
+  - /riak/kv/2.9.0p1/setup/installing/debian-ubuntu/
+  - /riak/kv/2.9.0p2/setup/installing/debian-ubuntu/
+  - /riak/kv/2.9.0p3/setup/installing/debian-ubuntu/
+  - /riak/kv/2.9.0p4/setup/installing/debian-ubuntu/
+  - /riak/kv/latest/setup/installing/debian-ubuntu/
 ---
 
-[install source index]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source/
-[security index]: {{<baseurl>}}riak/kv/2.9.0/using/security/
-[install source erlang]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/verify
+
+[install source index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source/
+[security index]: {{<baseurl>}}riak/kv/2.9.0p5/using/security/
+[install source erlang]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
 
 Riak KV can be installed on Debian or Ubuntu-based systems using a binary
 package or by compiling from source code.
@@ -86,56 +95,56 @@ sudo apt-get install libpam0g-dev
 #### Ubuntu Bionic Beaver (18.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/ubuntu/bionic64/riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/ubuntu/bionic64/riak_2.9.0-1_amd64.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
 #### Ubuntu Xenial Xerus (16.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/ubuntu/xenial64/riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/ubuntu/xenial64/riak_2.9.0-1_amd64.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
 #### Ubuntu Trusty Tahr (14.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/ubuntu/trusty64/riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/ubuntu/trusty64/riak_2.9.0-1_amd64.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
 #### Ubuntu Precise Pangolin (12.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/ubuntu/precise64/riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/ubuntu/precise64/riak_2.9.0-1_amd64.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
 #### Debian Stretch (9.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/debian/9/riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/debian/9/riak_2.9.0-1_amd64.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
 #### Debian Jessie (8.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/debian/8/riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/debian/8/riak_2.9.0-1_amd64.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
 #### Debian Wheezy (7.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/debian/7/riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/debian/7/riak_2.9.0-1_amd64.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
 #### Raspbian Buster
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/raspbian/buster/riak_2.9.0-1_armhf.deb
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/raspbian/buster/riak_2.9.0-1_armhf.deb
 sudo dpkg -i riak_2.9.0-1_amd64.deb
 ```
 
@@ -152,7 +161,7 @@ Riak requires an [Erlang](http://www.erlang.org/) installation.
 Instructions can be found in [Installing Erlang][install source erlang].
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/riak-2.9.0.tar.gz
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/riak-2.9.0.tar.gz
 tar zxvf riak-2.9.0.tar.gz
 cd riak-2.9.0
 make rel

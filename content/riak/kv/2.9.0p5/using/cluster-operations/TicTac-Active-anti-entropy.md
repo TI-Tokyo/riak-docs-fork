@@ -2,22 +2,31 @@
 title: "TicTac Active Anti-Entropy"
 description: "An Active Anti-Entropy library"
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "TicTac Active Anti-Entropy"
     identifier: "TicTac_aae"
     weight: 111
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/tictacaae/
-  - /riak-docs/riak/2.9.0/ops/advanced/ticktacaae/
+  - /riak/kv/2.9.0p5/ops/advanced/tictacaae/
+  - /riak/2.9.0p5/ops/advanced/ticktacaae/
+  - /riak/2.9.0p5/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/2.9.0/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/kv/2.9.0/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/kv/2.9.0p1/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/kv/2.9.0p2/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/kv/2.9.0p3/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/kv/2.9.0p4/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/kv/latest/using/cluster-operations/TicTac-Active-anti-entropy/
 ---
 
 
 
-Riak's [active anti-entropy](../../../learn/concepts/active-anti-entropy/) \(AAE) subsystem is a set of background processes that repair object inconsistencies stemming from missing or divergent object values across nodes. Riak operators can turn AAE on and off and configure and monitor its functioning.
+
+Riak's [active anti-entropy](../../../learn/concepts/active-anti-entropy/) /(AAE) subsystem is a set of background processes that repair object inconsistencies stemming from missing or divergent object values across nodes. Riak operators can turn AAE on and off and configure and monitor its functioning.
 
 ## TicTac AAE
 

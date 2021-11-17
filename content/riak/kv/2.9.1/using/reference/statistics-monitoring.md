@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/stats-and-monitoring
-  - /riak-docs/riak/kv/2.9.1/ops/running/stats-and-monitoring
+  - /riak/2.9.1/ops/running/stats-and-monitoring
+  - /riak/kv/2.9.1/ops/running/stats-and-monitoring
 ---
 
 Riak provides data related to current operating status, which includes
@@ -380,9 +380,9 @@ Docs](https://github.com/basho/basho_docs).
 
 
 [sysctl_vm_txt]: https://www.kernel.org/doc/Documentation/sysctl/vm.txt
-[data_types_counters]: http://docs.basho.com/riak/latest/dev/using/data-types/#Counters
-[data_types_sets]: http://docs.basho.com/riak/latest/dev/using/data-types/#Sets
-[data_types_maps]: http://docs.basho.com/riak/latest/dev/using/data-types/#Maps
+[data_types_counters]: {{< baseurl >}}riak/kv/latest/dev/using/data-types/#Counters
+[data_types_sets]: {{< baseurl >}}riak/kv/latest/dev/using/data-types/#Sets
+[data_types_maps]: {{< baseurl >}}riak/kv/latest/dev/using/data-types/#Maps
 [riak_nagios]: https://github.com/basho/riak_nagios
 [tcollector]: https://github.com/stumbleupon/tcollector
 [tcollector_riak_plugin]: https://github.com/stumbleupon/tcollector/blob/master/collectors/0/riak.py

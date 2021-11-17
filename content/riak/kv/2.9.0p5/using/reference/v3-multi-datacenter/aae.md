@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter Replication Reference:"
 title: "Fullsync via Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Active Anti-Entropy"
     identifier: "managing_ref_v3_aae"
     weight: 101
@@ -13,13 +13,22 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/v3/aae
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/v3/aae
+  - /riak/2.9.0p5/ops/mdc/v3/aae
+  - /riak/kv/2.9.0p5/ops/mdc/v3/aae
+  - /riak/2.9.0p5/using/reference/v3-multi-datacenter/aae/
+  - /riak/2.9.0/using/reference/v3-multi-datacenter/aae/
+  - /riak/kv/2.9.0/using/reference/v3-multi-datacenter/aae/
+  - /riak/kv/2.9.0p1/using/reference/v3-multi-datacenter/aae/
+  - /riak/kv/2.9.0p2/using/reference/v3-multi-datacenter/aae/
+  - /riak/kv/2.9.0p3/using/reference/v3-multi-datacenter/aae/
+  - /riak/kv/2.9.0p4/using/reference/v3-multi-datacenter/aae/
+  - /riak/kv/latest/using/reference/v3-multi-datacenter/aae/
 ---
 
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#active-anti-entropy-aae
-[config reference#advanced]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#advanced-configuration
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
+
+[glossary aae]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#active-anti-entropy-aae
+[config reference#advanced]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#advanced-configuration
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
 
 > **Note: Technical preview**
 >
@@ -33,7 +42,7 @@ service engineering support.
 ## Overview
 
 Riak Multi-Datacenter (MDC) Replication version 3 (originally limited to Riak
-Enterprise versions 1.4.0 - 2.2.3 and now available to all versions post 2.2.3) can now take advantage of Riak's [active anti-entropy][glossary aae] \(AAE) subsystem, which was first introduced as a
+Enterprise versions 1.4.0 - 2.2.3 and now available to all versions post 2.2.3) can now take advantage of Riak's [active anti-entropy][glossary aae] /(AAE) subsystem, which was first introduced as a
 technology preview in Riak 1.3.0.
 
 AAE plus Replication uses existing Riak AAE hash trees stored in
@@ -69,7 +78,7 @@ of configurable parameters, see our documentation on [Advanced Configuration][co
 
 ## Enable Active Anti-Entropy
 
-To enable [active anti-entropy][glossary aae] \(AAE) in Riak, you must enable it in Riak in both source and sink clusters. If it is not
+To enable [active anti-entropy][glossary aae] /(AAE) in Riak, you must enable it in Riak in both source and sink clusters. If it is not
 enabled, the `keylist` strategy will be used.
 
 To enable AAE in Riak KV:

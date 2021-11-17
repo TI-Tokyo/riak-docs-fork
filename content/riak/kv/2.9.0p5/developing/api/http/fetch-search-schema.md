@@ -2,20 +2,28 @@
 title: "HTTP Fetch Search Schema"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Fetch Search Schema"
     identifier: "http_fetch_search_schema"
     weight: 116
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/http/fetch-search-schema
-  - /riak-docs/riak/kv/2.9.0/dev/references/http/fetch-search-schema
+  - /riak/2.9.0p5/dev/references/http/fetch-search-schema
+  - /riak/kv/2.9.0p5/dev/references/http/fetch-search-schema
+  - /riak/2.9.0p5/developing/api/http/fetch-search-schema/
+  - /riak/2.9.0/developing/api/http/fetch-search-schema/
+  - /riak/kv/2.9.0/developing/api/http/fetch-search-schema/
+  - /riak/kv/2.9.0p1/developing/api/http/fetch-search-schema/
+  - /riak/kv/2.9.0p2/developing/api/http/fetch-search-schema/
+  - /riak/kv/2.9.0p3/developing/api/http/fetch-search-schema/
+  - /riak/kv/2.9.0p4/developing/api/http/fetch-search-schema/
+  - /riak/kv/latest/developing/api/http/fetch-search-schema/
 ---
 
-Retrieves a Riak KV [search schema]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search-schemas).
+Retrieves a Riak KV [search schema]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search-schemas).
 
 ## Request
 

@@ -2,20 +2,29 @@
 title: "Getting Started with PHP"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "PHP"
     identifier: "getting_started_php"
     weight: 107
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/taste-of-riak/php
-  - /riak-docs/riak/kv/2.9.0/dev/taste-of-riak/php
+  - /riak/2.9.0p5/dev/taste-of-riak/php
+  - /riak/kv/2.9.0p5/dev/taste-of-riak/php
+  - /riak/2.9.0p5/developing/getting-started/php/
+  - /riak/2.9.0/developing/getting-started/php/
+  - /riak/kv/2.9.0/developing/getting-started/php/
+  - /riak/kv/2.9.0p1/developing/getting-started/php/
+  - /riak/kv/2.9.0p2/developing/getting-started/php/
+  - /riak/kv/2.9.0p3/developing/getting-started/php/
+  - /riak/kv/2.9.0p4/developing/getting-started/php/
+  - /riak/kv/latest/developing/getting-started/php/
 ---
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.0/using/running-a-cluster) first.
+
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.0p5/using/running-a-cluster) first.
 
 To try this flavor of Riak, a working installation of PHP is required, and [Composer](https://getcomposer.org/) is required to be installed to fetch the client library package. 
 
@@ -54,11 +63,11 @@ to see what it actually did at each step.
 ```php
 include_once 'vendor/autoload.php';
 
-use Basho\Riak;
-use Basho\Riak\Node;
-use Basho\Riak\Command;
+use Basho/Riak;
+use Basho/Riak/Node;
+use Basho/Riak/Command;
 
-$node = (new Node\Builder)
+$node = (new Node/Builder)
         ->atHost('127.0.0.1')
         ->onPort(8098)
         ->build();
@@ -73,4 +82,4 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/2.9.0/developing/getting-started/php/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/2.9.0p5/developing/getting-started/php/crud-operations)

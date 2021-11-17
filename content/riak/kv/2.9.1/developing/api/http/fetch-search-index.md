@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/fetch-search-index
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/fetch-search-index
+  - /riak/2.9.1/dev/references/http/fetch-search-index
+  - /riak/kv/2.9.1/dev/references/http/fetch-search-index
 ---
 
 Retrieves information about a Riak Search [index]({{<baseurl>}}riak/kv/2.9.1/developing/usage/search/#simple-setup).

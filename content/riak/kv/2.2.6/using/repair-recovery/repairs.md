@@ -11,14 +11,14 @@ menu:
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/recovery/repairing-indexes
-  - /riak-docs/riak/kv/2.2.6/ops/running/recovery/repairing-indexes
-  - /riak-docs/riak/2.2.6/ops/running/recovery/failed-node
-  - /riak-docs/riak/kv/2.2.6/ops/running/recovery/failed-node
-  - /riak-docs/riak/2.2.6/ops/running/recovery/repairing-leveldb
-  - /riak-docs/riak/kv/2.2.6/ops/running/recovery/repairing-leveldb
-  - /riak-docs/riak/2.2.6/ops/running/recovery/repairing-partitions
-  - /riak-docs/riak/kv/2.2.6/ops/running/recovery/repairing-partitions
+  - /riak/2.2.6/ops/running/recovery/repairing-indexes
+  - /riak/kv/2.2.6/ops/running/recovery/repairing-indexes
+  - /riak/2.2.6/ops/running/recovery/failed-node
+  - /riak/kv/2.2.6/ops/running/recovery/failed-node
+  - /riak/2.2.6/ops/running/recovery/repairing-leveldb
+  - /riak/kv/2.2.6/ops/running/recovery/repairing-leveldb
+  - /riak/2.2.6/ops/running/recovery/repairing-partitions
+  - /riak/kv/2.2.6/ops/running/recovery/repairing-partitions
 ---
 
 [cluster ops aae]: {{<baseurl>}}riak/kv/2.2.6/using/cluster-operations/active-anti-entropy/

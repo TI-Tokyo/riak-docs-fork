@@ -2,35 +2,41 @@
 title: "Upgrading to Riak KV 2.9.0"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Upgrading to 2.9.0"
     identifier: "upgrading_version"
     weight: 101
     parent: "upgrading"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/upgrade-v20/
-  - /riak-docs/riak/kv/2.9.0/ops/upgrading/rolling-upgrades/
-  - /riak-docs/riak/kv/2.9.0/ops/upgrading/rolling-upgrades/
-  - /riak-docs/riak/kv/2.9.0/setup/upgrading/cluster/
-
+  - /riak/2.9.0p5/upgrade-v20/
+  - /riak/kv/2.9.0p5/ops/upgrading/rolling-upgrades/
+  - /riak/kv/2.9.0p5/ops/upgrading/rolling-upgrades/
+  - /riak/kv/2.9.0p5/setup/upgrading/cluster/
+  - /riak/2.9.0p5/setup/upgrading/version/
+  - /riak/2.9.0/setup/upgrading/version/
+  - /riak/kv/2.9.0/setup/upgrading/version/
+  - /riak/kv/2.9.0p1/setup/upgrading/version/
+  - /riak/kv/2.9.0p2/setup/upgrading/version/
+  - /riak/kv/2.9.0p3/setup/upgrading/version/
+  - /riak/kv/2.9.0p4/setup/upgrading/version/
+  - /riak/kv/latest/setup/upgrading/version/
 ---
 
-
-[production checklist]: {{<baseurl>}}riak/kv/2.9.0/setup/upgrading/checklist
-[use admin riak control]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-control
-[use admin commands]: {{<baseurl>}}riak/kv/2.9.0/using/admin/commands
-[use admin riak-admin]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes
-[release notes]: {{<baseurl>}}riak/kv/2.9.0/release-notes
+[production checklist]: {{<baseurl>}}riak/kv/2.9.0p5/setup/upgrading/checklist
+[use admin riak control]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-control
+[use admin commands]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/commands
+[use admin riak-admin]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes
+[release notes]: {{<baseurl>}}riak/kv/2.9.0p5/release-notes
 [riak enterprise]: http://basho.com/products/riak-kv/
-[cluster ops mdc]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/v3-multi-datacenter
-[config v3 mdc]: {{<baseurl>}}riak/kv/2.9.0/configuring/v3-multi-datacenter
-[jmx monitor]: {{<baseurl>}}riak/kv/2.9.0/using/reference/jmx
-[snmp]: {{<baseurl>}}riak/kv/2.9.0/using/reference/snmp
-[Release Notes]: {{<baseurl>}}riak/kv/2.9.0/release-notes
+[cluster ops mdc]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/v3-multi-datacenter
+[config v3 mdc]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/v3-multi-datacenter
+[jmx monitor]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/jmx
+[snmp]: {{<baseurl>}}riak/kv/2.9.0p5/using/reference/snmp
+[Release Notes]: {{<baseurl>}}riak/kv/2.9.0p5/release-notes
 
 
 ## Overview
@@ -101,13 +107,13 @@ If you use other new features, you can still downgrade your cluster, but you wil
 
 ## Upgrading process
 
-1\. Stop Riak KV on the node you are going to upgrade:
+1/. Stop Riak KV on the node you are going to upgrade:
 
 ```bash
 riak stop
 ```
 
-2\. Back up your /etc (app.config and vm.args), /data, and /basho-patches directories.
+2/. Back up your /etc (app.config and vm.args), /data, and /basho-patches directories.
 
 ```RHEL/CentOS
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib64/riak/lib/basho-patches
@@ -117,7 +123,7 @@ sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib64/riak/lib/bas
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib/riak/lib/basho-patches
 ```
 
-3\. Remove your /basho-patches directory:
+3/. Remove your /basho-patches directory:
 
 ```RHEL/CentOS
 sudo rm -rf /usr/lib64/riak/lib/basho-patches/*
@@ -127,7 +133,7 @@ sudo rm -rf /usr/lib64/riak/lib/basho-patches/*
 sudo rm -rf /usr/lib/riak/lib/basho-patches*
 ```
 
-4\. Upgrade Riak KV:
+4/. Upgrade Riak KV:
 
 {{% note title="Upgrading from KV Enterprise Edition" %}}
 If you are upgrading from Riak KV EE to Riak KV OSS, you must uninstall your Riak KV EE package right now, before you can install the OSS version.
@@ -143,7 +149,7 @@ sudo rpm -Uvh »riak_package_name«.rpm
 sudo dpkg -i »riak_package_name«.deb
 ```
 
-5.a\. (**Optional**) If you would like to keep your AAE trees in a format that will facilitate downgrading, the capability override should be in the `riak_kv` proplist of the advanced.config file:
+5.a/. (**Optional**) If you would like to keep your AAE trees in a format that will facilitate downgrading, the capability override should be in the `riak_kv` proplist of the advanced.config file:
 
    ```advanced.config
    {riak_kv, [
@@ -153,13 +159,13 @@ sudo dpkg -i »riak_package_name«.deb
    ]}
    ```
 
-5.b\. (**Optional**) If you would like to keep your leveldb compression in a format that will facilitate downgrading, the capability override should be in riak.conf:
+5.b/. (**Optional**) If you would like to keep your leveldb compression in a format that will facilitate downgrading, the capability override should be in riak.conf:
 
    ```riak.conf
    leveldb.compression.algorithm=snappy
    ```
 
-5.c\. (**OSS Only**)If you are upgrading from Riak KV OSS =< 2.2.3, you must perform the following steps before moving on: 
+5.c/. (**OSS Only**)If you are upgrading from Riak KV OSS =< 2.2.3, you must perform the following steps before moving on: 
 
 * A standard package uninstall should not have removed your data directories, but if it did, move your backup to where the data directory should be.
 * Then copy any customizations from your backed-up vm.args/riak.conf to the newly installed vm.args/riak.conf file (these files may be identical).
@@ -168,7 +174,7 @@ sudo dpkg -i »riak_package_name«.deb
   * `riak_repl` --- See [MDC v3 Configuration][config v3 mdc] for more information.
   * There is a sample configuration included at the end of the [Release Notes][release notes] for reference purposes.
 
-5.d\. (**EE Only with MDC**)If you need to replicate to EE clusters with versions less than 2.2.0, the capability override for bucket properties should be in the `riak_repl` proplist of the advanced.config file:
+5.d/. (**EE Only with MDC**)If you need to replicate to EE clusters with versions less than 2.2.0, the capability override for bucket properties should be in the `riak_repl` proplist of the advanced.config file:
 
    ```advanced.config
    {riak_repl, [
@@ -179,9 +185,9 @@ sudo dpkg -i »riak_package_name«.deb
    ```
 Once all of the clusters have been upgraded to version 2.2.0 or greater, this override should be removed.
 
-5.e\. (**EE Only**)JMX and SNMP are no longer present in Riak KV. You must remove or comment out all references to them in your riak.conf/advanced.config files for Riak to start successfully post-upgrade.
+5.e/. (**EE Only**)JMX and SNMP are no longer present in Riak KV. You must remove or comment out all references to them in your riak.conf/advanced.config files for Riak to start successfully post-upgrade.
 
-6\. Restart Riak KV:
+6/. Restart Riak KV:
 
 {{% note %}}
 You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 2.9.0 if you wish to use Riak search. If you do not have it installed, please install it now.
@@ -193,13 +199,13 @@ You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/
 riak start
 ```
 
-7\. Verify that Riak KV is running the new version:
+7/. Verify that Riak KV is running the new version:
 
 ```bash
 riak version
 ```
 
-8\. Wait for the `riak_kv` service to start:
+8/. Wait for the `riak_kv` service to start:
 
 ```bash
 riak-admin wait-for-service riak_kv »target_node«
@@ -208,7 +214,7 @@ riak-admin wait-for-service riak_kv »target_node«
 * `»target_node«` is the node which you have just upgraded (e.g.
 riak@192.168.1.11)
 
-9\. Wait for any hinted handoff transfers to complete:
+9/. Wait for any hinted handoff transfers to complete:
 
 ```bash
 riak-admin transfers
@@ -216,7 +222,7 @@ riak-admin transfers
 
 * While the node was offline, other nodes may have accepted writes on its behalf. This data is transferred to the node when it becomes available.
 
-10\. Repeat the process for the remaining nodes in the cluster.
+10/. Repeat the process for the remaining nodes in the cluster.
 
 
 ### Basho Patches

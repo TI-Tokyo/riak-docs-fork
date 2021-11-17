@@ -2,20 +2,29 @@
 title: "Riak KV 2.9.0 Release Notes"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Release Notes"
     identifier: "index_release_notes"
     weight: 101
     parent: index
 toc: false
 aliases:
-  - /riak-docs/riak/2.9.0/community/release-notes
-  - /riak-docs/riak/kv/2.9.0/intro-v20
-  - /riak-docs/riak/2.9.0/intro-v20
-  - /riak-docs/riak/kv/2.9.0/introduction
+  - /riak/2.9.0p5/community/release-notes
+  - /riak/kv/2.9.0p5/intro-v20
+  - /riak/2.9.0p5/intro-v20
+  - /riak/kv/2.9.0p5/introduction
+  - /riak/2.9.0p5/release-notes/
+  - /riak/2.9.0/release-notes/
+  - /riak/kv/2.9.0/release-notes/
+  - /riak/kv/2.9.0p1/release-notes/
+  - /riak/kv/2.9.0p2/release-notes/
+  - /riak/kv/2.9.0p3/release-notes/
+  - /riak/kv/2.9.0p4/release-notes/
+  - /riak/kv/latest/release-notes/
 ---
+
 
 Released April 25, 2018.
 
@@ -118,7 +127,7 @@ Release 2.9 also brings three building blocks to enable current and future impro
 
   - Some [performance testing results and guidance for choosing a backend have been made available to assist with this decision](https://github.com/martinsumner/riak_testing_notes/blob/master/Release%202.9%20-%20Choosing%20a%20Backend.md).  The optimal decision though is driven by too many variables (e.g. object size, number of keys, distribution of requests to keys, mutability of objects, physical server configuration, feature requirements and levels of application concurrency) to make an optimal decision obvious in most uses cases - realistic use-case specific testing is always recommended.
 
-##Transition Configuration Guidance
+## Transition Configuration Guidance
 
 This section contains some initial notes to assist with planning and configuration for Transition of pre-2.9 releases to 2.9:
 

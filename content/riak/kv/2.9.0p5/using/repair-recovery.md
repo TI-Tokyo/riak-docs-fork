@@ -2,15 +2,25 @@
 title: "Repair & Recovery"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Repair & Recovery"
     identifier: "managing_repair_recover"
     weight: 204
     parent: "managing"
 toc: true
+aliases:
+  - /riak/2.9.0p5/using/repair-recovery/
+  - /riak/2.9.0/using/repair-recovery/
+  - /riak/kv/2.9.0/using/repair-recovery/
+  - /riak/kv/2.9.0p1/using/repair-recovery/
+  - /riak/kv/2.9.0p2/using/repair-recovery/
+  - /riak/kv/2.9.0p3/using/repair-recovery/
+  - /riak/kv/2.9.0p4/using/repair-recovery/
+  - /riak/kv/latest/using/repair-recovery/
 ---
+
 
 [repair recover fail]: ./failure-recovery/
 [repair recover errors]: ./errors/

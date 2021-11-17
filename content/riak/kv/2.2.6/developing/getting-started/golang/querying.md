@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_go"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/querying-golang
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/querying-golang
+  - /riak/2.2.6/dev/taste-of-riak/querying-golang
+  - /riak/kv/2.2.6/dev/taste-of-riak/querying-golang
 ---
 
 ## Go Version Setup

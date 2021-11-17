@@ -2,23 +2,32 @@
 title: "Downgrading"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Downgrading"
     identifier: "downgrading"
     weight: 103
     parent: "setup_index"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/upgrading/rolling-downgrades/
-  - /riak-docs/riak/kv/2.9.0/ops/upgrading/rolling-downgrades/
+  - /riak/2.9.0p5/ops/upgrading/rolling-downgrades/
+  - /riak/kv/2.9.0p5/ops/upgrading/rolling-downgrades/
+  - /riak/2.9.0p5/setup/downgrade/
+  - /riak/2.9.0/setup/downgrade/
+  - /riak/kv/2.9.0/setup/downgrade/
+  - /riak/kv/2.9.0p1/setup/downgrade/
+  - /riak/kv/2.9.0p2/setup/downgrade/
+  - /riak/kv/2.9.0p3/setup/downgrade/
+  - /riak/kv/2.9.0p4/setup/downgrade/
+  - /riak/kv/latest/setup/downgrade/
 ---
 
-[rolling upgrade]: {{<baseurl>}}riak/kv/2.9.0/setup/upgrading/cluster
-[config ref]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
-[concept aae]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/active-anti-entropy/
-[aae status]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#aae-status
+
+[rolling upgrade]: {{<baseurl>}}riak/kv/2.9.0p5/setup/upgrading/cluster
+[config ref]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
+[concept aae]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/active-anti-entropy/
+[aae status]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#aae-status
 
 Downgrades of Riak KV are tested and supported for two feature release versions, with the general procedure being similar to that of a [rolling upgrade][rolling upgrade].
 
@@ -66,18 +75,18 @@ This is benign and similar to the `not_built` and `already_locked` errors which 
 
 ### Stop Riak KV and remove Riak search index & temporary data
 
-1\. Stop Riak KV:
+1/. Stop Riak KV:
 
 ```bash
 riak stop
 ```
-2\. Back up your Riak KV /etc and /data directories:
+2/. Back up your Riak KV /etc and /data directories:
     
 ```bash
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak
 ```
     
-3\. Downgrade Riak KV:
+3/. Downgrade Riak KV:
 
 ```RHEL/CentOS
 sudo rpm -Uvh »riak_package_name«.rpm
@@ -87,7 +96,7 @@ sudo rpm -Uvh »riak_package_name«.rpm
 sudo dpkg -i »riak_package_name«.deb
 ```
 
-4\. Remove the Riak search index data and AAE data:
+4/. Remove the Riak search index data and AAE data:
 
   1. Remove the cached Solr web application from the yz_temp folder.  For the default package paths, this would be `/var/lib/riak/yz_temp/solr-webapp`.
   
@@ -105,7 +114,7 @@ sudo dpkg -i »riak_package_name«.deb
   
 ### Prepare to Re-index Solr Cores
 
-5\. (**Optional**) You can increase the AAE operation concurrency and increase the number of build operations while lowering the build limit's interval. This will increase the speed at which the AAE trees are rebuilt and the search indexes are repopulated.  However, if you have a latency sensitive application, you should adjust these settings with care.
+5/. (**Optional**) You can increase the AAE operation concurrency and increase the number of build operations while lowering the build limit's interval. This will increase the speed at which the AAE trees are rebuilt and the search indexes are repopulated.  However, if you have a latency sensitive application, you should adjust these settings with care.
 
 ```riak.conf
 anti_entropy.concurrency_limit = 8
@@ -115,7 +124,7 @@ anti_entropy.tree.build_limit.per_timespan = 5m
 
 ### Start the node and disable Yokozuna
 
-6\. Start Riak KV:
+6/. Start Riak KV:
 {{% note %}}
 Search results will be inconsistent until **Step 8.1** is complete.
 {{% /note %}}
@@ -124,13 +133,13 @@ Search results will be inconsistent until **Step 8.1** is complete.
 riak start
 ```
     
-7\. Wait for Riak search to start by running the following command:
+7/. Wait for Riak search to start by running the following command:
 
 ```bash
 riak-admin wait-for-service yokozuna
 ```
   
-8\. Run `riak attach`.
+8/. Run `riak attach`.
 
   1. Run the following snippet to prevent this node from participating in distributed Riak Search queries:
 
@@ -148,7 +157,7 @@ riak-admin wait-for-service yokozuna
   
 ### Monitor the reindex of the data
 
-9\. Monitor the build and exchange progress using the `riak-admin aae-status` and `riak-admin search aae-status` commands.
+9/. Monitor the build and exchange progress using the `riak-admin aae-status` and `riak-admin search aae-status` commands.
 
 The **All** column shows how long it has been since a partition exchanged with all of its sibling replicas.  Consult the [`riak-admin aae-status` documentation][aae status] for more information about the AAE status output. 
 
@@ -157,17 +166,17 @@ Once both riak-admin aae-status and riak-admin search aae-status show values in 
 ### Finalize process and restart Yokozuna
  
 
-10\. If you raised the concurrency AAE currency settings in riak.conf during **Step 5**, stop the node and remove the increased AAE thresholds.
+10/. If you raised the concurrency AAE currency settings in riak.conf during **Step 5**, stop the node and remove the increased AAE thresholds.
  
-11\. If you chose not to increase the AAE concurrency via configuration and want to start Yokozuna without restarting the node, run `riak attach` and enter the following snippet:
+11/. If you chose not to increase the AAE concurrency via configuration and want to start Yokozuna without restarting the node, run `riak attach` and enter the following snippet:
 
 ```erlang
 riak_core_node_watcher:service_up(yokozuna,whereis(yz_solr_proc)).
 ```
     
-12\. Exit the attach session by pressing **Ctrl-G** then **q**.
+12/. Exit the attach session by pressing **Ctrl-G** then **q**.
 
-13\. Verify that transfers have completed:
+13/. Verify that transfers have completed:
 
 ```bash
 riak-admin transfers

@@ -11,8 +11,8 @@ menu:
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/aae/
-  - /riak-docs/riak/2.2.6/ops/advanced/aae/
+  - /riak/kv/2.2.6/ops/advanced/aae/
+  - /riak/2.2.6/ops/advanced/aae/
 ---
 
 [config search#throttledelay]: {{<baseurl>}}riak/kv/2.2.6/configuring/search/#search-anti-entropy-throttle-$tier-delay

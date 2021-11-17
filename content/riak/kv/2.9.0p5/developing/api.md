@@ -2,15 +2,25 @@
 title: "APIs"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "APIs"
     identifier: "developing_apis"
     weight: 107
     parent: "developing"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/api/
+  - /riak/2.9.0/developing/api/
+  - /riak/kv/2.9.0/developing/api/
+  - /riak/kv/2.9.0p1/developing/api/
+  - /riak/kv/2.9.0p2/developing/api/
+  - /riak/kv/2.9.0p3/developing/api/
+  - /riak/kv/2.9.0p4/developing/api/
+  - /riak/kv/latest/developing/api/
 ---
+
 
 [dev api http]: ./http
 [dev api backend]: ./backend

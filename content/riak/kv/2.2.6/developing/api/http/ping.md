@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/ping
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/ping
+  - /riak/2.2.6/dev/references/http/ping
+  - /riak/kv/2.2.6/dev/references/http/ping
 ---
 
 Checks if the server is alive. This is useful for monitoring tools, load-balancers and automated scripts.

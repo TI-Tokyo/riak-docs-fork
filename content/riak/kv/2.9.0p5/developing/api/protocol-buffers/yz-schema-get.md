@@ -2,20 +2,29 @@
 title: "PBC Yokozuna Schema Get"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Yokozuna Schema Get"
     identifier: "pbc_yz_schema_get"
     weight: 123
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers/yz-schema-get
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers/yz-schema-get
+  - /riak/2.9.0p5/dev/references/protocol-buffers/yz-schema-get
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers/yz-schema-get
+  - /riak/2.9.0p5/developing/api/protocol-buffers/yz-schema-get/
+  - /riak/2.9.0/developing/api/protocol-buffers/yz-schema-get/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/yz-schema-get/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/yz-schema-get/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/yz-schema-get/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/yz-schema-get/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/yz-schema-get/
+  - /riak/kv/latest/developing/api/protocol-buffers/yz-schema-get/
 ---
 
-Fetch a [search schema]({{<baseurl>}}riak/kv/2.9.0/developing/usage/search-schemas) from Riak Search.
+
+Fetch a [search schema]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search-schemas) from Riak Search.
 
 ## Request
 

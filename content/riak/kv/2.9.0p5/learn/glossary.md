@@ -2,50 +2,60 @@
 title: "Riak KV Glossary"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Riak KV Glossary"
     identifier: "learn_glossary"
     weight: 103
     parent: "learn"
 toc: true
+aliases:
+  - /riak/2.9.0p5/learn/glossary/
+  - /riak/2.9.0/learn/glossary/
+  - /riak/kv/2.9.0/learn/glossary/
+  - /riak/kv/2.9.0p1/learn/glossary/
+  - /riak/kv/2.9.0p2/learn/glossary/
+  - /riak/kv/2.9.0p3/learn/glossary/
+  - /riak/kv/2.9.0p4/learn/glossary/
+  - /riak/kv/latest/learn/glossary/
 ---
 
 
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0/developing/app-guide/replication-properties
+
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/app-guide/replication-properties
 [basho bench GH]: http://github.com/basho/basho_bench/
-[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/adding-removing-nodes
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/strong-consistency
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/buckets
-[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#vector-clocks
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/clusters
-[concept crdts]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/crdts
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/eventual-consistency
-[concept keys objects]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/keys-and-objects
-[concept replication]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/replication
-[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/strong-consistency
-[dev kv model]: {{<baseurl>}}riak/kv/2.9.0/developing/key-value-modeling
-[concept replication aae]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/replication/#active-anti-entropy
-[dev api http]: {{<baseurl>}}riak/kv/2.9.0/developing/api/http
-[dev data model]: {{<baseurl>}}riak/kv/2.9.0/developing/data-modeling
-[dev data types]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types
-[glossary read rep]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#read-repair
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/adding-removing-nodes
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/strong-consistency
+[concept buckets]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/buckets
+[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#vector-clocks
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/clusters
+[concept crdts]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/crdts
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/eventual-consistency
+[concept keys objects]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/keys-and-objects
+[concept replication]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/replication
+[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/strong-consistency
+[dev kv model]: {{<baseurl>}}riak/kv/2.9.0p5/developing/key-value-modeling
+[concept replication aae]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/replication/#active-anti-entropy
+[dev api http]: {{<baseurl>}}riak/kv/2.9.0p5/developing/api/http
+[dev data model]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-modeling
+[dev data types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types
+[glossary read rep]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#read-repair
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
 [Lager]: https://github.com/basho/lager
-[learn dynamo]: {{<baseurl>}}riak/kv/2.9.0/learn/dynamo
-[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/cluster-capacity
-[repair recover failure recovery]: {{<baseurl>}}riak/kv/2.9.0/using/repair-recovery/failure-recovery
-[repair recover repairs]: {{<baseurl>}}riak/kv/2.9.0/using/repair-recovery/repairs
+[learn dynamo]: {{<baseurl>}}riak/kv/2.9.0p5/learn/dynamo
+[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/cluster-capacity
+[repair recover failure recovery]: {{<baseurl>}}riak/kv/2.9.0p5/using/repair-recovery/failure-recovery
+[repair recover repairs]: {{<baseurl>}}riak/kv/2.9.0p5/using/repair-recovery/repairs
 [Riak Core]: https://github.com/basho/riak_core
 [Riak KV]: https://github.com/basho/riak_kv
 [Riak Pipe]: https://github.com/basho/riak_pipe
 [Riak Pipe - the New MapReduce Power]: http://basho.com/riak-pipe-the-new-mapreduce-power/
 [Riak Pipe - Riak's Distributed Processing Framework]: http://vimeo.com/53910999
 [Understanding Riak's Configurable Behaviors]: http://basho.com/riaks-config-behaviors-part-2/
-[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce
-[usage search]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/search
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/secondary-indexes
+[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce
+[usage search]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/secondary-indexes
 [Where To Start With Riak Core]: http://basho.com/where-to-start-with-riak-core/
 [Wikipedia:Consistent Hashing]: http://en.wikipedia.org/wiki/Consistent_hashing
 
@@ -73,7 +83,7 @@ Basho Bench is a benchmarking tool created to conduct accurate and
 repeatable performance tests and stress tests and to produce performance
 graphs.
 
-* [Basho Bench]({{<baseurl>}}riak/kv/2.9.0/using/performance/benchmarking)
+* [Basho Bench]({{<baseurl>}}riak/kv/2.9.0p5/using/performance/benchmarking)
 * [GitHub repository][basho bench GH]
 
 ## Bucket
@@ -92,7 +102,7 @@ Bucket types enable you to create and manage sets of bucket properties
 that, when applied to buckets, dictate those buckets' behavior. They
 also act as a third namespace in Riak in addition to buckets and keys.
 
-* [Bucket Types]({{<baseurl>}}riak/kv/2.9.0/developing/usage/bucket-types)
+* [Bucket Types]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-types)
 
 ## Cluster
 

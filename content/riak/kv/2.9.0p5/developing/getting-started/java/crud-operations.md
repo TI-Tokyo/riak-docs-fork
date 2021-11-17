@@ -3,15 +3,25 @@ title_supertext: "Getting Started:"
 title: "CRUD Operations with Java"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "CRUD Operations"
     identifier: "getting_started_java_crud"
     weight: 100
     parent: "getting_started_java"
 toc: true
+aliases:
+  - /riak/2.9.0p5/developing/getting-started/java/crud-operations/
+  - /riak/2.9.0/developing/getting-started/java/crud-operations/
+  - /riak/kv/2.9.0/developing/getting-started/java/crud-operations/
+  - /riak/kv/2.9.0p1/developing/getting-started/java/crud-operations/
+  - /riak/kv/2.9.0p2/developing/getting-started/java/crud-operations/
+  - /riak/kv/2.9.0p3/developing/getting-started/java/crud-operations/
+  - /riak/kv/2.9.0p4/developing/getting-started/java/crud-operations/
+  - /riak/kv/latest/developing/getting-started/java/crud-operations/
 ---
+
 
 ## Creating Objects in Riak
 
@@ -67,8 +77,8 @@ StoreValue.Response updateOpResp = client.execute(updateOp);
 ```
 
 For more in depth information on updating objects and sibling resolution in
-Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.0/developing/usage/updating-objects/)
-and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution/)
+Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/updating-objects/)
+and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution/)
 documentation.
 
 ## Updating Objects
@@ -85,8 +95,8 @@ StoreValue.Response updateOpResp = client.execute(updateOp);
 ```
 
 For more in depth information on updating objects and sibling resolution in
-Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.0/developing/usage/updating-objects/)
-and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution/)
+Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/updating-objects/)
+and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution/)
 documentation.
 
 ## Deleting Objects
@@ -196,6 +206,6 @@ UpdateValue.Response response = client.execute(updateValue);
 ```
 
 For more in depth information on updating objects and sibling resolution in
-Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.0/developing/usage/updating-objects/)
-and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution/)
+Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/updating-objects/)
+and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution/)
 documention.

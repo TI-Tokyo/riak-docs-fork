@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/using/updates
-  - /riak-docs/riak/kv/2.2.6/dev/using/updates
+  - /riak/2.2.6/dev/using/updates
+  - /riak/kv/2.2.6/dev/using/updates
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.2.6/learn/glossary/#vnode

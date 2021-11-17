@@ -3,20 +3,29 @@ title_supertext: "Conflict Resolution:"
 title: "C Sharp"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "C Sharp"
     identifier: "usage_conflict_resolution_csharp"
     weight: 103
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/using/conflict-resolution/csharp
-  - /riak-docs/riak/kv/2.9.0/dev/using/conflict-resolution/csharp
+  - /riak/2.9.0p5/dev/using/conflict-resolution/csharp
+  - /riak/kv/2.9.0p5/dev/using/conflict-resolution/csharp
+  - /riak/2.9.0p5/developing/usage/conflict-resolution/csharp/
+  - /riak/2.9.0/developing/usage/conflict-resolution/csharp/
+  - /riak/kv/2.9.0/developing/usage/conflict-resolution/csharp/
+  - /riak/kv/2.9.0p1/developing/usage/conflict-resolution/csharp/
+  - /riak/kv/2.9.0p2/developing/usage/conflict-resolution/csharp/
+  - /riak/kv/2.9.0p3/developing/usage/conflict-resolution/csharp/
+  - /riak/kv/2.9.0p4/developing/usage/conflict-resolution/csharp/
+  - /riak/kv/latest/developing/usage/conflict-resolution/csharp/
 ---
 
-For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that requires applications to resolve siblings according to use-case-specific
+
+For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that requires applications to resolve siblings according to use-case-specific
 criteria. Here, we'll provide a brief guide to conflict resolution using the
 official [Riak .NET client][riak_dotnet_client].
 

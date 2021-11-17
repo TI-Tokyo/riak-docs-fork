@@ -3,32 +3,41 @@ title_supertext: "Developing with Riak KV"
 title: "Frequently Asked Questions"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Developing FAQ"
     identifier: "developing_faq"
     weight: 108
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/community/faqs/developing
-  - /riak-docs/riak/kv/2.9.0/community/faqs/developing
+  - /riak/2.9.0p5/community/faqs/developing
+  - /riak/kv/2.9.0p5/community/faqs/developing
+  - /riak/2.9.0p5/developing/faq/
+  - /riak/2.9.0/developing/faq/
+  - /riak/kv/2.9.0/developing/faq/
+  - /riak/kv/2.9.0p1/developing/faq/
+  - /riak/kv/2.9.0p2/developing/faq/
+  - /riak/kv/2.9.0p3/developing/faq/
+  - /riak/kv/2.9.0p4/developing/faq/
+  - /riak/kv/latest/developing/faq/
 ---
 
-[[Basho Bench]: {{<baseurl>}}riak/kv/2.9.0/using/performance/benchmarking
-[Bitcask]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/bitcask
-[Bucket Properties]: {{<baseurl>}}riak/kv/2.9.0/developing/usage
+
+[[Basho Bench]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance/benchmarking
+[Bitcask]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/bitcask
+[Bucket Properties]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage
 [built-in functions list]: https://github.com/basho/riak_kv/blob/master/priv/mapred_builtins.js
-[commit hooks]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/commit-hooks
-[Configuration Files]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
+[commit hooks]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/commit-hooks
+[Configuration Files]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
 [contrib.basho.com]: https://github.com/basho/riak_function_contrib
-[Erlang Riak Client]: {{<baseurl>}}riak/kv/2.9.0/developing/client-libraries
-[MapReduce]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/mapreduce
-[Memory]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/memory
+[Erlang Riak Client]: {{<baseurl>}}riak/kv/2.9.0p5/developing/client-libraries
+[MapReduce]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/mapreduce
+[Memory]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/memory
 [Riak CS]: {{<baseurl>}}riak/cs/2.1.1
-[System Planning]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/start/#network-configuration-load-balancing
-[vector clocks]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context#vector-clocks
+[System Planning]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/start/#network-configuration-load-balancing
+[vector clocks]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context#vector-clocks
 
 
 ## General
@@ -648,7 +657,7 @@ E: 4-9-14-12*
 
   ```erlang
   list_to_binary(mochijson2:encode([{a , b}, {foo, bar}])).
-  <<"{\"a\":\"b\",\"foo\":\"bar\"}">>
+  <<"{/"a/":/"b/",/"foo/":/"bar/"}">>
   ```
 
   JSON has no "tuple" notion. For the time being, a recommended workaround would be to use a list of length-2 lists.

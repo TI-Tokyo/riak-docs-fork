@@ -2,27 +2,34 @@
 title: "Leveled"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Leveled"
     identifier: "planning_backend_leveled"
     weight: 101
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/advanced/backends/leveled/
-  - /riak-docs/riak/kv/2.9.0/ops/advanced/backends/leveled/
+  - /riak/2.9.0p5/ops/advanced/backends/leveled/
+  - /riak/kv/2.9.0p5/ops/advanced/backends/leveled/
+  - /riak/2.9.0p5/setup/planning/backend/leveled/
+  - /riak/2.9.0/setup/planning/backend/leveled/
+  - /riak/kv/2.9.0/setup/planning/backend/leveled/
+  - /riak/kv/2.9.0p1/setup/planning/backend/leveled/
+  - /riak/kv/2.9.0p2/setup/planning/backend/leveled/
+  - /riak/kv/2.9.0p3/setup/planning/backend/leveled/
+  - /riak/kv/2.9.0p4/setup/planning/backend/leveled/
+  - /riak/kv/latest/setup/planning/backend/leveled/
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
-[perf index]: {{<baseurl>}}riak/kv/2.9.0/using/performance
-[config reference#aae]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference/#active-anti-entropy
 
-[leveled](https://github.com/martinsumner/leveled)
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
+[perf index]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance
+[config reference#aae]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#active-anti-entropy
 
-Leveled is a simple Key-Value store based on the concept of Log-Structured Merge Trees, with the following characteristics:
+[Leveled](https://github.com/martinsumner/leveled) is a simple Key-Value store based on the concept of Log-Structured Merge Trees, with the following characteristics:
 - Optimised for workloads with larger values (e.g. > 4KB).
 - Explicitly supports HEAD requests in addition to GET requests:
 - Splits the storage of value between keys/metadata and body (assuming some definition of metadata is provided);
@@ -50,7 +57,7 @@ Leveled is a simple Key-Value store based on the concept of Log-Structured Merge
 3. Explicitly supports HEAD requests in addition to GET requests.
 4. Support for low-cost clones without locking to provide for scanning queries (e.g. secondary indexes).
 
-##Weaknesses
+## Weaknesses
 
 1. Leveled is still a comparatively new technology and more likely to suffer from edge case issues than Bitcask or LevelDB simply because they've been around longer and have been more thoroughly tested via usage in customer environments.
 2. Leveled works better with medium to larger sized objects. It works perfectly well with small objects but the additional diskspace overhead may render LevelDB a better choice if disk space is at a premium and all of your data will be exclusively limited a few KB or less. This may change as Leveled matures though.

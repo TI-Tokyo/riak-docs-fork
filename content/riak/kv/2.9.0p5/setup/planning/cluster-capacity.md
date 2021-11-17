@@ -2,26 +2,35 @@
 title: "Cluster Capacity Planning"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Cluster Capacity"
     identifier: "planning_cluster_capacity"
     weight: 103
     parent: "planning"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/planning/cluster
-  - /riak-docs/riak/kv/2.9.0/ops/building/planning/cluster
+  - /riak/2.9.0p5/ops/building/planning/cluster
+  - /riak/kv/2.9.0p5/ops/building/planning/cluster
+  - /riak/2.9.0p5/setup/planning/cluster-capacity/
+  - /riak/2.9.0/setup/planning/cluster-capacity/
+  - /riak/kv/2.9.0/setup/planning/cluster-capacity/
+  - /riak/kv/2.9.0p1/setup/planning/cluster-capacity/
+  - /riak/kv/2.9.0p2/setup/planning/cluster-capacity/
+  - /riak/kv/2.9.0p3/setup/planning/cluster-capacity/
+  - /riak/kv/2.9.0p4/setup/planning/cluster-capacity/
+  - /riak/kv/latest/setup/planning/cluster-capacity/
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/backend/leveldb
-[plan bitcask capacity]: {{<baseurl>}}riak/kv/2.9.0/setup/planning/bitcask-capacity-calc
-[plan index]: {{<baseurl>}}riak/kv/2.9.0/setup/planning
-[concept replication]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/replication
-[use admin riak-admin#cluster]: {{<baseurl>}}riak/kv/2.9.0/using/admin/riak-admin/#cluster
-[config reference]: {{<baseurl>}}riak/kv/2.9.0/configuring/reference
-[perf benchmark]: {{<baseurl>}}riak/kv/2.9.0/using/performance/benchmarking
+
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/leveldb
+[plan bitcask capacity]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning/bitcask-capacity-calc
+[plan index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/planning
+[concept replication]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/replication
+[use admin riak-admin#cluster]: {{<baseurl>}}riak/kv/2.9.0p5/using/admin/riak-admin/#cluster
+[config reference]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference
+[perf benchmark]: {{<baseurl>}}riak/kv/2.9.0p5/using/performance/benchmarking
 [LVM]: http://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)
 
 

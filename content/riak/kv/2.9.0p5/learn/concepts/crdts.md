@@ -3,34 +3,43 @@ title_supertext: "Concept"
 title: "Data Types"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Data Types"
     identifier: "learn_concepts_data_types"
     weight: 104
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/theory/concepts/crdts
-  - /riak-docs/riak/kv/2.9.0/theory/concepts/crdts
+  - /riak/2.9.0p5/theory/concepts/crdts
+  - /riak/kv/2.9.0p5/theory/concepts/crdts
+  - /riak/2.9.0p5/learn/concepts/crdts/
+  - /riak/2.9.0/learn/concepts/crdts/
+  - /riak/kv/2.9.0/learn/concepts/crdts/
+  - /riak/kv/2.9.0p1/learn/concepts/crdts/
+  - /riak/kv/2.9.0p2/learn/concepts/crdts/
+  - /riak/kv/2.9.0p3/learn/concepts/crdts/
+  - /riak/kv/2.9.0p4/learn/concepts/crdts/
+  - /riak/kv/latest/learn/concepts/crdts/
 ---
 
+
 [crdts pdf]: http://hal.upmc.fr/docs/00/55/55/88/PDF/techreport.pdf
-[data types converg]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/crdts/#convergence
+[data types converg]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/crdts/#convergence
 [crdts reading list]: http://christophermeiklejohn.com/crdt/2014/07/22/readings-in-crdts.html
-[data types impl]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/crdts/#implementation
-[concept causal context dvv]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#dotted-version-vectors
-[concept causal context sib]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#siblings
-[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/causal-context/#vector-clocks
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/eventual-consistency
-[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0/learn/concepts/strong-consistency
-[dev data types]: {{<baseurl>}}riak/kv/2.9.0/developing/data-types
+[data types impl]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/crdts/#implementation
+[concept causal context dvv]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#dotted-version-vectors
+[concept causal context sib]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#siblings
+[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/causal-context/#vector-clocks
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/eventual-consistency
+[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.0p5/learn/concepts/strong-consistency
+[dev data types]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types
 [riak_dt]: https://github.com/basho/riak_dt
-[dev data types context]: {{<baseurl>}}riak/kv/2.1.4/developing/data-types/#data-types-and-context
-[glossary node]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#node
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0/learn/glossary/#vnode
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.0/developing/usage/conflict-resolution
+[dev data types context]: {{<baseurl>}}riak/kv/2.9.0p5/developing/data-types/#data-types-and-context
+[glossary node]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#node
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.0p5/learn/glossary/#vnode
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.0p5/developing/usage/conflict-resolution
 
 Riak Data Types are convergent replicated data types (CRDTs), inspired by the work of [Marc Shapiro, Nuno Preguiça, Carlos Baquero, and Marek Zawirski][crdts pdf]. Riak KV supports the following eventually-convergent data types, described in later sections:
 

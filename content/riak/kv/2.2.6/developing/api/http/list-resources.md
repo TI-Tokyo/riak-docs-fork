@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/list-resources
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/list-resources
+  - /riak/2.2.6/dev/references/http/list-resources
+  - /riak/kv/2.2.6/dev/references/http/list-resources
 ---
 
 List available HTTP resources for the Riak node. This can be used by clients to

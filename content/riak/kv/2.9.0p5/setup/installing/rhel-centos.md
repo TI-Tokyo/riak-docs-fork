@@ -3,26 +3,35 @@ title_supertext: "Installing on"
 title: "RHEL and CentOS"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "RHEL & CentOS"
     identifier: "installing_rhel_centos"
     weight: 304
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/installing/Installing-on-RHEL-and-CentOS
-  - /riak-docs/riak/kv/2.9.0/ops/building/installing/Installing-on-RHEL-and-CentOS
-  - /riak-docs/riak/2.9.0/installing/rhel-centos/
-  - /riak-docs/riak/kv/2.9.0/installing/rhel-centos/
+  - /riak/2.9.0p5/ops/building/installing/Installing-on-RHEL-and-CentOS
+  - /riak/kv/2.9.0p5/ops/building/installing/Installing-on-RHEL-and-CentOS
+  - /riak/2.9.0p5/installing/rhel-centos/
+  - /riak/kv/2.9.0p5/installing/rhel-centos/
+  - /riak/2.9.0p5/setup/installing/rhel-centos/
+  - /riak/2.9.0/setup/installing/rhel-centos/
+  - /riak/kv/2.9.0/setup/installing/rhel-centos/
+  - /riak/kv/2.9.0p1/setup/installing/rhel-centos/
+  - /riak/kv/2.9.0p2/setup/installing/rhel-centos/
+  - /riak/kv/2.9.0p3/setup/installing/rhel-centos/
+  - /riak/kv/2.9.0p4/setup/installing/rhel-centos/
+  - /riak/kv/latest/setup/installing/rhel-centos/
 ---
 
 
 
-[install source index]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source
-[install source erlang]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/2.9.0/setup/installing/verify
+
+[install source index]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source
+[install source erlang]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
 
 Riak KV can be installed on CentOS- or Red-Hat-based systems using a binary
 package or by [compiling Riak from source code][install source index]. The following steps have been tested to work with Riak on
@@ -50,14 +59,14 @@ sudo yum install -y epel-release
 Once the EPEL has been installed, you can install CentOS 8/RHEL 8 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/rhel/8/riak-2.9.0-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/rhel/8/riak-2.9.0-1.el8.x86_64.rpm
 sudo yum localinstall -y riak-2.9.0-1.el8.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/rhel/8/riak-2.9.0-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/rhel/8/riak-2.9.0-1.el8.x86_64.rpm
 sudo rpm -Uvh riak-2.9.0-1.el8.x86_64.rpm
 ```
 
@@ -66,14 +75,14 @@ sudo rpm -Uvh riak-2.9.0-1.el8.x86_64.rpm
 You can install CentOS 7/RHEL 7 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/rhel/7/riak-2.9.0-1.el7.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/rhel/7/riak-2.9.0-1.el7.x86_64.rpm
 sudo yum localinstall -y riak-2.9.0-1.el7.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/rhel/7/riak-2.9.0-1.el7.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/rhel/7/riak-2.9.0-1.el7.x86_64.rpm
 sudo rpm -Uvh riak-2.9.0-1.el7.x86_64.rpm
 ```
 
@@ -82,7 +91,7 @@ sudo rpm -Uvh riak-2.9.0-1.el7.x86_64.rpm
 You can install using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/rhel/6/riak-2.9.0-1.el6.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/rhel/6/riak-2.9.0-1.el6.x86_64.rpm
 sudo yum localinstall -y riak-2.9.0-1.el6.x86_64.rpm
 
 ```
@@ -90,7 +99,7 @@ sudo yum localinstall -y riak-2.9.0-1.el6.x86_64.rpm
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/rhel/6/riak-2.9.0-1.el6.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/rhel/6/riak-2.9.0-1.el6.x86_64.rpm
 sudo rpm -Uvh riak-2.9.0-1.el6.x86_64.rpm
 ```
 
@@ -116,7 +125,7 @@ sudo yum install gcc gcc-c++ glibc-devel make git pam-devel
 Now we can download and install Riak:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.0/riak-2.9.0.tar.gz
+wget https://files.tiot.jp/riak/kv/2.2/2.9.0p5/riak-2.9.0.tar.gz
 tar zxvf riak-2.9.0.tar.gz
 cd riak-2.9.0
 make rel

@@ -2,18 +2,27 @@
 title: "PBC Ping"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Ping"
     identifier: "pbc_ping"
     weight: 110
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/references/protocol-buffers/ping
-  - /riak-docs/riak/kv/2.9.0/dev/references/protocol-buffers/ping
+  - /riak/2.9.0p5/dev/references/protocol-buffers/ping
+  - /riak/kv/2.9.0p5/dev/references/protocol-buffers/ping
+  - /riak/2.9.0p5/developing/api/protocol-buffers/ping/
+  - /riak/2.9.0/developing/api/protocol-buffers/ping/
+  - /riak/kv/2.9.0/developing/api/protocol-buffers/ping/
+  - /riak/kv/2.9.0p1/developing/api/protocol-buffers/ping/
+  - /riak/kv/2.9.0p2/developing/api/protocol-buffers/ping/
+  - /riak/kv/2.9.0p3/developing/api/protocol-buffers/ping/
+  - /riak/kv/2.9.0p4/developing/api/protocol-buffers/ping/
+  - /riak/kv/latest/developing/api/protocol-buffers/ping/
 ---
+
 
 Check if the server is alive
 

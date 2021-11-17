@@ -2,19 +2,29 @@
 title: "V2 Scheduling Fullsync"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "V2 Scheduling Fullsync"
     identifier: "performance_v2_scheduling_fullsync"
     weight: 103
     parent: "managing_performance"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/2.9.0p5/using/performance/v2-scheduling-fullsync/
+  - /riak/2.9.0/using/performance/v2-scheduling-fullsync/
+  - /riak/kv/2.9.0/using/performance/v2-scheduling-fullsync/
+  - /riak/kv/2.9.0p1/using/performance/v2-scheduling-fullsync/
+  - /riak/kv/2.9.0p2/using/performance/v2-scheduling-fullsync/
+  - /riak/kv/2.9.0p3/using/performance/v2-scheduling-fullsync/
+  - /riak/kv/2.9.0p4/using/performance/v2-scheduling-fullsync/
+  - /riak/kv/latest/using/performance/v2-scheduling-fullsync/
 ---
 
+
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/2.9.0/using/cluster-operations/v3-multi-datacenter/#fullsync-replication-commands/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/2.9.0p5/using/cluster-operations/v3-multi-datacenter/#fullsync-replication-commands/) instead.
 {{% /note %}}
 
 

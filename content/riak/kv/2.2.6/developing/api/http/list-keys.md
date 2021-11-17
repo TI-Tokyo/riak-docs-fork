@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/list-keys
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/list-keys
+  - /riak/2.2.6/dev/references/http/list-keys
+  - /riak/kv/2.2.6/dev/references/http/list-keys
 ---
 
 Lists keys in a bucket.

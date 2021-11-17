@@ -2,18 +2,27 @@
 title: "Bucket Types"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Bucket Types"
     identifier: "usage_bucket_types"
     weight: 108
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/dev/advanced/bucket-types
-  - /riak-docs/riak/kv/2.9.0/dev/advanced/bucket-types
+  - /riak/2.9.0p5/dev/advanced/bucket-types
+  - /riak/kv/2.9.0p5/dev/advanced/bucket-types
+  - /riak/2.9.0p5/developing/usage/bucket-types/
+  - /riak/2.9.0/developing/usage/bucket-types/
+  - /riak/kv/2.9.0/developing/usage/bucket-types/
+  - /riak/kv/2.9.0p1/developing/usage/bucket-types/
+  - /riak/kv/2.9.0p2/developing/usage/bucket-types/
+  - /riak/kv/2.9.0p3/developing/usage/bucket-types/
+  - /riak/kv/2.9.0p4/developing/usage/bucket-types/
+  - /riak/kv/latest/developing/usage/bucket-types/
 ---
+
 
 If you ever need to turn off indexing for a bucket, set the
 `search_index` property to the `_dont_index_` sentinel value.
@@ -39,7 +48,7 @@ bucket.properties = {'search_index' => 'famous'}
 ```
 
 ```php
-(new \Basho\Riak\Command\Builder\Search\AssociateIndex($riak))
+(new /Basho/Riak/Command/Builder/Search/AssociateIndex($riak))
     ->withName('famous')
     ->buildBucket('cats')
     ->build()
@@ -92,7 +101,7 @@ err = cluster.Execute(cmd)
 ```
 
 ```curl
-curl -XPUT $RIAK_HOST/buckets/cats/props \
-     -H'content-type:application/json' \
+curl -XPUT $RIAK_HOST/buckets/cats/props /
+     -H'content-type:application/json' /
      -d'{"props":{"search_index":"famous"}}'
 ```

@@ -2,18 +2,27 @@
 title: "Benchmarking"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Benchmarking"
     identifier: "performance_benchmarking"
     weight: 100
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/building/benchmarking
-  - /riak-docs/riak/kv/2.9.0/ops/building/benchmarking
+  - /riak/2.9.0p5/ops/building/benchmarking
+  - /riak/kv/2.9.0p5/ops/building/benchmarking
+  - /riak/2.9.0p5/using/performance/benchmarking/
+  - /riak/2.9.0/using/performance/benchmarking/
+  - /riak/kv/2.9.0/using/performance/benchmarking/
+  - /riak/kv/2.9.0p1/using/performance/benchmarking/
+  - /riak/kv/2.9.0p2/using/performance/benchmarking/
+  - /riak/kv/2.9.0p3/using/performance/benchmarking/
+  - /riak/kv/2.9.0p4/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
 ---
+
 
 Basho Bench is a benchmarking tool created to conduct accurate and
 repeatable performance tests and stress tests, and to produce
@@ -51,7 +60,7 @@ You can download the pre-built packages below, or build it from source.
 
 #### Prerequisites
 
-* Erlang must be installed. See [Installing Erlang]({{<baseurl>}}riak/kv/2.9.0/setup/installing/source/erlang) for instructions
+* Erlang must be installed. See [Installing Erlang]({{<baseurl>}}riak/kv/2.9.0p5/setup/installing/source/erlang) for instructions
     and versioning requirements. Note: Unless you're an experienced
     Erlang developer, we recommend that you use Ubuntu 14.04 LTS (and
     not CentOS), when building ```basho_bench``` from source.  Later

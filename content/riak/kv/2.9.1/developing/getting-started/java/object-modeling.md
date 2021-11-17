@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_java"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/object-modeling-java
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/object-modeling-java
+  - /riak/2.9.1/dev/taste-of-riak/object-modeling-java
+  - /riak/kv/2.9.1/dev/taste-of-riak/object-modeling-java
 ---
 
 To get started, let's create the models that we'll be using.

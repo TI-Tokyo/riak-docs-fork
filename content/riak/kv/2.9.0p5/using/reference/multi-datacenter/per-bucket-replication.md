@@ -2,18 +2,27 @@
 title: "Multi-Datacenter Replication Reference: Per Bucket"
 description: ""
 project: "riak_kv"
-project_version: "2.9.0"
+project_version: "2.9.0p5"
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.0p5:
     name: "Per Bucket"
     identifier: "managing_ref_mdc_per_bucket"
     weight: 101
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.0/ops/mdc/per-bucket
-  - /riak-docs/riak/kv/2.9.0/ops/mdc/per-bucket
+  - /riak/2.9.0p5/ops/mdc/per-bucket
+  - /riak/kv/2.9.0p5/ops/mdc/per-bucket
+  - /riak/2.9.0p5/using/reference/multi-datacenter/per-bucket-replication/
+  - /riak/2.9.0/using/reference/multi-datacenter/per-bucket-replication/
+  - /riak/kv/2.9.0/using/reference/multi-datacenter/per-bucket-replication/
+  - /riak/kv/2.9.0p1/using/reference/multi-datacenter/per-bucket-replication/
+  - /riak/kv/2.9.0p2/using/reference/multi-datacenter/per-bucket-replication/
+  - /riak/kv/2.9.0p3/using/reference/multi-datacenter/per-bucket-replication/
+  - /riak/kv/2.9.0p4/using/reference/multi-datacenter/per-bucket-replication/
+  - /riak/kv/latest/using/reference/multi-datacenter/per-bucket-replication/
 ---
+
 
 To enable or disable replication per bucket, you can use the `repl`
 bucket property.
@@ -36,16 +45,16 @@ and above:
 ### Example of Disabling
 
 ```curl
-curl -v -XPUT http://127.0.0.1:8098/buckets/my_bucket \
-  -H "Content-Type: application/json" \
+curl -v -XPUT http://127.0.0.1:8098/buckets/my_bucket /
+  -H "Content-Type: application/json" /
   -d '{"props":{"repl":false}}'
 ```
 
 ### Example of Enabling
 
 ```curl
-curl -v -XPUT http://127.0.0.1:8098/buckets/my_bucket \
-  -H "Content-Type: application/json" \
+curl -v -XPUT http://127.0.0.1:8098/buckets/my_bucket /
+  -H "Content-Type: application/json" /
   -d '{"props":{"repl":true}}'
 ```
 
