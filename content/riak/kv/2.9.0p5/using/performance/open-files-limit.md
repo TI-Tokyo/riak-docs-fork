@@ -11,6 +11,8 @@ menu:
     parent: "managing_performance"
 toc: true
 aliases:
+  - /riak/latest/ops/tuning/open-files-limit/
+  - /riak/kv/latest/ops/tuning/open-files-limit/
   - /riak/2.9.0p5/ops/tuning/open-files-limit/
   - /riak/kv/2.9.0p5/ops/tuning/open-files-limit/
   - /riak/2.9.0p5/using/performance/open-files-limit/
