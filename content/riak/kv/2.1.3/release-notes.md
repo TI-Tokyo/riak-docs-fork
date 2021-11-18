@@ -44,7 +44,7 @@ In the above example, the corrected `default_bucket_props` section would look li
         }]
 ```
 
-If you have been depending on this behavior unintentionally, learn more about what  `allow_mult` and `dvv_enabled` imply in our [Conflict Resolution]({{< baseurl >}}riak/kv/latest//dev/using/conflict-resolution/) documentation.
+If you have been depending on this behavior unintentionally, learn more about what  `allow_mult` and `dvv_enabled` imply in our [Conflict Resolution]({{< baseurl >}}riak/kv/latest/dev/using/conflict-resolution/) documentation.
 
 For more information about this change, please see [issue #727](https://github.com/basho/riak/issues/727).
 

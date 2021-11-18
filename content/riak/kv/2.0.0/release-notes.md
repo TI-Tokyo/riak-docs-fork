@@ -241,7 +241,7 @@ going forward.
 ## Client libraries
 
 Most [Basho-supported client
-libraries]({{< baseurl >}}riak/kv/latest//dev/using/libraries/) have
+libraries]({{< baseurl >}}riak/kv/latest/dev/using/libraries/) have
 been updated for 2.0:
 
 * [Java](https://github.com/basho/riak-java-client)
@@ -300,9 +300,9 @@ future version. **We do not recommend using these features in version
 few features that have already been removed in Riak 2.0. A listing can
 be found in the **Termination Notices** section below.
 
-* [Link Walking]({{< baseurl >}}riak/kv/latest//dev/using/link-walking/)
+* [Link Walking]({{< baseurl >}}riak/kv/latest/dev/using/link-walking/)
   is deprecated and will not work if security is enabled.
-* [Key Filters]({{< baseurl >}}riak/kv/latest//dev/using/keyfilters/)
+* [Key Filters]({{< baseurl >}}riak/kv/latest/dev/using/keyfilters/)
   are deprecated; we strongly discourage key listing in production due
   to the overhead involved, so it's better to maintain key indexes as
   values in Riak (see also our new
@@ -327,7 +327,7 @@ be found in the **Termination Notices** section below.
   `riak:local_client/1`); this API may change at any time, so we
   strongly recommend using our [Erlang client
   library](http://github.com/basho/riak-erlang-client/) (or [one of the
-  other libraries]({{< baseurl >}}riak/kv/latest//dev/using/libraries/)
+  other libraries]({{< baseurl >}}riak/kv/latest/dev/using/libraries/)
   we support) instead.
 
 ## Termination Notices
