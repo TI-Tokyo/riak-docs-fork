@@ -76,7 +76,7 @@ configured **sink cluster**.
 
 See also:
 
-* [Upgrading from v2 to v3]({{<baseurl>}}riak/kv/2.1.3/setup/upgrading/multi-datacenter)
+<!-- * [Upgrading from v2 to v3]({{<baseurl>}}riak/kv/2.1.3/setup/upgrading/multi-datacenter) -->
 * [Comparing v2 and v3]({{<baseurl>}}riak/kv/2.1.3/using/reference/multi-datacenter/comparison)
 * [Multi-Datacenter Operations]({{<baseurl>}}riak/kv/2.1.3/using/cluster-operations/v3-multi-datacenter)
 
