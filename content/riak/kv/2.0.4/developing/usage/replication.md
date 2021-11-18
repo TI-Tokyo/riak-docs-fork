@@ -19,7 +19,7 @@ aliases:
 [concept eventual consistency]: {{<baseurl>}}riak/kv/2.0.4/learn/concepts/eventual-consistency
 [plan backend leveldb]: {{<baseurl>}}riak/kv/2.0.4/setup/planning/backend/leveldb
 [plan backend bitcask]: {{<baseurl>}}riak/kv/2.0.4/setup/planning/backend/bitcask
-[use ref strong consistency]: {{<baseurl>}}riak/kv/using/reference/strong-consistency
+[use ref strong consistency]: {{<baseurl>}}riak/kv/latest/using/reference/strong-consistency
 [concept clusters]: {{<baseurl>}}riak/kv/2.0.4/learn/concepts/clusters
 
 Riak was built to act as a multi-node [cluster][concept clusters].  It

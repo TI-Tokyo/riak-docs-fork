@@ -10,17 +10,19 @@ menu:
     weight: 111
     parent: "managing_cluster_operations"
 toc: true
+version_history:
+  in: "2.9.0+"
 aliases:
   - /riak/kv/2.9.0p5/ops/advanced/tictacaae/
   - /riak/2.9.0p5/ops/advanced/ticktacaae/
-  - /riak/2.9.0p5/using/cluster-operations/TicTac-Active-anti-entropy/
-  - /riak/2.9.0/using/cluster-operations/TicTac-Active-anti-entropy/
-  - /riak/kv/2.9.0/using/cluster-operations/TicTac-Active-anti-entropy/
-  - /riak/kv/2.9.0p1/using/cluster-operations/TicTac-Active-anti-entropy/
-  - /riak/kv/2.9.0p2/using/cluster-operations/TicTac-Active-anti-entropy/
-  - /riak/kv/2.9.0p3/using/cluster-operations/TicTac-Active-anti-entropy/
-  - /riak/kv/2.9.0p4/using/cluster-operations/TicTac-Active-anti-entropy/
-  - /riak/kv/latest/using/cluster-operations/TicTac-Active-anti-entropy/
+  - /riak/2.9.0p5/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/2.9.0/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/kv/2.9.0/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/kv/2.9.0p1/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/kv/2.9.0p2/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/kv/2.9.0p3/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/kv/2.9.0p4/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/kv/latest/using/cluster-operations/tictac-active-anti-entropy/
 ---
 
 

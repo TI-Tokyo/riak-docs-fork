@@ -17,7 +17,7 @@ aliases:
 
 [plan backend leveldb]: {{<baseurl>}}riak/kv/2.0.4/setup/planning/backend/leveldb
 [plan backend memory]: {{<baseurl>}}riak/kv/2.0.4/setup/planning/backend/memory
-[use ref strong consistency]: {{<baseurl>}}riak/kv/using/reference/strong-consistency
+[use ref strong consistency]: {{<baseurl>}}riak/kv/latest/using/reference/strong-consistency
 
 > **Note: Riak Search preferred for querying**
 >
