@@ -19,6 +19,7 @@ aliases:
   - /riakts/1.5.2/setup/installing/rhel-centos/
   - /riak/ts/1.5.2/installing/rhel-centos/
   - /riak/ts/latest/setup/installing/rhel-centos/
+  - /riak/ts/latest/installing/rhel-centos/
 ---
 
 [download]: {{<baseurl>}}riak/ts/1.5.2/downloads/

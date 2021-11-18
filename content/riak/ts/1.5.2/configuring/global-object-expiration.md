@@ -18,6 +18,7 @@ version_history:
 aliases:
   - /riakts/1.5.2/configuring/global-object-expiration/
   - /riak/ts/latest/configuring/global-object-expiration/
+  - /riak/ts/latest/using/global-object-expiration/
 ---
 
 [ttl]: https://en.wikipedia.org/wiki/Time_to_live

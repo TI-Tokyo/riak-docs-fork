@@ -15,6 +15,7 @@ version_history:
   moved:
     - ["1.1.0+", "using/arithmetic-operations"]
 aliases:
+  - /riak/ts/latest/using/arithmetic-operations
   - /riak/ts/1.5.2/using/arithmetic-operations
   - /riakts/1.5.2/using/arithmetic-operations
   - /riakts/1.5.2/using/querying/select/arithmetic-operations

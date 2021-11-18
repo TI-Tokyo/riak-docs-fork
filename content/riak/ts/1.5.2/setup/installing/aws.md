@@ -19,6 +19,7 @@ aliases:
   - /riakts/1.5.2/setup/installing/aws/
   - /riak/ts/1.5.2/installing/aws/
   - /riak/ts/latest/setup/installing/aws/
+  - /riak/ts/latest/installing/aws/
 ---
 
 

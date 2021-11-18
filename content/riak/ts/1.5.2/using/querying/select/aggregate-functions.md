@@ -16,6 +16,7 @@ version_history:
     - ["1.1.0+", "using/aggregate-functions"]
 aliases:
   - /riakts/1.5.2/using/aggregate-functions/
+  - /riak/ts/latest/using/aggregate-functions/
   - /riak/ts/1.5.2/using/aggregate-functions/
   - /riakts/1.5.2/using/querying/select/aggregate-functions/
   - /riak/ts/latest/using/querying/select/aggregate-functions/

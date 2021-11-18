@@ -19,6 +19,7 @@ aliases:
   - /riakts/1.5.2/setup/installing/mac-osx/
   - /riak/ts/1.5.2/installing/mac-osx/
   - /riak/ts/latest/setup/installing/mac-osx/
+  - /riak/ts/latest/installing/mac-osx/
 ---
 
 
