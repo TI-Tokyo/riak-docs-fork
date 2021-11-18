@@ -166,7 +166,11 @@ generateVersionLists = () ->
               if SemVer.isInRange(release_sem_ver, range)
                 relative_path = url
                 break
-            anchor = project_path+"/"+release_version+"/"+relative_path
+            # relative_path can start with a slash or not
+            # so we ensure it does
+            unless relative_path.startsWith("/") then relative_path = "/"+relative_path
+
+            anchor = project_path+"/"+release_version+relative_path
             anchor_tag = '<a class="block" href="'+anchor+'">'
 
           # Build the full list element and add it to the html aggregator.
@@ -174,7 +178,7 @@ generateVersionLists = () ->
           #      Because JS doesn't ship w/ that functionality? For... reasons?
           #NB. See above note re: whitespace.
           version_selector_list_html +=
-              '<li pjac-2 class="'+class_list.join("\n")+'">'+
+              '<li class="'+class_list.join("\n")+'">'+
                 anchor_tag+release_version+'</a>'+
               '</li>'
 

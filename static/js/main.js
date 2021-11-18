@@ -13305,10 +13305,13 @@ Interaction is a mater of expanding the pane when the .selector__btn is clicked
                   break;
                 }
               }
-              anchor = project_path + "/" + release_version + "/" + relative_path;
+              if (!relative_path.startsWith("/")) {
+                relative_path = "/" + relative_path;
+              }
+              anchor = project_path + "/" + release_version + relative_path;
               anchor_tag = '<a class="block" href="' + anchor + '">';
             }
-            version_selector_list_html += '<li pjac-2 class="' + class_list.join("\n") + '">' + anchor_tag + release_version + '</a>' + '</li>';
+            version_selector_list_html += '<li class="' + class_list.join("\n") + '">' + anchor_tag + release_version + '</a>' + '</li>';
           }
           version_selector_list_html += '</ul></div></div>';
         }
