@@ -4,7 +4,7 @@ description: ""
 project: "riak_kv"
 project_version: "2.0.7"
 menu:
-  riak_kv-2.0.7:
+  riak_kv-2.0.9:
     name: "Upgrading Search 1.x to 2.x"
     identifier: "upgrading_search"
     weight: 104
