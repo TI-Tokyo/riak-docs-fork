@@ -17,6 +17,8 @@ aliases:
   - /riak/kv/2.9.0p5/ops/upgrading/rolling-upgrades/
   - /riak/2.9.0/ops/upgrading/rolling-upgrades/
   - /riak/kv/2.9.0/ops/upgrading/rolling-upgrades/
+  - /riak/latest/ops/upgrading/rolling-upgrades/
+  - /riak/kv/latest/ops/upgrading/rolling-upgrades/
 ---
 
 [production checklist]: {{<baseurl>}}riak/kv/2.9.0p5/setup/upgrading/checklist
