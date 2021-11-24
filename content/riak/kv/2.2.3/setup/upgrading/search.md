@@ -2,9 +2,9 @@
 title: "Upgrading Search from 1.x to 2.x"
 description: ""
 project: "riak_kv"
-project_version: "2.1.1"
+project_version: "2.2.3"
 menu:
-  riak_kv-2.1.1:
+  riak_kv-2.2.3:
     name: "Upgrading Search 1.x to 2.x"
     identifier: "upgrading_search"
     weight: 104
@@ -12,6 +12,9 @@ menu:
 toc: true
 version_history:
   in: "2.0.0-2.99.999"
+aliases:
+  - /riak/2.2.3/ops/advanced/upgrading-search-2
+  - /riak/kv/2.2.3/ops/advanced/upgrading-search-2
 ---
 
 If you're using Search in a version of Riak prior to 2.0 (1.3.0 to
