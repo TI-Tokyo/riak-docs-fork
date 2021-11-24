@@ -11,7 +11,7 @@ menu:
     parent: "upgrading"
 toc: true
 version_history:
-  in: "2.0.0-2.1.999"
+  in: "2.0.0-2.99.999"
 aliases:
   - /riak/2.0.7/ops/upgrading/rolling-upgrades/
   - /riak/kv/2.0.7/ops/upgrading/rolling-upgrades/
