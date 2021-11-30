@@ -59,6 +59,17 @@ respectively, you may see some odd errors in your logs, saying something like
 `"{badarith,[{riak_kv_util,normalize_rw_value,2},]}"`.
 {{% /note %}}
 
+{{% note title="Node Confirms" %}}
+`node_confirms` is a tunable for durability. When operating in a failure state, Riak will store replicas in fallback vnodes, and in some case multiple fallbacks may be on the same physical node. `node_confirms` is an option that specifies how many distinct physical nodes must acknowledge a write for it to be considered successful.
+
+When riak receives a 'put', it starts up a riak_kv_put_fsm (finite state machine). This prepares and then validates the options, then calls any precommit hooks, before executing a put to the local vnode in the preflist, which becomes the co-ordinating node. This then waits for the local vnode response before executing the put request remotely on the two remaining nodes in the preflist.
+
+The fsm then waits for the remote vnode responses, and as it receives responses, it adds these results and checks whether enough results have been collected to satisfy the bucket properties such as 'dw' and 'pw'.
+When analysing the responses, Riak will count the number of different nodes from which results have been returned. The finite state machine can now be required to wait for a minimum number of confirmations from different nodes, whilst also ensuring all other configured options are satisfied.
+
+Once all options are satisfied, the response is returned, post commit hooks are called and the fsm finishes.
+{{% /note %}}
+
 ## Response
 
 Normal status codes:

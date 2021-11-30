@@ -306,9 +306,14 @@ when values are unlikely to yield much benefit from compression(compression is o
 <tr>
 <td><code>leveled.max_run_length</code></td>
 <td>In a single compaction run, what is the maximum number of consecutive files which may be compacted.</td>
-<td><code>4 </code></td>
+<td><code>4</code></td>
 </tr>
 
+<tr>
+<td><code>leveled_reload_recalc</code></td>
+<td>Enable the `recalc` compaction strategy within the leveled backend in riak.</td>
+<td><code>disabled</code></td>
+</tr>
 ## Bitcask
 
 Configurable parameters for Riak's [Bitcask][plan backend bitcask] storage backend.
