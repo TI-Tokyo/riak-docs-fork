@@ -13,6 +13,7 @@ toc: true
 version_history:
   in: "2.0.0-2.99.999"
 aliases:
+  - /riak/latest/setup/upgrading/cluster/
   - /riak/2.9.0p5/ops/upgrading/rolling-upgrades/
   - /riak/kv/2.9.0p5/ops/upgrading/rolling-upgrades/
   - /riak/2.9.0/ops/upgrading/rolling-upgrades/
