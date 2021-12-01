@@ -59,7 +59,7 @@ anti_entropy = active-debug
 ]}
 ```
 
-Remember that you will need to [restart the node](../../admin/riak-admin/#restart) for any configuration-related changes to take effect.
+Remember that you will need to [restart the node](../../admin/riak-cli/#restart) for any configuration-related changes to take effect.
 
 ## Disabling Active Anti-Entropy
 
@@ -92,7 +92,7 @@ The default directory for AAE data is `./data/anti_entropy`, as in the
 example above, but this can be changed. See the section below titled
 **Data Directory**.
 
-Remember that you will need to [restart the node](../../admin/riak-admin/#restart) for any configuration-related changes to take effect.
+Remember that you will need to [restart the node](../../admin/riak-cli/#restart) for any configuration-related changes to take effect.
 
 The directory deletion method above can also be used to force a
 rebuilding of hash trees.
