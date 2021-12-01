@@ -1003,7 +1003,7 @@ they will all share the name "struct".
 
 #### Additions
 
-* Support query parameter authentication as specified in [http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html](Signing and Authenticating REST Requests).
+* Support query parameter authentication as specified in [Signing and Authenticating REST Requests](http://docs.amazonwebservices.com/AmazonS3/latest/dev/RESTAuthentication.html).
 
 ## Riak CS 1.0.1
 
