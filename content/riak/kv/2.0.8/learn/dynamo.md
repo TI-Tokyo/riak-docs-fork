@@ -1372,12 +1372,12 @@ shopping cart.
 > remanding more complex reconciliation to the client. There are several tools
 > to help simplify this task, such as [Statebox].
 >
-> Riak KV supports a simple reconciliation strategy, called [CRDTs] (Commutative
-> Replicated Data Types), for reconciling common data types like sets and
+> Riak KV supports a simple reconciliation strategy, called [CRDTs (Commutative
+> Replicated Data Types)], for reconciling common data types like sets and
 > counters.
 
 [Statebox]: https://github.com/mochi/statebox_riak
-[CRDTs]: {{<baseurl>}}riak/kv/2.0.8/developing/data-types/
+[CRDTs (Commutative Replicated Data Types)]: {{<baseurl>}}riak/kv/2.0.8/developing/data-types/
 
 
 * Timestamp based reconciliation: This case differs from the previous one only
