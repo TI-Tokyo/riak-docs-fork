@@ -33,7 +33,7 @@ aliases:
 Azure's available Riak VMs are community supported, and thus is not always up to
 date with the latest Riak package. Please ensure that the current VM is
 using the latest supported code (and don't be afraid to update it if it's
-not). Alternatively, you can follow the install instructions for [CentOS/RHEL](rhel-centos/) once you have created your Azure VM(s).
+not). Alternatively, you can follow the install instructions for [CentOS/RHEL](../rhel-centos/) once you have created your Azure VM(s).
 {{% /note %}}
 
 You will need to sign up for the Windows Azure Virtual Machines preview feature in order to create a virtual machine. You can also sign up for a free trial account if you do not have a Windows Azure account.
