@@ -75,13 +75,13 @@ too. The following Data Types are currently available:
 Counters behave much like they do in version 1.4, except that you can
 use Riak's new bucket types feature to ensure no type conflicts.
 Documentation on counters can be found
-[here]({{< baseurl >}}riak/kv/2.0.0/dev/using/data-types/#Counters).
+[here]({{< baseurl >}}riak/kv/2.0.0/developing/data-types/counters/).
 
 #### Sets
 
 Sets allow you to store multiple distinct opaque binary values against a
 key. See the
-[documentation]({{< baseurl >}}riak/kv/2.0.0/dev/using/data-types/#Sets)
+[documentation]({{< baseurl >}}riak/kv/2.0.0/developing/data-types/sets/)
 for more details on usage and semantics.
 
 #### Maps
@@ -91,7 +91,7 @@ as a container for composing ad hoc data structures from multiple Data
 Types. Inside a map you may store sets, counters, flags (similar to
 booleans), registers (which store binaries according to a
 last-write-wins logic), and even other maps. Please see the
-[documentation]({{< baseurl >}}riak/kv/2.0.0/dev/using/data-types/#Maps)
+[documentation]({{< baseurl >}}riak/kv/2.0.0/developing/data-types/maps/)
 for usage and semantics.
 
 #### API
@@ -306,7 +306,7 @@ be found in the **Termination Notices** section below.
   are deprecated; we strongly discourage key listing in production due
   to the overhead involved, so it's better to maintain key indexes as
   values in Riak (see also our new
-  [set data type]({{< baseurl >}}riak/kv/2.0.0/dev/using/data-types/#Sets)
+  [set data type]({{< baseurl >}}riak/kv/2.0.0/developing/data-types/sets/)
   as a useful tool for such indexes).
 * JavaScript MapReduce is deprecated; we have expanded our
   [Erlang MapReduce]({{< baseurl >}}riak/kv/2.0.0/dev/advanced/mapreduce/)
