@@ -13,6 +13,7 @@ toc: true
 aliases:
   - /riak/2.9.1/dev/advanced/replication-properties
   - /riak/kv/2.9.1/dev/advanced/replication-properties
+  - /riak/kv/latest/developing/usage/replication/
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types
