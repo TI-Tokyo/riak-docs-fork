@@ -543,7 +543,7 @@ venues:
 ### Changes
 
 * Improve logging around failures with Riak
-  [riak_cs/#987]({{< baseurl >}}riak/kv/latest/libraries/)
+  [riak_cs/#987]({{< baseurl >}}riak/kv/latest/developing/client-libraries/)
 * Add amendment log output when storing access stats into Riak failed
   [riak_cs/#988](https://github.com/basho/riak_cs/pull/988). This change
   prevents losing access stats logs in cases of temporary connection

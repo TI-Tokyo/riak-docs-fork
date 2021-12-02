@@ -15,6 +15,7 @@ version_history:
 aliases:
   - /riak/kv/2.1.4/intro-v20
   - /riak/2.1.4/intro-v20
+  - /riak/kv/latest/introduction
 ---
 
 Riak version 2.0 includes deep changes and many new features affecting 
