@@ -23,8 +23,6 @@ aliases:
 [install freebsd]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/freebsd
 [install mac osx]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/mac-osx
 [install rhel & centos]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/rhel-centos
-[install smartos]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/smartos
-[install solaris]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/solaris
 [install suse]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/suse
 [install windows azure]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/windows-azure
 [install source index]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/source
@@ -42,8 +40,6 @@ properly install or upgrade Riak in one of the supported environments:
   * [FreeBSD][install freebsd]
   * [Mac OS X][install mac osx]
   * [RHEL & CentOS][install rhel & centos]
-  * [SmartOS][install smartos]
-  * [Solaris][install solaris]
   * [SUSE][install suse]
   * [Windows Azure][install windows azure]
 
