@@ -80,7 +80,7 @@ of all such values. The illustration below provides a visual
 representation of the Riak ring:
 
 ![The Riak
-Ring]({{baseurl}}images/shared/riak-ring.png)
+Ring]({{<baseurl>}}images/shared/riak-ring.png)
 
 You can think of vnodes as managers, responsible for handling incoming
 requests from other nodes/vnodes, storing objects in the appropriate

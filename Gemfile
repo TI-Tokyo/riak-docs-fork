@@ -29,3 +29,4 @@ gem "pry-byebug", "~>3.4.0"
  # for the SFTP download metadata generator
 gem "net-sftp"
 #gem "json"
+gem "uri"
