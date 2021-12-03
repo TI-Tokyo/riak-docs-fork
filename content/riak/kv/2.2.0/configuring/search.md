@@ -158,7 +158,7 @@ Valid values: Integer
 
 The window of time during which `search.index.error_threshold.failure_count` failures will cause Riak KV to skip updates to a search index; defaults to `5000`. 
 
-If [`search.index.error_threshold.failure_count`](#search-index-error-threshold-failure-count) errors have occurred within this interval on a given search index, then Riak will skip updates to that index until the [`search.index.error_threshold.reset_interval`](search-index-error-threshold-reset-interval) has passed.
+If [`search.index.error_threshold.failure_count`](#search-index-error-threshold-failure-count) errors have occurred within this interval on a given search index, then Riak will skip updates to that index until the [`search.index.error_threshold.reset_interval`](#search-index-error-threshold-reset-interval) has passed.
 
 Valid values: Milliseconds
 
