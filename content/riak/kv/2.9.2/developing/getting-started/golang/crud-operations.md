@@ -3,9 +3,9 @@ title_supertext: "Getting Started:"
 tiGetting Started: CRUD Operations with Go"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "CRUD Operations"
     identifier: "getting_started_go_crud"
     weight: 100

@@ -2,61 +2,61 @@
 title: "Riak KV Application Guide"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Application Guide"
     identifier: "developing_app_guide"
     weight: 105
     parent: "developing"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/using/application-guide/
-  - /riak/kv/2.9.1/dev/using/application-guide/
+  - /riak/2.9.2/dev/using/application-guide/
+  - /riak/kv/2.9.2/dev/using/application-guide/
 ---
 
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution
-[dev data model#log]: {{<baseurl>}}riak/kv/2.9.1/developing/data-modeling/#log-data
-[dev data model#sensor]: {{<baseurl>}}riak/kv/2.9.1/developing/data-modeling/#sensor-data
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/eventual-consistency
-[dev data model#user]: {{<baseurl>}}riak/kv/2.9.1/developing/data-modeling/#user-data
-[dev kv model]: {{<baseurl>}}riak/kv/2.9.1/developing/key-value-modeling
-[dev data types]: {{<baseurl>}}riak/kv/2.9.1/developing/data-types
-[dev data types#counters]: {{<baseurl>}}riak/kv/2.9.1/developing/data-types/#counters
-[dev data types#sets]: {{<baseurl>}}riak/kv/2.9.1/developing/data-types/#sets
-[dev data types#maps]: {{<baseurl>}}riak/kv/2.9.1/developing/data-types/#maps
-[usage create objects]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/creating-objects
-[usage search]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/search
-[use ref search]: {{<baseurl>}}riak/kv/2.9.1/using/reference/search
-[usage 2i]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/secondary-indexes
-[dev client libraries]: {{<baseurl>}}riak/kv/2.9.1/developing/client-libraries
-[concept crdts]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/crdts
-[dev data model]: {{<baseurl>}}riak/kv/2.9.1/developing/data-modeling
-[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/mapreduce
-[apps mapreduce]: {{<baseurl>}}riak/kv/2.9.1/developing/app-guide/advanced-mapreduce
-[use ref 2i]: {{<baseurl>}}riak/kv/2.9.1/using/reference/secondary-indexes
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/leveldb
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/bitcask
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/memory
-[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/leveled
-[obj model java]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started/java/object-modeling
-[obj model ruby]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started/ruby/object-modeling
-[obj model python]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started/python/object-modeling
-[obj model csharp]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started/csharp/object-modeling
-[obj model nodejs]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started/nodejs/object-modeling
-[obj model erlang]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started/erlang/object-modeling
-[obj model golang]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started/golang/object-modeling
-[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.1/using/reference/strong-consistency
-[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.1/using/reference/strong-consistency
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.1/using/cluster-operations/strong-consistency
-[config strong consistency]: {{<baseurl>}}riak/kv/2.9.1/configuring/strong-consistency
-[apps strong consistency]: {{<baseurl>}}riak/kv/2.9.1/developing/app-guide/strong-consistency
-[usage update objects]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/updating-objects
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.1/developing/app-guide/replication-properties
-[install index]: {{<baseurl>}}riak/kv/2.9.1/setup/installing
-[getting started]: {{<baseurl>}}riak/kv/2.9.1/developing/getting-started
-[usage index]: {{<baseurl>}}riak/kv/2.9.1/developing/usage
-[glossary]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/conflict-resolution
+[dev data model#log]: {{<baseurl>}}riak/kv/2.9.2/developing/data-modeling/#log-data
+[dev data model#sensor]: {{<baseurl>}}riak/kv/2.9.2/developing/data-modeling/#sensor-data
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/eventual-consistency
+[dev data model#user]: {{<baseurl>}}riak/kv/2.9.2/developing/data-modeling/#user-data
+[dev kv model]: {{<baseurl>}}riak/kv/2.9.2/developing/key-value-modeling
+[dev data types]: {{<baseurl>}}riak/kv/2.9.2/developing/data-types
+[dev data types#counters]: {{<baseurl>}}riak/kv/2.9.2/developing/data-types/#counters
+[dev data types#sets]: {{<baseurl>}}riak/kv/2.9.2/developing/data-types/#sets
+[dev data types#maps]: {{<baseurl>}}riak/kv/2.9.2/developing/data-types/#maps
+[usage create objects]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/creating-objects
+[usage search]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/search
+[use ref search]: {{<baseurl>}}riak/kv/2.9.2/using/reference/search
+[usage 2i]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/secondary-indexes
+[dev client libraries]: {{<baseurl>}}riak/kv/2.9.2/developing/client-libraries
+[concept crdts]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/crdts
+[dev data model]: {{<baseurl>}}riak/kv/2.9.2/developing/data-modeling
+[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/mapreduce
+[apps mapreduce]: {{<baseurl>}}riak/kv/2.9.2/developing/app-guide/advanced-mapreduce
+[use ref 2i]: {{<baseurl>}}riak/kv/2.9.2/using/reference/secondary-indexes
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/leveldb
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/bitcask
+[plan backend memory]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/memory
+[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/leveled
+[obj model java]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started/java/object-modeling
+[obj model ruby]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started/ruby/object-modeling
+[obj model python]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started/python/object-modeling
+[obj model csharp]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started/csharp/object-modeling
+[obj model nodejs]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started/nodejs/object-modeling
+[obj model erlang]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started/erlang/object-modeling
+[obj model golang]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started/golang/object-modeling
+[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.2/using/reference/strong-consistency
+[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.2/using/reference/strong-consistency
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.2/using/cluster-operations/strong-consistency
+[config strong consistency]: {{<baseurl>}}riak/kv/2.9.2/configuring/strong-consistency
+[apps strong consistency]: {{<baseurl>}}riak/kv/2.9.2/developing/app-guide/strong-consistency
+[usage update objects]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/updating-objects
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.2/developing/app-guide/replication-properties
+[install index]: {{<baseurl>}}riak/kv/2.9.2/setup/installing
+[getting started]: {{<baseurl>}}riak/kv/2.9.2/developing/getting-started
+[usage index]: {{<baseurl>}}riak/kv/2.9.2/developing/usage
+[glossary]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary
 
 So you've decided to build an application using Riak as a data store. We
 think that this is a wise choice for a broad variety of use cases. But
@@ -119,7 +119,7 @@ Riak may not such be a good choice if you use it to store:
 
 * **Objects that exceed 1-2MB in size** --- If you will be
   storing a lot of objects over that size, we would recommend checking
-  out [Riak CS](https://www.tiot.jp/riak-docs/riak/cs/latest/) instead, as Riak
+  out [Riak CS]({{<baseurl>}}riak/cs/latest/) instead, as Riak
   CS was built to solve this problem. Storing large objects in Riak will
   typically lead to substandard performance.
 * **Objects with complex interdependencies** --- If your data cannot be

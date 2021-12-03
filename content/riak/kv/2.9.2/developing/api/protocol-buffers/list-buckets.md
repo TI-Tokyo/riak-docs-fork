@@ -2,17 +2,17 @@
 title: "PBC List Buckets"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "List Buckets"
     identifier: "pbc_list_buckets"
     weight: 100
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/protocol-buffers/list-buckets
-  - /riak/kv/2.9.1/dev/references/protocol-buffers/list-buckets
+  - /riak/2.9.2/dev/references/protocol-buffers/list-buckets
+  - /riak/kv/2.9.2/dev/references/protocol-buffers/list-buckets
 ---
 
 List all of the bucket names available.

@@ -2,17 +2,17 @@
 title: "HTTP Delete Search Index"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Delete Search Index"
     identifier: "http_delete_search_index"
     weight: 116
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/http/delete-search-index
-  - /riak/kv/2.9.1/dev/references/http/delete-search-index
+  - /riak/2.9.2/dev/references/http/delete-search-index
+  - /riak/kv/2.9.2/dev/references/http/delete-search-index
 ---
 
 Deletes a Riak Search index.

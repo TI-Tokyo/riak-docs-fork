@@ -3,9 +3,9 @@ title_supertext: "Getting Started:"
 title: "CRUD Operations with Java"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "CRUD Operations"
     identifier: "getting_started_java_crud"
     weight: 100
@@ -67,8 +67,8 @@ StoreValue.Response updateOpResp = client.execute(updateOp);
 ```
 
 For more in depth information on updating objects and sibling resolution in
-Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.1/developing/usage/updating-objects/)
-and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution/)
+Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.2/developing/usage/updating-objects/)
+and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.2/developing/usage/conflict-resolution/)
 documentation.
 
 ## Updating Objects
@@ -85,8 +85,8 @@ StoreValue.Response updateOpResp = client.execute(updateOp);
 ```
 
 For more in depth information on updating objects and sibling resolution in
-Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.1/developing/usage/updating-objects/)
-and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution/)
+Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.2/developing/usage/updating-objects/)
+and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.2/developing/usage/conflict-resolution/)
 documentation.
 
 ## Deleting Objects
@@ -196,6 +196,6 @@ UpdateValue.Response response = client.execute(updateValue);
 ```
 
 For more in depth information on updating objects and sibling resolution in
-Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.1/developing/usage/updating-objects/)
-and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution/)
+Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.2/developing/usage/updating-objects/)
+and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.2/developing/usage/conflict-resolution/)
 documention.

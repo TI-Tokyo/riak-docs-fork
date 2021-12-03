@@ -3,9 +3,9 @@ draft: true
 title: "Secondary Indexes"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 #menu:
-#  riak_kv-2.9.1:
+#  riak_kv-2.9.2:
 #    name: "Secondary Indexes"
 #    identifier: "cluster_operations_2i"
 #    weight: 109

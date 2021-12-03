@@ -3,9 +3,9 @@ draft: true
 title: "V2 / V3 SSL & CA Validation"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "V2/V3 SSL & CA Validation"
     identifier: "security_validation"
     weight: 103

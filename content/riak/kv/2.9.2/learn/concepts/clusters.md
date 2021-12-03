@@ -2,31 +2,31 @@
 title: "Clusters"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Clusters"
     identifier: "learn_concepts_clusters"
     weight: 103
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/2.9.1/theory/concepts/Clusters
-  - /riak/kv/2.9.1/theory/concepts/Clusters
-  - /riak/2.9.1/theory/concepts/clusters
-  - /riak/kv/2.9.1/theory/concepts/clusters
+  - /riak/2.9.2/theory/concepts/Clusters
+  - /riak/kv/2.9.2/theory/concepts/Clusters
+  - /riak/2.9.2/theory/concepts/clusters
+  - /riak/kv/2.9.2/theory/concepts/clusters
 ---
 
 
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/buckets
-[concept keys objects]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/keys-and-objects
-[concept replication]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/replication
-[glossary node]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#node
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#vnode
-[learn dynamo]: {{<baseurl>}}riak/kv/2.9.1/learn/dynamo
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution
-[usage replication]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/replication
+[concept buckets]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/buckets
+[concept keys objects]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/keys-and-objects
+[concept replication]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/replication
+[glossary node]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#node
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#vnode
+[learn dynamo]: {{<baseurl>}}riak/kv/2.9.2/learn/dynamo
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/conflict-resolution
+[usage replication]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/replication
 
 
 Riak's default mode of operation is to work as a cluster consisting of

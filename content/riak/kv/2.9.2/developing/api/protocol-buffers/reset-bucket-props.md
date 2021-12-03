@@ -2,17 +2,17 @@
 title: "PBC Reset Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Reset Bucket Properties"
     identifier: "pbc_reset_bucket_props"
     weight: 104
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/protocol-buffers/reset-bucket-props
-  - /riak/kv/2.9.1/dev/references/protocol-buffers/reset-bucket-props
+  - /riak/2.9.2/dev/references/protocol-buffers/reset-bucket-props
+  - /riak/kv/2.9.2/dev/references/protocol-buffers/reset-bucket-props
 ---
 
 Request to reset the properties of a given bucket or bucket type.
@@ -27,7 +27,7 @@ message RpbResetBucketReq {
 ```
 
 You must specify the name of the bucket (`bucket`) and optionally a
-[bucket type]({{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types) using the `type` value. If you do not
+[bucket type]({{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types) using the `type` value. If you do not
 specify a bucket type, the `default` bucket type will be used by Riak.
 
 ## Response

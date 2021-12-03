@@ -2,17 +2,17 @@
 title: "Cluster Administration"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Cluster Administration"
     identifier: "managing_cluster_admin"
     weight: 202
     parent: "managing"
 toc: true
 aliases:
-  - /riak/2.9.1/ops/running/cluster-admin
-  - /riak/kv/2.9.1/ops/running/cluster-admin
+  - /riak/2.9.2/ops/running/cluster-admin
+  - /riak/kv/2.9.2/ops/running/cluster-admin
 ---
 
 [use admin commands]: ./commands/

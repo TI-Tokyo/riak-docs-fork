@@ -1888,7 +1888,7 @@ filter.</td>
 <code>rt_heartbeat_interval</code> seconds. Setting
 <code>rt_heartbeat_interval </code> to <code>undefined</code> disables
 the realtime heartbeat. This feature is available only in Riak KV
-Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.9.0 onwards.</td>
+Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.2.6 onwards.</td>
 <td><code>15</code></td>
 </tr>
 
@@ -1897,7 +1897,7 @@ Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.9.0 onwards.</td>
 <td>If a heartbeat response is not received within the time period
 specified by this setting (in seconds), the source connection exits and
 will be re-established. This feature is available only in Riak KV
-Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.9.0 onwards.</td>
+Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.2.6 onwards.</td>
 <td><code>15</code></td>
 </tr>
 
@@ -1916,7 +1916,7 @@ other Riak subsystems that may be contending for the same resources.
 This will help to prevent system response degradations during times of
 heavy load from multiple background tasks. To disable background
 coordination, set this parameter to `false`. This feature is available
-only in Riak KV Enterprise Edition 2.0 and later as well as Riak KV 2.9.0 onwards.</td>
+only in Riak KV Enterprise Edition 2.0 and later as well as Riak KV 2.2.6 onwards.</td>
 <td><code>true</code></td>
 </tr>
 

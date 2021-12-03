@@ -2,25 +2,25 @@
 title: "Advanced MapReduce"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Advanced MapReduce"
     identifier: "app_guide_mapreduce"
     weight: 103
     parent: "developing_app_guide"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/advanced/mapreduce/
-  - /riak/kv/2.9.1/dev/advanced/mapreduce/
+  - /riak/2.9.2/dev/advanced/mapreduce/
+  - /riak/kv/2.9.2/dev/advanced/mapreduce/
 ---
 
-[usage 2i]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/secondary-indexes
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.1/developing/app-guide/replication-properties
-[use ref custom code]: {{<baseurl>}}riak/kv/2.9.1/using/reference/custom-code
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/2.9.1/configuring/reference
+[usage 2i]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/secondary-indexes
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.2/developing/app-guide/replication-properties
+[use ref custom code]: {{<baseurl>}}riak/kv/2.9.2/using/reference/custom-code
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/2.9.2/configuring/reference
 [google mr]: http://research.google.com/archive/mapreduce.html
 [mapping list]: http://hackage.haskell.org/package/base-4.7.0.0/docs/Prelude.html#v:map
 [function contrib]: https://github.com/basho/riak_function_contrib
@@ -381,7 +381,7 @@ Erlang client.
 {{% note title="Distributing Erlang MapReduce Code" %}}
 Any modules and functions you use in your Erlang MapReduce calls must be
 available on all nodes in the cluster. Please read about
-[installing custom code]({{<baseurl>}}riak/kv/2.9.1/using/reference/custom-code).
+[installing custom code]({{<baseurl>}}riak/kv/2.9.2/using/reference/custom-code).
 {{% /note %}}
 
 ### Erlang Example

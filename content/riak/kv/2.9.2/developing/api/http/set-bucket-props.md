@@ -2,17 +2,17 @@
 title: "HTTP Set Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Set Bucket Properties"
     identifier: "http_set_bucket_props"
     weight: 101
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/http/set-bucket-props
-  - /riak/kv/2.9.1/dev/references/http/set-bucket-props
+  - /riak/2.9.2/dev/references/http/set-bucket-props
+  - /riak/kv/2.9.2/dev/references/http/set-bucket-props
 ---
 
 Sets bucket properties like "n_val" and "allow_mult".
@@ -37,8 +37,8 @@ Available properties:
 (concurrent updates)
 * `last_write_wins` (true or false) - whether to ignore object history (vector
 clock) when writing
-* `precommit` - [precommit hooks]({{<baseurl>}}riak/kv/2.9.1/developing/usage/commit-hooks)
-* `postcommit` - [postcommit hooks]({{<baseurl>}}riak/kv/2.9.1/developing/usage/commit-hooks)
+* `precommit` - [precommit hooks]({{<baseurl>}}riak/kv/2.9.2/developing/usage/commit-hooks)
+* `postcommit` - [postcommit hooks]({{<baseurl>}}riak/kv/2.9.2/developing/usage/commit-hooks)
 * `r, w, dw, rw` - default quorum values for operations on keys in the bucket.
 Valid values are:
   * `"all"` - all nodes must respond
@@ -57,6 +57,17 @@ Make sure you use the proper types for attributes like **n_val** and
 **allow_mult**. If you use strings instead of integers and booleans
 respectively, you may see some odd errors in your logs, saying something like
 `"{badarith,[{riak_kv_util,normalize_rw_value,2},]}"`.
+{{% /note %}}
+
+{{% note title="Node Confirms" %}}
+`node_confirms` is a tunable for durability. When operating in a failure state, Riak will store replicas in fallback vnodes, and in some case multiple fallbacks may be on the same physical node. `node_confirms` is an option that specifies how many distinct physical nodes must acknowledge a write for it to be considered successful.
+
+When riak receives a 'put', it starts up a riak_kv_put_fsm (finite state machine). This prepares and then validates the options, then calls any precommit hooks, before executing a put to the local vnode in the preflist, which becomes the co-ordinating node. This then waits for the local vnode response before executing the put request remotely on the two remaining nodes in the preflist.
+
+The fsm then waits for the remote vnode responses, and as it receives responses, it adds these results and checks whether enough results have been collected to satisfy the bucket properties such as 'dw' and 'pw'.
+When analysing the responses, Riak will count the number of different nodes from which results have been returned. The finite state machine can now be required to wait for a minimum number of confirmations from different nodes, whilst also ensuring all other configured options are satisfied.
+
+Once all options are satisfied, the response is returned, post commit hooks are called and the fsm finishes.
 {{% /note %}}
 
 ## Response

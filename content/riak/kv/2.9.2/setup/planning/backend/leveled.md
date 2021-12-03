@@ -2,23 +2,23 @@
 title: "Leveled"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Leveled"
     identifier: "planning_backend_leveled"
     weight: 101
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak/2.9.1/ops/advanced/backends/leveled/
-  - /riak/kv/2.9.1/ops/advanced/backends/leveled/
+  - /riak/2.9.2/ops/advanced/backends/leveled/
+  - /riak/kv/2.9.2/ops/advanced/backends/leveled/
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/2.9.1/configuring/reference
-[perf index]: {{<baseurl>}}riak/kv/2.9.1/using/performance
-[config reference#aae]: {{<baseurl>}}riak/kv/2.9.1/configuring/reference/#active-anti-entropy
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/2.9.2/configuring/reference
+[perf index]: {{<baseurl>}}riak/kv/2.9.2/using/performance
+[config reference#aae]: {{<baseurl>}}riak/kv/2.9.2/configuring/reference/#active-anti-entropy
 
 [leveled](https://github.com/martinsumner/leveled)
 
@@ -57,7 +57,7 @@ Leveled is a simple Key-Value store based on the concept of Log-Structured Merge
 
 ## Installing leveled
 
-Leveled is included with Riak KV 2.9.1 and beyond, so there is no need to install anything further.
+Leveled is included with Riak KV 2.9.2 and beyond, so there is no need to install anything further.
 
 ```riakconf
 storage_backend = leveled

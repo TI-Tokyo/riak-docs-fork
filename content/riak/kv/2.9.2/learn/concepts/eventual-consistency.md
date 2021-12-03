@@ -2,30 +2,30 @@
 title: "Eventual Consistency"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Eventual Consistency"
     identifier: "learn_concepts_eventual_cons"
     weight: 105
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/2.9.1/theory/concepts/Eventual-Consistency
-  - /riak/kv/2.9.1/theory/concepts/Eventual-Consistency
-  - /riak/2.9.1/theory/concepts/eventual-consistency
-  - /riak/kv/2.9.1/theory/concepts/eventual-consistency
+  - /riak/2.9.2/theory/concepts/Eventual-Consistency
+  - /riak/kv/2.9.2/theory/concepts/Eventual-Consistency
+  - /riak/2.9.2/theory/concepts/eventual-consistency
+  - /riak/kv/2.9.2/theory/concepts/eventual-consistency
 ---
 
 
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/buckets
-[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/causal-context/#vector-clocks
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/clusters
-[concept replication]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/replication
-[glossary node]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#node
-[glossary read rep]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#read-repair
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution
+[concept buckets]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/buckets
+[concept causal context vc]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/causal-context/#vector-clocks
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/clusters
+[concept replication]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/replication
+[glossary node]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#node
+[glossary read rep]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#read-repair
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/conflict-resolution
 
 
 In a distributed and fault-tolerant system like Riak, server and network
@@ -54,14 +54,14 @@ defaults if you want to employ a different strategy.
 
 Among those strategies, you can enable Riak to resolve object conflicts
 automatically, whether via internal [vector clocks][concept causal context vc], timestamps, or
-special eventually consistent [Data Types]({{<baseurl>}}riak/kv/2.9.1/developing/data-types/), or you can resolve those
+special eventually consistent [Data Types]({{<baseurl>}}riak/kv/2.9.2/developing/data-types/), or you can resolve those
 conflicts on the application side by employing a use case-specific logic
 of your choosing. More information on this can be found in our guide to
 [conflict resolution][usage conflict resolution].
 
 This variety of options enables you to manage Riak's eventually
 consistent behavior in accordance with your application's [data model
-or models]({{<baseurl>}}riak/kv/2.9.1/developing/data-modeling/).
+or models]({{<baseurl>}}riak/kv/2.9.2/developing/data-modeling/).
 
 ## Replication Properties and Request Tuning
 

@@ -2,9 +2,9 @@
 title: "Planning Overview"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Planning"
     identifier: "planning"
     weight: 100

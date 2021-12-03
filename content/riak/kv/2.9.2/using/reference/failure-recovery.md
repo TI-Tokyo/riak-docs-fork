@@ -3,9 +3,9 @@ draft: true
 title: "Failure & Recovery Reference"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Failure & Recovery"
     identifier: "managing_ref_failure_recovery"
     weight: 105

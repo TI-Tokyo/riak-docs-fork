@@ -9,6 +9,8 @@ menu:
     identifier: "cluster_operations_aae"
     weight: 111
     parent: "managing_cluster_operations"
+version_history:
+  in: "2.9.1+"
 toc: true
 aliases:
   - /riak/kv/2.9.1/ops/advanced/aae/

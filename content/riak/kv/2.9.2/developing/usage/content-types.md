@@ -2,9 +2,9 @@
 title: "Content Types"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Content Types"
     identifier: "usage_content_types"
     weight: 104

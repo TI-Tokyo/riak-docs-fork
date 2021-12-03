@@ -2,17 +2,17 @@
 title: "Client Libraries"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Client Libraries"
     identifier: "developing_client_libraries"
     weight: 106
     parent: "developing"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/using/libraries
-  - /riak/kv/2.9.1/dev/using/libraries
+  - /riak/2.9.2/dev/using/libraries
+  - /riak/kv/2.9.2/dev/using/libraries
 ---
 
 ## Basho-Supported Libraries

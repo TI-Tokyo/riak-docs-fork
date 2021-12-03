@@ -2,9 +2,9 @@
 title: "Backend Configuration"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Backend Configuration"
     identifier: "configuring_backend"
     weight: 110
@@ -12,11 +12,11 @@ menu:
 toc: true
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/leveldb
-[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/leveled
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/bitcask
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/memory
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/multi
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/leveldb
+[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/leveled
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/bitcask
+[plan backend memory]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/memory
+[plan backend multi]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/multi
 
 ## LevelDB
 
@@ -306,7 +306,13 @@ when values are unlikely to yield much benefit from compression(compression is o
 <tr>
 <td><code>leveled.max_run_length</code></td>
 <td>In a single compaction run, what is the maximum number of consecutive files which may be compacted.</td>
-<td><code>4 </code></td>
+<td><code>4</code></td>
+</tr>
+
+<tr>
+<td><code>leveled_reload_recalc</code></td>
+<td>Enable the `recalc` compaction strategy within the leveled backend in riak.</td>
+<td><code>disabled</code></td>
 </tr>
 
 ## Bitcask

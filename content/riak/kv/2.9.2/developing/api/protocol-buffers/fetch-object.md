@@ -2,17 +2,17 @@
 title: "PBC Fetch Object"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Fetch Object"
     identifier: "pbc_fetch_object"
     weight: 105
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/protocol-buffers/fetch-object
-  - /riak/kv/2.9.1/dev/references/protocol-buffers/fetch-object
+  - /riak/2.9.2/dev/references/protocol-buffers/fetch-object
+  - /riak/kv/2.9.2/dev/references/protocol-buffers/fetch-object
 ---
 
 Fetch an object from the specified bucket type/bucket/key location
@@ -47,7 +47,7 @@ message RpbGetReq {
 > **Note on defaults and special values**
 >
 > All of the optional parameters below have default values determined on a
-per-bucket basis. Please refer to the documentation on [setting bucket properties]({{<baseurl>}}riak/kv/2.9.1/developing/api/protocol-buffers/set-bucket-props) for more information.
+per-bucket basis. Please refer to the documentation on [setting bucket properties]({{<baseurl>}}riak/kv/2.9.2/developing/api/protocol-buffers/set-bucket-props) for more information.
 >
 > Furthermore, you can assign an integer value to the `r` and
 `pr` parameters, provided that that integer value is less than or
@@ -87,7 +87,7 @@ Value | Description
 The <code>content</code> entries hold the object value and any metadata.
 Below is the structure of a <code>RpbContent</code> message, which is
 included in GET/PUT responses (`RpbGetResp` (above) and
-[`RpbPutResp`]({{<baseurl>}}riak/kv/2.9.1/developing/api/protocol-buffers/store-object), respectively):
+[`RpbPutResp`]({{<baseurl>}}riak/kv/2.9.2/developing/api/protocol-buffers/store-object), respectively):
 
 ```protobuf
 message RpbContent {
@@ -114,7 +114,7 @@ of the following optional parameters:
 * `charset` --- The character encoding of the object, e.g. `utf-8`
 * `content_encoding` --- The content encoding of the object, e.g.
   `video/mp4`
-* `vtag` --- The object's [vtag]({{<baseurl>}}riak/kv/2.9.1/learn/glossary/#vector-clock)
+* `vtag` --- The object's [vtag]({{<baseurl>}}riak/kv/2.9.2/learn/glossary/#vector-clock)
 * `links` --- This parameter is associated with the now-deprecated link
   walking feature and should not be used by Riak clients
 * `last_mod` --- A timestamp for when the object was last modified, in
@@ -132,7 +132,7 @@ of the following optional parameters:
     }
     ```
     Notice that both a key and value can be stored or just a key.
-    `RpbPair` messages are also used to attach [secondary indexes]({{<baseurl>}}riak/kv/2.9.1/developing/usage/secondary-indexes) to objects (in the optional
+    `RpbPair` messages are also used to attach [secondary indexes]({{<baseurl>}}riak/kv/2.9.2/developing/usage/secondary-indexes) to objects (in the optional
     `indexes` field).
 * `deleted` --- Whether the object has been deleted (i.e. whether a
   tombstone for the object has been found under the specified key)
@@ -167,7 +167,7 @@ Hex      00 00 00 4A 0A 0A 26 0A 02 76 32 2A 16 33 53 44
          30 25 32 E5 B1 32 EC 56 B7 3D CA 97 05 00
 Erlang <<0,0,0,74,10,10,38,10,2,118,50,42,22,51,83,68,108,102,52,73,78,75,122,
          56,104,78,100,104,121,73,109,75,73,114,117,56,187,215,162,222,4,64,
-         224,185,6,18,31,107,206,97,96,96,96,204,96,2.9.1,82,44,172,194,91,63,
+         224,185,6,18,31,107,206,97,96,96,96,204,96,226,82,44,172,194,91,63,
          101,48,37,50,229,177,50,236,86,183,61,202,151,5,0>>
 
 RpbGetResp protoc decode:

@@ -2,9 +2,9 @@
 title: "Riak Redis Add-on"
 description: "Redis Add-on for Riak KV"
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Redis Add-on"
     identifier: "add-ons_redis"
     weight: 101

@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter Replication Reference:"
 title: "Architecture"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Architecture"
     identifier: "managing_ref_v3_architecture"
     weight: 100
@@ -13,12 +13,12 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/2.9.1/ops/mdc/v3/architecture
-  - /riak/kv/2.9.1/ops/mdc/v3/architecture
+  - /riak/2.9.2/ops/mdc/v3/architecture
+  - /riak/kv/2.9.2/ops/mdc/v3/architecture
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#vnode
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/clusters
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#vnode
+[concept clusters]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/clusters
 
 ## How Version 3 Replication Works
 

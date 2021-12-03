@@ -2,20 +2,20 @@
 title: "Load Balancing and Proxy Configuration"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Load Balancing & Proxy"
     identifier: "configuring_load_balance"
     weight: 150
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/2.9.1/ops/advanced/configs/load-balanacing-proxy/
-  - /riak/kv/2.9.1/ops/advanced/configs/load-balanacing-proxy/
+  - /riak/2.9.2/ops/advanced/configs/load-balanacing-proxy/
+  - /riak/kv/2.9.2/ops/advanced/configs/load-balanacing-proxy/
 ---
 
-[perf open files]: {{<baseurl>}}riak/kv/2.9.1/using/performance/open-files-limit
+[perf open files]: {{<baseurl>}}riak/kv/2.9.2/using/performance/open-files-limit
 
 The recommended best practice for operating Riak in production is to
 place Riak behind a load-balancing or proxy solution, either hardware-

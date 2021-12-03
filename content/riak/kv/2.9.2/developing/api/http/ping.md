@@ -2,17 +2,17 @@
 title: "HTTP Ping"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Ping"
     identifier: "http_ping"
     weight: 110
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/http/ping
-  - /riak/kv/2.9.1/dev/references/http/ping
+  - /riak/2.9.2/dev/references/http/ping
+  - /riak/kv/2.9.2/dev/references/http/ping
 ---
 
 Checks if the server is alive. This is useful for monitoring tools, load-balancers and automated scripts.

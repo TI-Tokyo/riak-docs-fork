@@ -2,17 +2,17 @@
 title: "PBC Secondary Indexes"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Secondary Indexes"
     identifier: "pbc_secondary_indexes"
     weight: 108
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/protocol-buffers/secondary-indexes
-  - /riak/kv/2.9.1/dev/references/protocol-buffers/secondary-indexes
+  - /riak/2.9.2/dev/references/protocol-buffers/secondary-indexes
+  - /riak/kv/2.9.2/dev/references/protocol-buffers/secondary-indexes
 ---
 
 Request a set of keys that match a secondary index query.
@@ -61,7 +61,7 @@ Parameter | Description
 `max_results` | If pagination is turned on, the number of results to be returned to the client
 `continuation` | If set to `true`, values are returned in a paginated response
 `timeout` | The timeout duration, in milliseconds, after which Riak will return an error message
-`type` | The bucket type of the bucket that is being queried. If not set, the bucket type `default` will be used. Learn more about [using bucket types]({{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types).
+`type` | The bucket type of the bucket that is being queried. If not set, the bucket type `default` will be used. Learn more about [using bucket types]({{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types).
 `term_regex` | If set to a regular expression (as a binary), a term filter will be applied to the index query
 `pagination_sort` | If set to `true`, paginated results will be sorted, first by index value, then by key
 
@@ -84,7 +84,7 @@ message RpbIndexResp {
 Parameter | Description
 :---------|:-----------
 `keys` | A list of keys that match the index request
-`results` | If `return_terms` is specified with range queries, used to return matched index values as key/value pairs in `RpbPair` messages. More on `RpbPair` messages can be found in [PBC Fetch Object]({{<baseurl>}}riak/kv/2.9.1/developing/api/protocol-buffers/fetch-object).
+`results` | If `return_terms` is specified with range queries, used to return matched index values as key/value pairs in `RpbPair` messages. More on `RpbPair` messages can be found in [PBC Fetch Object]({{<baseurl>}}riak/kv/2.9.2/developing/api/protocol-buffers/fetch-object).
 `continuation` | Used for paginated responses
 `done` | Used for streaming. The value will be `true` when the current stream is done (either `max_results` has been reached or there are no more results).
 

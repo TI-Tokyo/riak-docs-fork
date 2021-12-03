@@ -2,20 +2,20 @@
 title: "Changing Cluster Information"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Changing Cluster Info"
     identifier: "cluster_operations_change_info"
     weight: 101
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak/2.9.1/ops/running/nodes/renaming
-  - /riak/kv/2.9.1/ops/running/nodes/renaming
+  - /riak/2.9.2/ops/running/nodes/renaming
+  - /riak/kv/2.9.2/ops/running/nodes/renaming
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/2.9.1/configuring/reference
+[config reference]: {{<baseurl>}}riak/kv/2.9.2/configuring/reference
 
 ## Change the Node Name
 
@@ -117,7 +117,7 @@ To rename a single-node development cluster:
 
 For multi-node clusters, a rename is a slightly more complex procedure; however, it is very similar to the process for renaming a single node.
 
-Previous to Riak version 1.2, a cluster node's name could only be changed with the [`riak-admin reip`]({{<baseurl>}}riak/kv/2.9.1/using/admin/riak-admin/#reip) command, which involves downtime for the entire cluster. As of Riak version 1.2, that method has been superseded by [`riak-admin cluster force-replace`]({{<baseurl>}}riak/kv/2.9.1/using/admin/riak-admin/#cluster-force-replace), which is safer and does not require cluster wide downtime.
+Previous to Riak version 1.2, a cluster node's name could only be changed with the [`riak-admin reip`]({{<baseurl>}}riak/kv/2.9.2/using/admin/riak-admin/#reip) command, which involves downtime for the entire cluster. As of Riak version 1.2, that method has been superseded by [`riak-admin cluster force-replace`]({{<baseurl>}}riak/kv/2.9.2/using/admin/riak-admin/#cluster-force-replace), which is safer and does not require cluster wide downtime.
 
 There still exist scenarios that require nodes to be renamed while stopped, such as seeding a cluster with backups from another cluster that does not share the same node names. Please see the [Clusters from Backups](#clusters-from-backups) section for more details on renaming in this scenario.
 

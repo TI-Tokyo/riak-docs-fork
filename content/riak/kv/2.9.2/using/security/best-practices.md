@@ -3,9 +3,9 @@ draft: true
 title: "Security Best Practices"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Best Practices"
     identifier: "security_best_practices"
     weight: 102

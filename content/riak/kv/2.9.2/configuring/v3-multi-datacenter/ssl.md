@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter Replication:"
 title: "SSL"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "SSL"
     identifier: "configuring_v3_replication_ssl"
     weight: 103
@@ -13,11 +13,11 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/2.9.1/ops/mdc/v3/ssl
-  - /riak/kv/2.9.1/ops/mdc/v3/ssl
+  - /riak/2.9.2/ops/mdc/v3/ssl
+  - /riak/kv/2.9.2/ops/mdc/v3/ssl
 ---
 
-[config reference#advanced.config]: {{<baseurl>}}riak/kv/2.9.1/configuring/reference/#the-advanced-config-file
+[config reference#advanced.config]: {{<baseurl>}}riak/kv/2.9.2/configuring/reference/#the-advanced-config-file
 
 ## Features
 

@@ -2,17 +2,17 @@
 title: "Inspecting a Node"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Inspecting a Node"
     identifier: "cluster_operations_inspecting_node"
     weight: 103
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak/2.9.1/ops/running/nodes/inspecting
-  - /riak/kv/2.9.1/ops/running/nodes/inspecting
+  - /riak/2.9.2/ops/running/nodes/inspecting
+  - /riak/kv/2.9.2/ops/running/nodes/inspecting
 ---
 
 When inspection of a Riak node to gather metrics on performance or

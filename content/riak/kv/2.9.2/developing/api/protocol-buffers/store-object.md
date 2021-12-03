@@ -2,25 +2,25 @@
 title: "PBC Store Object"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Store Object"
     identifier: "pbc_store_object"
     weight: 106
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.1/dev/references/protocol-buffers/store-object
-  - /riak/kv/2.9.1/dev/references/protocol-buffers/store-object
+  - /riak/2.9.2/dev/references/protocol-buffers/store-object
+  - /riak/kv/2.9.2/dev/references/protocol-buffers/store-object
 ---
 
 Stores an object under the specified location, as determined by the
-intended [key]({{<baseurl>}}riak/kv/2.9.1/learn/concepts/keys-and-objects), [bucket]({{<baseurl>}}riak/kv/2.9.1/learn/concepts/buckets), and [bucket type]({{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types). A bucket must always be specified (via
+intended [key]({{<baseurl>}}riak/kv/2.9.2/learn/concepts/keys-and-objects), [bucket]({{<baseurl>}}riak/kv/2.9.2/learn/concepts/buckets), and [bucket type]({{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types). A bucket must always be specified (via
 `bucket`), whereas key (`key`) and bucket type (`type`) are optional. If
 no key is specified, Riak will assign a random key to the object. If no
-[bucket type]({{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types) is assigned, Riak will assign
-`default`, which means that the [default bucket configuration]({{<baseurl>}}riak/kv/2.9.1/configuring/reference/#default-bucket-properties) will be used.
+[bucket type]({{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types) is assigned, Riak will assign
+`default`, which means that the [default bucket configuration]({{<baseurl>}}riak/kv/2.9.2/configuring/reference/#default-bucket-properties) will be used.
 
 #### Request
 
@@ -50,7 +50,7 @@ message RpbPutReq {
 Parameter | Description
 :---------|:-----------
 `bucket` | The name of the bucket, in bytes, in which the key/value is to reside
-`content` | The new or updated contented of the object. Uses the same `RpbContent` message returned as part of an `RpbGetResp` message, documented in [PBC Fetch Object]({{<baseurl>}}riak/kv/2.9.1/developing/api/protocol-buffers/fetch-object)
+`content` | The new or updated contented of the object. Uses the same `RpbContent` message returned as part of an `RpbGetResp` message, documented in [PBC Fetch Object]({{<baseurl>}}riak/kv/2.9.2/developing/api/protocol-buffers/fetch-object)
 
 #### Optional Parameters
 
@@ -93,7 +93,7 @@ message RpbPutResp {
 
 If `return_body` is set to `true` on the PUT request, the `RpbPutResp`
 will contain the current object after the PUT completes, in `contents`,
-as well as the object's [causal context]({{<baseurl>}}riak/kv/2.9.1/learn/concepts/causal-context), in the `vclock`
+as well as the object's [causal context]({{<baseurl>}}riak/kv/2.9.2/learn/concepts/causal-context), in the `vclock`
 field. The `key` will be sent only if the server generated a random key
 for the object.
 
@@ -134,7 +134,7 @@ Hex      00 00 00 62 0C 0A 31 0A 0D 7B 22 66 6F 6F 22 3A
 Erlang <<0,0,0,98,12,10,49,10,13,123,34,102,111,111,34,58,34,98,97,114,34,125,
          42,22,49,99,97,121,107,79,68,57,54,105,78,65,104,111,109,121,101,86,
          106,79,89,67,56,175,176,163,222,4,64,144,231,24,18,44,107,206,97,96,
-         96,96,202,96,2.9.1,82,44,44,233,12,134,25,76,137,140,121,172,12,90,33,
+         96,96,202,96,226,82,44,44,233,12,134,25,76,137,140,121,172,12,90,33,
          182,71,249,32,194,108,205,73,172,13,119,124,160,18,250,32,137,44,0>>
 
 RpbPutResp protoc decode:

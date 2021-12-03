@@ -2,9 +2,9 @@
 title: "Add-ons"
 description: "Add-on technology for Riak KV"
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Add-ons"
     identifier: "add-ons"
     weight: 400
@@ -16,4 +16,4 @@ toc: true
 
 In the days of Basho, integrations between Riak KV and other best-of-breed components were developed for your application stack. Each integration, called an add-on, is explained in this section, from installation to feature-set.
 
-* [Riak Redis Add-on]({{<baseurl>}}riak/kv/2.9.1/add-ons/redis/)
+* [Riak Redis Add-on]({{<baseurl>}}riak/kv/2.9.2/add-ons/redis/)

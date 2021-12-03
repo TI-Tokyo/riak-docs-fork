@@ -2,40 +2,40 @@
 title: "Buckets"
 description: ""
 project: "riak_kv"
-project_version: 2.9.1
+project_version: 2.9.2
 menu:
-  riak_kv-2.9.1:
+  riak_kv-2.9.2:
     name: "Buckets"
     identifier: "learn_concepts_buckets"
     weight: 101
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/2.9.1/theory/concepts/Buckets
-  - /riak/kv/2.9.1/theory/concepts/Buckets
-  - /riak/2.9.1/theory/concepts/buckets
-  - /riak/kv/2.9.1/theory/concepts/buckets
+  - /riak/2.9.2/theory/concepts/Buckets
+  - /riak/kv/2.9.2/theory/concepts/Buckets
+  - /riak/2.9.2/theory/concepts/buckets
+  - /riak/kv/2.9.2/theory/concepts/buckets
 ---
 
-[apps cluster metadata]: {{<baseurl>}}riak/kv/2.9.1/developing/app-guide/cluster-metadata
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.1/using/cluster-operations/bucket-types
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.1/using/cluster-operations/strong-consistency
-[concept causal context]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/causal-context
-[concept causal context sib]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/causal-context/#siblings
-[concept replication]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/replication
-[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.1/using/reference/strong-consistency
-[config basic]: {{<baseurl>}}riak/kv/2.9.1/configuring/basic
-[dev api http]: {{<baseurl>}}riak/kv/2.9.1/developing/api/http
-[dev data types]: {{<baseurl>}}riak/kv/2.9.1/developing/data-types
-[glossary ring]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#ring
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/leveldb
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/bitcask
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/memory
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/multi
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types
-[usage commit hooks]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/commit-hooks
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution
-[usage replication]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/replication
+[apps cluster metadata]: {{<baseurl>}}riak/kv/2.9.2/developing/app-guide/cluster-metadata
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.2/using/cluster-operations/bucket-types
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.2/using/cluster-operations/strong-consistency
+[concept causal context]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/causal-context
+[concept causal context sib]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/causal-context/#siblings
+[concept replication]: {{<baseurl>}}riak/kv/2.9.2/learn/concepts/replication
+[concept strong consistency]: {{<baseurl>}}riak/kv/2.9.2/using/reference/strong-consistency
+[config basic]: {{<baseurl>}}riak/kv/2.9.2/configuring/basic
+[dev api http]: {{<baseurl>}}riak/kv/2.9.2/developing/api/http
+[dev data types]: {{<baseurl>}}riak/kv/2.9.2/developing/data-types
+[glossary ring]: {{<baseurl>}}riak/kv/2.9.2/learn/glossary/#ring
+[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/leveldb
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/bitcask
+[plan backend memory]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/memory
+[plan backend multi]: {{<baseurl>}}riak/kv/2.9.2/setup/planning/backend/multi
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/bucket-types
+[usage commit hooks]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/commit-hooks
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/conflict-resolution
+[usage replication]: {{<baseurl>}}riak/kv/2.9.2/developing/usage/replication
 
 
 Buckets are used to define a virtual keyspace for storing Riak objects.

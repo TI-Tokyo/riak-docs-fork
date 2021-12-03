@@ -230,7 +230,7 @@ The port number to which Solr JMX binds (note: binds on every interface); defaul
 
 Valid values: Integer
 
-NB JMX ceased being a Riak feature in Riak KV 2.9.1. This setting is left here for reference but no longer affects anything.
+NB JMX ceased being a Riak feature in Riak KV 2.9.0p5. This setting is left here for reference but no longer affects anything.
 
 ### `search.solr.port`
 
