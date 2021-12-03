@@ -21,7 +21,7 @@ aliases:
 [concept strong consistency]: {{<baseurl>}}riak/kv/2.0.2/learn/concepts/strong-consistency
 [glossary node]: {{<baseurl>}}riak/kv/2.0.2/learn/glossary/#node
 [glossary ring]: {{<baseurl>}}riak/kv/2.0.2/learn/glossary/#ring
-[perf strong consistency]: {{<baseurl>}}riak/kv/2.0.2/using/performance/strong-consistency
+[perf strong consistency]: {{<baseurl>}}riak/kv/2.0.2/using/reference/strong-consistency
 [plan backend]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/backend
 [plan cluster capacity]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/cluster-capacity
 [use admin riak cli]: {{<baseurl>}}riak/kv/2.0.2/using/admin/riak-cli
