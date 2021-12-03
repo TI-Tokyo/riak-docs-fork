@@ -62,7 +62,7 @@ Remember that you will need to [restart the node](../../admin/riak-cli/#restart)
 ## Disabling Active Anti-Entropy
 
 Alternatively, AAE can be switched off if you would like to repair
-object inconsistencies using [read repair](../../../learn/concepts/active-anti-entropy/#read-repair) alone:
+object inconsistencies using [read repair](../../../learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy) alone:
 
 ```riakconf
 anti_entropy = passive
