@@ -1914,7 +1914,7 @@ is actively addressed by O(1) DHT systems(e.g., [14]).
 > This paper was an overview of Riak from a Dynamo point-of-view. To get a
 > better sense of the Riak ecosystem, read our ever-expanding [documentation].
 
-[documentation]: https://docs.basho.com
+[documentation]: {{<baseurl>}}
 
 This paper described Dynamo, a highly available and scalable data store, used
 for storing state of a number of core services of Amazon.com’s e-commerce

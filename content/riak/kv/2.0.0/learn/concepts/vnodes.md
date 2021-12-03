@@ -81,7 +81,7 @@ of all such values. The illustration below provides a visual
 representation of the Riak ring:
 
 ![The Riak
-Ring](http://docs.basho.com/shared/2.0.0/images/riak-ring.png?1416296175)
+Ring]({{<baseurl>}}images/shared/riak-ring.png)
 
 You can think of vnodes as managers, responsible for handling incoming
 requests from other nodes/vnodes, storing objects in the appropriate

@@ -23,8 +23,8 @@ This is an LTS feature release, including new updates to batching and Solr, Cutt
 
 This release includes fixes for two product advisories:
 
-*  [LevelDB Segfault advisory](http://docs.basho.com/community/productadvisories/leveldbsegfault/) - The AddDB() call now occurs after all object initialization is complete to eliminate a race condition that leads to segfault. [[LevelDB PR #184](https://github.com/basho/leveldb/pull/184)] 
-* [Code Injection on Riak Init File](http://docs.basho.com/community/productadvisories/codeinjectioninitfiles/) - A thorough review of file ownership across the Riak KV package was done and several files, including riak init, were changed to tighten the ownership to root:root instead of riak:riak to prevent a potential code injection across all supported operating systems. Additionally, node_package was bumped to version 3.0.1. [[node_package PR #196](https://github.com/basho/node_package/pull/196)]
+*  [LevelDB Segfault advisory]({{<baseurl>}}community/productadvisories/leveldbsegfault/) - The AddDB() call now occurs after all object initialization is complete to eliminate a race condition that leads to segfault. [[LevelDB PR #184](https://github.com/basho/leveldb/pull/184)] 
+* [Code Injection on Riak Init File]({{<baseurl>}}community/productadvisories/codeinjectioninitfiles/) - A thorough review of file ownership across the Riak KV package was done and several files, including riak init, were changed to tighten the ownership to root:root instead of riak:riak to prevent a potential code injection across all supported operating systems. Additionally, node_package was bumped to version 3.0.1. [[node_package PR #196](https://github.com/basho/node_package/pull/196)]
 
 
 
