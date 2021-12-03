@@ -16,7 +16,7 @@ aliases:
 ---
 
 [cluster ops log]: {{<baseurl>}}riak/kv/2.1.4/using/cluster-operations/logging
-[config reference lager]: {{<baseurl>}}riak/kv/2.1.4/configuring/reference/#lager
+[config reference lager]: {{<baseurl>}}riak/kv/2.1.4/configuring/reference/#logging
 [Erlang]: http://www.erlang.org
 [facility level]: http://en.wikipedia.org/wiki/Syslog#Facility_levels
 [install source index]: {{<baseurl>}}riak/kv/2.1.4/setup/installing/source

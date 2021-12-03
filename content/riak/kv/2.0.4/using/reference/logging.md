@@ -21,7 +21,7 @@ Logging in Riak KV is handled by a Basho-produced logging framework for
 [Erlang](http://www.erlang.org) called
 [lager](https://github.com/basho/lager).
 
-lager provides a number of configuration options that you can use to fine-tune your Riak cluster's logging output. A compact listing of parameters can be found in our [configuration files]({{<baseurl>}}riak/kv/2.0.4/configuring/reference/#lager) documentation. A more thorough explanation of these options can be found in this document.
+lager provides a number of configuration options that you can use to fine-tune your Riak cluster's logging output. A compact listing of parameters can be found in our [configuration files]({{<baseurl>}}riak/kv/2.0.4/configuring/reference/#logging) documentation. A more thorough explanation of these options can be found in this document.
 
 ## Log Directory
 
@@ -46,7 +46,7 @@ File | Significance
 `console.log` | Console log output
 `crash.log` | Crash logs
 `erlang.log` | Logs emitted by the [Erlang VM](../../performance/erlang) on which Riak runs.
-`error.log` | [Common errors](../../repair-recover/errors) emitted by Riak.
+`error.log` | [Common errors](../../repair-recovery/errors) emitted by Riak.
 `run_erl.log` | The log file for an Erlang process called `run_erl`. This file can typically be ignored.
 
 ## Log Syntax
