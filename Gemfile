@@ -11,7 +11,7 @@ gem "autoprefixer-rails", "~>6.3.6"
 gem "sprockets", "~>3.7"
 gem "coffee-script", "~>2.4.1"
 gem "uglifier", "~>3.0.0"
-#gem "mini_racer" # included via the docker image
+gem "mini_racer" # included via the docker image
 
 # deprecated as new files are on files.tiot.jp
 #gem "aws-sdk", "~> 2.4.3"
