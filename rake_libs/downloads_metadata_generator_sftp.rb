@@ -132,13 +132,16 @@ def generate_downloads_metadata_sftp()
 
         # Grab the source file list, and add it to download_info_hash (by way of
         # appending the source to the the os_list).
-        source_maps = version_index_json.select { |k, v| v["type"] == "file"}
+        source_maps = version_index_json.select { |k, v| v["type"] == "file" && k !~ /\.sha/}
         source_maps.each do |k, v|
           file_info = {
             "file_name"=>k,
             "file_href"=>v["staticLink"],
             "file_size"=>v["size"]
           }
+          if version_index_json.has_key?("#{k}.sha")
+            file_info["chksum_href"] = version_index_json["#{k}.sha"]["staticLink"]
+          end
           os_list.push({"os"=>"source", "file_info"=>file_info})
         end
 
