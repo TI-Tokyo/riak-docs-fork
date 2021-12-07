@@ -28,7 +28,7 @@ This release adds a number of features built on top of the Tictac AAE feature ma
 
 * A mechanism for requesting mass deletion of objects on expiry, and mass reaping of tombstones after a time to live. This is not yet an automated, scheduled, set of garbage collection processes, it is required to be triggered by an operational process.
 
-* A safe method of listing buckets regardless of backend chosen. Listing buckets had previously not been production safe, but can still be required in production environments - it can now be managed safely via an ``aae_fold`.
+* A safe method of listing buckets regardless of backend chosen. Listing buckets had previously not been production safe, but can still be required in production environments - it can now be managed safely via an `aae_fold`.
 
 * A version uplift of the internal ibrowse client, a minor riak_dt fix to resolve issues of unit test reliability, a fix to help build (the now deprecated) erlang_js in some environments, and the removal of hamcrest as a dependency.
 
