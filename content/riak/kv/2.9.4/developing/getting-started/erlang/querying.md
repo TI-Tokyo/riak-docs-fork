@@ -16,6 +16,7 @@ aliases:
   - /riak/kv/2.9.4/dev/taste-of-riak/querying-erlang
 ---
 
+
 ## A Quick Note on Querying and Schemas
 
 _Schemas_? Yes, we said that correctly: S-C-H-E-M-A-S. It's not a dirty

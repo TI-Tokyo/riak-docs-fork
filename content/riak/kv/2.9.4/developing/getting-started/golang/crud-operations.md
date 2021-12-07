@@ -13,6 +13,7 @@ menu:
 toc: true
 ---
 
+
 ## Creating Objects
 
 First let’s create a few objects and a bucket to keep them in:
