@@ -17,20 +17,14 @@ aliases:
   - /riak-docs/riak/kv/2.9.4/introduction
 ---
 
-Released Feb 15, 2020.
+Released July 03, 2020.
 
 
 ## Overview
 
-This release adds a number of features built on top of the Tictac AAE feature made available in 2.9.0. The new features depend on Tictac AAE being enabled, but are backend independent. The primary features of the release are:
+This release replaces the Riak KV 2.9.3 release, extending the issue resolution in kv_index_tictactree to detect other files where file truncation means the CRC is not present.
 
-A new combined full-sync and real-time replication system nextgenrepl, that is much faster and more efficient at reconciling overall state of clusters (e.g. full-sync).
-
-A mechanism for requesting mass deletion of objects on expiry, and mass reaping of tombstones after a time to live. This is not yet an automated, scheduled, set of garbage collection processes, it is required to be triggered by an operational process.
-
-A safe method of listing buckets regardless of backend chosen. Listing buckets had previously not been production safe, but can still be required in production environments - it can now be managed safely via an ``aae_fold`.
-
-A version uplift of the internal ibrowse client, a minor riak_dt fix to resolve issues of unit test reliability, a fix to help build (the now deprecated) erlang_js in some environments, and the removal of hamcrest as a dependency.
+This release has a key outstanding issue when Tictac AAE is used in parallel mode. On larger clusters, this has been seen to cause significant issues, and so this feature should not be used other than in native mode.
 
 
 [Previous Release Notes](#previous-release-notes)
@@ -38,4 +32,4 @@ A version uplift of the internal ibrowse client, a minor riak_dt fix to resolve 
 
 ## Previous Release Notes
 
-Please see the KV 2.9.4 release notes [here]({{<baseurl>}}riak/kv/2.9.4/release-notes/), and the KV 2.9.0 release notes [here]({{<baseurl>}}riak/kv/2.9.0/release-notes/).
+Please see the KV 2.9.2 release notes [here]({{<baseurl>}}riak/kv/2.9.4/release-notes/), and the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.0/release-notes/).
