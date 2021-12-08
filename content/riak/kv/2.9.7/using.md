@@ -12,6 +12,9 @@ menu:
 toc: true
 aliases:
   - /riak/kv/latest/using/
+  - /riak/latest/using/
+  - /riak/kv/latest/using/
+  - /riakkv/latest/using/
 ---
 
 [use running cluster]: ../using/running-a-cluster
@@ -72,5 +75,7 @@ Guides on troubleshooting issues and current product advisories.
 Articles providing background information and implementation details on topics such as logging, bucket types, and search.
 
 [Learn More >>][use ref]
+
+
 
 

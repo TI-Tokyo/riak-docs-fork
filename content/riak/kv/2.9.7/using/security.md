@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/advanced/security
   - /riak/kv/2.9.7/ops/advanced/security
+  - /riak/latest/using/security/
+  - /riak/kv/latest/using/security/
+  - /riakkv/latest/using/security/
 ---
 
 [config reference search]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#search
@@ -193,4 +196,6 @@ Replication, you can configure Riak 1.2+ to communicate over SSL, to
 seamlessly encrypt the message traffic.
 
 See also: [Multi Data Center Replication: SSL][config v3 ssl]
+
+
 

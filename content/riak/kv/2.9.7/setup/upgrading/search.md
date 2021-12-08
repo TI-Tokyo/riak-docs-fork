@@ -18,6 +18,9 @@ aliases:
   - /riak/latest/ops/advanced/upgrading-search-2
   - /riak/kv/latest/ops/advanced/upgrading-search-2
   - /riak/kv/latest/setup/upgrading/search
+  - /riak/latest/setup/upgrading/search/
+  - /riak/kv/latest/setup/upgrading/search/
+  - /riakkv/latest/setup/upgrading/search/
 ---
 
 If you're using Search in a version of Riak prior to 2.0 (1.3.0 to
@@ -277,5 +280,7 @@ search property is set to false.
 11. Finally, delete the merge index directories to reclaim disk space.
 
 For any questions reach out to the [Riak community]({{<baseurl>}}community). Preferably, ask your questions up front rather than during the middle of a migration.
+
+
 
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/advanced/configs/search/
   - /riak/kv/2.9.7/ops/advanced/configs/search/
+  - /riak/latest/configuring/search/
+  - /riak/kv/latest/configuring/search/
+  - /riakkv/latest/configuring/search/
 ---
 
 [usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
@@ -272,4 +275,6 @@ recommend the following documents for getting started:
 
 A wide variety of other documentation is available from the Solr OSS
 community.
+
+
 

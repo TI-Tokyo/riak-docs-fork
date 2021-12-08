@@ -15,6 +15,9 @@ commercial_offering: true
 aliases:
   - /riak/2.9.7/ops/mdc/v2/configuration
   - /riak/kv/2.9.7/ops/mdc/v2/configuration
+  - /riak/latest/configuring/v2-multi-datacenter/
+  - /riak/kv/latest/configuring/v2-multi-datacenter/
+  - /riakkv/latest/configuring/v2-multi-datacenter/
 ---
 
 [config v2 ssl]: {{<baseurl>}}riak/kv/2.9.7/configuring/v2-multi-datacenter/ssl
@@ -154,4 +157,6 @@ Setting | Options | Default | Description
  allowed to connect.
  If no ACLs are configured, no checks on the common name are done, except
  as described for [Identical Local and Peer Common Names][config v2 ssl].
+
+
 

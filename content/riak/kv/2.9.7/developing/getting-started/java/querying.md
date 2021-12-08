@@ -14,6 +14,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/taste-of-riak/querying-java
   - /riak/kv/2.9.7/dev/taste-of-riak/querying-java
+  - /riak/latest/developing/getting-started/java/querying/
+  - /riak/kv/latest/developing/getting-started/java/querying/
+  - /riakkv/latest/developing/getting-started/java/querying/
 ---
 
 ## Java Version Setup
@@ -274,4 +277,6 @@ So to recap:
 * Indexes can have either Integer or Binary(String) keys
 * You can search for specific values, or a range of values
 * Riak will return a list of keys that match the index query
+
+
 

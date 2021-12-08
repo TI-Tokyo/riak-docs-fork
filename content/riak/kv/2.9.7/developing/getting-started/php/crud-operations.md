@@ -11,6 +11,10 @@ menu:
     weight: 100
     parent: "getting_started_php"
 toc: true
+aliases:
+  - /riak/latest/developing/getting-started/php/crud-operations/
+  - /riak/kv/latest/developing/getting-started/php/crud-operations/
+  - /riakkv/latest/developing/getting-started/php/crud-operations/
 ---
 
 ## Creating Objects In Riak
@@ -180,4 +184,6 @@ Now that we’ve ruined the magic of object encoding, let’s clean up our mess:
 ## Next Steps
 
 More complex use cases can be composed from these initial create, read, update, and delete (CRUD) operations. [In the next chapter]({{<baseurl>}}riak/kv/2.9.7/developing/getting-started/php/querying) we will look at how to store and query more complicated and interconnected data, such as documents. 
+
+
 

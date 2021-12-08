@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/http/set-bucket-props
   - /riak/kv/2.9.7/dev/references/http/set-bucket-props
+  - /riak/latest/developing/api/http/set-bucket-props/
+  - /riak/kv/latest/developing/api/http/set-bucket-props/
+  - /riakkv/latest/developing/api/http/set-bucket-props/
 ---
 
 Sets bucket properties like "n_val" and "allow_mult".
@@ -110,4 +113,6 @@ OpenSSL/0.9.8l zlib/1.2.3
 * Connection #0 to host 127.0.0.1 left intact
 * Closing connection #0
 ```
+
+
 

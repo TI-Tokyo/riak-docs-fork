@@ -15,6 +15,9 @@ commercial_offering: true
 aliases:
   - /riak/2.9.7/ops/mdc/v3/configuration
   - /riak/kv/2.9.7/ops/mdc/v3/configuration
+  - /riak/latest/configuring/v3-multi-datacenter/
+  - /riak/kv/latest/configuring/v3-multi-datacenter/
+  - /riakkv/latest/configuring/v3-multi-datacenter/
 ---
 
 [config reference#advanced]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#advanced-configuration
@@ -155,4 +158,6 @@ To replicate between Riak KV versions 2.2.0 or greater and Riak KV clusters less
 ```
 
 If all of the Replication clusters are running Riak KV 2.2.0 or greater, this override is no longer necessary and should be removed.
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/dt-fetch
   - /riak/kv/2.9.7/dev/references/protocol-buffers/dt-fetch
+  - /riak/latest/developing/api/protocol-buffers/dt-fetch/
+  - /riak/kv/latest/developing/api/protocol-buffers/dt-fetch/
+  - /riakkv/latest/developing/api/protocol-buffers/dt-fetch/
 ---
 
 The equivalent of [`RpbGetReq`]({{<baseurl>}}riak/kv/2.9.7/developing/api/protocol-buffers/fetch-object) for [Riak Data Types]({{<baseurl>}}riak/kv/2.9.7/developing/data-types). This request results in a `DtFetchResp`
@@ -124,5 +127,7 @@ message MapEntry {
     repeated MapEntry map_value      = 6;
 }
 ```
+
+
 
 

@@ -12,6 +12,9 @@ menu:
 toc: true
 aliases:
   - /riak/kv/latest/developing/
+  - /riak/latest/developing/
+  - /riak/kv/latest/developing/
+  - /riakkv/latest/developing/
 ---
 
 [getting started]: ../developing/getting-started
@@ -72,6 +75,8 @@ Information and reference material on Riak KV APIs.
 Frequently asked questions when developing applications with Riak KV.
 
 [Learn More >>][dev faq]
+
+
 
 
 

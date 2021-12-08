@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/building/planning/system-planning
   - /riak/kv/2.9.7/ops/building/planning/system-planning
+  - /riak/latest/setup/planning/start/
+  - /riak/kv/latest/setup/planning/start/
+  - /riakkv/latest/setup/planning/start/
 ---
 
 [plan backend]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend
@@ -54,5 +57,7 @@ following should work adequately:
 * nginx
 * lighttpd
 * Apache
+
+
 
 

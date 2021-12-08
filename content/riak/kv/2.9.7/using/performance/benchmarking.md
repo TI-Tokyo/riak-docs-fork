@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/building/benchmarking
   - /riak/kv/2.9.7/ops/building/benchmarking
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 
 Basho Bench is a benchmarking tool created to conduct accurate and
@@ -109,6 +112,9 @@ The output of from running the `basho_bench` script can be used to
 create graphs showing the following:
 
 * Throughput
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 Operations per second over the duration of the test.
 * Latency at 99th percentile, 99.9th percentile and max latency for
@@ -224,9 +230,15 @@ The `mode` setting controls the rate at which workers invoke the
 values:
 
 * `{max}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 generate as many ops per second as possible
 * `{rate, N}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 generate N ops per second, with exponentially distributed interarrival times
 
@@ -307,21 +319,36 @@ server/cluster).
 Available drivers include:
 
 * `basho_bench_driver_http_raw`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 Uses Riak's HTTP interface to
     get/update/insert data on a Riak server
 * `basho_bench_driver_riakc_pb`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 Uses Riak's Protocol Buffers
     interface to get/put/update/delete data on a Riak serve
 * `basho_bench_driver_riakclient`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 Uses Riak's Distributed Erlang
     interface to get/put/update/delete data on a Riak server
 * `basho_bench_driver_bitcask`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 Directly invokes the Bitcask API
 * `basho_bench_driver_dets`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 Directly invokes the DETS API
 
@@ -329,17 +356,29 @@ On invocation of the `driver:run/4` method, the driver may return one of
 the following results:
 
 * `{ok, NewState}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 operation completed successfully
 * `{error, Reason, NewState}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 operation failed but the driver can
     continue processing (i.e. recoverable error)
 * `{stop, Reason}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 operation failed; driver can't/won't continue
     processing
 * `{'EXIT', Reason}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 operation failed; driver crashed
 
@@ -354,25 +393,40 @@ The generator function to use for creating keys. Generators are defined
 in `basho_bench_keygen.erl`. Available generators include:
 
 * `{sequential_int, MaxKey}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 generates integers from 0..`MaxKey`
     in order and then stops the system. Note that each instance of
     this keygen is specific to a worker.
 * `{partitioned_sequential_int, MaxKey}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 the same as
     `{sequential_int}`, but splits the keyspace evenly among the
     worker processes. This is useful for pre-loading a large dataset.
 * `{partitioned_sequential_int, StartKey, NumKeys}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 the same as
     `partitioned_sequential_int`, but starting at the defined
     `StartKey` and going up to `StartKey + NumKeys`.
 * `{uniform_int, MaxKey}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 selects an integer from uniform
     distribution of 0..`MaxKey`, i.e. all integers are equally probable.
 * `{pareto_int, MaxKey}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 selects an integer from a Pareto
     distribution, such that 20% of the available keys get selected 80%
@@ -380,20 +434,32 @@ selects an integer from a Pareto
     generator _may_ yield values larger than `MaxKey` due to the
     mathematical properties of the Pareto distribution.
 * `{truncated_pareto_int, MaxKey}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 the same as `{pareto_int}`, but
     will _not> yield values above `MaxKey`.
 * `{function, Module, Function, Args}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 specifies an external
     function that should return a key generator function. The worker
     `Id` will be prepended to `Args` when the function is called.
 * `{int_to_bin, Generator}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 takes any of the above `_int`
     generators and converts the number to a 32-bit binary. This is
     needed for some drivers that require a binary key.
 * `{int_to_str, Generator}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 takes any of the above `_int`
     generators and converts the number to a string. This is needed for
@@ -421,21 +487,33 @@ The generator function to use for creating values. Generators are
 defined in `basho_bench_valgen.erl`. Available generators include:
 
 * `{fixed_bin, Size}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 generates a random binary of `Size`
     bytes. Every binary is the same size, but varies in content.
 * `{exponential_bin, MinSize, Mean}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 generates a random binary
     which has an exponentially distributed size. Most values will be
     approximately `MinSize` + `Mean` bytes in size, with a long tail
     of larger values.
 * `{uniform_bin, MinSize, MaxSize}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 generates a random binary
     which has an evenly distributed size between `MinSize` and
     `MaxSize`.
 * `{function, Module, Function, Args}`
+  - /riak/latest/using/performance/benchmarking/
+  - /riak/kv/latest/using/performance/benchmarking/
+  - /riakkv/latest/using/performance/benchmarking/
 ---
 specifies an external
     function that should return a value generator function. The worker
@@ -646,4 +724,6 @@ run(Op, KeyGen, ValueGen, State) -> {ok, NewState} or {error, Reason, NewState}.
 See the [existing
 drivers](https://github.com/basho/basho_bench/tree/master/src) for
 more details.
+
+
 

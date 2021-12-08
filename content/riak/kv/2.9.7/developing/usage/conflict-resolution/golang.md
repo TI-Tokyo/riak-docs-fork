@@ -14,6 +14,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/using/conflict-resolution/golang
   - /riak/kv/2.9.7/dev/using/conflict-resolution/golang
+  - /riak/latest/developing/usage/conflict-resolution/golang/
+  - /riak/kv/latest/developing/usage/conflict-resolution/golang/
+  - /riakkv/latest/developing/usage/conflict-resolution/golang/
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.7/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that
@@ -56,4 +59,6 @@ This example shows a basic sibling resolution strategy in which the first
 sibling is chosen as the canonical value via a conflict resolution type.
 
 [*Example:* resolving siblings via `ConflictResolver`](https://github.com/basho/riak-go-client/blob/master/examples/dev/using/conflict-resolution/main.go#L169-L210)
+
+
 

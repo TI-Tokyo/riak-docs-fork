@@ -12,6 +12,10 @@ menu:
     parent: "managing_performance"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/latest/using/performance/multi-datacenter-tuning/
+  - /riak/kv/latest/using/performance/multi-datacenter-tuning/
+  - /riakkv/latest/using/performance/multi-datacenter-tuning/
 ---
 
 [perf index]: {{<baseurl>}}riak/kv/2.9.7/using/performance
@@ -40,4 +44,6 @@ On Solaris, the following settings are suggested:
 /usr/sbin/ndd -set /dev/tcp tcp_xmit_hiwat 4000000
 /usr/sbin/ndd -set /dev/tcp tcp_recv_hiwat 4000000
 ```
+
+
 

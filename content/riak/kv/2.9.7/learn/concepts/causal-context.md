@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/theory/concepts/context
   - /riak/kv/2.9.7/theory/concepts/context
+  - /riak/latest/learn/concepts/causal-context/
+  - /riak/kv/latest/learn/concepts/causal-context/
+  - /riakkv/latest/learn/concepts/causal-context/
 ---
 
 
@@ -283,4 +286,6 @@ information can be found in the [Object Updates][usage updating objects] doc.
 * [Improving Logical Clocks in Riak with Dotted Version Vectors: A Case Study]
 * [Dotted Version Vector Sets]
 * [A History of Time in Riak]
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/taste-of-riak/python
   - /riak/kv/2.9.7/dev/taste-of-riak/python
+  - /riak/latest/developing/getting-started/python/
+  - /riak/kv/latest/developing/getting-started/python/
+  - /riakkv/latest/developing/getting-started/python/
 ---
 
 
@@ -34,12 +37,21 @@ python`.
 First, you must install some packages needed by the Riak Python client:
 
 * `python-dev`
+  - /riak/latest/developing/getting-started/python/
+  - /riak/kv/latest/developing/getting-started/python/
+  - /riakkv/latest/developing/getting-started/python/
 ---
 Header files and a static library for Python
 * `libffi-dev`
+  - /riak/latest/developing/getting-started/python/
+  - /riak/kv/latest/developing/getting-started/python/
+  - /riakkv/latest/developing/getting-started/python/
 ---
 Foreign function interface library
 * `libssl-dev`
+  - /riak/latest/developing/getting-started/python/
+  - /riak/kv/latest/developing/getting-started/python/
+  - /riakkv/latest/developing/getting-started/python/
 ---
 libssl and libcrypto development libraries
 
@@ -103,4 +115,6 @@ We are now ready to start interacting with Riak.
 ## Next Steps
 
 [CRUD Operations]({{<baseurl>}}riak/kv/2.9.7/developing/getting-started/python/crud-operations)
+
+
 

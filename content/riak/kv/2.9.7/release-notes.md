@@ -16,6 +16,9 @@ aliases:
   - /riak/2.9.7/intro-v20
   - /riak/kv/2.9.7/introduction
   - /riak/kv/latest/release-notes/
+  - /riak/latest/release-notes/
+  - /riak/kv/latest/release-notes/
+  - /riakkv/latest/release-notes/
 ---
 
 Released Jul 03, 2020.
@@ -32,5 +35,7 @@ This release has a key outstanding issue when Tictac AAE is used in parallel mod
 ## Previous Release Notes
 
 Please see the KV 2.9.2 release notes [here]({{<baseurl>}}riak/kv/2.9.2/release-notes/), the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/), and the KV 2.9.0p5 release notes [here]({{<baseurl>}}riak/kv/2.9.0p5/release-notes/).
+
+
 
 

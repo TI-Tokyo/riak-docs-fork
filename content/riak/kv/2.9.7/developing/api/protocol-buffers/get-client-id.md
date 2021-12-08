@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/get-client-id
   - /riak/kv/2.9.7/dev/references/protocol-buffers/get-client-id
+  - /riak/latest/developing/api/protocol-buffers/get-client-id/
+  - /riak/kv/latest/developing/api/protocol-buffers/get-client-id/
+  - /riakkv/latest/developing/api/protocol-buffers/get-client-id/
 ---
 
 {{% note title="Deprecation notice" %}}
@@ -59,4 +62,6 @@ Erlang <<0,0,0,7,4,10,4,1,101,1,181>>
 RpbGetClientIdResp protoc decode:
 client_id: "001e001265"
 ```
+
+
 

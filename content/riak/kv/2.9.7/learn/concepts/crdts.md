@@ -14,6 +14,9 @@ toc: true
 aliases:
   - /riak/2.9.7/theory/concepts/crdts
   - /riak/kv/2.9.7/theory/concepts/crdts
+  - /riak/latest/learn/concepts/crdts/
+  - /riak/kv/latest/learn/concepts/crdts/
+  - /riakkv/latest/learn/concepts/crdts/
 ---
 
 [crdts pdf]: http://hal.upmc.fr/docs/00/55/55/88/PDF/techreport.pdf
@@ -246,4 +249,6 @@ writes, value conflicts are inevitable. Riak Data Types are not perfect, particu
 rules that dictate the convergence logic behind the Riak Data Types
 were carefully chosen to minimize the potential downsides associated
 with value conflicts.
+
+
 

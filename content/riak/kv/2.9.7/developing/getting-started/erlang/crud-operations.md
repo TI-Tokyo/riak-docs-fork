@@ -11,6 +11,10 @@ menu:
     weight: 100
     parent: "getting_started_erlang"
 toc: true
+aliases:
+  - /riak/latest/developing/getting-started/erlang/crud-operations/
+  - /riak/kv/latest/developing/getting-started/erlang/crud-operations/
+  - /riakkv/latest/developing/getting-started/erlang/crud-operations/
 ---
 
 ## Creating Objects In Riak
@@ -165,4 +169,6 @@ Next let’s clean up our mess:
 riakc_pb_socket:delete(Pid, <<"books">>, <<"1111979723">>).
 riakc_pb_socket:stop(Pid).
 ```
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/http/fetch-search-index
   - /riak/kv/2.9.7/dev/references/http/fetch-search-index
+  - /riak/latest/developing/api/http/fetch-search-index
+  - /riak/kv/latest/developing/api/http/fetch-search-index
+  - /riakkv/latest/developing/api/http/fetch-search-index
 ---
 
 Retrieves information about a Riak Search [index]({{<baseurl>}}riak/kv/2.9.7/developing/usage/search/#simple-setup).
@@ -30,10 +33,16 @@ GET /search/index/<index_name>
 ## Typical Error Codes
 
 * `404 Object Not Found`
+  - /riak/latest/developing/api/http/fetch-search-
+  - /riak/kv/latest/developing/api/http/fetch-search-
+  - /riakkv/latest/developing/api/http/fetch-search-
 ---
 No Search index with that name is currently
     available
 * `503 Service Unavailable`
+  - /riak/latest/developing/api/http/fetch-search-
+  - /riak/kv/latest/developing/api/http/fetch-search-
+  - /riakkv/latest/developing/api/http/fetch-search-
 ---
 The request timed out internally
 
@@ -49,4 +58,6 @@ index, including its name, the [`n_val`]({{<baseurl>}}riak/kv/2.9.7/developing/a
   "schema": "_yz_default"
 }
 ```
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/http/status
   - /riak/kv/2.9.7/dev/references/http/status
+  - /riak/latest/developing/api/http/status/
+  - /riak/kv/latest/developing/api/http/status/
+  - /riakkv/latest/developing/api/http/status/
 ---
 
 Reports about the performance and configuration of the Riak node to which it was requested. You must have the `{riak_kv_stat,true}` configuration setting in app.config for this endpoint to be active.
@@ -167,4 +170,6 @@ riak_pipe_vnodeq_median       | Median queue size of local Riak Pipe virtual nod
 riak_pipe_vnodeq_mean         | Mean queue size of local Riak Pipe virtual nodes in the last minute
 riak_pipe_vnodeq_max          | Max queue size of local Riak Pipe virtual nodes in the last minute
 riak_pipe_vnodeq_total        | Total queue size of all local Riak Pipe virtual nodes in the last minute
+
+
 

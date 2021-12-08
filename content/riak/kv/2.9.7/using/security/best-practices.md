@@ -11,6 +11,10 @@ menu:
     weight: 102
     parent: "managing_security"
 toc: true
+aliases:
+  - /riak/latest/using/security/best-practices/
+  - /riak/kv/latest/using/security/best-practices/
+  - /riakkv/latest/using/security/best-practices/
 ---
 
 ## Hanc capellae
@@ -78,4 +82,6 @@ Nominis haec lacrimis orba gloria obstipuere tu Ceyx tepebat fetus me equorum
 potero! Iampridem illi; deducit [reor orbem](http://heeeeeeeey.com/), comes, et
 nec rubebant pietas, ipsa.
 ```
+
+
 

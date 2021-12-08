@@ -10,6 +10,10 @@ menu:
     weight: 104
     parent: "developing_app_guide"
 toc: true
+aliases:
+  - /riak/latest/developing/app-guide/cluster-metadata/
+  - /riak/kv/latest/developing/app-guide/cluster-metadata/
+  - /riakkv/latest/developing/app-guide/cluster-metadata/
 ---
 
 Cluster metadata is a subsystem inside of Riak that enables systems
@@ -65,4 +69,6 @@ the Erlang interface is defined in the
 module, which allows you to perform a variety of cluster metadata
 operations, including retrieving, modifying, and deleting metadata and
 iterating through metadata keys.
+
+
 

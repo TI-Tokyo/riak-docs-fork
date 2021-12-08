@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/mapreduce
   - /riak/kv/2.9.7/dev/references/protocol-buffers/mapreduce
+  - /riak/latest/developing/api/protocol-buffers/mapreduce/
+  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
+  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
 ---
 
 Execute a MapReduce job.
@@ -31,6 +34,9 @@ message RpbMapRedReq {
 Required Parameters
 
 * `request`
+  - /riak/latest/developing/api/protocol-buffers/mapreduce/
+  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
+  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
 ---
 MapReduce job
 * `content_type` - Encoding for MapReduce job
@@ -38,9 +44,15 @@ MapReduce job
 Mapreduce jobs can be encoded in two different ways
 
 * `application/json`
+  - /riak/latest/developing/api/protocol-buffers/mapreduce/
+  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
+  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
 ---
 JSON-encoded MapReduce job
 * `application/x-erlang-binary`
+  - /riak/latest/developing/api/protocol-buffers/mapreduce/
+  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
+  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
 ---
 Erlang external term format
 
@@ -66,6 +78,9 @@ message RpbMapRedResp {
 Values
 
 * `phase`
+  - /riak/latest/developing/api/protocol-buffers/mapreduce/
+  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
+  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
 ---
 Phase number of the MapReduce job
 * `response` - Response encoded with the content_type submitted
@@ -155,4 +170,6 @@ RpbMapRedResp protoc decode:
 done: true
 
 ```
+
+
 

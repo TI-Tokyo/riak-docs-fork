@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/taste-of-riak/erlang
   - /riak/kv/2.9.7/dev/taste-of-riak/erlang
+  - /riak/latest/developing/getting-started/erlang/
+  - /riak/kv/latest/developing/getting-started/erlang/
+  - /riakkv/latest/developing/getting-started/erlang/
 ---
 
 If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.7/using/running-a-cluster) first.
@@ -53,4 +56,6 @@ We are now ready to start interacting with Riak.
 ## Next Steps
 
 [CRUD Operations]({{<baseurl>}}riak/kv/2.9.7/developing/getting-started/erlang/crud-operations)
+
+
 

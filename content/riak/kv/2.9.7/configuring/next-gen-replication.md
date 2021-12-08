@@ -14,6 +14,10 @@ version_history:
   in: "2.9.1+"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/latest/configuring/next-gen-replication/
+  - /riak/kv/latest/configuring/next-gen-replication/
+  - /riakkv/latest/configuring/next-gen-replication/
 ---
 
 The configuration for Next Gen Replication is kept in
@@ -49,3 +53,4 @@ Setting | Options | Default | Description
 `ttaaefs_daycheck` | `any` (integer) | `0` | How many times per 24hour period should the last 24-hours of data be checked to confirm it is fully sync'd.
 `ttaaefs_rangecheck` | `any` (integer) | `0` | How many times per 24hour period should the a range_check be run.
 `ttaaefs_logrepairs` | `enabled`, `disabled` | `enabled` | If Tictac AAE full-sync discovers keys to be repaired, should each key that is repaired be logged
+

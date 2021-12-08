@@ -10,6 +10,10 @@ menu:
     weight: 203
     parent: "managing"
 toc: true
+aliases:
+  - /riak/latest/using/cluster-operations/
+  - /riak/kv/latest/using/cluster-operations/
+  - /riakkv/latest/using/cluster-operations/
 ---
 
 [ops add remove node]: ./adding-removing-nodes
@@ -102,4 +106,6 @@ Explains how to manage V3 replication with the `riak-repl` command.
 Explains how to manage V2 replication with the `riak-repl` command.
 
 [Learn More >>][ops v2 mdc]
+
+
 

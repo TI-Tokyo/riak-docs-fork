@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/advanced/backends/memory/
   - /riak/kv/2.9.7/ops/advanced/backends/memory/
+  - /riak/latest/setup/planning/backend/memory/
+  - /riak/kv/latest/setup/planning/backend/memory/
+  - /riakkv/latest/setup/planning/backend/memory/
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
@@ -141,4 +144,6 @@ bucket or bucket type. The current workaround would be to define
 multiple Memory backends using the Multi backend, each with different
 `ttl` values. For more information, consult the documentation on the
 [Multi][plan backend multi] backend.
+
+
 

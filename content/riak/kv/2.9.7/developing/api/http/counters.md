@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/http/counters
   - /riak/kv/2.9.7/dev/references/http/counters
+  - /riak/latest/developing/api/http/counters/
+  - /riak/kv/latest/developing/api/http/counters/
+  - /riakkv/latest/developing/api/http/counters/
 ---
 
 Riak counters are a CRDT (convergent replicated data type) that (eventually)
@@ -76,4 +79,6 @@ curl http://localhost:8098/buckets/my_bucket/counters/my_key
 curl -XPOST http://localhost:8098/buckets/my_bucket/counters/my_key -d "-1"
 100
 ```
+
+
 

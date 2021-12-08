@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/running/handoff
   - /riak/kv/2.9.7/ops/running/handoff
+  - /riak/latest/using/cluster-operations/handoff/
+  - /riak/kv/latest/using/cluster-operations/handoff/
+  - /riakkv/latest/using/cluster-operations/handoff/
 ---
 
 Riak KV provides a command-line interface for enabling and disabling handoff on the fly, without needing to set your configuration and restart the node. To
@@ -114,4 +117,6 @@ the cluster, including:
 * `handoff.port`
 
 Descriptions of those parameters can be found in the sections above.
+
+
 

@@ -11,7 +11,13 @@ project_version: 2.9.7
 #    weight: 106
 #    parent: "planning"
 toc: true
+aliases:
+  - /riak/latest/setup/planning/future/
+  - /riak/kv/latest/setup/planning/future/
+  - /riakkv/latest/setup/planning/future/
 ---
 
 **TODO: Add content**
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/using/updates
   - /riak/kv/2.9.7/dev/using/updates
+  - /riak/latest/developing/usage/updating-objects/
+  - /riak/kv/latest/developing/usage/updating-objects/
+  - /riakkv/latest/developing/usage/updating-objects/
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
@@ -772,4 +775,6 @@ In general, you should use no-operation updates only on keys that you
 suspect may have accumulated siblings or on keys that are frequently
 updated (and thus bear the possibility of accumulating siblings).
 Otherwise, you're better off performing normal reads.
+
+
 

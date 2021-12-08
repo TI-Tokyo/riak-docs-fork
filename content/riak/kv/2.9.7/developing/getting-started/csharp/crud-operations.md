@@ -11,6 +11,10 @@ menu:
     weight: 100
     parent: "getting_started_csharp"
 toc: true
+aliases:
+  - /riak/latest/developing/getting-started/csharp/crud-operations/
+  - /riak/kv/latest/developing/getting-started/csharp/crud-operations/
+  - /riakkv/latest/developing/getting-started/csharp/crud-operations/
 ---
 
 ### Creating Objects In Riak
@@ -141,4 +145,6 @@ else
 Just like other operations, we check the results that have come back from Riak to make sure the object was successfully deleted.
 
 The Riak .NET Client has a lot of additional functionality that makes it easy to build rich, complex applications with Riak. Check out the [documentation](https://github.com/basho/riak-dotnet-client/wiki) to learn more about working with the Riak .NET Client and Riak.
+
+
 

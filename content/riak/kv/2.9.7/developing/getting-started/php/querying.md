@@ -14,6 +14,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/taste-of-riak/querying-php
   - /riak/kv/2.9.7/dev/taste-of-riak/querying-php
+  - /riak/latest/developing/getting-started/php/querying/
+  - /riak/kv/latest/developing/getting-started/php/querying/
+  - /riakkv/latest/developing/getting-started/php/querying/
 ---
 
 ## A Quick Note on Querying and Schemas
@@ -402,4 +405,6 @@ So to recap:
 * Indexes can have either Integer or Binary(String) keys
 * You can search for specific values, or a range of values
 * Riak will return a list of keys (and terms if needed) that match the index query
+
+
 

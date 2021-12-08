@@ -11,6 +11,10 @@ menu:
     parent: "add-ons_redis"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/latest/add-ons/redis/set-up-rra/
+  - /riak/kv/latest/add-ons/redis/set-up-rra/
+  - /riakkv/latest/add-ons/redis/set-up-rra/
 ---
 
 [addon redis develop]: ../developing-rra/
@@ -278,4 +282,6 @@ ss -nlp |grep [n]utcracker
 ## Next Steps
 
 Get started with some [basic usage][addon redis use] or checkout out more info on [setting up for development (with examples)][addon redis develop].
+
+
 

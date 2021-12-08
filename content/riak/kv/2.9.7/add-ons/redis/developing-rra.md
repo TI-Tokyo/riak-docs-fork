@@ -11,6 +11,10 @@ menu:
     parent: "add-ons_redis"
 toc: true
 commercial_offering: true
+aliases:
+  - /riak/latest/add-ons/redis/developing-rra/
+  - /riak/kv/latest/add-ons/redis/developing-rra/
+  - /riakkv/latest/add-ons/redis/developing-rra/
 ---
 
 [redis-clients]: http://redis.io/clients
@@ -323,4 +327,6 @@ RRA configuration file `/etc/cache_proxy/cache_proxy_22122.yml`:
 |`pw`            | How many vnodes must respond for a write to be deemed successful. | `0` |
 |`w`             | How many replicas need to acknowledge the write before responding. | `2` |
 |`sloppy_quorum` | Whether to treat vnodes holding values for another vnode as acceptable within the quorum determination. | `0` (false) |
+
+
 

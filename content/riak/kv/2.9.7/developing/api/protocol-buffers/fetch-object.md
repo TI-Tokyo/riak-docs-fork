@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/fetch-object
   - /riak/kv/2.9.7/dev/references/protocol-buffers/fetch-object
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 
 Fetch an object from the specified bucket type/bucket/key location
@@ -110,32 +113,56 @@ contain the binary `value` of the object. But it could also contain any
 of the following optional parameters:
 
 * `content_type`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 The content type of the object, e.g. `text/plain`
   or `application/json`
 * `charset`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 The character encoding of the object, e.g. `utf-8`
 * `content_encoding`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 The content encoding of the object, e.g.
   `video/mp4`
 * `vtag`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 The object's [vtag]({{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vector-clock)
 * `links`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 This parameter is associated with the now-deprecated link
   walking feature and should not be used by Riak clients
 * `last_mod`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 A timestamp for when the object was last modified, in
   [ISO 8601 time](http://en.wikipedia.org/wiki/ISO_8601)
 * `last_mod_usecs`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 A timestamp for when the object was last modified,
   in [Unix time](http://en.wikipedia.org/wiki/Unix_time)
 * `usermeta`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 This field stores user-specified key/value metadata
   pairs to be associated with the object. `RpbPair` messages used to
@@ -151,6 +178,9 @@ This field stores user-specified key/value metadata
     `RpbPair` messages are also used to attach [secondary indexes]({{<baseurl>}}riak/kv/2.9.7/developing/usage/secondary-indexes) to objects (in the optional
     `indexes` field).
 * `deleted`
+  - /riak/latest/developing/api/protocol-buffers/fetch-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
+  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 Whether the object has been deleted (i.e. whether a
   tombstone for the object has been found under the specified key)
@@ -197,4 +227,6 @@ content {
 }
 vclock: "k316a```314`312005R,254302[?e0%23452612354V267=312227005000"
 ```
+
+
 

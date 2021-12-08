@@ -15,6 +15,9 @@ aliases:
   - /riak/kv/2.9.7/theory/concepts/Buckets
   - /riak/2.9.7/theory/concepts/buckets
   - /riak/kv/2.9.7/theory/concepts/buckets
+  - /riak/latest/learn/concepts/buckets/
+  - /riak/kv/latest/learn/concepts/buckets/
+  - /riakkv/latest/learn/concepts/buckets/
 ---
 
 [apps cluster metadata]: {{<baseurl>}}riak/kv/2.9.7/developing/app-guide/cluster-metadata
@@ -211,4 +214,6 @@ bucket.get_properties()
 ```curl
 curl http://localhost:8087/types/my_custom_type/buckets/animals/props
 ```
+
+
 

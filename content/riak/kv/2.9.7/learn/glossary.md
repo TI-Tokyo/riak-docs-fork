@@ -10,6 +10,10 @@ menu:
     weight: 103
     parent: "learn"
 toc: true
+aliases:
+  - /riak/latest/learn/glossary/
+  - /riak/kv/latest/learn/glossary/
+  - /riakkv/latest/learn/glossary/
 ---
 
 
@@ -351,4 +355,6 @@ the Riak Ring, and they coordinate requests for these partitions.
 * [vnodes][glossary vnode]
 * [Clusters][concept clusters]
 * [Dynamo][learn dynamo]
+
+
 

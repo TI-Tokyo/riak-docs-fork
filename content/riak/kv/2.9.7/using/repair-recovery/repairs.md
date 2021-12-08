@@ -19,6 +19,10 @@ aliases:
   - /riak/kv/2.9.7/ops/running/recovery/repairing-leveldb
   - /riak/2.9.7/ops/running/recovery/repairing-partitions
   - /riak/kv/2.9.7/ops/running/recovery/repairing-partitions
+  - /riak/latest/using/repair-recovery/repairs/
+  - /riak/kv/latest/using/repair-recovery/repairs/
+  - /riakkv/latest/using/repair-recovery/repairs/
+  - /riak/latest/ops/running/recovery/repairing-partitions/
 ---
 
 [cluster ops aae]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/active-anti-entropy/
@@ -385,4 +389,6 @@ cluster. From a `riak attach` session the below command can be used:
 ```erlang
 rpc:call('dev1@127.0.0.1', riak_core_vnode_manager, kill_repairs, [killed_by_user]).
 ```
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/kv/2.9.7/ops/advanced/tictacaae/
   - /riak/2.9.7/ops/advanced/ticktacaae/
+  - /riak/latest/using/cluster-operations/tictac-active-anti-entropy/
+  - /riak/kv/latest/using/cluster-operations/tictac-active-anti-entropy/
+  - /riakkv/latest/using/cluster-operations/tictac-active-anti-entropy/
 ---
 
 
@@ -29,3 +32,5 @@ TicTac Active Anti-Entropy makes two changes to the way Anti-Entropy has previou
 
 Riak's [configuration files](../../../configuring/reference/) enable you not just to turn TicTac AAE on and
 off but also to fine-tune your cluster's use of TicTac AAE to suit your requirements.
+
+

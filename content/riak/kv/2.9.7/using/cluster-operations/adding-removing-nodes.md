@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/running/nodes/adding-removing
   - /riak/kv/2.9.7/ops/running/nodes/adding-removing
+  - /riak/latest/using/cluster-operations/adding-removing-nodes/
+  - /riak/kv/latest/using/cluster-operations/adding-removing-nodes/
+  - /riakkv/latest/using/cluster-operations/adding-removing-nodes/
 ---
 
 [use running cluster]: {{<baseurl>}}riak/kv/2.9.7/using/running-a-cluster
@@ -192,4 +195,6 @@ To pause during `riak-admin cluster join` or `riak-admin cluster leave`, set the
 ```bash
 riak-admin transfer-limit <node> 0
 ```
+
+
 

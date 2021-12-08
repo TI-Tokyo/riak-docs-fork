@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/secondary-indexes
   - /riak/kv/2.9.7/dev/references/protocol-buffers/secondary-indexes
+  - /riak/latest/developing/api/protocol-buffers/secondary-indexes/
+  - /riak/kv/latest/developing/api/protocol-buffers/secondary-indexes/
+  - /riakkv/latest/developing/api/protocol-buffers/secondary-indexes/
 ---
 
 Request a set of keys that match a secondary index query.
@@ -119,4 +122,6 @@ RpbIndexResp protoc decode:
 keys: "hen"
 keys: "rooster"
 ```
+
+
 

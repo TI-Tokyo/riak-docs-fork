@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/running/recovery/failure-recovery
   - /riak/kv/2.9.7/ops/running/recovery/failure-recovery
+  - /riak/latest/using/repair-recovery/failure-recovery/
+  - /riak/kv/latest/using/repair-recovery/failure-recovery/
+  - /riakkv/latest/using/repair-recovery/failure-recovery/
 ---
 
 Riak was built to withstand---or at the very least reduce the severity
@@ -44,6 +47,9 @@ More severe data loss scenarios usually relate to hardware failure.
 If data is lost, several options are available for restoring it.
 
 1.  **Restore from backup**
+  - /riak/latest/using/repair-recovery/failure-recovery/
+  - /riak/kv/latest/using/repair-recovery/failure-recovery/
+  - /riakkv/latest/using/repair-recovery/failure-recovery/
 ---
 A daily backup of Riak nodes can be helpful.
     The data in this backup may be stale depending on the time at which
@@ -51,6 +57,9 @@ A daily backup of Riak nodes can be helpful.
     lost storage volumes. If running in a RAID configuration, rebuilding
     the array may also be possible.
 2.  **Restore from multi-cluster replication**
+  - /riak/latest/using/repair-recovery/failure-recovery/
+  - /riak/kv/latest/using/repair-recovery/failure-recovery/
+  - /riakkv/latest/using/repair-recovery/failure-recovery/
 ---
 If replication is enabled
     between two or more clusters, the missing data will gradually be
@@ -58,6 +67,9 @@ If replication is enabled
     fullsync operation can also be triggered manually via the `riak-repl`
     command.
 3.  **Restore using intra-cluster repair**
+  - /riak/latest/using/repair-recovery/failure-recovery/
+  - /riak/kv/latest/using/repair-recovery/failure-recovery/
+  - /riakkv/latest/using/repair-recovery/failure-recovery/
 ---
 Riak versions 1.2 and greater
     include a repair feature which will restore lost partitions with
@@ -129,4 +141,6 @@ If you are a TI Tokyo Riak supprt customer and require assistance or
 further advice with a cluster recovery, please file a ticket with the
 <a href="https://support.tiot.jp">TI Tokyo Helpdesk</a>.
 {{% /note %}}
+
+
 

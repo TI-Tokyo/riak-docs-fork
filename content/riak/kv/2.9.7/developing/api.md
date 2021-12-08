@@ -10,6 +10,10 @@ menu:
     weight: 107
     parent: "developing"
 toc: true
+aliases:
+  - /riak/latest/developing/api/
+  - /riak/kv/latest/developing/api/
+  - /riakkv/latest/developing/api/
 ---
 
 [dev api http]: ./http
@@ -35,4 +39,6 @@ Information on Riak KV's Protocol Buffer Client API
 Overview of Riak KV's storage backend API.
 
 [Learn More >>][dev api backend]
+
+
 

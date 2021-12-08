@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/ping
   - /riak/kv/2.9.7/dev/references/protocol-buffers/ping
+  - /riak/latest/developing/api/protocol-buffers/ping/
+  - /riak/kv/latest/developing/api/protocol-buffers/ping/
+  - /riakkv/latest/developing/api/protocol-buffers/ping/
 ---
 
 Check if the server is alive
@@ -40,4 +43,6 @@ Response
 Hex    00 00 00 01 02
 Erlang <<0,0,0,1,2>>
 ```
+
+
 

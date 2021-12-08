@@ -15,6 +15,9 @@ commercial_offering: true
 aliases:
   - /riak/2.9.7/ops/mdc/v3/operations
   - /riak/kv/2.9.7/ops/mdc/v3/operations
+  - /riak/latest/using/cluster-operations/v3-multi-datacenter/
+  - /riak/kv/latest/using/cluster-operations/v3-multi-datacenter/
+  - /riakkv/latest/using/cluster-operations/v3-multi-datacenter/
 ---
 
 [config v3 mdc]: {{<baseurl>}}riak/kv/2.9.7/configuring/v3-multi-datacenter
@@ -419,4 +422,6 @@ If you want the properties for Buckets or Bucket Types
 present on the source cluster to be propagated to sink clusters
 you should update this data for each cluster at the same
 time you would change the source cluster.
+
+
 

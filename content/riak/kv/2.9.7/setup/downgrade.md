@@ -14,6 +14,9 @@ aliases:
   - /riak/2.9.7/ops/upgrading/rolling-downgrades/
   - /riak/kv/2.9.7/ops/upgrading/rolling-downgrades/
   - /riak/kv/latest/setup/downgrade/
+  - /riak/latest/setup/downgrade/
+  - /riak/kv/latest/setup/downgrade/
+  - /riakkv/latest/setup/downgrade/
 ---
 
 [rolling upgrade]: {{<baseurl>}}riak/kv/2.9.7/setup/upgrading/cluster
@@ -173,5 +176,7 @@ riak_core_node_watcher:service_up(yokozuna,whereis(yz_solr_proc)).
 ```bash
 riak-admin transfers
 ```
+
+
 
 

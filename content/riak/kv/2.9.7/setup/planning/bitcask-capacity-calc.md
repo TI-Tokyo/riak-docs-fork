@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/building/planning/bitcask
   - /riak/kv/2.9.7/ops/building/planning/bitcask
+  - /riak/latest/setup/planning/bitcask-capacity-calc/
+  - /riak/kv/latest/setup/planning/bitcask-capacity-calc/
+  - /riakkv/latest/setup/planning/bitcask-capacity-calc/
 ---
 
 [plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/bitcask
@@ -98,4 +101,6 @@ Additionally, Bitcask relies on your operating system's filesystem cache
 to deliver high performance reads. So when sizing your cluster, take
 this into account and plan on having several more gigabytes of RAM
 available for your filesystem cache.
+
+
 

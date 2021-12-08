@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/running/tools/riak
   - /riak/kv/2.9.7/ops/running/tools/riak
+  - /riak/latest/using/admin/riak-cli/
+  - /riak/kv/latest/using/admin/riak-cli/
+  - /riakkv/latest/using/admin/riak-cli/
 ---
 
 [configuration file]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/
@@ -198,4 +201,6 @@ riak config { generate | effective | describe VARIABLE } [-l debug]
     ```
 
 Adding the `-l debug` flag to any `riak config` command will produce additional debugging information that can be used in advanced troubleshooting of "cuttlefish", Riak's configuration subsystem.
+
+
 
