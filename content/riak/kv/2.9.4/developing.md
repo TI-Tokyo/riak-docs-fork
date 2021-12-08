@@ -11,7 +11,6 @@ menu:
     pre: lambda
 toc: true
 aliases:
-  - /riak/kv/latest/developing/
 ---
 
 [getting started]: ../developing/getting-started

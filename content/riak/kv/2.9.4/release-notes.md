@@ -15,7 +15,6 @@ aliases:
   - /riak/kv/2.9.4/intro-v20
   - /riak/2.9.4/intro-v20
   - /riak/kv/2.9.4/introduction
-  - /riak/kv/latest/release-notes/
 ---
 
 Released Jul 03, 2020.

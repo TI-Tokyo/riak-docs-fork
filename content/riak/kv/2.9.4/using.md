@@ -11,7 +11,6 @@ menu:
     pre: database
 toc: true
 aliases:
-  - /riak/kv/latest/using/
 ---
 
 [use running cluster]: ../using/running-a-cluster

@@ -11,7 +11,6 @@ menu:
     pre: tools
 toc: true
 aliases:
-  - /riak/kv/latest/add-ons/
 ---
 
 

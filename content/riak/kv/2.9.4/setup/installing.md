@@ -16,7 +16,6 @@ aliases:
   - /riak/kv/2.9.4/ops/building/installing
   - /riak/2.9.4/installing/
   - /riak/kv/2.9.4/installing/
-  - /riak/kv/latest/setup/installing/
 ---
 
 [install aws]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/amazon-web-services

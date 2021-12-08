@@ -11,7 +11,6 @@ menu:
     pre: install
 toc: false
 aliases:
-  - /riak/kv/latest/setup/
 ---
 
 [plan index]: ../setup/planning

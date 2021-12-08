@@ -11,7 +11,6 @@ menu:
     parent: "setup_index"
 toc: true
 aliases:
-  - /riak/kv/latest/setup/upgrading/
 ---
 
 [upgrade checklist]: ./checklist

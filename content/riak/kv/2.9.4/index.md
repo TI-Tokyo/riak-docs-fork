@@ -12,7 +12,6 @@ menu:
 toc: false
 aliases:
   - /riak/2.9.4/
-  - /riak/kv/latest/
 ---
 
 [aboutenterprise]: https://www.tiot.jp/en/about-us/contact-us/

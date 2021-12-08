@@ -11,7 +11,6 @@ menu:
     pre: cog
 toc: true
 aliases:
-  - /riak/kv/latest/configuring/
 ---
 
 [config basic]: ../configuring/basic
