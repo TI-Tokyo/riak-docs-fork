@@ -26,8 +26,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/repair-recovery/repairs/
   - /riak/kv/2.9.0p3/using/repair-recovery/repairs/
   - /riak/kv/2.9.0p4/using/repair-recovery/repairs/
-  - /riak/kv/latest/using/repair-recovery/repairs/
-  - /riak/latest/ops/running/recovery/repairing-partitions/  
 ---
 
 

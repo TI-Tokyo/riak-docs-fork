@@ -637,3 +637,4 @@ curl http://localhost:8098/types/hlls/buckets/hello/datatypes/darkness
 # Response
 {"type":"hll","value":"4"}
 ```
+

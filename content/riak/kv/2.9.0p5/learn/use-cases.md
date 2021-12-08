@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/use-cases/
   - /riak/kv/2.9.0p3/learn/use-cases/
   - /riak/kv/2.9.0p4/learn/use-cases/
-  - /riak/kv/latest/learn/use-cases/
 ---
 
 

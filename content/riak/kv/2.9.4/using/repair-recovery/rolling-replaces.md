@@ -69,3 +69,4 @@ riak-admin transfers
 7\. Repeat steps 2-6 above until each node has been replaced.
 
 8\. Join the replaced node back into the cluster or decommission the additional node that was created.
+

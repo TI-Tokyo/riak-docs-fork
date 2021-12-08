@@ -283,3 +283,4 @@ information can be found in the [Object Updates][usage updating objects] doc.
 * [Improving Logical Clocks in Riak with Dotted Version Vectors: A Case Study]
 * [Dotted Version Vector Sets]
 * [A History of Time in Riak]
+

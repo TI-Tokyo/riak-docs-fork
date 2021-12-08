@@ -21,7 +21,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/faq/
   - /riak/kv/2.9.0p3/developing/faq/
   - /riak/kv/2.9.0p4/developing/faq/
-  - /riak/kv/latest/developing/faq/
 ---
 
 

@@ -208,3 +208,4 @@ So to recap:
 
 [taste_of_riak]: https://github.com/basho/taste-of-riak
 [master_zip]: https://github.com/basho/taste-of-riak/archive/master.zip
+

@@ -63,9 +63,15 @@ a strongly consistent fashion. This document pertains to usage of Riak
 as an _eventually_ consistent system. If you'd like to use Riak's
 strong consistency feature, please refer to the following documents:
 >
-> * [Using Strong Consistency]({{<baseurl>}}riak/kv/2.9.4/developing/app-guide/strong-consistency) --- A guide for developers
-> * [Managing Strong Consistency]({{<baseurl>}}riak/kv/2.9.4/configuring/strong-consistency) --- A guide for operators
-> * [strong consistency][use ref strong consistency] --- A more theoretical explication of strong
+> * [Using Strong Consistency]({{<baseurl>}}riak/kv/2.9.4/developing/app-guide/strong-consistency)
+---
+A guide for developers
+> * [Managing Strong Consistency]({{<baseurl>}}riak/kv/2.9.4/configuring/strong-consistency)
+---
+A guide for operators
+> * [strong consistency][use ref strong consistency]
+---
+A more theoretical explication of strong
   consistency
 
 ## Client- and Server-side Conflict Resolution
@@ -203,11 +209,15 @@ multiple possible values for an object and can't figure out which one is
 most causally recent. The following scenarios can create sibling values
 inside of a single object:
 
-1. **Concurrent writes** --- If two writes occur simultaneously from
+1. **Concurrent writes**
+---
+If two writes occur simultaneously from
 clients, Riak may not be able to choose a single value to store, in
 which case the object will be given a sibling. These writes could happen
 on the same node or on different nodes.
-2. **Stale causal context** --- Writes from any client using a stale
+2. **Stale causal context**
+---
+Writes from any client using a stale
 [causal context]({{<baseurl>}}riak/kv/2.9.4/learn/concepts/causal-context). This is a less likely scenario if a client updates
 the object by reading the object first, fetching the causal context
 currently attached to the object, and then returning that causal context
@@ -219,7 +229,9 @@ taking place. This may cause the first client to issue the write with an
 old causal context value and for a sibling to be created. A client is
 "misbehaved" if it habitually updates objects with a stale or no context
 object.
-3. **Missing causal context** --- If an object is updated with no causal
+3. **Missing causal context**
+---
+If an object is updated with no causal
 context attached, siblings are very likely to be created. This is an
 unlikely scenario if you're using a Basho client library, but it _can_
 happen if you are manipulating objects using a client like `curl` and
@@ -675,3 +687,4 @@ Additional background information on vector clocks:
 * [Why Vector Clocks are Easy](http://basho.com/why-vector-clocks-are-easy/)
 * [Why Vector Clocks are Hard](http://basho.com/why-vector-clocks-are-hard/)
 * The vector clocks used in Riak are based on the [work of Leslie Lamport](http://portal.acm.org/citation.cfm?id=359563)
+

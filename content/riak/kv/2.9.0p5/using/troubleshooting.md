@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/troubleshooting/
   - /riak/kv/2.9.0p3/using/troubleshooting/
   - /riak/kv/2.9.0p4/using/troubleshooting/
-  - /riak/kv/latest/using/troubleshooting/
 ---
 
 

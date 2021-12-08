@@ -267,3 +267,4 @@ output:
 
 As we can see, `password` is set as the security source for `riakuser`,
 whereas everyone else will authenticate using `certificate`.
+

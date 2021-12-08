@@ -15,6 +15,7 @@ aliases:
   - /riak/kv/2.9.4/intro-v20
   - /riak/2.9.4/intro-v20
   - /riak/kv/2.9.4/introduction
+  - /riak/kv/latest/release-notes/
 ---
 
 Released Apr 08, 2020.
@@ -40,3 +41,5 @@ This release includes:
 ## Previous Release Notes
 
 Please see the KV 2.9.2 release notes [here]({{<baseurl>}}riak/kv/2.9.2/release-notes/), the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/), and the KV 2.9.0p5 release notes [here]({{<baseurl>}}riak/kv/2.9.0p5/release-notes/).
+
+

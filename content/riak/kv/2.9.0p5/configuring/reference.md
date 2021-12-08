@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/reference/
   - /riak/kv/2.9.0p3/configuring/reference/
   - /riak/kv/2.9.0p4/configuring/reference/
-  - /riak/kv/latest/configuring/reference/
 ---
 
 

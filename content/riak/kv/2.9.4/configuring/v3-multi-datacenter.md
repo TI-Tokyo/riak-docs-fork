@@ -155,3 +155,4 @@ To replicate between Riak KV versions 2.2.0 or greater and Riak KV clusters less
 ```
 
 If all of the Replication clusters are running Riak KV 2.2.0 or greater, this override is no longer necessary and should be removed.
+

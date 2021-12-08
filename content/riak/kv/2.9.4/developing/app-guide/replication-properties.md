@@ -411,10 +411,18 @@ Riak provides a number of "symbolic" consistency options for R, W, PR,
 RW, and DW that are often easier to use and understand than specifying
 integer values. The following symbolic names are available:
 
-* `all` --- All replicas must reply. This is the same as setting R, W, PR, RW, or DW equal to N.
-* `one` --- This is the same as setting 1 as the value for R, W, PR, RW, or DW.
-* `quorum` --- A majority of the replicas must respond, that is, half plus one. For the default N value of 3, this calculates to 2, an N value of 5 calculates to 3, and so on.
-* `default` --- Uses whatever the per-bucket consistency property is for R, W, PR, RW, or DW, which may be any of the above symbolic values or an integer.
+* `all`
+---
+All replicas must reply. This is the same as setting R, W, PR, RW, or DW equal to N.
+* `one`
+---
+This is the same as setting 1 as the value for R, W, PR, RW, or DW.
+* `quorum`
+---
+A majority of the replicas must respond, that is, half plus one. For the default N value of 3, this calculates to 2, an N value of 5 calculates to 3, and so on.
+* `default`
+---
+Uses whatever the per-bucket consistency property is for R, W, PR, RW, or DW, which may be any of the above symbolic values or an integer.
 
 Not submitting a value for R, W, PR, RW, or DW is the same as using
 `default`.
@@ -578,3 +586,4 @@ id="http://player.vimeo.com/video/11172656"></div>
 <a href="http://vimeo.com/11172656">Tuning CAP Controls in Riak</a> from
 <a href="http://vimeo.com/bashotech">Basho Technologies</a> on <a
 href="http://vimeo.com">Vimeo</a>.
+

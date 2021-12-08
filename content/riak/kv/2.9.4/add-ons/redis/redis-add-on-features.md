@@ -129,3 +129,4 @@ full object lifetime for a key-value is represented by the following
 sequence diagram:
 
 ![Object lifetime sequence diagram]({{<baseurl>}}images/redis/Object_lifetime.msc.png)
+

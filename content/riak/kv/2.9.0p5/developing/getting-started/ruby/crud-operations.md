@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/getting-started/ruby/crud-operations/
   - /riak/kv/2.9.0p3/developing/getting-started/ruby/crud-operations/
   - /riak/kv/2.9.0p4/developing/getting-started/ruby/crud-operations/
-  - /riak/kv/latest/developing/getting-started/ruby/crud-operations/
 ---
 
 

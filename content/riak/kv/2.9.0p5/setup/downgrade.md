@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/downgrade/
   - /riak/kv/2.9.0p3/setup/downgrade/
   - /riak/kv/2.9.0p4/setup/downgrade/
-  - /riak/kv/latest/setup/downgrade/
 ---
 
 

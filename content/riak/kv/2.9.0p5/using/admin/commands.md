@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/admin/commands/
   - /riak/kv/2.9.0p3/using/admin/commands/
   - /riak/kv/2.9.0p4/using/admin/commands/
-  - /riak/kv/latest/using/admin/commands/
 ---
 
 

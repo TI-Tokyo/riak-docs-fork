@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/dynamo/
   - /riak/kv/2.9.0p3/learn/dynamo/
   - /riak/kv/2.9.0p4/learn/dynamo/
-  - /riak/kv/latest/learn/dynamo/
 ---
 
 

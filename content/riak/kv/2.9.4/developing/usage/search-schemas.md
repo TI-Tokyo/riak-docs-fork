@@ -505,3 +505,4 @@ the case.
 ```erlang
 {analyzer_factory, {erlang, text_analyzers, noop_analyzer_factory}}}
 ```
+

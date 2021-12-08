@@ -165,3 +165,4 @@ Next let’s clean up our mess:
 riakc_pb_socket:delete(Pid, <<"books">>, <<"1111979723">>).
 riakc_pb_socket:stop(Pid).
 ```
+

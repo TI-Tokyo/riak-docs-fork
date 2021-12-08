@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/key-value-modeling/
   - /riak/kv/2.9.0p3/developing/key-value-modeling/
   - /riak/kv/2.9.0p4/developing/key-value-modeling/
-  - /riak/kv/latest/developing/key-value-modeling/
 ---
 
 

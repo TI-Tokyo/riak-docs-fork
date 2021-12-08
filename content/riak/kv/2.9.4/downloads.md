@@ -19,4 +19,8 @@ listed_projects:
 aliases:
   - /riak/2.9.4/downloads
   - /riak/kv/2.9.4/downloads
+  - /riak/kv/latest/downloads/
+  - /riak/latest/downloads/
 ---
+
+

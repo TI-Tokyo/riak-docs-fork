@@ -385,3 +385,4 @@ cluster. From a `riak attach` session the below command can be used:
 ```erlang
 rpc:call('dev1@127.0.0.1', riak_core_vnode_manager, kill_repairs, [killed_by_user]).
 ```
+

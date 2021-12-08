@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/app-guide/strong-consistency/
   - /riak/kv/2.9.0p3/developing/app-guide/strong-consistency/
   - /riak/kv/2.9.0p4/developing/app-guide/strong-consistency/
-  - /riak/kv/latest/developing/app-guide/strong-consistency/
 ---
 
 

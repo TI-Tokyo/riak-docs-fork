@@ -23,7 +23,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/installing/freebsd/
   - /riak/kv/2.9.0p3/setup/installing/freebsd/
   - /riak/kv/2.9.0p4/setup/installing/freebsd/
-  - /riak/kv/latest/setup/installing/freebsd/
 ---
 
 

@@ -351,3 +351,4 @@ the Riak Ring, and they coordinate requests for these partitions.
 * [vnodes][glossary vnode]
 * [Clusters][concept clusters]
 * [Dynamo][learn dynamo]
+

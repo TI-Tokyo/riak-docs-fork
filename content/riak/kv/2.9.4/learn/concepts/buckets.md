@@ -211,3 +211,4 @@ bucket.get_properties()
 ```curl
 curl http://localhost:8087/types/my_custom_type/buckets/animals/props
 ```
+

@@ -232,3 +232,4 @@ access should take this into account. Because Riak is clustered and your
 data is stored on multiple physical nodes, you should consider forgoing
 a traditional RAID setup for redundancy and focus on providing the least
 latency possible using SATA Drives or SSDs, for example.
+

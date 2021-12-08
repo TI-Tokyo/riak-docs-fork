@@ -29,9 +29,13 @@ GET /search/index/<index_name>
 
 ## Typical Error Codes
 
-* `404 Object Not Found` --- No Search index with that name is currently
+* `404 Object Not Found`
+---
+No Search index with that name is currently
     available
-* `503 Service Unavailable` --- The request timed out internally
+* `503 Service Unavailable`
+---
+The request timed out internally
 
 ## Response
 
@@ -45,3 +49,4 @@ index, including its name, the [`n_val`]({{<baseurl>}}riak/kv/2.9.4/developing/a
   "schema": "_yz_default"
 }
 ```
+

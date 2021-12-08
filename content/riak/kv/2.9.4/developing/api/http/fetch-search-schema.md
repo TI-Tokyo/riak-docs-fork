@@ -30,9 +30,12 @@ GET /search/schema/<schema_name>
 ## Typical Error Codes
 
 * `404 Object Not Found`
-* `503 Service Unavailable` --- The request timed out internally
+* `503 Service Unavailable`
+---
+The request timed out internally
 
 ## Response
 
 If the schema is found, Riak will return the contents of the schema as
 XML (all Riak Search schemas are XML).
+

@@ -116,3 +116,4 @@ $riak = new Riak([$node]);
 
 Certificate-based authentication is not currently supported in the
 official Riak PHP client due to limitations in the HTTP interface.
+

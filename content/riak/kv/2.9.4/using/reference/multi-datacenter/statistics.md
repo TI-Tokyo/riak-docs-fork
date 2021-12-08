@@ -238,3 +238,4 @@ A simple way to view formatted statistics is to use a command such as:
 ```curl
 curl -q http://127.0.0.1:8098/riak-repl/stats | json_pp
 ```
+

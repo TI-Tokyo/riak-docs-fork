@@ -231,3 +231,4 @@ see the health of each [vnode]({{<baseurl>}}riak/kv/2.9.4/learn/glossary/#vnode)
 Most of the time, your ring will be too large to effectively manage from
 the ring view. That said, with filters you can easily identify partition
 ownership, unreachable primaries, and in-progress handoffs.
+

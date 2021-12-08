@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/
   - /riak/kv/2.9.0p3/
   - /riak/kv/2.9.0p4/
-  - /riak/kv/latest/
 ---
 
 [aboutenterprise]: https://www.tiot.jp/en/about-us/contact-us/

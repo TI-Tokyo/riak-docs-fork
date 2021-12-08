@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/security/
   - /riak/kv/2.9.0p3/using/security/
   - /riak/kv/2.9.0p4/using/security/
-  - /riak/kv/latest/using/security/
 ---
 
 

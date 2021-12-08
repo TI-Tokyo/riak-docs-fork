@@ -59,3 +59,4 @@ Erlang <<0,0,0,7,4,10,4,1,101,1,181>>
 RpbGetClientIdResp protoc decode:
 client_id: "001e001265"
 ```
+

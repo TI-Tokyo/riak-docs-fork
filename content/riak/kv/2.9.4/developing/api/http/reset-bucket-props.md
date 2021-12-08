@@ -55,3 +55,4 @@ $ curl -XDELETE -v localhost:8098/buckets/bucket/props                          
 * Connection #0 to host localhost left intact
 * Closing connection #0
 ```
+

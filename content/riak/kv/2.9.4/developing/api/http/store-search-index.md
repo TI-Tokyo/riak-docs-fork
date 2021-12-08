@@ -43,10 +43,17 @@ More information can be found in [Using Search]({{<baseurl>}}riak/kv/2.9.4/devel
 
 ## Normal Response Codes
 
-* `204 No Content` --- The index has been successfully created
+* `204 No Content`
+---
+The index has been successfully created
 
 ## Typical Error Codes
 
-* `409 Conflict` --- The index cannot be created because there is
+* `409 Conflict`
+---
+The index cannot be created because there is
     already an index with that name
-* `503 Service Unavailable` --- The request timed out internally
+* `503 Service Unavailable`
+---
+The request timed out internally
+

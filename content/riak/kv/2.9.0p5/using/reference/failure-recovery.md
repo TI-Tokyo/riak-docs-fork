@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/reference/failure-recovery/
   - /riak/kv/2.9.0p3/using/reference/failure-recovery/
   - /riak/kv/2.9.0p4/using/reference/failure-recovery/
-  - /riak/kv/latest/using/reference/failure-recovery/
 ---
 
 

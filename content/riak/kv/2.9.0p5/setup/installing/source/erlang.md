@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/installing/source/erlang/
   - /riak/kv/2.9.0p3/setup/installing/source/erlang/
   - /riak/kv/2.9.0p4/setup/installing/source/erlang/
-  - /riak/kv/latest/setup/installing/source/erlang/
 ---
 
 

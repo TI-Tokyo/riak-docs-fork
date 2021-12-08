@@ -625,3 +625,4 @@ riakc_gset:size(20191117Gset3).
 # With the HTTP interface, this can be determined from the output of
 # a fetch command like the one displayed in the example above
 ```
+

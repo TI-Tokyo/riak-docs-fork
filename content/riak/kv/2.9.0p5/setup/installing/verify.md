@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/installing/verify/
   - /riak/kv/2.9.0p3/setup/installing/verify/
   - /riak/kv/2.9.0p4/setup/installing/verify/
-  - /riak/kv/latest/setup/installing/verify/
 ---
 
 

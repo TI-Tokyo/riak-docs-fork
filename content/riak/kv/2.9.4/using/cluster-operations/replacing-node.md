@@ -93,3 +93,4 @@ when you start the new node and the ring settles with the new IP info.
 The ring is considered settled when the new node reports `true` when you run
 the `riak-admin ringready` command.
 {{% /note %}}
+

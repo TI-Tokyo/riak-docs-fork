@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/api/http/delete-object/
   - /riak/kv/2.9.0p3/developing/api/http/delete-object/
   - /riak/kv/2.9.0p4/developing/api/http/delete-object/
-  - /riak/kv/latest/developing/api/http/delete-object/
 ---
 
 Deletes an object from the specified bucket / key.

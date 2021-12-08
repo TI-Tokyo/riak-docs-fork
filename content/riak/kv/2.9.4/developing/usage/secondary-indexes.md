@@ -857,12 +857,20 @@ curl -v -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/veronica \
 The above objects will end up having the following secondary indexes,
 respectively:
 
-* `Larry` --- Binary index `field1_bin` and integer index `field2_int`
-* `Moe` --- Binary index `field1_bin` and integer index `field2_int`
+* `Larry`
+---
+Binary index `field1_bin` and integer index `field2_int`
+* `Moe`
+---
+Binary index `field1_bin` and integer index `field2_int`
   (note that the index names are set to lowercase by Riak)
-* `Curly` --- Binary index `field1_bin` and integer index `field2_int`
+* `Curly`
+---
+Binary index `field1_bin` and integer index `field2_int`
   (note again that the index names are set to lowercase)
-* `Veronica` --- Binary index `field1_bin` with the values `val4`,
+* `Veronica`
+---
+Binary index `field1_bin` with the values `val4`,
   `val4a`, and `val4b` and integer index `field2_int` with the values
   `1004`, `1005`, `1006`, and `1007` (note that redundancies have been removed)
 
@@ -2024,3 +2032,4 @@ curl -XPOST localhost:8098/mapred\
 }
 EOF
 ```
+

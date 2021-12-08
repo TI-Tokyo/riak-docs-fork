@@ -21,7 +21,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/usage/security/ruby/
   - /riak/kv/2.9.0p3/developing/usage/security/ruby/
   - /riak/kv/2.9.0p4/developing/usage/security/ruby/
-  - /riak/kv/latest/developing/usage/security/ruby/
 ---
 
 

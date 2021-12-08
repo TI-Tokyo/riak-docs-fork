@@ -160,3 +160,4 @@ Mean PUT time (microseconds)
 **nodePutTimeMedian**  
 *Type:* Gauge  
 Median PUT time (microseconds)
+

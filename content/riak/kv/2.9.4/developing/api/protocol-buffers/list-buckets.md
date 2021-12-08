@@ -39,7 +39,9 @@ message RpbListBucketsResp {
 
 Values
 
-* `buckets` --- Buckets on the server
+* `buckets`
+---
+Buckets on the server
 
 ## Example
 
@@ -74,3 +76,4 @@ buckets: "b2"
 buckets: "b6"
 buckets: "b7"
 ```
+

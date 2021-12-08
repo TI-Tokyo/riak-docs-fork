@@ -98,3 +98,4 @@ Additionally, Bitcask relies on your operating system's filesystem cache
 to deliver high performance reads. So when sizing your cluster, take
 this into account and plan on having several more gigabytes of RAM
 available for your filesystem cache.
+

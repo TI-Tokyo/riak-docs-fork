@@ -139,3 +139,4 @@ This process is explored in more detail in [Adding and Removing Nodes][cluster o
 * You should use HAProxy or your application servers to limit new
   network connections to keep network and IO below 90% and CPU below
   30%.
+

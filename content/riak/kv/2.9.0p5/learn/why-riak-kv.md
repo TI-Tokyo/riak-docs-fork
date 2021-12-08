@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/why-riak-kv/
   - /riak/kv/2.9.0p3/learn/why-riak-kv/
   - /riak/kv/2.9.0p4/learn/why-riak-kv/
-  - /riak/kv/latest/learn/why-riak-kv/
 ---
 
 

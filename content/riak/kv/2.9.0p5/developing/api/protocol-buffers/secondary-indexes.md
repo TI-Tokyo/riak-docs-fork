@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/api/protocol-buffers/secondary-indexes/
   - /riak/kv/2.9.0p3/developing/api/protocol-buffers/secondary-indexes/
   - /riak/kv/2.9.0p4/developing/api/protocol-buffers/secondary-indexes/
-  - /riak/kv/latest/developing/api/protocol-buffers/secondary-indexes/
 ---
 
 

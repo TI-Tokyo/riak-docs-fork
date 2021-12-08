@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/global-object-expiration/
   - /riak/kv/2.9.0p3/configuring/global-object-expiration/
   - /riak/kv/2.9.0p4/configuring/global-object-expiration/
-  - /riak/kv/latest/configuring/global-object-expiration/
 ---
 
 

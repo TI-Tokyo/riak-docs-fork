@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/strong-consistency/
   - /riak/kv/2.9.0p3/configuring/strong-consistency/
   - /riak/kv/2.9.0p4/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
 ---
 
 

@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/security/best-practices/
   - /riak/kv/2.9.0p3/using/security/best-practices/
   - /riak/kv/2.9.0p4/using/security/best-practices/
-  - /riak/kv/latest/using/security/best-practices/
 ---
 
 

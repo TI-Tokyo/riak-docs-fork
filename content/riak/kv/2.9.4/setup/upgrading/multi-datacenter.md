@@ -11,8 +11,12 @@ project_version: 2.9.4
 #    weight: 103
 #    parent: "upgrading"
 toc: true
+aliases:
+  - /riak/kv/latest/setup/upgrading/multi-datacenter/
 ---
 
 ## TODO
 
 How to update to a new version with multi-datacenter.
+
+

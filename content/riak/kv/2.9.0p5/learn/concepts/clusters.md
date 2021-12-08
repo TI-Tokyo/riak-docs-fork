@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/concepts/clusters/
   - /riak/kv/2.9.0p3/learn/concepts/clusters/
   - /riak/kv/2.9.0p4/learn/concepts/clusters/
-  - /riak/kv/latest/learn/concepts/clusters/
 ---
 
 

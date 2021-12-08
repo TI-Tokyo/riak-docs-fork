@@ -153,3 +153,4 @@ The [Multi]({{<baseurl>}}riak/kv/2.9.4/setup/planning/backend/multi) backend doe
 support asynchronous writes. Therefore, if LevelDB is used with the Multi
 backend, it will be used in synchronous mode.
 {{% /note %}}
+

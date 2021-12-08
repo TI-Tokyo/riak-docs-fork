@@ -193,3 +193,4 @@ Replication, you can configure Riak 1.2+ to communicate over SSL, to
 seamlessly encrypt the message traffic.
 
 See also: [Multi Data Center Replication: SSL][config v3 ssl]
+

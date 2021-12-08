@@ -233,3 +233,4 @@ cluster.
 ## Joining the nodes together
 
 Please see [Running A Cluster][use running cluster] for the cluster creation process.
+

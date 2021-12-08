@@ -16,6 +16,7 @@ aliases:
   - /riak/kv/2.9.4/ops/building/installing/Installing-on-AWS-Marketplace
   - /riak/2.9.4/installing/amazon-web-services/
   - /riak/kv/2.9.4/installing/amazon-web-services/
+  - /riak/kv/latest/setup/installing/amazon-web-services/
 ---
 
 
@@ -146,3 +147,5 @@ sudo rpm -i riak_2.9.0-1.amzn1x86_64.rpm
 ## Next Steps
 
 Now that Riak is installed and you have set the [Security Group Settings](#security-group-settings), check out [Verifying a Riak Installation][install verify].
+
+

@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/add-ons/redis/redis-add-on-features/
   - /riak/kv/2.9.0p3/add-ons/redis/redis-add-on-features/
   - /riak/kv/2.9.0p4/add-ons/redis/redis-add-on-features/
-  - /riak/kv/latest/add-ons/redis/redis-add-on-features/
 ---
 
 

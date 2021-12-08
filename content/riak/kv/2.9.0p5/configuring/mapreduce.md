@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/mapreduce/
   - /riak/kv/2.9.0p3/configuring/mapreduce/
   - /riak/kv/2.9.0p4/configuring/mapreduce/
-  - /riak/kv/latest/configuring/mapreduce/
 ---
 
 

@@ -143,3 +143,4 @@ which can entail a performance hit of varying proportions, depending on
 a variety of factors.
 
 Ways to address this issue can be found in [strong consistency and performance]({{<baseurl>}}riak/kv/2.9.4/configuring/strong-consistency/#performance).
+

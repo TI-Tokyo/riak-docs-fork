@@ -56,3 +56,4 @@ This example shows a basic sibling resolution strategy in which the first
 sibling is chosen as the canonical value via a conflict resolution function.
 
 [*Example:* resolving siblings via `conflictResolver](https://github.com/basho/riak-nodejs-client-examples/blob/master/dev/using/conflict-resolution.js#L135-L170)
+

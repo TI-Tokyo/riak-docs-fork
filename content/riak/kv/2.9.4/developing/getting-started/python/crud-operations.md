@@ -143,3 +143,4 @@ Finally, let’s clean up our mess:
 ```python
 fetchedBook.delete()
 ```
+

@@ -219,3 +219,4 @@ according to which the majority of nodes must respond.
 
 There is more on [replication properties][apps replication properties] elsewhere in the
 documentation.
+

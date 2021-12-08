@@ -25,11 +25,15 @@ GET /search/query/<index_name>
 
 ## Optional Query Parameters
 
-* `wt` --- The [response
+* `wt`
+---
+The [response
     writer](https://cwiki.apache.org/confluence/display/solr/Response+Writers)
     to be used when returning the Search payload. The currently
     available options are `json` and `xml`. The default is `xml`.
-* `q` --- The actual Search query itself. Examples can be found in
+* `q`
+---
+The actual Search query itself. Examples can be found in
     [Using Search]({{<baseurl>}}riak/kv/2.9.4/developing/usage/search). If a query is not specified, Riak will return
     information about the index itself, e.g. the number of documents
     indexed.
@@ -40,11 +44,17 @@ GET /search/query/<index_name>
 
 ## Typical Error Codes
 
-* `400 Bad Request` --- Returned when, for example, a malformed query is
+* `400 Bad Request`
+---
+Returned when, for example, a malformed query is
     supplied
-* `404 Object Not Found` --- Returned if the Search index you are
+* `404 Object Not Found`
+---
+Returned if the Search index you are
     attempting to query does not exist
-* `503 Service Unavailable` --- The request timed out internally
+* `503 Service Unavailable`
+---
+The request timed out internally
 
 ## Response
 
@@ -67,3 +77,4 @@ has no documents associated with it:
   }
 }
 ```
+

@@ -21,7 +21,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/reference/jmx/
   - /riak/kv/2.9.0p3/using/reference/jmx/
   - /riak/kv/2.9.0p4/using/reference/jmx/
-  - /riak/kv/latest/using/reference/jmx/
 ---
 
 

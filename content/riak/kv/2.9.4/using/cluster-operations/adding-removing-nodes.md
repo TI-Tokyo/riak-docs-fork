@@ -192,3 +192,4 @@ To pause during `riak-admin cluster join` or `riak-admin cluster leave`, set the
 ```bash
 riak-admin transfer-limit <node> 0
 ```
+

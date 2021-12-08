@@ -60,3 +60,4 @@ Erlang <<0,0,0,1,6>>
 
 RpbSetClientIdResp - only message code defined
 ```
+

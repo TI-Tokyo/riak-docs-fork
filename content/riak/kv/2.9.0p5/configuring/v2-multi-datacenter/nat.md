@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/v2-multi-datacenter/nat/
   - /riak/kv/2.9.0p3/configuring/v2-multi-datacenter/nat/
   - /riak/kv/2.9.0p4/configuring/v2-multi-datacenter/nat/
-  - /riak/kv/latest/configuring/v2-multi-datacenter/nat/
 ---
 
 

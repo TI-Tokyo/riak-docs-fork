@@ -108,3 +108,4 @@ Valid:1 / Leaving:0 / Exiting:0 / Joining:0 / Down:0
     ```bash
     riak-admin cluster commit
     ```
+

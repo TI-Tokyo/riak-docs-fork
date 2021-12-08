@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/upgrading/multi-datacenter/
   - /riak/kv/2.9.0p3/setup/upgrading/multi-datacenter/
   - /riak/kv/2.9.0p4/setup/upgrading/multi-datacenter/
-  - /riak/kv/latest/setup/upgrading/multi-datacenter/
 ---
 
 

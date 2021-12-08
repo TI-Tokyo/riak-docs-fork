@@ -57,3 +57,4 @@ binary (as `name`). Optionally, you can specify a [`schema`]({{<baseurl>}}riak/k
 index is stored (for GET requests) or on which you wish the index to be
 stored (for PUT requests). An index's `n_val` must match the associated
 bucket's `n_val`.
+

@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/upgrading/version/
   - /riak/kv/2.9.0p3/setup/upgrading/version/
   - /riak/kv/2.9.0p4/setup/upgrading/version/
-  - /riak/kv/latest/setup/upgrading/version/
 ---
 
 [production checklist]: {{<baseurl>}}riak/kv/2.9.0p5/setup/upgrading/checklist

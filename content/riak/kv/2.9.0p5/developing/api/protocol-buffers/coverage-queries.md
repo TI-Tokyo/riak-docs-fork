@@ -15,10 +15,6 @@ toc: true
 aliases:
   - /riak/2.9.0p5/dev/references/protocol-buffers/coverage-queries
   - /riak/kv/2.9.0p5/dev/references/protocol-buffers/coverage-queries
-  - /riak/latest/dev/references/protocol-buffers/coverage-queries
-  - /riak/kv/latest/dev/references/protocol-buffers/coverage-queries
-  - /riak/latest/developing/api/protocol-buffers/coverage-queries/
-  - /riak/kv/latest/developing/api/protocol-buffers/coverage-queries/
 ---
 
 Prepare for parallelizable

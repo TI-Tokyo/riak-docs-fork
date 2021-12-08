@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/upgrading/checklist/
   - /riak/kv/2.9.0p3/setup/upgrading/checklist/
   - /riak/kv/2.9.0p4/setup/upgrading/checklist/
-  - /riak/kv/latest/setup/upgrading/checklist/
 ---
 
 

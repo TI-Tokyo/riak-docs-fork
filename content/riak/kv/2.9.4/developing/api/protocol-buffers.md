@@ -133,8 +133,12 @@ message RpbErrorResp {
 
 ### Values
 
-* `errmsg` --- A string representation of what went wrong
-* `errcode` --- A numeric code. Currently, only `RIAKC_ERR_GENERAL=1`
+* `errmsg`
+---
+A string representation of what went wrong
+* `errcode`
+---
+A numeric code. Currently, only `RIAKC_ERR_GENERAL=1`
   is defined.
 
 ## Bucket Operations
@@ -183,3 +187,4 @@ message RpbErrorResp {
 * [PBC Yokozuna Index Delete]({{<baseurl>}}riak/kv/2.9.4/developing/api/protocol-buffers/yz-index-delete)
 * [PBC Yokozuna Schema Get]({{<baseurl>}}riak/kv/2.9.4/developing/api/protocol-buffers/yz-schema-get)
 * [PBC Yokozuna Schema Put]({{<baseurl>}}riak/kv/2.9.4/developing/api/protocol-buffers/yz-schema-put)
+

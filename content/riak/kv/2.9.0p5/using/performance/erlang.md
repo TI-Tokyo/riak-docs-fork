@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/performance/erlang/
   - /riak/kv/2.9.0p3/using/performance/erlang/
   - /riak/kv/2.9.0p4/using/performance/erlang/
-  - /riak/kv/latest/using/performance/erlang/
 ---
 
 Riak was written almost exclusively in [Erlang](http://www.erlang.org)

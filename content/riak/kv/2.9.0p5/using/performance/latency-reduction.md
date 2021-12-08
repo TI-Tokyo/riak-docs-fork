@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/performance/latency-reduction/
   - /riak/kv/2.9.0p3/using/performance/latency-reduction/
   - /riak/kv/2.9.0p4/using/performance/latency-reduction/
-  - /riak/kv/latest/using/performance/latency-reduction/
 ---
 
 

@@ -16,6 +16,7 @@ aliases:
   - /riak/kv/2.9.4/ops/building/Installing-Riak-from-Source
   - /riak/2.9.4/installing/source/
   - /riak/kv/2.9.4/installing/source/
+  - /riak/kv/latest/setup/installing/source/
 ---
 
 
@@ -103,3 +104,5 @@ Riak is not currently supported on Microsoft Windows.
 ## Next Steps
 
 Now that Riak is installed, check out [Verifying a Riak Installation][install verify].
+
+

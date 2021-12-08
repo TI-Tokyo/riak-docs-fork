@@ -96,3 +96,4 @@ To enable cascading:
 To disable cascading:
 
 `riak-repl realtime cascades never`
+

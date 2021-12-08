@@ -272,3 +272,4 @@ recommend the following documents for getting started:
 
 A wide variety of other documentation is available from the Solr OSS
 community.
+

@@ -365,3 +365,4 @@ Once this duration elapses, all existing processes are killed.
 Decreasing shutdown time can be useful in situations in which you are
 frequently starting and stopping a cluster, e.g. in test clusters. In
 `vm.args` you can set the `-shutdown_time` flag in milliseconds.
+

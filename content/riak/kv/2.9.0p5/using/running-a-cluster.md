@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/running-a-cluster/
   - /riak/kv/2.9.0p3/using/running-a-cluster/
   - /riak/kv/2.9.0p4/using/running-a-cluster/
-  - /riak/kv/latest/using/running-a-cluster/
 ---
 
 

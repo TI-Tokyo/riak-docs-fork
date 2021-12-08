@@ -112,3 +112,4 @@ SecurityOptions = [
                   ],
 {ok, Pid} = riakc_pb_socket:start("127.0.0.1", 8087, SecurityOptions).
 ```
+

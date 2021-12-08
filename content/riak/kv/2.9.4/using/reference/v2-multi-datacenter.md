@@ -33,3 +33,4 @@ Overview of the architecture undergirding Riak's Multi-Datacenter Replication ca
 Brief tutorial on scheduling fullsync operations.
 
 [Learn More >>][v2 mdc fullsync]
+

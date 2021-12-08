@@ -108,3 +108,4 @@ message RpbCommitHook {
 {{% note title="Note on `RpbReplMode`" %}}
 The `RpbReplMode` is of use only to users of Riak CS's [Multi-Datacenter Replication capabilities]({{< baseurl >}}riak/cs/2.1.1/cookbooks/multi-datacenter-overview/)
 {{% /note %}}
+

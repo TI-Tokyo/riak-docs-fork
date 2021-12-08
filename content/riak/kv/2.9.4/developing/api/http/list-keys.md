@@ -74,3 +74,4 @@ thinking.png","victory.gif","slides","joyent.png","seancribbs-small.jpg","
 trollface.jpg","riak_logo_animated1.gif","victory.jpg","challenge.png","
 team_cribbs.png"]}
 ```
+

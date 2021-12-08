@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/usage/document-store/
   - /riak/kv/2.9.0p3/developing/usage/document-store/
   - /riak/kv/2.9.0p4/developing/usage/document-store/
-  - /riak/kv/latest/developing/usage/document-store/
 ---
 
 

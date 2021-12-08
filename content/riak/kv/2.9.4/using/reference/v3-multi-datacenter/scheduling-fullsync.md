@@ -66,3 +66,4 @@ Additional fullsync stats per sink have been added in Riak.
   specified cluster began.
 * `last_fullsync_duration` &mdash; The duration (in seconds) of the last
   completed fullsync.
+

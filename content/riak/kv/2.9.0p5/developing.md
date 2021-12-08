@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/
   - /riak/kv/2.9.0p3/developing/
   - /riak/kv/2.9.0p4/developing/
-  - /riak/kv/latest/developing/
 ---
 
 

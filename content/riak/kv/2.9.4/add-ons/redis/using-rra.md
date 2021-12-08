@@ -240,3 +240,4 @@ As with RRA, Redis statistics available on the Redis client port allow for monit
 * Custom - http://volumelabs.net/redis_monitoring/
 * NewRelic - http://newrelic.com/plugins/poison-pen-llc/28
 * Nagios - https://exchange.nagios.org/directory/Plugins/Databases/check_redis-2Epl/details
+

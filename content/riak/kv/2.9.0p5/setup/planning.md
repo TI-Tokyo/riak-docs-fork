@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/planning/
   - /riak/kv/2.9.0p3/setup/planning/
   - /riak/kv/2.9.0p4/setup/planning/
-  - /riak/kv/latest/setup/planning/
 ---
 
 

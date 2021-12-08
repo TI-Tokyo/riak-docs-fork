@@ -43,3 +43,4 @@ At the end of the sync window:
 ## Stop fullsync until start of next sync window
 riak-repl pause-fullsync
 ```
+

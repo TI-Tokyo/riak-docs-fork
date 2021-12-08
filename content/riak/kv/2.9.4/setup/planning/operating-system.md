@@ -23,3 +23,4 @@ Basho provides [binary packages][downloads] of Riak KV for the following distrib
 * **Red Hat based:** Red Hat Enterprise Linux, CentOS, Fedora Core
 * **Debian based:** Debian, Ubuntu
 * **Solaris based:** Sun Solaris, OpenSolaris
+

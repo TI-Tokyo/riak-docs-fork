@@ -148,11 +148,21 @@ the cluster). Must be a power of 2. The minimum is 8 and the maximum is
 
 Riak enables you to choose from the following storage backends:
 
-* [Bitcask][plan backend bitcask] --- [configuration][config backend bitcask]
-* [LevelDB][plan backend leveldb] --- [configuration][config backend leveldb]
-* [Leveled][plan backend leveled] --- [configuration][config backend leveled]
-* [Memory][plan backend memory] --- [configuration][config backend memory]
-* [Multi][plan backend multi] --- [configuration][config backend multi]
+* [Bitcask][plan backend bitcask]
+---
+[configuration][config backend bitcask]
+* [LevelDB][plan backend leveldb]
+---
+[configuration][config backend leveldb]
+* [Leveled][plan backend leveled]
+---
+[configuration][config backend leveled]
+* [Memory][plan backend memory]
+---
+[configuration][config backend memory]
+* [Multi][plan backend multi]
+---
+[configuration][config backend multi]
 
 <table class="riak-conf">
 <thead>
@@ -2028,3 +2038,4 @@ Field | Default | Valid values |
 `cluster.job.riak_kv.secondary_index`|`enabled`|`enabled` or `disabled`
 `cluster.job.riak_search.query`|`enabled`|`enabled` or `disabled`
 `cluster.job.yokozuna.query`|`enabled`|`enabled` or `disabled`
+

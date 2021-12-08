@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/v3-multi-datacenter/ssl/
   - /riak/kv/2.9.0p3/configuring/v3-multi-datacenter/ssl/
   - /riak/kv/2.9.0p4/configuring/v3-multi-datacenter/ssl/
-  - /riak/kv/latest/configuring/v3-multi-datacenter/ssl/
 ---
 
 

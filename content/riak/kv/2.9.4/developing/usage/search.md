@@ -1449,3 +1449,4 @@ curl -XPOST $RIAK_HOST/mapred \
      -H 'Content-Type: application/json' \
      -d '{"inputs":{"module":"yokozuna","function":"mapred_search","arg":["famous","NOT leader_b:true"]},"query":[{"map":{"language":"javascript","keep":false,"source":"function(v) { return [1]; }"}},{"reduce":{"language":"javascript","keep":true,"name":"Riak.reduceSum"}}]}'
 ```
+

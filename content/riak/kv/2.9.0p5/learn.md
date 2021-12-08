@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/
   - /riak/kv/2.9.0p3/learn/
   - /riak/kv/2.9.0p4/learn/
-  - /riak/kv/latest/learn/
 ---
 
 [learn why riak]: ./why-riak-kv/

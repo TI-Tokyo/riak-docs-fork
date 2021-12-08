@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/concepts/active-anti-entropy/
   - /riak/kv/2.9.0p3/learn/concepts/active-anti-entropy/
   - /riak/kv/2.9.0p4/learn/concepts/active-anti-entropy/
-  - /riak/kv/latest/learn/concepts/active-anti-entropy/
 ---
 
 

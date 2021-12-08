@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/load-balancing-proxy/
   - /riak/kv/2.9.0p3/configuring/load-balancing-proxy/
   - /riak/kv/2.9.0p4/configuring/load-balancing-proxy/
-  - /riak/kv/latest/configuring/load-balancing-proxy/
 ---
 
 

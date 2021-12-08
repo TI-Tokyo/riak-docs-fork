@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/api/repl-hooks/
   - /riak/kv/2.9.0p3/developing/api/repl-hooks/
   - /riak/kv/2.9.0p4/developing/api/repl-hooks/
-  - /riak/kv/latest/developing/api/repl-hooks/
 ---
 
 [object]: https://github.com/basho/riak_kv/blob/master/src/riak_object.erl 

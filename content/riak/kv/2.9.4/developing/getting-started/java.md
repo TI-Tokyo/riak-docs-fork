@@ -87,3 +87,4 @@ RiakClient client = new RiakClient(cluster);
 ## Next Steps
 
 [CRUD Operations]({{<baseurl>}}riak/kv/2.9.4/developing/getting-started/java/crud-operations)
+

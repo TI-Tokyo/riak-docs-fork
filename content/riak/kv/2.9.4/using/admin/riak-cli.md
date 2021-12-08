@@ -198,3 +198,4 @@ riak config { generate | effective | describe VARIABLE } [-l debug]
     ```
 
 Adding the `-l debug` flag to any `riak config` command will produce additional debugging information that can be used in advanced troubleshooting of "cuttlefish", Riak's configuration subsystem.
+

@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/managing/
   - /riak/kv/2.9.0p3/configuring/managing/
   - /riak/kv/2.9.0p4/configuring/managing/
-  - /riak/kv/latest/configuring/managing/
 ---
 
 

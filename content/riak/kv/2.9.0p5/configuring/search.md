@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/search/
   - /riak/kv/2.9.0p3/configuring/search/
   - /riak/kv/2.9.0p4/configuring/search/
-  - /riak/kv/latest/configuring/search/
 ---
 
 

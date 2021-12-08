@@ -40,3 +40,4 @@ At any time, you can set the log level back to `info`:
 ```erlang
 rp(rpc:multicall(lager, set_loglevel, [lager_file_backend, "/var/log/riak/console.log", info])).
 ```
+

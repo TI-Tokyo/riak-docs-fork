@@ -67,10 +67,16 @@ The `delete_mode` setting in a cluster's [configuration files][config advanced] 
 
 There are three possible settings:
 
-* `keep` --- Disables tombstone removal
-* `immediate` --- The tombstone is removed as soon as the request is
+* `keep`
+---
+Disables tombstone removal
+* `immediate`
+---
+The tombstone is removed as soon as the request is
   received
-* Custom time interval --- How long to wait until the tombstone is
+* Custom time interval
+---
+How long to wait until the tombstone is
   removed, expressed in milliseconds. The default is `3000`, i.e. to
   wait 3 seconds
 
@@ -115,3 +121,4 @@ Check out [Deleting Objects][usage delete objects] in the Developing section for
 ## Resources
 
 * [Discussion on the Riak mailing list](http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html)
+

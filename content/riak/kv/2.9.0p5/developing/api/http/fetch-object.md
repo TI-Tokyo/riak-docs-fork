@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/api/http/fetch-object/
   - /riak/kv/2.9.0p3/developing/api/http/fetch-object/
   - /riak/kv/2.9.0p4/developing/api/http/fetch-object/
-  - /riak/kv/latest/developing/api/http/fetch-object/
 ---
 
 Reads an object from the specified bucket/key.

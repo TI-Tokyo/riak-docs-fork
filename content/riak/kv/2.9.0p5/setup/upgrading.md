@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/upgrading/
   - /riak/kv/2.9.0p3/setup/upgrading/
   - /riak/kv/2.9.0p4/setup/upgrading/
-  - /riak/kv/latest/setup/upgrading/
 ---
 
 

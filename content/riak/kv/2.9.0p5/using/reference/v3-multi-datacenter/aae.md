@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/reference/v3-multi-datacenter/aae/
   - /riak/kv/2.9.0p3/using/reference/v3-multi-datacenter/aae/
   - /riak/kv/2.9.0p4/using/reference/v3-multi-datacenter/aae/
-  - /riak/kv/latest/using/reference/v3-multi-datacenter/aae/
 ---
 
 

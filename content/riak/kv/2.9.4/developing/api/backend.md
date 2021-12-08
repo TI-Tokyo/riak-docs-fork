@@ -112,3 +112,4 @@ into a custom storage backend module.
 %% @doc Register an asynchronous callback
 -spec callback(reference(), any(), state()) -> {ok, state()}.
 ```
+

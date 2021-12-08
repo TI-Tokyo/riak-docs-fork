@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/repair-recovery/rolling-restart/
   - /riak/kv/2.9.0p3/using/repair-recovery/rolling-restart/
   - /riak/kv/2.9.0p4/using/repair-recovery/rolling-restart/
-  - /riak/kv/latest/using/repair-recovery/rolling-restart/
 ---
 
 

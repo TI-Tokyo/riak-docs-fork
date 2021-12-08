@@ -255,3 +255,4 @@ continue to fail.
 A future version of Riak will address these issues by modifying the
 server API to more accurately report errors specific to strongly
 consistent operations.
+

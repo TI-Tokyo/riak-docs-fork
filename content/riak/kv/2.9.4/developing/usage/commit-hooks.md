@@ -92,9 +92,15 @@ occurring.
 
 Erlang pre-commit functions are allowed three possible return values:
 
-- A Riak object --- This can either be the same object passed to the function or an updated version of the object. This allows hooks to modify the object before they are written.
-- `fail` --- The atom `fail` will cause Riak to fail the write and send a 403 Forbidden error response (in the [HTTP API]({{<baseurl>}}riak/kv/2.9.4/developing/api/http)) along with a generic error message about why the write was blocked.
-- `{fail, Reason}` --- The tuple `{fail, Reason}` will cause the same behavior as in the case above, but with the addition of `Reason` used as the error text.
+- A Riak object
+---
+This can either be the same object passed to the function or an updated version of the object. This allows hooks to modify the object before they are written.
+- `fail`
+---
+The atom `fail` will cause Riak to fail the write and send a 403 Forbidden error response (in the [HTTP API]({{<baseurl>}}riak/kv/2.9.4/developing/api/http)) along with a generic error message about why the write was blocked.
+- `{fail, Reason}`
+---
+The tuple `{fail, Reason}` will cause the same behavior as in the case above, but with the addition of `Reason` used as the error text.
 
 Errors that occur when processing Erlang pre-commit hooks will be
 reported in the `sasl-error.log` file with lines that start with
@@ -237,3 +243,4 @@ functions, triggered by the same update, to execute in parallel.
 
 **Note**: All post-commit hook functions are executed for each create,
 update, or delete.
+

@@ -109,19 +109,35 @@ From the above, we can see that an `RpbContent` message will always
 contain the binary `value` of the object. But it could also contain any
 of the following optional parameters:
 
-* `content_type` --- The content type of the object, e.g. `text/plain`
+* `content_type`
+---
+The content type of the object, e.g. `text/plain`
   or `application/json`
-* `charset` --- The character encoding of the object, e.g. `utf-8`
-* `content_encoding` --- The content encoding of the object, e.g.
+* `charset`
+---
+The character encoding of the object, e.g. `utf-8`
+* `content_encoding`
+---
+The content encoding of the object, e.g.
   `video/mp4`
-* `vtag` --- The object's [vtag]({{<baseurl>}}riak/kv/2.9.4/learn/glossary/#vector-clock)
-* `links` --- This parameter is associated with the now-deprecated link
+* `vtag`
+---
+The object's [vtag]({{<baseurl>}}riak/kv/2.9.4/learn/glossary/#vector-clock)
+* `links`
+---
+This parameter is associated with the now-deprecated link
   walking feature and should not be used by Riak clients
-* `last_mod` --- A timestamp for when the object was last modified, in
+* `last_mod`
+---
+A timestamp for when the object was last modified, in
   [ISO 8601 time](http://en.wikipedia.org/wiki/ISO_8601)
-* `last_mod_usecs` --- A timestamp for when the object was last modified,
+* `last_mod_usecs`
+---
+A timestamp for when the object was last modified,
   in [Unix time](http://en.wikipedia.org/wiki/Unix_time)
-* `usermeta` --- This field stores user-specified key/value metadata
+* `usermeta`
+---
+This field stores user-specified key/value metadata
   pairs to be associated with the object. `RpbPair` messages used to
   send metadata of this sort are structured like this:
 
@@ -134,7 +150,9 @@ of the following optional parameters:
     Notice that both a key and value can be stored or just a key.
     `RpbPair` messages are also used to attach [secondary indexes]({{<baseurl>}}riak/kv/2.9.4/developing/usage/secondary-indexes) to objects (in the optional
     `indexes` field).
-* `deleted` --- Whether the object has been deleted (i.e. whether a
+* `deleted`
+---
+Whether the object has been deleted (i.e. whether a
   tombstone for the object has been found under the specified key)
 
 {{% note title="Note on missing keys" %}}
@@ -179,3 +197,4 @@ content {
 }
 vclock: "k316a```314`312005R,254302[?e0%23452612354V267=312227005000"
 ```
+

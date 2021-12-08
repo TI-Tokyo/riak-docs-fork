@@ -283,3 +283,4 @@ riak-admin search aae-status
 
 The output from that command can be interpreted just like the output
 discussed in the section on [monitoring](#monitoring-aae) above.
+

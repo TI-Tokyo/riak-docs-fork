@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/configuring/backend/
   - /riak/kv/2.9.0p3/configuring/backend/
   - /riak/kv/2.9.0p4/configuring/backend/
-  - /riak/kv/latest/configuring/backend/
 ---
 
 

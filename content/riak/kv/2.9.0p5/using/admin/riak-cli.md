@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/admin/riak-cli/
   - /riak/kv/2.9.0p3/using/admin/riak-cli/
   - /riak/kv/2.9.0p4/using/admin/riak-cli/
-  - /riak/kv/latest/using/admin/riak-cli/
 ---
 
 

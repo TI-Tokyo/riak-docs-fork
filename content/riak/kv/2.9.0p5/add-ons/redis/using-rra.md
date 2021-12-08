@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/add-ons/redis/using-rra/
   - /riak/kv/2.9.0p3/add-ons/redis/using-rra/
   - /riak/kv/2.9.0p4/add-ons/redis/using-rra/
-  - /riak/kv/latest/add-ons/redis/using-rra/
 ---
 
 

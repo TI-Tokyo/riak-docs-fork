@@ -9,7 +9,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/data-modeling/
   - /riak/kv/2.9.0p3/developing/data-modeling/
   - /riak/kv/2.9.0p4/developing/data-modeling/
-  - /riak/kv/latest/developing/data-modeling/
 ---
 
 

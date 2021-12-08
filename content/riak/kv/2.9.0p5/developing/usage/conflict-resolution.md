@@ -11,9 +11,7 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak/latest/dev/using/conflict-resolution
   - /riak/2.9.0p5/dev/using/conflict-resolution
-  - /riak/kv/latest/dev/using/conflict-resolution
   - /riak/kv/2.9.0p5/dev/using/conflict-resolution
   - /riak/2.9.0p5/developing/usage/conflict-resolution/
   - /riak/2.9.0/developing/usage/conflict-resolution/
@@ -22,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/usage/conflict-resolution/
   - /riak/kv/2.9.0p3/developing/usage/conflict-resolution/
   - /riak/kv/2.9.0p4/developing/usage/conflict-resolution/
-  - /riak/kv/latest/developing/usage/conflict-resolution/
 ---
 
 

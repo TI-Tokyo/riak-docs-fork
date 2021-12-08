@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/cluster-operations/load-balancing/
   - /riak/kv/2.9.0p3/using/cluster-operations/load-balancing/
   - /riak/kv/2.9.0p4/using/cluster-operations/load-balancing/
-  - /riak/kv/latest/using/cluster-operations/load-balancing/
 ---
 
 

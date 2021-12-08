@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/planning/cluster-capacity/
   - /riak/kv/2.9.0p3/setup/planning/cluster-capacity/
   - /riak/kv/2.9.0p4/setup/planning/cluster-capacity/
-  - /riak/kv/latest/setup/planning/cluster-capacity/
 ---
 
 

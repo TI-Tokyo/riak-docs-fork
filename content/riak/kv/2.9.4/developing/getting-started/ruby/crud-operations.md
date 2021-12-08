@@ -144,3 +144,4 @@ Now, let’s clean up our mess:
 ```ruby
 new_book.delete()
 ```
+

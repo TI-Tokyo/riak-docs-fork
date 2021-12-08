@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p2/release-notes/
   - /riak/kv/2.9.0p3/release-notes/
   - /riak/kv/2.9.0p4/release-notes/
-  - /riak/kv/latest/release-notes/
 ---
 
 

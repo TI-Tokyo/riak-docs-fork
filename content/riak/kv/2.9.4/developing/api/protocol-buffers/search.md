@@ -38,22 +38,42 @@ message RpbSearchQueryReq {
 
 Required Parameters
 
-* `q` --- The contents of the query
-* `index` --- The name of the index to search
+* `q`
+---
+The contents of the query
+* `index`
+---
+The name of the index to search
 
 Optional Parameters
 
-* `rows` --- The maximum number of rows to return
-* `start` --- A start offset, i.e. the number of keys to skip before
+* `rows`
+---
+The maximum number of rows to return
+* `start`
+---
+A start offset, i.e. the number of keys to skip before
   returning values
-* `sort` --- How the search results are to be sorted
-* `filter` --- Filters search with additional query scoped to inline
+* `sort`
+---
+How the search results are to be sorted
+* `filter`
+---
+Filters search with additional query scoped to inline
   fields
-* `df` --- Override the `default_field` setting in the schema file
-* `op` --- `and` or `or`, to override the `default_op` operation setting
+* `df`
+---
+Override the `default_field` setting in the schema file
+* `op`
+---
+`and` or `or`, to override the `default_op` operation setting
   in the schema file
-* `fl` --- Return the fields limit
-* `presort` --- Presort. The options are `key` or `score`
+* `fl`
+---
+Return the fields limit
+* `presort`
+---
+Presort. The options are `key` or `score`
 
 
 ## Response
@@ -86,9 +106,15 @@ message RpbSearchQueryResp {
 
 Values
 
-* `docs` --- A list of docs that match the search request
-* `max_score` --- The top score returned
-* `num_found` --- Returns the total number of values matched by this
+* `docs`
+---
+A list of docs that match the search request
+* `max_score`
+---
+The top score returned
+* `num_found`
+---
+Returns the total number of values matched by this
   search
 
 
@@ -146,3 +172,4 @@ docs {
 }
 num_found: 2
 ```
+

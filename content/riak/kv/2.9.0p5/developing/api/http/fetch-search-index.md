@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/api/http/fetch-search-index/
   - /riak/kv/2.9.0p3/developing/api/http/fetch-search-index/
   - /riak/kv/2.9.0p4/developing/api/http/fetch-search-index/
-  - /riak/kv/latest/developing/api/http/fetch-search-index/
 ---
 
 Retrieves information about a Riak Search [index]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/search/#simple-setup).

@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/reference/architecture/
   - /riak/kv/2.9.0p3/using/reference/architecture/
   - /riak/kv/2.9.0p4/using/reference/architecture/
-  - /riak/kv/latest/using/reference/architecture/
 ---
 
 

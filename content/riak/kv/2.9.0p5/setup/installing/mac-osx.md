@@ -23,7 +23,6 @@ aliases:
   - /riak/kv/2.9.0p2/setup/installing/mac-osx/
   - /riak/kv/2.9.0p3/setup/installing/mac-osx/
   - /riak/kv/2.9.0p4/setup/installing/mac-osx/
-  - /riak/kv/latest/setup/installing/mac-osx/
 ---
 
 

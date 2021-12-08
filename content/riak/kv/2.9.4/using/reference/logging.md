@@ -188,11 +188,21 @@ month, etc. Complete documentation of the syntax can be found
 [here](https://github.com/basho/lager/blob/master/README.md#internal-log-rotation).
 Below are some examples:
 
-* `$D0` --- Every night at midnight
-* `$D23` --- Every day at 23:00 (11 pm)
-* `$W0D20` --- Every week on Sunday at 20:00 (8 pm)
-* `$M1D0` --- On the first day of every month at midnight
-* `$M5D6` --- On the fifth day of the month at 6:00 (6 am)
+* `$D0`
+---
+Every night at midnight
+* `$D23`
+---
+Every day at 23:00 (11 pm)
+* `$W0D20`
+---
+Every week on Sunday at 20:00 (8 pm)
+* `$M1D0`
+---
+On the first day of every month at midnight
+* `$M5D6`
+---
+On the fifth day of the month at 6:00 (6 am)
 
 To set the maximum size of the crash log before it is rotated, use the
 `log.crash.size` parameter. You can specify the size in KB, MB, etc. The
@@ -271,17 +281,25 @@ Riak console logs can be emitted to one of three places: to a log file
 or to neither. This is determined by the value that you give to the
 `log.console` parameter, which gives you one of four options:
 
-* `file` --- Console logs will be emitted to a file. This is Riak's
+* `file`
+---
+Console logs will be emitted to a file. This is Riak's
     default behavior. The location of that file is determined by the
     `log.console.file` parameter. The default location is
     `./log/console.log` on an installation from [source]({{<baseurl>}}riak/kv/2.9.4/setup/installing/source), but will differ on platform-specific installation,
     e.g.  `/var/log/riak` on Ubuntu, Debian, CentOS, and RHEL or
     `/opt/riak/log` on Solaris-based platforms.
-* `console` --- Console logs will be emitted to standard output, which
+* `console`
+---
+Console logs will be emitted to standard output, which
     can be viewed by running the [`riak attach-direct`]({{<baseurl>}}riak/kv/2.9.4/using/admin/riak-cli/#attach-direct) command
-* `both` --- Console logs will be emitted both to a file and to standard
+* `both`
+---
+Console logs will be emitted both to a file and to standard
     output
-* `off` --- Console log messages will be disabled
+* `off`
+---
+Console log messages will be disabled
 
 In addition to the the placement of console logs, you can also choose
 the severity of those messages using the `log.console.level` parameter.
@@ -295,3 +313,4 @@ The following four options are available:
 ## Enabling and Disabling Debug Logging
 
 Checkout [Cluster Operations: Enabling and Disabling Debug Logging][cluster ops log]
+

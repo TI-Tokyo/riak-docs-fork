@@ -10,6 +10,8 @@ menu:
     weight: 110
     pre: install
 toc: false
+aliases:
+  - /riak/kv/latest/setup/
 ---
 
 [plan index]: ../setup/planning
@@ -42,4 +44,6 @@ Guides on upgrading your Riak KV cluster.
 A guide on downgrading your Riak KV cluster.
 
 [Learn More >>][downgrade]
+
+
 

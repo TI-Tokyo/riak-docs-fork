@@ -115,3 +115,4 @@ password.
 
 Certificate-based authentication is not currently supported in the
 official Riak Java client.
+

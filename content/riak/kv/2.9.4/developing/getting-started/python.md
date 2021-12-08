@@ -33,9 +33,15 @@ python`.
 
 First, you must install some packages needed by the Riak Python client:
 
-* `python-dev` --- Header files and a static library for Python
-* `libffi-dev` --- Foreign function interface library
-* `libssl-dev` --- libssl and libcrypto development libraries
+* `python-dev`
+---
+Header files and a static library for Python
+* `libffi-dev`
+---
+Foreign function interface library
+* `libssl-dev`
+---
+libssl and libcrypto development libraries
 
 ### Ubuntu (12.04 & 14.04)
 
@@ -97,3 +103,4 @@ We are now ready to start interacting with Riak.
 ## Next Steps
 
 [CRUD Operations]({{<baseurl>}}riak/kv/2.9.4/developing/getting-started/python/crud-operations)
+

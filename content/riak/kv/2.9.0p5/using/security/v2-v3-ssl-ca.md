@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/security/v2-v3-ssl-ca/
   - /riak/kv/2.9.0p3/using/security/v2-v3-ssl-ca/
   - /riak/kv/2.9.0p4/using/security/v2-v3-ssl-ca/
-  - /riak/kv/latest/using/security/v2-v3-ssl-ca/
 ---
 
 

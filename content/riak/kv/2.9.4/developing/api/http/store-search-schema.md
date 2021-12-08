@@ -38,13 +38,22 @@ curl -XPUT http://localhost:8098/search/schema/my_custom_schema \
 
 ## Normal Response
 
-* `204 No Content` --- The schema has been successfully created
+* `204 No Content`
+---
+The schema has been successfully created
 
 ## Typical Error Codes
 
-* `400 Bad Request` --- The schema cannot be created because there is
+* `400 Bad Request`
+---
+The schema cannot be created because there is
     something wrong with the schema itself, e.g. an XML formatting error
     that makes Riak Search unable to parse the schema
-* `409 Conflict` --- The schema cannot be created because there is
+* `409 Conflict`
+---
+The schema cannot be created because there is
     already a schema with that name
-* `503 Service Unavailable` --- The request timed out internally
+* `503 Service Unavailable`
+---
+The request timed out internally
+

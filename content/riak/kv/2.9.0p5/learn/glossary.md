@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/glossary/
   - /riak/kv/2.9.0p3/learn/glossary/
   - /riak/kv/2.9.0p4/learn/glossary/
-  - /riak/kv/latest/learn/glossary/
 ---
 
 

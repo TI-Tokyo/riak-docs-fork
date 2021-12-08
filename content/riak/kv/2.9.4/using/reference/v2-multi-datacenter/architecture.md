@@ -124,3 +124,4 @@ either fullsync or realtime replication, both clusters must have the
 same [ring size]({{<baseurl>}}riak/kv/2.9.4/learn/concepts/clusters/#the-ring); if you are using fullsync
 replication, every bucket's [`n_val`]({{<baseurl>}}riak/kv/2.9.4/developing/app-guide/replication-properties#n-value-and-replication) must be the same in both the
 source and sink cluster.
+

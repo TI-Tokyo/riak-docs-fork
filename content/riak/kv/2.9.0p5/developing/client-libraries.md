@@ -20,8 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/developing/client-libraries/
   - /riak/kv/2.9.0p3/developing/client-libraries/
   - /riak/kv/2.9.0p4/developing/client-libraries/
-  - /riak/kv/latest/developing/client-libraries/
-  - /riak/kv/latest/libraries/
 ---
 
 

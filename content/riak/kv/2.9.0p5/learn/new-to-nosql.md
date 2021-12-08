@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/new-to-nosql/
   - /riak/kv/2.9.0p3/learn/new-to-nosql/
   - /riak/kv/2.9.0p4/learn/new-to-nosql/
-  - /riak/kv/latest/learn/new-to-nosql/
 ---
 
 

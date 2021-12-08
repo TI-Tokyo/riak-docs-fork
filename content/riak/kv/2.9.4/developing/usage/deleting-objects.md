@@ -150,3 +150,4 @@ $response = (new \Basho\Riak\Command\Builder\FetchObject($riak))
 
 echo $response->getVclock(); // a85hYGBgzGDKBVI8m9WOeb835ZRhYCg1zGBKZM5jZdhnceAcXxYA
 ```
+

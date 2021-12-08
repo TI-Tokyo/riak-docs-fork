@@ -816,3 +816,4 @@ use four bucket type/bucket pairs:
 
 All four of these pairs are isolated keyspaces. The key `favorite_meme`
 could hold different values in all four bucket type/bucket spaces.
+

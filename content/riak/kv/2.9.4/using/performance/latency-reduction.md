@@ -261,3 +261,4 @@ stored in Riak:
 You can set the object storage format using the `object.format`
 parameter: `0` selects Erlang's `term_to_binary` format while `1` (the
 default) selects the Riak-specific format.
+

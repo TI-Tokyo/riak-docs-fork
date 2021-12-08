@@ -16,6 +16,7 @@ aliases:
   - /riak/kv/2.9.4/ops/building/installing/Installing-on-RHEL-and-CentOS
   - /riak/2.9.4/installing/rhel-centos/
   - /riak/kv/2.9.4/installing/rhel-centos/
+  - /riak/kv/latest/setup/installing/rhel-centos/
 ---
 
 
@@ -127,3 +128,5 @@ You will now have a fresh build of Riak in the `rel/riak` directory.
 ## Next Steps
 
 Now that Riak is installed, check out [Verifying a Riak Installation][install verify].
+
+

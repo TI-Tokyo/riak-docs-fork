@@ -84,20 +84,38 @@ ready to begin taking requests.
 The following information is then displayed for each node, by nodename
 (in this case `dev1@127.0.0.1`, etc.):
 
-* `status` --- There are five possible values for status:
-  * `valid` --- The node has begun participating in cluster operations
-  * `leaving` --- The node is is currently unloading ownership of its
+* `status`
+---
+There are five possible values for status:
+  * `valid`
+---
+The node has begun participating in cluster operations
+  * `leaving`
+---
+The node is is currently unloading ownership of its
     [data partitions][concept clusters] to other nodes
-  * `exiting` --- The node's ownership transfers are complete and it is
+  * `exiting`
+---
+The node's ownership transfers are complete and it is
     currently shutting down
-  * `joining` --- The node is in the process of joining the cluster but
+  * `joining`
+---
+The node is in the process of joining the cluster but
     but has not yet completed the join process
-  * `down` --- The node is not currently responding
-* `avail` --- There are two possible values: `up` if the node is
+  * `down`
+---
+The node is not currently responding
+* `avail`
+---
+There are two possible values: `up` if the node is
     available and taking requests and `down!` if the node is unavailable
-* `ring` --- What percentage of the Riak [ring][concept clusters] the
+* `ring`
+---
+What percentage of the Riak [ring][concept clusters] the
   node is responsible for
-* `pending` --- The number of pending transfers to or from the node
+* `pending`
+---
+The number of pending transfers to or from the node
 
 In addition, the cluster's [claimant node][cluster ops add remove node] node will have a `(C)` next
 to it.
@@ -372,3 +390,4 @@ the corresponding index:
 ```bash
 riak-admin cluster partition id=20
 ```
+

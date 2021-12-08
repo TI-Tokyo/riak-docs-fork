@@ -33,7 +33,9 @@ message RpbListKeysReq {
 
 Optional Parameters
 
-* `bucket` --- bucket to get keys from
+* `bucket`
+---
+bucket to get keys from
 
 ## Response
 
@@ -95,3 +97,4 @@ RpbListKeysResp protoc decode:
 done: true
 
 ```
+

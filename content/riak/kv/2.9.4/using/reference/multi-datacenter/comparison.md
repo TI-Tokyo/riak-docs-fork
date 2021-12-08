@@ -94,3 +94,4 @@ version 3.
 * Riak CS MDC `proxy_get` connections will be distributed across the
   source cluster (as CS blocks are requested from the sink cluster in
   this scenario).
+

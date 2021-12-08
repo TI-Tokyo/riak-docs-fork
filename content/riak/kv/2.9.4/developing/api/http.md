@@ -87,3 +87,4 @@ Method | URL | Doc
 `DELETE` | `/search/index/<index_name>` | [HTTP Delete Search Index]({{<baseurl>}}riak/kv/2.9.4/developing/api/http/delete-search-index)
 `GET` | `/search/schema/<schema_name>` | [HTTP Fetch Search Schema]({{<baseurl>}}riak/kv/2.9.4/developing/api/http/fetch-search-schema)
 `PUT` | `/search/schema/<schema_name>` | [HTTP Store Search Schema]({{<baseurl>}}riak/kv/2.9.4/developing/api/http/store-search-schema)
+

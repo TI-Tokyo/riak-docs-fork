@@ -30,3 +30,4 @@ message SetOp {
 Set members are binary values that can only be added (`adds`) or removed
 (`removes`) from a set. You can add and/or remove as many members of a
 set in a single message as you would like.
+

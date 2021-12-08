@@ -168,3 +168,4 @@ If SSL is enabled and a connection is made to a Riak Enterprise 1.0 or
 Read how to [generate your own CA and
 keys](http://www.debian-administration.org/articles/618). Ensure that
 you remove the password protection from the keys you generate.
+

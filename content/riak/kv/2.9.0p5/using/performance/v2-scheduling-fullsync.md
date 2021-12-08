@@ -19,7 +19,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/performance/v2-scheduling-fullsync/
   - /riak/kv/2.9.0p3/using/performance/v2-scheduling-fullsync/
   - /riak/kv/2.9.0p4/using/performance/v2-scheduling-fullsync/
-  - /riak/kv/latest/using/performance/v2-scheduling-fullsync/
 ---
 
 

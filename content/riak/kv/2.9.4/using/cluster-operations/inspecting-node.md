@@ -475,14 +475,20 @@ directly like so:
 Those extra options are usually assigned by the `riak-admin` script for
 you, but here's how to set them:
 
-* `--etc` --- The location of your Riak configuration directory (usually
+* `--etc`
+---
+The location of your Riak configuration directory (usually
     `/etc`). In the example above, configuration is in the generated
     directory of a source checkout of Riak.
-* `--base` --- The "base" directory of Riak, usually the root of the
+* `--base`
+---
+The "base" directory of Riak, usually the root of the
     generated directory or `/usr/lib/riak` on Linux. Scan the
     `riak-admin` script for how the `RUNNER_BASE_DIR` variable is
     assigned on your platform.
-* `--user` --- The user/UID as which the Riak node runs. In a source
+* `--user`
+---
+The user/UID as which the Riak node runs. In a source
     checkout, it's the current user; on most systems, it's `riak`.
 
 ## Related Resources
@@ -490,3 +496,4 @@ you, but here's how to set them:
 * [The riak-admin configuration management tool](../../admin/riak-admin/)
 * [Riaknostic](http://riaknostic.basho.com/)
 * [HTTP API Status](../../../developing/api/http/status/)
+

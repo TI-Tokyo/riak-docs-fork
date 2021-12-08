@@ -508,8 +508,12 @@ E: 4-9-14-12*
 **A:**
   The [Erlang Riak Client] gives you several options for how to manage connections. You can set these when starting a `riakc_pb_socket` process or by using the `set_options` function.
 
-  * `queue_if_disconnected` (default: `false`) --- requests will be queued when the connection to the server is lost.
-  * `auto_reconnect` (default: `false`) --- if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatically. This is set to `true` if `queue_if_disconnected` is set to `true`.
+  * `queue_if_disconnected` (default: `false`)
+---
+requests will be queued when the connection to the server is lost.
+  * `auto_reconnect` (default: `false`)
+---
+if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatically. This is set to `true` if `queue_if_disconnected` is set to `true`.
 
   If these options are both false, connection errors will be returned to the process-making requests as `{error, Reason}` tuples.
 
@@ -652,3 +656,4 @@ E: 4-9-14-12*
   ```
 
   JSON has no "tuple" notion. For the time being, a recommended workaround would be to use a list of length-2 lists.
+

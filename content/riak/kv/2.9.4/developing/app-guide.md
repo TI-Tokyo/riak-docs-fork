@@ -85,25 +85,35 @@ features would be helpful (and which ones might even be harmful).
 Riak tends to be an excellent choice if you're dealing with any of the
 following:
 
-* **Immutable data** --- While Riak provides several means of
+* **Immutable data**
+---
+While Riak provides several means of
   [resolving conflicts][usage conflict resolution] between different replicas
   of objects, those processes can lead to slower performance in some
   cases. Storing immutable data means that you can avoid those processes
   altogether and get the most out of Riak.
-* **Small objects** --- Riak was not built as a store for large objects
+* **Small objects**
+---
+Riak was not built as a store for large objects
   like video files or other
   [BLOB](http://en.wikipedia.org/wiki/Binary_large_object)s. We built
   [Riak CS](https://riak.com/riak-cloud-storage/) for that. Riak is
   great, however, for JSON, [log files][dev data model#log], [sensor data][dev data model#sensor], HTML files, and other objects that tend
   to run smaller than 1 MB.
-* **Independent objects** --- Objects that do not have interdependencies
+* **Independent objects**
+---
+Objects that do not have interdependencies
   on other objects are a good fit for Riak's [eventually consistent][concept eventual consistency] nature.
-* **Objects with "natural" keys** --- It is almost always advisable to
+* **Objects with "natural" keys**
+---
+It is almost always advisable to
   build keys for objects out of timestamps, [usernames][dev data model#user],
   or other ["natural" markers][dev kv model] that distinguish
   that object from other objects. Data that can be modeled this way fits
   nicely with Riak because Riak emphasizes extremely fast object lookup.
-* **Data compatible with [Riak Data Types][dev data types]** --- If
+* **Data compatible with [Riak Data Types][dev data types]**
+---
+If
   you're working with mutable data, one option is to run basic CRUD
   operations on that data in a standard key/value fashion and either
   manage conflict resolution yourself or allow Riak to do so. But if
@@ -117,12 +127,16 @@ following:
 
 Riak may not such be a good choice if you use it to store:
 
-* **Objects that exceed 1-2MB in size** --- If you will be
+* **Objects that exceed 1-2MB in size**
+---
+If you will be
   storing a lot of objects over that size, we would recommend checking
   out [Riak CS]({{<baseurl>}}riak/cs/latest/) instead, as Riak
   CS was built to solve this problem. Storing large objects in Riak will
   typically lead to substandard performance.
-* **Objects with complex interdependencies** --- If your data cannot be
+* **Objects with complex interdependencies**
+---
+If your data cannot be
   easily denormalized or if it requires that objects can be easily
   assembled into and accessible as larger wholes---think columns or
   tables---then you might want to consider a relational database
@@ -155,15 +169,23 @@ simplicity of Riak. Our motto for Riak Search: **Write it like Riak.
 Query it like Solr**. That is, you can store objects in Riak [like normal][usage create objects] and run full-text queries on those objects later on
 using the Solr API.
 
-* [Using Search][usage search] --- Getting started with Riak Search
-* [Search Details][use ref search] --- A detailed overview of the concepts and design
+* [Using Search][usage search]
+---
+Getting started with Riak Search
+* [Search Details][use ref search]
+---
+A detailed overview of the concepts and design
   consideration behind Riak Search
-* [Search Schema][usage search schema] --- How to create custom schemas for extracting data
+* [Search Schema][usage search schema]
+---
+How to create custom schemas for extracting data
   from Riak Search
 
 ### When to Use Search
 
-* **When you need a rich querying API** --- Riak Search gives you access
+* **When you need a rich querying API**
+---
+Riak Search gives you access
   to the entirety of [Solr](http://lucene.apache.org/solr/)'s extremely
   broad API, which enables you to query on the basis of wildcards,
   strings, booleans, geolocation, ranges, language-specific fulltext,
@@ -179,12 +201,16 @@ for you.
 
 ### When Not to Use Search
 
-* **When deep pagination is needed** --- At the moment, you should
+* **When deep pagination is needed**
+---
+At the moment, you should
     consider [secondary indexes][usage 2i] instead of
     Search if your use case requires deep pagination. This will be
     changed, however, in a future release of Riak, at which point you
     should consider Search the default choice for _all_ querying needs.
-* **In large clusters** --- In clusters larger than 8-10 nodes, you may
+* **In large clusters**
+---
+In clusters larger than 8-10 nodes, you may
     experience slower performance when using Search. In clusters of that
     size, we would recommend using Search in a limited fashion, setting
     up a separate, dedicated cluster for Search data, or finding another
@@ -206,12 +232,18 @@ which means that your application doesn't need to reason about
 unburden applications of the need to handle object convergence on their
 own.
 
-* [Using Data Types][dev data types] --- A guide to setting up Riak to use Data Types,
+* [Using Data Types][dev data types]
+---
+A guide to setting up Riak to use Data Types,
   including a variety of code samples for all of the Basho's official
   [client libraries][dev client libraries]
-* [Data Types][concept crdts] --- A theoretical treatment of Riak Data Types, along
+* [Data Types][concept crdts]
+---
+A theoretical treatment of Riak Data Types, along
   with implementation details
-* [Data Modeling with Riak Data Types][dev data model] --- An object modeling example that relies on Riak Data Types.
+* [Data Modeling with Riak Data Types][dev data model]
+---
+An object modeling example that relies on Riak Data Types.
 
 > **Note**:
 >
@@ -222,14 +254,18 @@ Types and Search is coming soon.
 
 ### When to Use Riak Data Types
 
-* **When your data fits** --- If the data that you're storing can be
+* **When your data fits**
+---
+If the data that you're storing can be
   modeled as one of the five available types, Riak Data Types could be a
   very good option. Please note that in many cases there may not be a
   1:1 correspondence between the five available types and the data that
   you'd like to store, but there may be workarounds to close the gap.
   Most things that can be stored as JSON, for example, can be stored as
   maps (though with modifications).
-* **When you don't need to reason about siblings** --- If your use case
+* **When you don't need to reason about siblings**
+---
+If your use case
   doesn't require that your application have access to siblings and
   allows for sibling convergence logic to take place at the Riak level
   rather than at the application level, then Riak Data Types are well
@@ -237,16 +273,22 @@ Types and Search is coming soon.
 
 ### When Not to Use Riak Data Types
 
-* **When you need to provide your own convergence logic** --- If your
+* **When you need to provide your own convergence logic**
+---
+If your
   application needs to have access to all sibling values, then Riak Data
   Types are not a good choice because they by definition do not produce
   siblings.
-* **When your data just doesn't fit** --- While the five existing Data
+* **When your data just doesn't fit**
+---
+While the five existing Data
   Types allow for a great deal of flexibility and a wide range of use
   cases, they don't cover all use cases. If you have data that requires
   a modeling solution that can't be covered, you should stick to
   standard K/V operations.
-* **When object size is of significant concern** --- Riak Data Types
+* **When object size is of significant concern**
+---
+Riak Data Types
   behave much like other Riak objects, but they tend to carry more
   metadata than normal Riak objects, especially maps. In most cases the
   metadata payload will be a small percentage of the object's total
@@ -263,13 +305,19 @@ comes equipped with a set of default MapReduce jobs that you can employ,
 or you can write and run your own MapReduce jobs in
 [Erlang](http://www.erlang.org/).
 
-* [Using MapReduce][usage mapreduce] --- A general guide to using MapReduce
-* [Advanced MapReduce][apps mapreduce] --- A more in-depth guide to MapReduce,
+* [Using MapReduce][usage mapreduce]
+---
+A general guide to using MapReduce
+* [Advanced MapReduce][apps mapreduce]
+---
+A more in-depth guide to MapReduce,
   including code samples and implementation details
 
 ### When to Use MapReduce
 
-* **Batch processing only** --- You should use MapReduce only when truly
+* **Batch processing only**
+---
+You should use MapReduce only when truly
   truly necessary. MapReduce jobs are very computationally expensive and
   can degrade performance in production clusters. You should restrict
   MapReduce usage to infrequent batch processing operations, preferably
@@ -278,7 +326,9 @@ or you can write and run your own MapReduce jobs in
 
 ### When Not to Use MapReduce
 
-* **When another Riak feature will do** --- Before even considering
+* **When another Riak feature will do**
+---
+Before even considering
   using MapReduce, you should thoroughly investigate [Riak Search][usage search] or [secondary indexes][usage 2i] as possible
   solutions to your needs.
 
@@ -298,14 +348,20 @@ objects with either binary or integer metadata and then query Riak for
 all of the keys that share specific tags. 2i is especially useful if
 you're storing binary data that is opaque to features like [Riak Search][usage search].
 
-* [Using Secondary Indexes][usage 2i] --- A general guide to using 2i, along
+* [Using Secondary Indexes][usage 2i]
+---
+A general guide to using 2i, along
   with code samples and information on 2i features like pagination,
   streaming, and sorting
-* [Advanced Secondary Indexes][use ref 2i] --- Implementation details behind 2i
+* [Advanced Secondary Indexes][use ref 2i]
+---
+Implementation details behind 2i
 
 ### When to Use Secondary Indexes
 
-* **When you require deep pagination** --- At the moment, 2i's
+* **When you require deep pagination**
+---
+At the moment, 2i's
     deep pagination capabilities are more performant than those offered
     by Search if you require pagination of more than 3-5 pages. This
     will change, however, in the future, at which point we will
@@ -313,10 +369,14 @@ you're storing binary data that is opaque to features like [Riak Search][usage s
 
 ### When Not to Use Secondary Indexes
 
-* **For most querying purposes** --- If your use case does not
+* **For most querying purposes**
+---
+If your use case does not
     involve deep pagination, we recommend Search over 2i for _all_
     querying purposes.
-* **If you're using Bitcask** --- 2i is available only in the
+* **If you're using Bitcask**
+---
+2i is available only in the
     [LevelDB][plan backend leveldb] backend. If you'd like to use [Bitcask][plan backend bitcask] or the [Memory][plan backend memory] backend, you will not be able to use 2i.
 
 ## Mixed Approach
@@ -403,14 +463,25 @@ If you have a good sense of how you will be using Riak for your
 application (or if you just want to experiment), the following guides
 will help you get up and running:
 
-* [Installing Riak KV][install index] --- Install Riak KV and start up a 5-node Riak
+* [Installing Riak KV][install index]
+---
+Install Riak KV and start up a 5-node Riak
   cluster
-* [Client Libraries][dev client libraries] --- A listing of official and non-official client
+* [Client Libraries][dev client libraries]
+---
+A listing of official and non-official client
   libraries for building applications with Riak
-* [Getting Started with Client Libraries][getting started] --- How to
+* [Getting Started with Client Libraries][getting started]
+---
+How to
   get up and going with one of Basho's official client libraries (Java,
   Ruby, Python, and Erlang)
-* [Developing with Riak KV: Usage][usage index] --- A guide to basic key/value operations and other common tasks in Riak KV.
-* [Riak KV Glossary][glossary] --- A listing of frequently used terms in Riak's
+* [Developing with Riak KV: Usage][usage index]
+---
+A guide to basic key/value operations and other common tasks in Riak KV.
+* [Riak KV Glossary][glossary]
+---
+A listing of frequently used terms in Riak's
   documentation
+
 

@@ -199,3 +199,4 @@ For more in depth information on updating objects and sibling resolution in
 Riak, see [Updating Objects]({{<baseurl>}}riak/kv/2.9.4/developing/usage/updating-objects/)
 and [Conflict Resolution]({{<baseurl>}}riak/kv/2.9.4/developing/usage/conflict-resolution/)
 documention.
+

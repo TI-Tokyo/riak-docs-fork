@@ -166,3 +166,4 @@ Once this is done, bidirectional replication should be operating.
 
 For a full list of commands, you may enter `riak-repl` to see full
 instructions on usage, or check the [Operations][cluster ops v3 mdc] documentation.
+

@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/2.9.0p2/using/troubleshooting/http-204/
   - /riak/kv/2.9.0p3/using/troubleshooting/http-204/
   - /riak/kv/2.9.0p4/using/troubleshooting/http-204/
-  - /riak/kv/latest/using/troubleshooting/http-204/
 ---
 
 

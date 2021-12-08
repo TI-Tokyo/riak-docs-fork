@@ -46,3 +46,4 @@ Overview of monitoring in a Multi-Datacenter environment.
 Compares Version 2 and Version 3 of Riak's Multi-Datacenter Replication capabilities.
 
 [Learn More >>][ref mdc comparison]
+

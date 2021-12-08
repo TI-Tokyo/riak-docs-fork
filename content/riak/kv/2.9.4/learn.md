@@ -10,6 +10,8 @@ menu:
     weight: 400
     pre: beaker
 toc: true
+aliases:
+  - /riak/kv/latest/learn/
 ---
 
 [learn why riak]: ./why-riak-kv/
@@ -45,3 +47,5 @@ A list of terms relating to Riak used throughout the documentation.
 Provides definitions for, insight into, and high level information about the various parts of Riak KV
 
 [Learn More >>][concepts]
+
+

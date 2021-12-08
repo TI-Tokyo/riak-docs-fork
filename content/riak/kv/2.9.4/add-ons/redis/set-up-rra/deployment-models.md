@@ -136,3 +136,4 @@ most notably the increased cache hit rate and reduced connection overhead,
 should make it the standout choice for applications requiring the scale and
 operational simplicity of Riak. For this reason, we recommend the Distributed
 Cache Deployment.
+

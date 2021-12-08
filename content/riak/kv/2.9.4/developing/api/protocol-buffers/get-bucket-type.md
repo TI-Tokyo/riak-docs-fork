@@ -31,3 +31,4 @@ Only the name of the bucket type needs to be specified (under `name`).
 
 A bucket type's properties will be sent to the client as part of an
 [`RpbBucketProps`]({{<baseurl>}}riak/kv/2.9.4/developing/api/protocol-buffers/get-bucket-props) message.
+

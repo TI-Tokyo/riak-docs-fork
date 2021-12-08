@@ -105,3 +105,4 @@ Riak to detect silent data corruption to on-disk data arising from disk
 failure, faulty hardware, and other sources. The default time period for
 this regeneration is one week, but this can be adjusted in each node's
 [configuration file][config aae].
+

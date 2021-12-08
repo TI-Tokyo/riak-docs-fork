@@ -10,6 +10,8 @@ menu:
     weight: 102
     parent: "setup_index"
 toc: true
+aliases:
+  - /riak/kv/latest/setup/upgrading/
 ---
 
 [upgrade checklist]: ./checklist
@@ -31,3 +33,4 @@ An overview of what to consider before upgrading Riak KV in a production environ
 A tutorial on updating to Riak KV 2.9.4
 
 [Learn More >>][upgrade version]
+

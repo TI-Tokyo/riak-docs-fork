@@ -68,3 +68,4 @@ $ curl -v -d '{"inputs":"test", "query":[{"link":{"bucket":"test"}},{"map":{"lan
 * Closing connection #0
 [{"foo":"bar"},{"riak":"CAP"}]
 ```
+

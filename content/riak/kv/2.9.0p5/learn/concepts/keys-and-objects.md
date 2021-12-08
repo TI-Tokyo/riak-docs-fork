@@ -20,7 +20,6 @@ aliases:
   - /riak/kv/2.9.0p2/learn/concepts/keys-and-objects/
   - /riak/kv/2.9.0p3/learn/concepts/keys-and-objects/
   - /riak/kv/2.9.0p4/learn/concepts/keys-and-objects/
-  - /riak/kv/latest/learn/concepts/keys-and-objects/
 ---
 
 
