@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/advanced/2i
   - /riak/kv/2.9.7/dev/advanced/2i
+  - /riak/latest/using/reference/secondary-indexes/
+  - /riak/kv/latest/using/reference/secondary-indexes/
+  - /riakkv/latest/using/reference/secondary-indexes/
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
@@ -70,4 +73,6 @@ requesting node.
 secondary index metadata to those objects, you can still perform
 strongly consistent operations on those objects but the secondary
 indexes will be ignored.
+
+
 

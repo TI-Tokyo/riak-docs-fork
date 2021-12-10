@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/set-bucket-props
   - /riak/kv/2.9.7/dev/references/protocol-buffers/set-bucket-props
+  - /riak/latest/developing/api/protocol-buffers/set-bucket-props/
+  - /riak/kv/latest/developing/api/protocol-buffers/set-bucket-props/
+  - /riakkv/latest/developing/api/protocol-buffers/set-bucket-props/
 ---
 
 Sets the properties for a bucket.
@@ -66,4 +69,6 @@ Erlang <<0,0,0,1,22>>
 
 RpbSetBucketResp - only message code defined
 ```
+
+
 

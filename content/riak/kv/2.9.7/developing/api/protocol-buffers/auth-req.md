@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/auth-req
   - /riak/kv/2.9.7/dev/references/protocol-buffers/auth-req
+  - /riak/latest/developing/api/protocol-buffers/auth-req/
+  - /riak/kv/latest/developing/api/protocol-buffers/auth-req/
+  - /riakkv/latest/developing/api/protocol-buffers/auth-req/
 ---
 
 Sends a username (`user`) and password (`password`) to Riak as part of
@@ -28,4 +31,6 @@ message RpbAuthReq {
 ```
 
 For more on authentication, see our documentation on [Authentication and Authorization]({{<baseurl>}}riak/kv/2.9.7/using/security/basics).
+
+
 

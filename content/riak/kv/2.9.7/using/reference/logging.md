@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/running/logging
   - /riak/kv/2.9.7/ops/running/logging
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 
 [cluster ops log]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/logging
@@ -189,18 +192,33 @@ month, etc. Complete documentation of the syntax can be found
 Below are some examples:
 
 * `$D0`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 Every night at midnight
 * `$D23`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 Every day at 23:00 (11 pm)
 * `$W0D20`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 Every week on Sunday at 20:00 (8 pm)
 * `$M1D0`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 On the first day of every month at midnight
 * `$M5D6`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 On the fifth day of the month at 6:00 (6 am)
 
@@ -282,6 +300,9 @@ or to neither. This is determined by the value that you give to the
 `log.console` parameter, which gives you one of four options:
 
 * `file`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 Console logs will be emitted to a file. This is Riak's
     default behavior. The location of that file is determined by the
@@ -290,14 +311,23 @@ Console logs will be emitted to a file. This is Riak's
     e.g.  `/var/log/riak` on Ubuntu, Debian, CentOS, and RHEL or
     `/opt/riak/log` on Solaris-based platforms.
 * `console`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 Console logs will be emitted to standard output, which
     can be viewed by running the [`riak attach-direct`]({{<baseurl>}}riak/kv/2.9.7/using/admin/riak-cli/#attach-direct) command
 * `both`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 Console logs will be emitted both to a file and to standard
     output
 * `off`
+  - /riak/latest/using/reference/logging/
+  - /riak/kv/latest/using/reference/logging/
+  - /riakkv/latest/using/reference/logging/
 ---
 Console log messages will be disabled
 
@@ -313,4 +343,6 @@ The following four options are available:
 ## Enabling and Disabling Debug Logging
 
 Checkout [Cluster Operations: Enabling and Disabling Debug Logging][cluster ops log]
+
+
 

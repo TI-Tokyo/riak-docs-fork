@@ -16,6 +16,9 @@ aliases:
   - /riak/kv/2.9.7/dev/using/data-types/sets
   - /riak/2.9.7/dev/data-modeling/data-types/sets
   - /riak/kv/2.9.7/dev/data-modeling/data-types/sets
+  - /riak/latest/developing/data-types/sets/
+  - /riak/kv/latest/developing/data-types/sets/
+  - /riakkv/latest/developing/data-types/sets/
 ---
 
 Sets are a bucket-level Riak data type that can be used by themselves, associated with a bucket/key pair, or used [within a map](../maps#sets-within-maps).
@@ -767,4 +770,6 @@ riakc_set:size(CitiesSet5).
 # With the HTTP interface, this can be determined from the output of
 # a fetch command like the one displayed in the example above
 ```
+
+
 

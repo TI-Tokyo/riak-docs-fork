@@ -11,7 +11,13 @@ project_version: 2.9.7
 #    weight: 112
 #    parent: "managing_cluster_operations"
 toc: true
+aliases:
+  - /riak/latest/using/cluster-operations/backend/
+  - /riak/kv/latest/using/cluster-operations/backend/
+  - /riakkv/latest/using/cluster-operations/backend/
 ---
 
 **TODO: Add content**
+
+
 

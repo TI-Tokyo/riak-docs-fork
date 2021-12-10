@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/advanced/riak-control
   - /riak/kv/2.9.7/ops/advanced/riak-control
+  - /riak/latest/using/admin/riak-control/
+  - /riak/kv/latest/using/admin/riak-control/
+  - /riakkv/latest/using/admin/riak-control/
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
@@ -231,4 +234,6 @@ see the health of each [vnode]({{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode)
 Most of the time, your ring will be too large to effectively manage from
 the ring view. That said, with filters you can easily identify partition
 ownership, unreachable primaries, and in-progress handoffs.
+
+
 

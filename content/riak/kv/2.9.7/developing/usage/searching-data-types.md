@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/search/search-data-types
   - /riak/kv/2.9.7/dev/search/search-data-types
+  - /riak/latest/developing/usage/searching-data-types/
+  - /riak/kv/latest/developing/usage/searching-data-types/
+  - /riakkv/latest/developing/usage/searching-data-types/
 ---
 
 Although [Riak Data Types]({{<baseurl>}}riak/kv/2.9.7/developing/data-types) function differently from other
@@ -1681,4 +1684,6 @@ client.execute(searchCmd);
 ```
 
 Success! We've now queried not just maps but also maps within maps.
+
+
 

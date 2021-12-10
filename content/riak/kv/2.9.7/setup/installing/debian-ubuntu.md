@@ -17,6 +17,9 @@ aliases:
   - /riak/2.9.7/installing/debian-ubuntu/
   - /riak/kv/2.9.7/installing/debian-ubuntu/
   - /riak/kv/latest/setup/installing/debian-ubuntu/
+  - /riak/latest/setup/installing/debian-ubuntu/
+  - /riak/kv/latest/setup/installing/debian-ubuntu/
+  - /riakkv/latest/setup/installing/debian-ubuntu/
 ---
 
 [install source index]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/source/
@@ -165,5 +168,7 @@ If the build was successful, a fresh build of Riak will exist in the
 ## Next Steps
 
 Now that Riak is installed, check out [Verifying a Riak Installation][install verify].
+
+
 
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/dt-counter-store
   - /riak/kv/2.9.7/dev/references/protocol-buffers/dt-counter-store
+  - /riak/latest/developing/api/protocol-buffers/dt-counter-store/
+  - /riak/kv/latest/developing/api/protocol-buffers/dt-counter-store/
+  - /riakkv/latest/developing/api/protocol-buffers/dt-counter-store/
 ---
 
 An operation to update a [counter]({{<baseurl>}}riak/kv/2.9.7/developing/data-types).
@@ -29,4 +32,6 @@ The `increment` value specifies how much the counter will be incremented
 or decremented, depending on whether the `increment` value is positive
 or negative. This operation can be used to update counters that are
 stored on their own in a key or [within a map]({{<baseurl>}}riak/kv/2.9.7/developing/api/protocol-buffers/dt-map-store).
+
+
 

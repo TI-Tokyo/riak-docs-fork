@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/theory/concepts/keys-and-values
   - /riak/kv/2.9.7/theory/concepts/keys-and-values
+  - /riak/latest/learn/concepts/keys-and-objects/
+  - /riak/kv/latest/learn/concepts/keys-and-objects/
+  - /riakkv/latest/learn/concepts/keys-and-objects/
 ---
 
 [concept buckets]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/buckets
@@ -47,4 +50,6 @@ pair, but when there are more than one, the object is said to have
 across multiple nodes, and do occur when either more than one actor
 updates an object, a network partition occurs, or a stale vector clock
 is submitted when updating an object (see: [Vector Clocks][concept causal context vc]).
+
+
 

@@ -15,6 +15,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/coverage-queries
   - /riak/kv/2.9.7/dev/references/protocol-buffers/coverage-queries
+  - /riak/latest/developing/api/protocol-buffers/coverage-queries/
+  - /riak/kv/latest/developing/api/protocol-buffers/coverage-queries/
+  - /riakkv/latest/developing/api/protocol-buffers/coverage-queries/
 ---
 
 Prepare for parallelizable
@@ -76,4 +79,6 @@ Parameter | Description
 `port` | The port to contact on the server.
 `keyspace_desc` | A human-readable description of the keyspace. Not intended to be used programmatically except potentially for logging.
 `cover_context` | The opaque binary to be used in secondary index queries (and possibly future coverage queries to indicate that this server appears offline or otherwise non-functional to the client).
+
+
 

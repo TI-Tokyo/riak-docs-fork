@@ -15,6 +15,9 @@ commercial_offering: true
 aliases:
   - /riak/2.9.7/ops/mdc/v3/aae
   - /riak/kv/2.9.7/ops/mdc/v3/aae
+  - /riak/latest/using/reference/v3-multi-datacenter/aae/
+  - /riak/kv/latest/using/reference/v3-multi-datacenter/aae/
+  - /riakkv/latest/using/reference/v3-multi-datacenter/aae/
 ---
 
 [glossary aae]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#active-anti-entropy-aae
@@ -123,4 +126,6 @@ To enable AAE w/ Version 3 MDC Replication:
              % ...
             ]}
 ```
+
+
 

@@ -17,6 +17,9 @@ aliases:
   - /riak/2.9.7/installing/windows-azure/
   - /riak/kv/2.9.7/installing/windows-azure/
   - /riak/kv/latest/setup/installing/windows-azure/
+  - /riak/latest/setup/installing/windows-azure/
+  - /riak/kv/latest/setup/installing/windows-azure/
+  - /riakkv/latest/setup/installing/windows-azure/
 ---
 
 ## Creating CentOS VMs
@@ -191,5 +194,7 @@ Visit DNS address listed on the dashboard, at the port we opened as an endpoint:
 ```
 http://testlinuxvm.cloudapp.net:8098/riak/rekon/go
 ```
+
+
 
 

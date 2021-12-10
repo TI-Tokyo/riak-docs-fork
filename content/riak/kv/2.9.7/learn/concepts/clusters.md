@@ -15,6 +15,9 @@ aliases:
   - /riak/kv/2.9.7/theory/concepts/Clusters
   - /riak/2.9.7/theory/concepts/clusters
   - /riak/kv/2.9.7/theory/concepts/clusters
+  - /riak/latest/learn/concepts/clusters/
+  - /riak/kv/latest/learn/concepts/clusters/
+  - /riakkv/latest/learn/concepts/clusters/
 ---
 
 
@@ -111,4 +114,6 @@ protocol." Whenever a node changes its claim on the ring, it announces,
 i.e. "gossips," this change to other nodes so that the other nodes can
 respond appropriately. Nodes also periodically re-announce what they
 know about ring in case any nodes happened to miss previous updates.
+
+
 

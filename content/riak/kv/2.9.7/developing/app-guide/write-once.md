@@ -15,6 +15,9 @@ version_history:
 aliases:
   - /riak/2.9.7/dev/advanced/write-once
   - /riak/kv/2.9.7/dev/advanced/write-once
+  - /riak/latest/developing/app-guide/write-once/
+  - /riak/kv/latest/developing/app-guide/write-once/
+  - /riakkv/latest/developing/app-guide/write-once/
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
@@ -153,4 +156,6 @@ The [Multi]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/multi) backend doe
 support asynchronous writes. Therefore, if LevelDB is used with the Multi
 backend, it will be used in synchronous mode.
 {{% /note %}}
+
+
 

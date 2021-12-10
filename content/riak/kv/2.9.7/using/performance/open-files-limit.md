@@ -13,6 +13,10 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/tuning/open-files-limit/
   - /riak/kv/2.9.7/ops/tuning/open-files-limit/
+  - /riak/latest/using/performance/open-files-limit/
+  - /riak/kv/latest/using/performance/open-files-limit/
+  - /riakkv/latest/using/performance/open-files-limit/
+  - /riak/kv/latest/ops/tuning/open-files-limit/
 ---
 
 [plan backend]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/
@@ -345,4 +349,6 @@ The response output should look something like this:
 ```bash
 maxfiles    65536          200000
 ```
+
+
 

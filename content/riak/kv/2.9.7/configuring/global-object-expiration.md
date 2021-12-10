@@ -10,6 +10,10 @@ menu:
 project: "riak_kv"
 project_version: 2.9.7
 toc: true
+aliases:
+  - /riak/latest/configuring/global-object-expiration/
+  - /riak/kv/latest/configuring/global-object-expiration/
+  - /riakkv/latest/configuring/global-object-expiration/
 ---
 
 [ttl]: https://en.wikipedia.org/wiki/Time_to_live
@@ -83,4 +87,6 @@ leveldb.expiration = off
 leveldb.expiration.retention_time = 1d
 leveldb.expiration.mode = whole_file
 ```
+
+
 

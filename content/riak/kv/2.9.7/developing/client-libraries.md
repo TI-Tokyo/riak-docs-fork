@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/using/libraries
   - /riak/kv/2.9.7/dev/using/libraries
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 
 ## Basho-Supported Libraries
@@ -60,18 +63,30 @@ activity.
 #### C/C++
 
 * [riak-cpp](https://github.com/ajtack/riak-cpp)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A C++ Riak client
   library for use with C++11 compilers
 * [Riak C Driver](https://github.com/fenek/riak-c-driver)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A library
   to communicate with Riak using cURL and Protocol Buffers
 * [Riack](https://github.com/trifork/riack)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A simple C client
   library
 * [Riack++](https://github.com/TriKaspar/riack_cpp)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A C++ wrapper
   around riack
@@ -79,22 +94,37 @@ A C++ wrapper
 #### Clojure
 
 * [knockbox](https://github.com/reiddraper/knockbox)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 An eventual
   consistency toolbox for Clojure
 * [Welle](http://clojureriak.info)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 An expressive Clojure client with
   batteries included
 * [clj-riak](http://github.com/mmcgrana/clj-riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Clojure bindings
   to the Riak Protocol Buffers API
 * [sumo](https://github.com/reiddraper/sumo)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Protocol
   Buffer-specific client for Riak with KV, 2i, and MapReduce support
 * [kria](https://github.com/bluemont/kria)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak 2.0 Asynchronous
   (NIO.2) Clojure client. Callback driven, low level, Protocol Buffer
@@ -104,6 +134,9 @@ Riak 2.0 Asynchronous
 
 * [Riak-Cache-Extension](https://github.com/getrailo/Riak-Cache-Extension)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak-backed cache extension for Railo/ColdFusion
 
@@ -115,6 +148,9 @@ A Riak-backed cache extension for Railo/ColdFusion
 #### Dart
 
 * [riak-dart](https://github.com/agilord/riak_dart_client)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 HTTP
   client for Riak written in Dart
@@ -123,41 +159,68 @@ HTTP
 
 * [django-riak-sessions](https://github.com/flashingpumpkin/django-riak-sessions)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak-based Session Backend for Django
 * [Django Riak Engine](https://github.com/oubiwann/django-riak-engine)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak backend for Django
 
 #### Erlang
 
 * [Uriak Pool](https://github.com/unisontech/uriak_pool)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Erlang
   connection pool library from the team at
   [Unison](http://www.unison.com)
 * [Riak PBC Pool](https://github.com/snoopaloop/Riak-PBC-Pool)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak
   Protocol Buffer Client pool application
 * [Pooly](https://github.com/aberman/pooly)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak Process Pool
 * [riakpool](https://github.com/dweldon/riakpool)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Application for
   maintaining a dynamic pool of Protocol Buffer client connections to a
   Riak database
 * [pooler](https://github.com/seth/pooler)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 An OTP Process Pool
   Application
 * [krc](https://github.com/klarna/krc)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A simple wrapper around the
   official Riak client for Erlang
 * [riakc_pool](https://github.com/brb/riakc_pool)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A really simple
   Riak client process pool based on poolboy
@@ -165,18 +228,30 @@ A really simple
 #### Go
 
 * [riaken](https://github.com/riaken)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A fast and extendable Riak
   Protocol Buffer Client
 * [goriakpbc](https://github.com/tpjg/goriakpbc)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Golang Riak
   client inspired by the Ruby riak-client from Basho and riakpbc from mrb
 * [riakpbc](https://github.com/mrb/riakpbc)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak Protocol Buffer
   client in Go
 * [goriak](https://github.com/zegl/goriak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Go language driver for Riak KV
 
@@ -192,6 +267,9 @@ Go language driver for Riak KV
 #### Groovy
 
 * [spring-riak](https://github.com/jbrisbin/spring-riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak
   support from Groovy and/or Java
@@ -200,6 +278,9 @@ Riak
 
 * [Riak Haskell Client](https://github.com/markhibberd/riak-haskell-client)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A fast Haskell client library from the team at MailRank.
 
@@ -207,10 +288,16 @@ A fast Haskell client library from the team at MailRank.
 
 * [Riak-Java-PB-Client](http://github.com/krestenkrab/riak-java-pb-client)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Java Client Library for Riak based on the Protocol Buffers API
 * [Asynchronous Riak Java Client](https://github.com/jbrisbin/riak-async-java-client)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Asynchronous, NIO-based Protocol Buffers client for Riak
 * [Riak Module for the Play
@@ -219,6 +306,9 @@ Asynchronous, NIO-based Protocol Buffers client for Riak
 #### Lisp-flavored Erlang
 
 * [Gutenberg](https://github.com/dysinger/gutenberg/)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak MapReduce
   examples written in LFE
@@ -226,67 +316,112 @@ Riak MapReduce
 #### Node.js
 
 * [zukai](https://github.com/natural/zukai)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak ODM for Node.js
   from Troy Melhase
 * [riak-pb](https://github.com/CrowdProcess/riak-pb)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak Protocol
   Buffers client for Node.js from the team at
   [CrowdProcess](http://crowdprocess.com)
 * [node_riak](https://github.com/mranney/node_riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Voxer's
   production Node.js client for Riak.
 * [riakpbc](https://github.com/nlf/riakpbc)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A simple Riak Protocol
   Buffer client library for Node.js
 * [nodiak](https://npmjs.org/package/nodiak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Supports bulk
   get/save/delete, sibling auto-resolution, MapReduce chaining, Search,
   and 2i's
 * [resourceful-riak](https://github.com/admazely/resourceful-riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A
   Riak engine to the
   [resourceful](https://github.com/flatiron/resourceful/) model
   framework from [flatiron](https://github.com/flatiron/)
 * [Connect-Riak](https://github.com/frank06/connect-riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak
   session store for Connect backed by [Riak-js](http://riakjs.org/)
 * [Riak-js](http://riakjs.com)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Node.js client for Riak with support
   for HTTP and Protocol Buffers
 * [Riakjs-model](https://github.com/dandean/riakjs-model)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 a model
   abstraction around riak-js
 * [Node-Riak](http://github.com/orlandov/node-riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A wrapper around
   Node's HTTP facilities for communicating with Riak
 * [riak-dc](https://github.com/janearc/riak-dc)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A very thin, very small
   http-based interface to Riak using promises intended to be used for small
   tools like command-line applications; aims to have the "most-synchronous-
   like" interface.
 * [Nori](https://github.com/sgonyea/nori)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Experimental Riak HTTP
   library for Node.js modeled after Ripple
 * [OrionNodeRiak](http://github.com/mauritslamers/OrionNodeRiak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
   Node-based server and database-frontend for Sproutcore
 * [Chinood](https://npmjs.org/package/chinood)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Object data mapper
   for Riak built on Nodiak
 * [SimpleRiak](https://npmjs.org/package/simpleriak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A very simple
   Riak HTTP client
@@ -294,9 +429,15 @@ A very simple
 #### OCaml
 
 * [Riak OCaml Client](http://metadave.github.com/riak-ocaml-client/)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
   Riak OCaml client
 * [OCaml Riakc](https://github.com/orbitz/ocaml-riakc)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Protocol
   Buffers client for Riak
@@ -304,18 +445,30 @@ A Protocol
 #### Perl
 
 * [Net::Riak](http://search.cpan.org/~franckc/Net-Riak/)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Perl
   interface to Riak
 * [AnyEvent-Riak adapter](http://github.com/franckcuny/anyevent-riak)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Non-blocking Riak adapter using anyevent
 * [riak-tiny](https://github.com/tempire/riak-tiny)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Perl interface
   to Riak without Moose
 * [Riak::Light](https://metacpan.org/module/Riak::Light)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Fast and
   lightweight Perl client for Riak (PBC only)
@@ -323,27 +476,45 @@ Fast and
 #### PHP
 
 * [riak-client](https://github.com/php-riak/riak-client)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak
   2.0-compliant PHP client with support for Protocol Buffers by [Fabio
   Silva](https://github.com/FabioBatSilva)
 * [Ripple-PHP](https://github.com/KevBurnsJr/ripple-php)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A port of
   Ripple to PHP
 * [riiak](https://bitbucket.org/intel352/riiak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak PHP client
   library for the [Yii Framework](http://www.yiiframework.com/)
 * [riak-php](https://github.com/marksteele/riak-php)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak PHP
   client with support for Protocol Buffers
 * [RiakBundle](https://github.com/remialvado/RiakBundle)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
   [Symfony](http://symfony.com) Bundle designed to ease interaction
   with Riak
 * [php_riak](https://github.com/TriKaspar/php_riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A PHP extension
   written in C, Both Riak client and PHP session module
@@ -352,31 +523,52 @@ A PHP extension
 
 * [Aioriak](https://github.com/rambler-digital-solutions/aioriak) 
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Asyncio PBC Riak 2.0+ client library. (Based on official Basho 
   python client)
 * [Riakasaurus](https://github.com/calston/riakasaurus)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak
   client library for Twisted (based on txriak)
 * [RiakKit](http://shuhaowu.com/riakkit)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A small Python ORM that
   sits on top of riak-python-client, similar to mongokit and couchdbkit
 * [riakalchemy](https://github.com/Linux2Go/riakalchemy)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Object
   mapper for Riak written in Python
 * [riak_crdt](https://github.com/ericmoritz/riak_crdt)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A CRDT
   (Conflict-Free Replicated Data Type) loader for Riak using the [CRDT
   API](https://github.com/ericmoritz/crdt)
 * [txriak](https://launchpad.net/txriak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Twisted module for
   communicating with Riak via the HTTP interface
 * [txriakidx](https://github.com/williamsjj/txriakidx)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak client
   for Twisted Python that implements transparent indexes
@@ -384,10 +576,16 @@ Riak client
 #### Racket
 
 * [riak.rkt](https://github.com/shofetim/riak.rkt)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Racket API to
   Riak
 * [Racket Riak](https://github.com/dkvasnicka/racket-riak)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Racket
   1.3.x API to Riak
@@ -395,32 +593,56 @@ Racket
 #### Ruby
 
 * [Risky](https://github.com/aphyr/risky)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A lightweight Ruby ORM for
   Riak
 * [riak_sessions](http://github.com/igorgue/riak_sessions)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
   Riak-backed session storage for Rack
 * [Riaktor](http://github.com/benmyles/riaktor)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Ruby client and
   object mapper for Riak
 * [dm-riak-adapter](http://github.com/mikeric/dm-riak-adapter)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
   DataMapper adapter for Riak
 * [Riak PB Client](https://github.com/sgonyea/riak-pbclient)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Riak
   Protocol Buffer Client in Ruby
 * [Devise-Ripple](http://github.com/frank06/devise-ripple)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 An ORM
   strategy to use Devise with Riak
 * [ripple-anaf](http://github.com/bkaney/ripple-anaf)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Accepts nested
   attributes support for Ripple
 * [Pabst](https://github.com/sgonyea/pabst)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Cross-platform Ruby
   extension for Protocol Buffers written in both Objective-C and
@@ -429,14 +651,23 @@ Cross-platform Ruby
 #### Scala
 
 * [Riakka](http://github.com/timperrett/riakka)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 Scala library for
   talking to Riak
 * [Ryu](http://github.com/softprops/ryu)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Tornado Whirlwind Kick
   Scala client for the Riak raw HTTP interface
 * [Raiku](https://github.com/gideondk/Raiku)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 An Akka IO- and
   Sentinel-driven Riak Scala client
@@ -444,13 +675,21 @@ An Akka IO- and
 #### Smalltalk
 
 * [Phriak](http://www.squeaksource.com/Phriak/)
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Riak client for
   Pharo Smalltalk based on Runar Jordahl's EpigentRiakInterface
 * [EpigentRiakInterface](http://www.squeaksource.com/EpigentRiakInterface/)
  
+  - /riak/latest/developing/client-libraries/
+  - /riak/kv/latest/developing/client-libraries/
+  - /riakkv/latest/developing/client-libraries/
 ---
 A Pharo Smalltalk interface to Riak. There is also a blog post
   with some additional info about the client
   [here](http://blog.epigent.com/2011/03/riak-interface-for-pharo-smalltalk.html).
+
+
 

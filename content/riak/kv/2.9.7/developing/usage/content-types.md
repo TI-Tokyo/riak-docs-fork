@@ -10,6 +10,10 @@ menu:
     weight: 104
     parent: "developing_usage"
 toc: true
+aliases:
+  - /riak/latest/developing/usage/content-types/
+  - /riak/kv/latest/developing/usage/content-types/
+  - /riakkv/latest/developing/usage/content-types/
 ---
 
 Riak KV is a fundamentally content-agnostic database. You can use it to
@@ -185,4 +189,6 @@ curl -XPUT \
 # Please note that POST is also a valid method for writes, for the sake
 # of compatibility
 ```
+
+
 

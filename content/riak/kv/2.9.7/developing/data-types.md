@@ -16,6 +16,9 @@ aliases:
   - /riak/kv/2.9.7/dev/using/data-types
   - /riak/2.9.7/dev/data-modeling/data-types
   - /riak/kv/2.9.7/dev/data-modeling/data-types
+  - /riak/latest/developing/data-types/
+  - /riak/kv/latest/developing/data-types/
+  - /riakkv/latest/developing/data-types/
 ---
 
 [wiki crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#Others
@@ -273,4 +276,6 @@ the search platform behind Riak Search.
 
 In our Search documentation we offer a [full tutorial](../usage/searching-data-types) as well as a variety of [examples](../usage/searching-data-types/), including code
 samples from each of our official client libraries.
+
+
 

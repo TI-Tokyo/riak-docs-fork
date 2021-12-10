@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/store-object
   - /riak/kv/2.9.7/dev/references/protocol-buffers/store-object
+  - /riak/latest/developing/api/protocol-buffers/store-object/
+  - /riak/kv/latest/developing/api/protocol-buffers/store-object/
+  - /riakkv/latest/developing/api/protocol-buffers/store-object/
 ---
 
 Stores an object under the specified location, as determined by the
@@ -148,4 +151,6 @@ vclock: "k316a```312`312005R,,351014206031L211214y254014Z!266G371
 302l315I254rw|240022372 211,000"
 
 ```
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/theory/concepts/strong-consistency
   - /riak/kv/2.9.7/theory/concepts/strong-consistency
+  - /riak/latest/learn/concepts/strong-consistency/
+  - /riak/kv/latest/learn/concepts/strong-consistency/
+  - /riakkv/latest/learn/concepts/strong-consistency/
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
@@ -99,4 +102,6 @@ system:
 4. Nearly all reads to `k` now return `v2`, but a small number return
    the outdated `v` (or even `not found`) because the newer value hasn't
    yet been replicated to all nodes
+
+
 

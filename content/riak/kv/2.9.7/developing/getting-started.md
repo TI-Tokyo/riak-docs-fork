@@ -10,6 +10,10 @@ menu:
     weight: 100
     parent: "developing"
 toc: true
+aliases:
+  - /riak/latest/developing/getting-started/
+  - /riak/kv/latest/developing/getting-started/
+  - /riakkv/latest/developing/getting-started/
 ---
 
 [install index]: {{<baseurl>}}riak/kv/2.9.7/setup/installing
@@ -44,4 +48,6 @@ language with which you'd like to proceed:
 
 Please see our [client libraries][dev client libraries] page for a listing of
 community-supported clients.
+
+
 

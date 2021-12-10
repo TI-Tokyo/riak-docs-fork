@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/running/cluster-admin
   - /riak/kv/2.9.7/ops/running/cluster-admin
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 
 [use admin riak-admin#cluster]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak-admin/#cluster
@@ -85,35 +88,62 @@ The following information is then displayed for each node, by nodename
 (in this case `dev1@127.0.0.1`, etc.):
 
 * `status`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 There are five possible values for status:
   * `valid`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 The node has begun participating in cluster operations
   * `leaving`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 The node is is currently unloading ownership of its
     [data partitions][concept clusters] to other nodes
   * `exiting`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 The node's ownership transfers are complete and it is
     currently shutting down
   * `joining`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 The node is in the process of joining the cluster but
     but has not yet completed the join process
   * `down`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 The node is not currently responding
 * `avail`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 There are two possible values: `up` if the node is
     available and taking requests and `down!` if the node is unavailable
 * `ring`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 What percentage of the Riak [ring][concept clusters] the
   node is responsible for
 * `pending`
+  - /riak/latest/using/admin/commands/
+  - /riak/kv/latest/using/admin/commands/
+  - /riakkv/latest/using/admin/commands/
 ---
 The number of pending transfers to or from the node
 
@@ -390,4 +420,6 @@ the corresponding index:
 ```bash
 riak-admin cluster partition id=20
 ```
+
+
 

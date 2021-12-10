@@ -12,6 +12,9 @@ menu:
 toc: true
 aliases:
   - /riak/2.9.7/ops/advanced/deletion
+  - /riak/latest/using/reference/object-deletion/
+  - /riak/kv/latest/using/reference/object-deletion/
+  - /riakkv/latest/using/reference/object-deletion/
 ---
 
 [concept eventual consistency]: ../../../learn/concepts/eventual-consistency
@@ -68,13 +71,22 @@ The `delete_mode` setting in a cluster's [configuration files][config advanced] 
 There are three possible settings:
 
 * `keep`
+  - /riak/latest/using/reference/object-deletion/
+  - /riak/kv/latest/using/reference/object-deletion/
+  - /riakkv/latest/using/reference/object-deletion/
 ---
 Disables tombstone removal
 * `immediate`
+  - /riak/latest/using/reference/object-deletion/
+  - /riak/kv/latest/using/reference/object-deletion/
+  - /riakkv/latest/using/reference/object-deletion/
 ---
 The tombstone is removed as soon as the request is
   received
 * Custom time interval
+  - /riak/latest/using/reference/object-deletion/
+  - /riak/kv/latest/using/reference/object-deletion/
+  - /riakkv/latest/using/reference/object-deletion/
 ---
 How long to wait until the tombstone is
   removed, expressed in milliseconds. The default is `3000`, i.e. to
@@ -121,4 +133,6 @@ Check out [Deleting Objects][usage delete objects] in the Developing section for
 ## Resources
 
 * [Discussion on the Riak mailing list](http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html)
+
+
 

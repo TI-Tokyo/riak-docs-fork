@@ -15,6 +15,9 @@ commercial_offering: true
 aliases:
   - /riak/2.9.7/ops/mdc/v3/architecture
   - /riak/kv/2.9.7/ops/mdc/v3/architecture
+  - /riak/latest/using/reference/v3-multi-datacenter/architecture/
+  - /riak/kv/latest/using/reference/v3-multi-datacenter/architecture/
+  - /riakkv/latest/using/reference/v3-multi-datacenter/architecture/
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
@@ -180,4 +183,6 @@ source and sink cluster.
 document.write(unescape("%3Cscript src='//munchkin.marketo.net/munchkin.js' type='text/javascript'%3E%3C/script%3E"));
 </script>
 <script>Munchkin.init('721-DGT-611');</script>
+
+
 

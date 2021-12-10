@@ -14,6 +14,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/using/conflict-resolution/python
   - /riak/kv/2.9.7/dev/using/conflict-resolution/python
+  - /riak/latest/developing/usage/conflict-resolution/python/
+  - /riak/kv/latest/developing/usage/conflict-resolution/python/
+  - /riakkv/latest/developing/usage/conflict-resolution/python/
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.7/developing/usage/conflict-resolution), we strongly recommend adopting a
@@ -252,4 +255,6 @@ object. The merge operation that we built to handle conflict resolution
 is analogous to the resolution logic that is built into Riak sets. For
 more information on how you could potentially replace the client-side
 resolution that we implemented above, see our [tutorial on Riak sets]({{<baseurl>}}riak/kv/2.9.7/developing/data-types/#sets).
+
+
 

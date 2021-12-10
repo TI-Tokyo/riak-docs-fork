@@ -11,6 +11,10 @@ project_version: 2.9.7
 #    weight: 109
 #    parent: "managing_cluster_operations"
 toc: true
+aliases:
+  - /riak/latest/using/cluster-operations/secondary-indexes/
+  - /riak/kv/latest/using/cluster-operations/secondary-indexes/
+  - /riakkv/latest/using/cluster-operations/secondary-indexes/
 ---
 
 ## Hanc capellae
@@ -78,4 +82,6 @@ Nominis haec lacrimis orba gloria obstipuere tu Ceyx tepebat fetus me equorum
 potero! Iampridem illi; deducit [reor orbem](http://heeeeeeeey.com/), comes, et
 nec rubebant pietas, ipsa.
 ```
+
+
 

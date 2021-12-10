@@ -10,6 +10,10 @@ menu:
     weight: 207
     parent: "managing"
 toc: true
+aliases:
+  - /riak/latest/using/troubleshooting/
+  - /riak/kv/latest/using/troubleshooting/
+  - /riakkv/latest/using/troubleshooting/
 ---
 
 [http 204]: ./http-204
@@ -21,4 +25,6 @@ toc: true
 About the HTTP 204 response.
 
 [Learn More >>][http 204]
+
+
 

@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/advanced/replication-properties
   - /riak/kv/2.9.7/dev/advanced/replication-properties
+  - /riak/latest/developing/usage/replication/
+  - /riak/kv/latest/developing/usage/replication/
+  - /riakkv/latest/developing/usage/replication/
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
@@ -420,15 +423,27 @@ RW, and DW that are often easier to use and understand than specifying
 integer values. The following symbolic names are available:
 
 * `all`
+  - /riak/latest/developing/usage/replication/
+  - /riak/kv/latest/developing/usage/replication/
+  - /riakkv/latest/developing/usage/replication/
 ---
 All replicas must reply. This is the same as setting R, W, PR, RW, or DW equal to N.
 * `one`
+  - /riak/latest/developing/usage/replication/
+  - /riak/kv/latest/developing/usage/replication/
+  - /riakkv/latest/developing/usage/replication/
 ---
 This is the same as setting 1 as the value for R, W, PR, RW, or DW.
 * `quorum`
+  - /riak/latest/developing/usage/replication/
+  - /riak/kv/latest/developing/usage/replication/
+  - /riakkv/latest/developing/usage/replication/
 ---
 A majority of the replicas must respond, that is, half plus one. For the default N value of 3, this calculates to 2, an N value of 5 calculates to 3, and so on.
 * `default`
+  - /riak/latest/developing/usage/replication/
+  - /riak/kv/latest/developing/usage/replication/
+  - /riakkv/latest/developing/usage/replication/
 ---
 Uses whatever the per-bucket consistency property is for R, W, PR, RW, or DW, which may be any of the above symbolic values or an integer.
 
@@ -594,4 +609,6 @@ id="http://player.vimeo.com/video/11172656"></div>
 <a href="http://vimeo.com/11172656">Tuning CAP Controls in Riak</a> from
 <a href="http://vimeo.com/bashotech">Basho Technologies</a> on <a
 href="http://vimeo.com">Vimeo</a>.
+
+
 

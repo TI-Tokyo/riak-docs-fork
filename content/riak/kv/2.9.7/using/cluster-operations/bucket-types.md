@@ -10,6 +10,10 @@ menu:
     weight: 104
     parent: "managing_cluster_operations"
 toc: true
+aliases:
+  - /riak/latest/using/cluster-operations/bucket-types/
+  - /riak/kv/latest/using/cluster-operations/bucket-types/
+  - /riakkv/latest/using/cluster-operations/bucket-types/
 ---
 
 Buckets are essentially a flat namespace in Riak. They allow the same
@@ -56,4 +60,6 @@ inherit that setting and have its values indexed.
 riak-admin bucket-type create animals '{"props":{"search_index":"famous"}}'
 riak-admin bucket-type activate animals
 ```
+
+
 

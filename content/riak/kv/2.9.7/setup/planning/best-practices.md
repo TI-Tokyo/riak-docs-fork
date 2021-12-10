@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/ops/building/planning/best-practices
   - /riak/kv/2.9.7/ops/building/planning/best-practices
+  - /riak/latest/setup/planning/best-practices/
+  - /riak/kv/latest/setup/planning/best-practices/
+  - /riakkv/latest/setup/planning/best-practices/
 ---
 
 [use ref handoff]: {{<baseurl>}}riak/kv/2.9.7/using/reference/handoff
@@ -139,4 +142,6 @@ This process is explored in more detail in [Adding and Removing Nodes][cluster o
 * You should use HAProxy or your application servers to limit new
   network connections to keep network and IO below 90% and CPU below
   30%.
+
+
 

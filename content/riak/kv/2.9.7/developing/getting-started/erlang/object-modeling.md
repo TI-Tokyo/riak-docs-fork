@@ -14,6 +14,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/taste-of-riak/object-modeling-erlang
   - /riak/kv/2.9.7/dev/taste-of-riak/object-modeling-erlang
+  - /riak/latest/developing/getting-started/erlang/object-modeling/
+  - /riak/kv/latest/developing/getting-started/erlang/object-modeling/
+  - /riakkv/latest/developing/getting-started/erlang/object-modeling/
 ---
 
 To get started, let's create the records that we'll be using.
@@ -335,5 +338,7 @@ So to recap, in this chapter we learned:
 
 * How to choose bucket names
 * How to choose natural keys based on how we want to partition our data.
+
+
 
 

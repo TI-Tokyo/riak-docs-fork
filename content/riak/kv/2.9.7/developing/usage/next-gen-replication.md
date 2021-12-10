@@ -14,6 +14,9 @@ version_history:
 toc: true
 aliases:
   - /riak-docs/riak/2.9.7/dev/using/nextgenreplication
+  - /riak/latest/developing/usage/next-gen-replication/
+  - /riak/kv/latest/developing/usage/next-gen-replication/
+  - /riakkv/latest/developing/usage/next-gen-replication/
 ---
 [concept TicTac aae]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/tictac-active-anti-entropy
 [concept causal context vc]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/causal-context/#vector-clocks
@@ -148,3 +151,5 @@ On startup, the manager looks at these wants and provides a random distribution 
 When, on a node, a scheduled piece of work comes due, the `riak_kv_ttaaefs_manager` will start an `aae_exchange` to run the work between the two clusters (using the peer configuration to reach the remote cluster).  Once the work is finished, it will schedule the next piece of work - unless the start time for the next piece of work has already passed, in which case the next work is skipped.  When all the work in the schedule is complete, a new schedule is calculated from the wants.
 
 When starting an `aae_exchange` the `riak_kv_ttaaefs_manager` must pass in a repair function.  This function will compare clocks from identified discrepancies, and where the source cluster is ahead of the sink, send the `{Bucket, Key, Clock, to_fetch}` tuple to a configured queue name on `riak_kv_replrtq_src`.  These queued entries will then be replicated through being fetched by the `riak_kv_replrtq_snk` workers, although this will only occur when there is no higher priority work to replicate i.e. real-time replication events prompted by locally co-ordinated PUTs.
+
+

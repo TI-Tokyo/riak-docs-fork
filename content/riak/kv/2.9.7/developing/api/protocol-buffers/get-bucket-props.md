@@ -13,6 +13,9 @@ toc: true
 aliases:
   - /riak/2.9.7/dev/references/protocol-buffers/get-bucket-props
   - /riak/kv/2.9.7/dev/references/protocol-buffers/get-bucket-props
+  - /riak/latest/developing/api/protocol-buffers/get-bucket-props/
+  - /riak/kv/latest/developing/api/protocol-buffers/get-bucket-props/
+  - /riakkv/latest/developing/api/protocol-buffers/get-bucket-props/
 ---
 
 Fetch a bucket's properties.
@@ -108,4 +111,6 @@ message RpbCommitHook {
 {{% note title="Note on `RpbReplMode`" %}}
 The `RpbReplMode` is of use only to users of Riak CS's [Multi-Datacenter Replication capabilities]({{< baseurl >}}riak/cs/2.1.1/cookbooks/multi-datacenter-overview/)
 {{% /note %}}
+
+
 

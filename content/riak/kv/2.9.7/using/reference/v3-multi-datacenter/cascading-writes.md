@@ -15,6 +15,9 @@ commercial_offering: true
 aliases:
   - /riak/2.9.7/ops/mdc/v3/cascading-writes
   - /riak/kv/2.9.7/ops/mdc/v3/cascading-writes
+  - /riak/latest/using/reference/v3-multi-datacenter/cascading-writes/
+  - /riak/kv/latest/using/reference/v3-multi-datacenter/cascading-writes/
+  - /riakkv/latest/using/reference/v3-multi-datacenter/cascading-writes/
 ---
 
 ## Introduction
@@ -96,4 +99,6 @@ To enable cascading:
 To disable cascading:
 
 `riak-repl realtime cascades never`
+
+
 
