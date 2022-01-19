@@ -33,8 +33,6 @@ aliases:
 
 Riak KV is a distributed NoSQL database designed to deliver maximum data availability by distributing data across multiple servers. As long as your Riak KV client can reach one Riak server, it should be able to write data.
 
-Riak KV 2.9.0p5 is the first of the Riak KV 2.9.x family which has been designed specially as the upgrade path from Riak KV 2.2.x to Riak KV 3.0.x. As such the feature set of Riak KV 2.9.x will be the same as Riak KV 3.0.x with the main differences being the performance benefits KV 3.0.x enjoys from using more modern versions of Erlang and the minor change in KV 3.0.x command line based commands owing to the move to relx.
-
 ## Supported Operating Systems
 
 - Amazon Linux 2016.09 (AWS)
@@ -45,7 +43,7 @@ Riak KV 2.9.0p5 is the first of the Riak KV 2.9.x family which has been designed
 - Debian 7.0 ("Wheezy")
 - Debian 8.0 ("Jessie")
 - Debian 9.0 ("Stretch")
-- Red Hat Enterprise Linux 6
+- Debian 10.0 ("Buster")
 - Red Hat Enterprise Linux 7
 - Red Hat Enterprise Linux 8
 - Raspbian Buster
@@ -66,7 +64,7 @@ Are you brand new to Riak KV? Start by [downloading][downloads] Riak KV, and the
 3. [Configure Riak KV for your needs][config index]
 
 {{% note title="Developing with Riak KV" %}}
-If you are looking to integrate Riak KV with your existing tools, check out the [Developing with Riak KV]({{<baseurl>}}riak/kv/2.9.7/developing) docs. They provide instructions and examples for languages such as: Java, Ruby, Python, Go, Haskell, NodeJS, Erlang, and more.
+If you are looking to integrate Riak KV with your existing tools, check out the [Developing with Riak KV]({{<baseurl>}}riak/kv/3.0.1/developing) docs. They provide instructions and examples for languages such as: Java, Ruby, Python, Go, Haskell, NodeJS, Erlang, and more.
 {{% /note %}}
 
 ## Popular Docs
