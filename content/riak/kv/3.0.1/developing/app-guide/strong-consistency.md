@@ -83,7 +83,7 @@ To give an example, we'll create a bucket type called
 `true`:
 
 ```bash
-riak-admin bucket-type create strongly_consistent \
+riak admin bucket-type create strongly_consistent \
     '{"props":{"consistent":true}}'
 ```
 
@@ -99,7 +99,7 @@ check the status of the type to ensure that it has propagated through
 all nodes and is thus ready to be activated:
 
 ```bash
-riak-admin bucket-type status strongly_consistent
+riak admin bucket-type status strongly_consistent
 ```
 
 If the console outputs `strongly_consistent has been created and may be
@@ -107,7 +107,7 @@ activated` and the properties listing shows that `consistent` has been
 set to `true`, then you may proceed with activation:
 
 ```bash
-riak-admin bucket-type activate strongly_consistent
+riak admin bucket-type activate strongly_consistent
 ```
 
 When activation is successful, the console will return the following:

@@ -27,7 +27,7 @@ aliases:
 [production checklist]: {{<baseurl>}}riak/kv/2.9.7/setup/upgrading/checklist
 [use admin riak control]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak-control
 [use admin commands]: {{<baseurl>}}riak/kv/2.9.7/using/admin/commands
-[use admin riak-admin]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak-admin
+[use admin riak admin]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin
 [usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/secondary-indexes
 [release notes]: https://github.com/basho/riak/blob/master/RELEASE-NOTES.md
 [riak enterprise]: http://basho.com/products/riak-kv/
@@ -93,7 +93,7 @@ riak version
 6\. Wait for the `riak_kv` service to start:
 
 ```bash
-riak-admin wait-for-service riak_kv »target_node«
+riak admin wait-for-service riak_kv »target_node«
 ```
 
 * `»target_node«` is the node which you have just upgraded (e.g.
@@ -102,7 +102,7 @@ riak-admin wait-for-service riak_kv »target_node«
 7\. Wait for any hinted handoff transfers to complete:
 
 ```bash
-riak-admin transfers
+riak admin transfers
 ```
 
 * While the node was offline, other nodes may have accepted writes on its
@@ -150,7 +150,7 @@ riak version
 6\. Wait for the `riak_kv` service to start:
 
 ```bash
-riak-admin wait-for-service riak_kv »target_node«
+riak admin wait-for-service riak_kv »target_node«
 ```
 
 * `»target_node«` is the node which you have just upgraded (e.g.
@@ -159,7 +159,7 @@ riak@192.168.1.11)
 7\. Wait for any hinted handoff transfers to complete:
 
 ```bash
-riak-admin transfers
+riak admin transfers
 ```
 
 * While the node was offline, other nodes may have accepted writes on its
@@ -231,7 +231,7 @@ riak version
 6\. Wait for the `riak_kv` service to start:
 
 ```bash
-riak-admin wait-for-service riak_kv »target_node«
+riak admin wait-for-service riak_kv »target_node«
 ```
 
 `»target_node«` is the node which you have just upgraded (e.g.
@@ -240,7 +240,7 @@ riak-admin wait-for-service riak_kv »target_node«
 7\. Wait for any hinted handoff transfers to complete:
 
 ```bash
-riak-admin transfers
+riak admin transfers
 ```
 
 While the node was offline, other nodes may have accepted writes on its
@@ -334,7 +334,7 @@ Ensure that Riak KV is running on the node, and issue the following
 command:
 
 ```bash
-riak-admin diag
+riak admin diag
 ```
 
 Make the recommended changes from the command output to ensure optimal
