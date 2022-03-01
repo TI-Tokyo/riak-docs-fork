@@ -26,6 +26,7 @@ aliases:
 [leveled](https://github.com/martinsumner/leveled)
 
 Leveled is a simple Key-Value store based on the concept of Log-Structured Merge Trees, with the following characteristics:
+
 - Optimised for workloads with larger values (e.g. > 4KB).
 - Explicitly supports HEAD requests in addition to GET requests:
 - Splits the storage of value between keys/metadata and body (assuming some definition of metadata is provided);
