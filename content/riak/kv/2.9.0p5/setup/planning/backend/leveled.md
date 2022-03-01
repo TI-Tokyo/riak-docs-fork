@@ -29,6 +29,7 @@ aliases:
 [config reference#aae]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#active-anti-entropy
 
 [Leveled](https://github.com/martinsumner/leveled) is a simple Key-Value store based on the concept of Log-Structured Merge Trees, with the following characteristics:
+
 - Optimised for workloads with larger values (e.g. > 4KB).
 - Explicitly supports HEAD requests in addition to GET requests:
 - Splits the storage of value between keys/metadata and body (assuming some definition of metadata is provided);
