@@ -46,7 +46,7 @@ We moved to a Docker image to build the docs to avoid the issues with getting th
 1. Build the Docker image:
 
     ```
-    ./docker/docker-image-build.titokyo.sh
+    ./docker/docker-build-image.titokyo.sh
     ```
 
 1. Run the docker image as a local server to test it all works:
