@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/search-query
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/search-query
+  - /riak/2.9.1/dev/references/http/search-query
+  - /riak/kv/2.9.1/dev/references/http/search-query
 ---
 
 Performs a [Riak KV Search]({{<baseurl>}}riak/kv/2.9.1/developing/usage/search) query.

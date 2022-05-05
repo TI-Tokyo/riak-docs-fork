@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref_v2"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v2/architecture
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v2/architecture
+  - /riak/2.2.6/ops/mdc/v2/architecture
+  - /riak/kv/2.2.6/ops/mdc/v2/architecture
 ---
 
 {{% note title="Deprecation Warning" %}}

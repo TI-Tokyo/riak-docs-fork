@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/advanced/install-custom-code/
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/install-custom-code/
+  - /riak/2.2.6/ops/advanced/install-custom-code/
+  - /riak/kv/2.2.6/ops/advanced/install-custom-code/
 ---
 
 Riak supports the use of Erlang named functions in compiled modules for

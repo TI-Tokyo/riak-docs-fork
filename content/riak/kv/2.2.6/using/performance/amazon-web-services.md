@@ -11,8 +11,8 @@ menu:
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/tuning/aws
-  - /riak-docs/riak/kv/2.2.6/ops/tuning/aws
+  - /riak/2.2.6/ops/tuning/aws
+  - /riak/kv/2.2.6/ops/tuning/aws
 ---
 
 This guide introduces best practices for tuning Riak cluster performance

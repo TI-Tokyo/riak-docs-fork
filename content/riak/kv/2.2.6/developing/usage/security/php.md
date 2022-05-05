@@ -12,8 +12,8 @@ menu:
     parent: "usage_security"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/client-security/php
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/client-security/php
+  - /riak/2.2.6/dev/advanced/client-security/php
+  - /riak/kv/2.2.6/dev/advanced/client-security/php
 ---
 
 This tutorial shows you how to set up a Riak PHP client to authenticate

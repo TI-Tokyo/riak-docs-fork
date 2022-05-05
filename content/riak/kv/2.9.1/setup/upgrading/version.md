@@ -11,10 +11,10 @@ menu:
     parent: "upgrading"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/upgrade-v20/
-  - /riak-docs/riak/kv/2.9.1/ops/upgrading/rolling-upgrades/
-  - /riak-docs/riak/kv/2.9.1/ops/upgrading/rolling-upgrades/
-  - /riak-docs/riak/kv/2.9.1/setup/upgrading/cluster/
+  - /riak/2.9.1/upgrade-v20/
+  - /riak/kv/2.9.1/ops/upgrading/rolling-upgrades/
+  - /riak/kv/2.9.1/ops/upgrading/rolling-upgrades/
+  - /riak/kv/2.9.1/setup/upgrading/cluster/
 
 ---
 

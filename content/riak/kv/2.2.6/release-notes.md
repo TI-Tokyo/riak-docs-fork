@@ -11,10 +11,10 @@ menu:
     parent: index
 toc: false
 aliases:
-  - /riak-docs/riak/2.2.6/community/release-notes
-  - /riak-docs/riak/kv/2.2.6/intro-v20
-  - /riak-docs/riak/2.2.6/intro-v20
-  - /riak-docs/riak/kv/2.2.6/introduction
+  - /riak/2.2.6/community/release-notes
+  - /riak/kv/2.2.6/intro-v20
+  - /riak/2.2.6/intro-v20
+  - /riak/kv/2.2.6/introduction
 ---
 
 Released April 25, 2018.
@@ -62,7 +62,7 @@ Previously a paid for enterprise addition to Riak as part of the Riak
 EE product, this release includes Multi-Datacentre Replication
 (MDC). There is no longer a Riak EE product. All is now Open
 Source. Please consult the existing documentation for
-[MDC]({{<baseurl>}}riak/kv/2.2.3/configuring/v3-multi-datacenter/). Again,
+[MDC]({{<baseurl>}}riak/kv/2.2.6/configuring/v3-multi-datacenter/). Again,
 many thanks to bet365 Technology for this addition. See also
 [Known Issues](#known-issues) below.
 
@@ -147,7 +147,7 @@ Example default entries to add to your existing advanced.config:
 ```
 
 Read more about configuring
-[MDC]({{<baseurl>}}riak/kv/2.2.3/configuring/v3-multi-datacenter/)
+[MDC]({{<baseurl>}}riak/kv/2.2.6/configuring/v3-multi-datacenter/)
 replication.
 
 More details about the issue can be found in riak\_repl/782: [2.2.6 - \[enoent\] - riak_repl couldn't create log dir
@@ -189,4 +189,4 @@ More details about the issue can be found in riak\_repl/782: [2.2.6 - \[enoent\]
 
 ## Previous Release Notes
 
-Please see the KV 2.2.3 release notes [here]({{<baseurl>}}riak/kv/2.2.3/release-notes/), and the KV 2.2.2 release notes [here]({{<baseurl>}}riak/kv/2.2.2/release-notes/).
+Please see the KV 2.2.3 release notes [here]({{<baseurl>}}riak/kv/2.2.6/release-notes/), and the KV 2.2.2 release notes [here]({{<baseurl>}}riak/kv/2.2.6/release-notes/).

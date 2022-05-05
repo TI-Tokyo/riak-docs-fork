@@ -11,8 +11,8 @@ menu:
     parent: "developing_apis"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers
+  - /riak/2.9.1/dev/references/protocol-buffers
+  - /riak/kv/2.9.1/dev/references/protocol-buffers
 ---
 
 This is an overview of the operations you can perform using the

@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/stats-and-monitoring
-  - /riak-docs/riak/kv/2.2.6/ops/running/stats-and-monitoring
+  - /riak/2.2.6/ops/running/stats-and-monitoring
+  - /riak/kv/2.2.6/ops/running/stats-and-monitoring
 ---
 
 Riak provides data related to current operating status, which includes
@@ -188,7 +188,7 @@ A comprehensive list of available stats can be found in the
 The `riak-admin stat` command is related to the `riak-admin status`
 command but provides a more fine-grained interface for interacting with
 stats and information. Full documentation of this command can be found
-in the [Inspecting a Node]({{<baseurl>}}riak/kv/2.2.6/using/cluster-operations/inspecting-node/#riak-admin-stat) document.
+in the [Inspecting a Node]({{<baseurl>}}riak/kv/2.2.6/using/admin/riak-admin/#stat) document.
 
 ## Statistics and Monitoring Tools
 
@@ -380,9 +380,9 @@ Docs](https://github.com/basho/basho_docs).
 
 
 [sysctl_vm_txt]: https://www.kernel.org/doc/Documentation/sysctl/vm.txt
-[data_types_counters]: http://docs.basho.com/riak/latest/dev/using/data-types/#Counters
-[data_types_sets]: http://docs.basho.com/riak/latest/dev/using/data-types/#Sets
-[data_types_maps]: http://docs.basho.com/riak/latest/dev/using/data-types/#Maps
+[data_types_counters]: {{< baseurl >}}riak/kv/latest/developing/data-types/counters/
+[data_types_sets]: {{< baseurl >}}riak/kv/latest/developing/data-types/sets/
+[data_types_maps]: {{< baseurl >}}riak/kv/latest/developing/data-types/maps/
 [riak_nagios]: https://github.com/basho/riak_nagios
 [tcollector]: https://github.com/stumbleupon/tcollector
 [tcollector_riak_plugin]: https://github.com/stumbleupon/tcollector/blob/master/collectors/0/riak.py

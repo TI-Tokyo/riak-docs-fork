@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v2/quick-start
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v2/quick-start
+  - /riak/2.2.6/ops/mdc/v2/quick-start
+  - /riak/kv/2.2.6/ops/mdc/v2/quick-start
 ---
 
 {{% note title="Deprecation Warning" %}}

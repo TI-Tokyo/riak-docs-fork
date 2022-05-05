@@ -14,26 +14,26 @@ aliases:
   - /riak/2.0.2/ops/building/configuration/
 ---
 
-[config reference]: /riak/kv/2.0.2/configuring/reference
-[use running cluster]: /riak/kv/2.0.2/using/running-a-cluster
-[use admin riak-admin#member-status]: /riak/kv/2.0.2/using/admin/riak-admin/#member-status
-[perf erlang]: /riak/kv/2.0.2/using/performance/erlang
-[plan start]: /riak/kv/2.0.2/setup/planning/start
-[plan best practices]: /riak/kv/2.0.2/setup/planning/best-practices
-[cluster ops backup]: /riak/kv/2.0.2/using/cluster-operations/backing-up
-[cluster ops add remove node]: /riak/kv/2.0.2/using/cluster-operations/adding-removing-nodes
-[plan backend]: /riak/kv/2.0.2/setup/planning/backend
-[plan backend multi]: /riak/kv/2.0.2/setup/planning/backend/multi
-[plan backend bitcask]: /riak/kv/2.0.2/setup/planning/backend/bitcask
-[usage bucket types]: /riak/kv/2.0.2/developing/usage/bucket-types
-[apps replication properties]: /riak/kv/2.0.2/developing/app-guide/replication-properties
-[concept buckets]: /riak/kv/2.0.2/learn/concepts/buckets
-[concept eventual consistency]: /riak/kv/2.0.2/learn/concepts/eventual-consistency
-[perf benchmark]: /riak/kv/2.0.2/using/performance/benchmarking
-[perf open files]: /riak/kv/2.0.2/using/performance/open-files-limit
-[perf index]: /riak/kv/2.0.2/using/performance
-[perf aws]: /riak/kv/2.0.2/using/performance/amazon-web-services
-[Cluster Capacity Planning]: /riak/kv/2.0.2/setup/planning/cluster-capacity/#ring-size-number-of-partitions
+[config reference]: {{<baseurl>}}riak/kv/2.0.2/configuring/reference
+[use running cluster]: {{<baseurl>}}riak/kv/2.0.2/using/running-a-cluster
+[use admin riak-admin#member-status]: {{<baseurl>}}riak/kv/2.0.2/using/admin/riak-admin/#member-status
+[perf erlang]: {{<baseurl>}}riak/kv/2.0.2/using/performance/erlang
+[plan start]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/start
+[plan best practices]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/best-practices
+[cluster ops backup]: {{<baseurl>}}riak/kv/2.0.2/using/cluster-operations/backing-up
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.0.2/using/cluster-operations/adding-removing-nodes
+[plan backend]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/backend
+[plan backend multi]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/backend/multi
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/backend/bitcask
+[usage bucket types]: {{<baseurl>}}riak/kv/2.0.2/developing/usage/bucket-types
+[apps replication properties]: {{<baseurl>}}riak/kv/2.0.2/developing/app-guide/replication-properties
+[concept buckets]: {{<baseurl>}}riak/kv/2.0.2/learn/concepts/buckets
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.0.2/learn/concepts/eventual-consistency
+[perf benchmark]: {{<baseurl>}}riak/kv/2.0.2/using/performance/benchmarking
+[perf open files]: {{<baseurl>}}riak/kv/2.0.2/using/performance/open-files-limit
+[perf index]: {{<baseurl>}}riak/kv/2.0.2/using/performance
+[perf aws]: {{<baseurl>}}riak/kv/2.0.2/using/performance/amazon-web-services
+[Cluster Capacity Planning]: {{<baseurl>}}riak/kv/2.0.2/setup/planning/cluster-capacity/#ring-size-number-of-partitions
 
 This document covers the parameters that are commonly adjusted when
 setting up a new cluster. We recommend that you also review the detailed
@@ -215,7 +215,7 @@ For more on bucket properties, we recommend reviewing our docs on
 
 If the default bucket properties are modified in your configuration
 files and the node is restarted, any existing buckets will **not** be
-directly impacted, although the mechanism described in [HTTP Reset Bucket Properties](/riak/kv/2.0.2/developing/api/http/reset-bucket-props) can be used to force them to pick up the new
+directly impacted, although the mechanism described in [HTTP Reset Bucket Properties]({{<baseurl>}}riak/kv/2.0.2/developing/api/http/reset-bucket-props) can be used to force them to pick up the new
 defaults.
 
 ## System tuning

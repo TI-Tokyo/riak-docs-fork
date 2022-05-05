@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/secondary-indexes
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/secondary-indexes
+  - /riak/2.2.6/dev/references/protocol-buffers/secondary-indexes
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/secondary-indexes
 ---
 
 Request a set of keys that match a secondary index query.

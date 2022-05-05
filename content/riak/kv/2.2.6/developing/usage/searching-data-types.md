@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/search/search-data-types
-  - /riak-docs/riak/kv/2.2.6/dev/search/search-data-types
+  - /riak/2.2.6/dev/search/search-data-types
+  - /riak/kv/2.2.6/dev/search/search-data-types
 ---
 
 Although [Riak Data Types]({{<baseurl>}}riak/kv/2.2.6/developing/data-types) function differently from other

@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/installing/Installing-on-RHEL-and-CentOS
-  - /riak-docs/riak/kv/2.2.6/ops/building/installing/Installing-on-RHEL-and-CentOS
-  - /riak-docs/riak/2.2.6/installing/rhel-centos/
-  - /riak-docs/riak/kv/2.2.6/installing/rhel-centos/
+  - /riak/2.2.6/ops/building/installing/Installing-on-RHEL-and-CentOS
+  - /riak/kv/2.2.6/ops/building/installing/Installing-on-RHEL-and-CentOS
+  - /riak/2.2.6/installing/rhel-centos/
+  - /riak/kv/2.2.6/installing/rhel-centos/
 ---
 
 

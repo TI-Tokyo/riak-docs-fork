@@ -12,8 +12,8 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/crdts
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/crdts
+  - /riak/2.9.1/theory/concepts/crdts
+  - /riak/kv/2.9.1/theory/concepts/crdts
 ---
 
 [crdts pdf]: http://hal.upmc.fr/docs/00/55/55/88/PDF/techreport.pdf
@@ -27,7 +27,7 @@ aliases:
 [concept strong consistency]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/strong-consistency
 [dev data types]: {{<baseurl>}}riak/kv/2.9.1/developing/data-types
 [riak_dt]: https://github.com/basho/riak_dt
-[dev data types context]: {{<baseurl>}}riak/kv/2.1.4/developing/data-types/#data-types-and-context
+[dev data types context]: {{<baseurl>}}riak/kv/2.9.1/developing/data-types/#data-types-and-context
 [glossary node]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#node
 [glossary vnode]: {{<baseurl>}}riak/kv/2.9.1/learn/glossary/#vnode
 [usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution

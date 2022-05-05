@@ -11,10 +11,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/installing/Post-Installation
-  - /riak-docs/riak/kv/2.9.1/ops/installing/Post-Installation
-  - /riak-docs/riak/2.9.1/installing/verify-install/
-  - /riak-docs/riak/kv/2.9.1/installing/verify-install/
+  - /riak/2.9.1/ops/installing/Post-Installation
+  - /riak/kv/2.9.1/ops/installing/Post-Installation
+  - /riak/2.9.1/installing/verify-install/
+  - /riak/kv/2.9.1/installing/verify-install/
 ---
 
 [client libraries]: {{<baseurl>}}riak/kv/2.9.1/developing/client-libraries

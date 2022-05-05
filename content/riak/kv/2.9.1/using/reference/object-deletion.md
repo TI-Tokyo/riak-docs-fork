@@ -11,7 +11,7 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/advanced/deletion
+  - /riak/2.9.1/ops/advanced/deletion
 ---
 
 [concept eventual consistency]: ../../../learn/concepts/eventual-consistency

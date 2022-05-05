@@ -11,10 +11,10 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/Buckets
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/Buckets
-  - /riak-docs/riak/2.9.1/theory/concepts/buckets
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/buckets
+  - /riak/2.9.1/theory/concepts/Buckets
+  - /riak/kv/2.9.1/theory/concepts/Buckets
+  - /riak/2.9.1/theory/concepts/buckets
+  - /riak/kv/2.9.1/theory/concepts/buckets
 ---
 
 [apps cluster metadata]: {{<baseurl>}}riak/kv/2.9.1/developing/app-guide/cluster-metadata

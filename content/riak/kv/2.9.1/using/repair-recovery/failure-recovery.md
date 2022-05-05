@@ -11,8 +11,8 @@ menu:
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/recovery/failure-recovery
-  - /riak-docs/riak/kv/2.9.1/ops/running/recovery/failure-recovery
+  - /riak/2.9.1/ops/running/recovery/failure-recovery
+  - /riak/kv/2.9.1/ops/running/recovery/failure-recovery
 ---
 
 Riak was built to withstand---or at the very least reduce the severity
@@ -116,7 +116,7 @@ spreading load and increasing available CPU and IOPS.
 
 ## Cluster Recovery From Backups
 
-See [Changing Cluster Information]({{<baseurl>}}riak/kv/2.1.4/using/cluster-operations/changing-cluster-info/#clusters-from-backups) for instructions on cluster recovery.
+See [Changing Cluster Information]({{<baseurl>}}riak/kv/2.9.1/using/cluster-operations/changing-cluster-info/#clusters-from-backups) for instructions on cluster recovery.
 
 {{% note title="Tip" %}}
 If you are a TI Tokyo Riak supprt customer and require assistance or

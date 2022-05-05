@@ -11,8 +11,8 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/context
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/context
+  - /riak/2.9.1/theory/concepts/context
+  - /riak/kv/2.9.1/theory/concepts/context
 ---
 
 

@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/yz-schema-get
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/yz-schema-get
+  - /riak/2.9.1/dev/references/protocol-buffers/yz-schema-get
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/yz-schema-get
 ---
 
 Fetch a [search schema]({{<baseurl>}}riak/kv/2.9.1/developing/usage/search-schemas) from Riak Search.

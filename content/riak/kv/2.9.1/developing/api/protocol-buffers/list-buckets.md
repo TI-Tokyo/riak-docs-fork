@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/list-buckets
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/list-buckets
+  - /riak/2.9.1/dev/references/protocol-buffers/list-buckets
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/list-buckets
 ---
 
 List all of the bucket names available.

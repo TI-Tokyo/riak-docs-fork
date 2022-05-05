@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/mdc/v2/nat
-  - /riak-docs/riak/kv/2.9.1/ops/mdc/v2/nat
+  - /riak/2.9.1/ops/mdc/v2/nat
+  - /riak/kv/2.9.1/ops/mdc/v2/nat
 ---
 
 [config v2 ssl]: {{<baseurl>}}riak/kv/2.9.1/configuring/v2-multi-datacenter/ssl

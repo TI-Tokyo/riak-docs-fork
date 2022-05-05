@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/comparison
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/comparison
+  - /riak/2.2.6/ops/mdc/comparison
+  - /riak/kv/2.2.6/ops/mdc/comparison
 ---
 
 This document is a systematic comparison of [Version 2]({{<baseurl>}}riak/kv/2.2.6/using/reference/v2-multi-datacenter) and [Version 3]({{<baseurl>}}riak/kv/2.2.6/using/reference/v3-multi-datacenter) of Riak's Multi-Datacenter

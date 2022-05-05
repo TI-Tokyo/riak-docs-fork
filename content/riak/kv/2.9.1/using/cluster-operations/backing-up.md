@@ -11,8 +11,8 @@ menu:
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/backups
-  - /riak-docs/riak/kv/2.9.1/ops/running/backups
+  - /riak/2.9.1/ops/running/backups
+  - /riak/kv/2.9.1/ops/running/backups
 ---
 
 [concept clusters]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/clusters

@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/bucket-types
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/bucket-types
+  - /riak/2.2.6/dev/advanced/bucket-types
+  - /riak/kv/2.2.6/dev/advanced/bucket-types
 ---
 
 If you ever need to turn off indexing for a bucket, set the

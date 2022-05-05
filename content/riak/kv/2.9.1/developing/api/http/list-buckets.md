@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/list-buckets
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/list-buckets
+  - /riak/2.9.1/dev/references/http/list-buckets
+  - /riak/kv/2.9.1/dev/references/http/list-buckets
 ---
 
 Lists all known buckets (ones that have keys stored in them).

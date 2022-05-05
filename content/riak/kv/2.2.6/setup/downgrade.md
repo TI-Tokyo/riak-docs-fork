@@ -11,8 +11,8 @@ menu:
     parent: "setup_index"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/upgrading/rolling-downgrades/
-  - /riak-docs/riak/kv/2.2.6/ops/upgrading/rolling-downgrades/
+  - /riak/2.2.6/ops/upgrading/rolling-downgrades/
+  - /riak/kv/2.2.6/ops/upgrading/rolling-downgrades/
 ---
 
 [rolling upgrade]: {{<baseurl>}}riak/kv/2.2.6/setup/upgrading/cluster

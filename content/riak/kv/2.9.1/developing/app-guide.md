@@ -11,8 +11,8 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/application-guide/
-  - /riak-docs/riak/kv/2.9.1/dev/using/application-guide/
+  - /riak/2.9.1/dev/using/application-guide/
+  - /riak/kv/2.9.1/dev/using/application-guide/
 ---
 
 [usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/conflict-resolution
@@ -119,7 +119,7 @@ Riak may not such be a good choice if you use it to store:
 
 * **Objects that exceed 1-2MB in size** --- If you will be
   storing a lot of objects over that size, we would recommend checking
-  out [Riak CS](https://www.tiot.jp/riak-docs/riak/cs/latest/) instead, as Riak
+  out [Riak CS]({{<baseurl>}}riak/cs/latest/) instead, as Riak
   CS was built to solve this problem. Storing large objects in Riak will
   typically lead to substandard performance.
 * **Objects with complex interdependencies** --- If your data cannot be

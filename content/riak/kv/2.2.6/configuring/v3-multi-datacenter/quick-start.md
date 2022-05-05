@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v3/quick-start
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v3/quick-start
+  - /riak/2.2.6/ops/mdc/v3/quick-start
+  - /riak/kv/2.2.6/ops/mdc/v3/quick-start
 ---
 
 [perf index]: {{<baseurl>}}riak/kv/2.2.6/using/performance

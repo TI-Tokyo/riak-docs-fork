@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_java"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/querying-java
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/querying-java
+  - /riak/2.9.1/dev/taste-of-riak/querying-java
+  - /riak/kv/2.9.1/dev/taste-of-riak/querying-java
 ---
 
 ## Java Version Setup

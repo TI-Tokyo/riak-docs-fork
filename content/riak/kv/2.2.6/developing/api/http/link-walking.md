@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/link-walking
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/link-walking
+  - /riak/2.2.6/dev/references/http/link-walking
+  - /riak/kv/2.2.6/dev/references/http/link-walking
 ---
 
 {{% note title="Deprecation Warning" %}}

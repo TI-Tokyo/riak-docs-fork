@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/search
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/search
+  - /riak/2.9.1/dev/references/protocol-buffers/search
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/search
 ---
 
 Send a Search request to retrieve a list of documents, along with a few

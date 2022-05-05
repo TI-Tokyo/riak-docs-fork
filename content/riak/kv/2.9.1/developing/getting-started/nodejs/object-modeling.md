@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_nodejs"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/object-modeling-nodejs
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/object-modeling-nodejs
+  - /riak/2.9.1/dev/taste-of-riak/object-modeling-nodejs
+  - /riak/kv/2.9.1/dev/taste-of-riak/object-modeling-nodejs
 ---
 
 To get started, let's create the models that we'll be using.

@@ -11,8 +11,8 @@ menu:
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/golang
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/golang
+  - /riak/2.9.1/dev/taste-of-riak/golang
+  - /riak/kv/2.9.1/dev/taste-of-riak/golang
 ---
 
 If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.1/using/running-a-cluster) first and ensure you have

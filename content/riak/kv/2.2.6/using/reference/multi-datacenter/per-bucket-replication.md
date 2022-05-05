@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/per-bucket
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/per-bucket
+  - /riak/2.2.6/ops/mdc/per-bucket
+  - /riak/kv/2.2.6/ops/mdc/per-bucket
 ---
 
 To enable or disable replication per bucket, you can use the `repl`

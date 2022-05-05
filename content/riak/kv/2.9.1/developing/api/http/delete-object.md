@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/delete-object
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/delete-object
+  - /riak/2.9.1/dev/references/http/delete-object
+  - /riak/kv/2.9.1/dev/references/http/delete-object
 ---
 
 Deletes an object from the specified bucket / key.

@@ -11,8 +11,8 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/advanced/configs/search/
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/configs/search/
+  - /riak/2.2.6/ops/advanced/configs/search/
+  - /riak/kv/2.2.6/ops/advanced/configs/search/
 ---
 
 [usage search]: {{<baseurl>}}riak/kv/2.2.6/developing/usage/search
@@ -150,15 +150,15 @@ Valid values: `on` or `off`
 
 ### `search.index.error_threshold.failure_count`
 
-The number of failures encountered while updating a search index within [`search.queue.error_threshold.failure_interval`](#search-queue-error-threshold-failure-interval) before Riak KV will skip updates to that index; defaults to `3`.
+The number of failures encountered while updating a search index within [`search.index.error_threshold.failure_interval`](#search-index-error-threshold-failure-interval) before Riak KV will skip updates to that index; defaults to `3`.
 
 Valid values: Integer
 
 ### `search.index.error_threshold.failure_interval`
 
-The window of time during which `search.queue.error_threshold.failure_count` failures will cause Riak KV to skip updates to a search index; defaults to `5000`. 
+The window of time during which `search.index.error_threshold.failure_count` failures will cause Riak KV to skip updates to a search index; defaults to `5000`. 
 
-If [`search.queue.error_threshold.failure_count`](#search-queue-error-threshold-failure-count) errors have occurred within this interval on a given search index, then Riak will skip updates to that index until the [`search.queue.error_threshold.reset_interval`](search-queue-error-threshold-reset-interval) has passed.
+If [`search.index.error_threshold.failure_count`](#search-index-error-threshold-failure-count) errors have occurred within this interval on a given search index, then Riak will skip updates to that index until the [`search.index.error_threshold.reset_interval`](#search-index-error-threshold-reset-interval) has passed.
 
 Valid values: Milliseconds
 

@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/mdc/v3/cascading-writes
-  - /riak-docs/riak/kv/2.9.1/ops/mdc/v3/cascading-writes
+  - /riak/2.9.1/ops/mdc/v3/cascading-writes
+  - /riak/kv/2.9.1/ops/mdc/v3/cascading-writes
 ---
 
 ## Introduction

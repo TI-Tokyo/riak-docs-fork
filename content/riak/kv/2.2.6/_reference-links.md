@@ -8,7 +8,7 @@
 [install index]: {{<baseurl>}}riak/kv/2.2.6/setup/installing
 [upgrade index]: {{<baseurl>}}riak/kv/2.2.6/upgrading
 [plan index]: {{<baseurl>}}riak/kv/2.2.6/planning
-[config index]: {{<baseurl>}}riak/2.1.3/using/configuring/
+[config index]: {{<baseurl>}}riak/kv/2.1.3/using/configuring/
 [config reference]: {{<baseurl>}}riak/kv/2.2.6/configuring/reference/
 [manage index]: {{<baseurl>}}riak/kv/2.2.6/using/managing
 [performance index]: {{<baseurl>}}riak/kv/2.2.6/using/performance

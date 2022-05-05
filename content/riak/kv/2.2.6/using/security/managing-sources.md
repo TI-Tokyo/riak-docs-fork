@@ -11,8 +11,8 @@ menu:
     parent: "managing_security"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/security-sources
-  - /riak-docs/riak/kv/2.2.6/ops/running/security-sources
+  - /riak/2.2.6/ops/running/security-sources
+  - /riak/kv/2.2.6/ops/running/security-sources
 ---
 
 If you're looking for more general information on Riak Security, it may

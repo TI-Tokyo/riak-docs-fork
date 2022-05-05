@@ -11,8 +11,8 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/advanced/configs/mapreduce/
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/configs/mapreduce/
+  - /riak/2.2.6/ops/advanced/configs/mapreduce/
+  - /riak/kv/2.2.6/ops/advanced/configs/mapreduce/
 ---
 
 [usage mapreduce]: {{<baseurl>}}riak/kv/2.2.6/developing/usage/mapreduce

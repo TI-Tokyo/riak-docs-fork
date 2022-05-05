@@ -11,8 +11,8 @@ menu:
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/advanced/backends/memory/
-  - /riak-docs/riak/kv/2.9.1/ops/advanced/backends/memory/
+  - /riak/2.9.1/ops/advanced/backends/memory/
+  - /riak/kv/2.9.1/ops/advanced/backends/memory/
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.9.1/configuring/reference
