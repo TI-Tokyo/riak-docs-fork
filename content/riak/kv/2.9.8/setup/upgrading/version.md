@@ -1,36 +1,36 @@
 ---
-title: "Upgrading to Riak KV 2.9.8"
+title: "Upgrading to Riak KV 3.0.2"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
-    name: "Upgrading to 2.9.8"
+  riak_kv-3.0.2:
+    name: "Upgrading to 3.0.2"
     identifier: "upgrading_version"
     weight: 101
     parent: "upgrading"
 toc: true
 aliases:
-  - /riak/2.9.8/upgrade-v20/
-  - /riak/kv/2.9.8/ops/upgrading/rolling-upgrades/
-  - /riak/kv/2.9.8/ops/upgrading/rolling-upgrades/
-  - /riak/kv/2.9.8/setup/upgrading/cluster/
+  - /riak/3.0.2/upgrade-v20/
+  - /riak/kv/3.0.2/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.0.2/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.0.2/setup/upgrading/cluster/
 
 ---
 
 
-[production checklist]: {{<baseurl>}}riak/kv/2.9.8/setup/upgrading/checklist
-[use admin riak control]: {{<baseurl>}}riak/kv/2.9.8/using/admin/riak-control
-[use admin commands]: {{<baseurl>}}riak/kv/2.9.8/using/admin/commands
-[use admin riak-admin]: {{<baseurl>}}riak/kv/2.9.8/using/admin/riak-admin
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/secondary-indexes
-[release notes]: {{<baseurl>}}riak/kv/2.9.8/release-notes
+[production checklist]: {{<baseurl>}}riak/kv/3.0.2/setup/upgrading/checklist
+[use admin riak control]: {{<baseurl>}}riak/kv/3.0.2/using/admin/riak-control
+[use admin commands]: {{<baseurl>}}riak/kv/3.0.2/using/admin/commands
+[use admin riak-admin]: {{<baseurl>}}riak/kv/3.0.2/using/admin/riak-admin
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/secondary-indexes
+[release notes]: {{<baseurl>}}riak/kv/3.0.2/release-notes
 [riak enterprise]: http://basho.com/products/riak-kv/
-[cluster ops mdc]: {{<baseurl>}}riak/kv/2.9.8/using/cluster-operations/v3-multi-datacenter
-[config v3 mdc]: {{<baseurl>}}riak/kv/2.9.8/configuring/v3-multi-datacenter
-[jmx monitor]: {{<baseurl>}}riak/kv/2.9.8/using/reference/jmx
-[snmp]: {{<baseurl>}}riak/kv/2.9.8/using/reference/snmp
-[Release Notes]: {{<baseurl>}}riak/kv/2.9.8/release-notes
+[cluster ops mdc]: {{<baseurl>}}riak/kv/3.0.2/using/cluster-operations/v3-multi-datacenter
+[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.2/configuring/v3-multi-datacenter
+[jmx monitor]: {{<baseurl>}}riak/kv/3.0.2/using/reference/jmx
+[snmp]: {{<baseurl>}}riak/kv/3.0.2/using/reference/snmp
+[Release Notes]: {{<baseurl>}}riak/kv/3.0.2/release-notes
 
 
 ## Overview

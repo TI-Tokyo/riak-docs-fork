@@ -2,26 +2,26 @@
 title: "Multi-backend"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Multi-backend"
     identifier: "planning_backend_multi"
     weight: 103
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak/2.9.8/ops/advanced/backends/multi/
-  - /riak/kv/2.9.8/ops/advanced/backends/multi/
+  - /riak/3.0.2/ops/advanced/backends/multi/
+  - /riak/kv/3.0.2/ops/advanced/backends/multi/
 ---
 
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.8/learn/concepts/buckets
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/bitcask
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/leveldb
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/memory
-[config reference]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/bucket-types
-[use admin riak-admin cli]: {{<baseurl>}}riak/kv/2.9.8/using/admin/riak-admin
+[concept buckets]: {{<baseurl>}}riak/kv/3.0.2/learn/concepts/buckets
+[plan backend bitcask]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/bitcask
+[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/leveldb
+[plan backend memory]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/memory
+[config reference]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference
+[usage bucket types]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/bucket-types
+[use admin riak-admin cli]: {{<baseurl>}}riak/kv/3.0.2/using/admin/riak-admin
 
 Riak allows you to run multiple backends within a single Riak cluster.
 Selecting the Multi backend enables you to use different storage

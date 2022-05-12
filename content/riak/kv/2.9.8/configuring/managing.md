@@ -2,9 +2,9 @@
 title: "Managing Your Configuration"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Managing Configuration"
     identifier: "configuring_managing"
     weight: 130
@@ -13,9 +13,9 @@ toc: true
 aliases:
 ---
 
-[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.8/using/admin/riak-cli
-[use admin riak cli#chkconfig]: {{<baseurl>}}riak/kv/2.9.8/using/admin/riak-cli/#chkconfig
-[config reference#search]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference/#search
+[use admin riak cli]: {{<baseurl>}}riak/kv/3.0.2/using/admin/riak-cli
+[use admin riak cli#chkconfig]: {{<baseurl>}}riak/kv/3.0.2/using/admin/riak-cli/#chkconfig
+[config reference#search]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference/#search
 
 ## Retrieving a Configuration Listing
 

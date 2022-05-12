@@ -2,32 +2,32 @@
 title: "Repairs"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Repairs"
     identifier: "repair_recover_repairs"
     weight: 102
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak/2.9.8/ops/running/recovery/repairing-indexes
-  - /riak/kv/2.9.8/ops/running/recovery/repairing-indexes
-  - /riak/2.9.8/ops/running/recovery/failed-node
-  - /riak/kv/2.9.8/ops/running/recovery/failed-node
-  - /riak/2.9.8/ops/running/recovery/repairing-leveldb
-  - /riak/kv/2.9.8/ops/running/recovery/repairing-leveldb
-  - /riak/2.9.8/ops/running/recovery/repairing-partitions
-  - /riak/kv/2.9.8/ops/running/recovery/repairing-partitions
+  - /riak/3.0.2/ops/running/recovery/repairing-indexes
+  - /riak/kv/3.0.2/ops/running/recovery/repairing-indexes
+  - /riak/3.0.2/ops/running/recovery/failed-node
+  - /riak/kv/3.0.2/ops/running/recovery/failed-node
+  - /riak/3.0.2/ops/running/recovery/repairing-leveldb
+  - /riak/kv/3.0.2/ops/running/recovery/repairing-leveldb
+  - /riak/3.0.2/ops/running/recovery/repairing-partitions
+  - /riak/kv/3.0.2/ops/running/recovery/repairing-partitions
 ---
 
-[cluster ops aae]: {{<baseurl>}}riak/kv/2.9.8/using/cluster-operations/active-anti-entropy/
-[config ref]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference/
+[cluster ops aae]: {{<baseurl>}}riak/kv/3.0.2/using/cluster-operations/active-anti-entropy/
+[config ref]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference/
 [Erlang shell]: http://learnyousomeerlang.com/starting-out
-[glossary AAE]: {{<baseurl>}}riak/kv/2.9.8/learn/glossary/#active-anti-entropy-aae
-[glossary readrep]: {{<baseurl>}}riak/kv/2.9.8/learn/glossary/#read-repair
-[search config]: {{<baseurl>}}riak/kv/2.9.8/configuring/search/#search-config-settings
-[tiered storage]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/leveldb/#tiered-storage
+[glossary AAE]: {{<baseurl>}}riak/kv/3.0.2/learn/glossary/#active-anti-entropy-aae
+[glossary readrep]: {{<baseurl>}}riak/kv/3.0.2/learn/glossary/#read-repair
+[search config]: {{<baseurl>}}riak/kv/3.0.2/configuring/search/#search-config-settings
+[tiered storage]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/leveldb/#tiered-storage
 
 
 
@@ -237,23 +237,23 @@ riak start
 
 If you have experienced a loss of object replicas in your cluster, you
 may need to perform a repair operation on one or more of your data
-[partitions]({{<baseurl>}}riak/kv/2.9.8/learn/concepts/clusters/#the-ring). Repairs of Riak KV data are typically
+[partitions]({{<baseurl>}}riak/kv/3.0.2/learn/concepts/clusters/#the-ring). Repairs of Riak KV data are typically
 run in situations where partitions or whole nodes are lost due to
 corruption or hardware failure. In these cases, nodes or partitions are
 brought back online without any data, which means that the need to
-repair data will depend mainly on your use case and on whether [active anti-entropy]({{<baseurl>}}riak/kv/2.9.8/learn/concepts/active-anti-entropy/) is enabled.
+repair data will depend mainly on your use case and on whether [active anti-entropy]({{<baseurl>}}riak/kv/3.0.2/learn/concepts/active-anti-entropy/) is enabled.
 
 You will need to run a repair if the following are both true:
 
-* Active anti-entropy is [disabled]({{<baseurl>}}riak/kv/2.9.8/learn/concepts/active-anti-entropy/#disabling-active-anti-entropy)
+* Active anti-entropy is [disabled]({{<baseurl>}}riak/kv/3.0.2/learn/concepts/active-anti-entropy/#disabling-active-anti-entropy)
 * You have both non-expiring data and keys that are not accessed
   frequently (which means that they are not likely to be subject to
-  [read repair]({{<baseurl>}}riak/kv/2.9.8/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy))
+  [read repair]({{<baseurl>}}riak/kv/3.0.2/learn/concepts/active-anti-entropy/#read-repair-vs-active-anti-entropy))
 
 You will most likely not need to run a repair operation if _any_ of the
 following is true:
 
-* Active anti-entropy is [enabled]({{<baseurl>}}riak/kv/2.9.8/learn/concepts/active-anti-entropy/#enabling-active-anti-entropy)
+* Active anti-entropy is [enabled]({{<baseurl>}}riak/kv/3.0.2/learn/concepts/active-anti-entropy/#enabling-active-anti-entropy)
 * Your entire key set is accessed frequently, allowing passive read
   repair to repair the partitions
 * Your data expires frequently

@@ -2,25 +2,25 @@
 title: "Choosing a Backend"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Choosing a Backend"
     identifier: "planning_choose_backend"
     weight: 102
     parent: "planning"
 toc: true
 aliases:
-  - /riak/2.9.8/ops/building/planning/backends/
-  - /riak/kv/2.9.8/ops/building/planning/backends/
+  - /riak/3.0.2/ops/building/planning/backends/
+  - /riak/kv/3.0.2/ops/building/planning/backends/
 ---
 
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/bitcask
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/leveldb
-[plan backend memory]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/memory
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/multi
-[plan backend leveled]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/leveled
-[dev api backend]: {{<baseurl>}}riak/kv/2.9.8/developing/api/backend
+[plan backend bitcask]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/bitcask
+[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/leveldb
+[plan backend memory]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/memory
+[plan backend multi]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/multi
+[plan backend leveled]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/leveled
+[dev api backend]: {{<baseurl>}}riak/kv/3.0.2/developing/api/backend
 
 Pluggable storage backends are a key feature of Riak KV. They enable you to
 choose a low-level storage engine that suits specific operational needs.

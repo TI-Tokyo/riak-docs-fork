@@ -2,16 +2,16 @@
 title: "Object Deletion Reference"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Object Deletion"
     identifier: "managing_ref_object_deletion"
     weight: 103
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak/2.9.8/ops/advanced/deletion
+  - /riak/3.0.2/ops/advanced/deletion
 ---
 
 [concept eventual consistency]: ../../../learn/concepts/eventual-consistency

@@ -3,32 +3,32 @@ title_supertext: "Developing with Riak KV"
 title: "Frequently Asked Questions"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Developing FAQ"
     identifier: "developing_faq"
     weight: 108
     parent: "developing"
 toc: true
 aliases:
-  - /riak/2.9.8/community/faqs/developing
-  - /riak/kv/2.9.8/community/faqs/developing
+  - /riak/3.0.2/community/faqs/developing
+  - /riak/kv/3.0.2/community/faqs/developing
 ---
 
-[[Basho Bench]: {{<baseurl>}}riak/kv/2.9.8/using/performance/benchmarking
-[Bitcask]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/bitcask
-[Bucket Properties]: {{<baseurl>}}riak/kv/2.9.8/developing/usage
+[[Basho Bench]: {{<baseurl>}}riak/kv/3.0.2/using/performance/benchmarking
+[Bitcask]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/bitcask
+[Bucket Properties]: {{<baseurl>}}riak/kv/3.0.2/developing/usage
 [built-in functions list]: https://github.com/basho/riak_kv/blob/master/priv/mapred_builtins.js
-[commit hooks]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/commit-hooks
-[Configuration Files]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference
+[commit hooks]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/commit-hooks
+[Configuration Files]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference
 [contrib.basho.com]: https://github.com/basho/riak_function_contrib
-[Erlang Riak Client]: {{<baseurl>}}riak/kv/2.9.8/developing/client-libraries
-[MapReduce]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/mapreduce
-[Memory]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/memory
+[Erlang Riak Client]: {{<baseurl>}}riak/kv/3.0.2/developing/client-libraries
+[MapReduce]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/mapreduce
+[Memory]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/memory
 [Riak CS]: {{<baseurl>}}riak/cs/2.1.1
-[System Planning]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/start/#network-configuration-load-balancing
-[vector clocks]: {{<baseurl>}}riak/kv/2.9.8/learn/concepts/causal-context#vector-clocks
+[System Planning]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/start/#network-configuration-load-balancing
+[vector clocks]: {{<baseurl>}}riak/kv/3.0.2/learn/concepts/causal-context#vector-clocks
 
 
 ## General

@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter Replication Reference:"
 title: "Fullsync via Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Active Anti-Entropy"
     identifier: "managing_ref_v3_aae"
     weight: 101
@@ -13,13 +13,13 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/2.9.8/ops/mdc/v3/aae
-  - /riak/kv/2.9.8/ops/mdc/v3/aae
+  - /riak/3.0.2/ops/mdc/v3/aae
+  - /riak/kv/3.0.2/ops/mdc/v3/aae
 ---
 
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.8/learn/glossary/#active-anti-entropy-aae
-[config reference#advanced]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference/#advanced-configuration
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.8/learn/concepts/clusters
+[glossary aae]: {{<baseurl>}}riak/kv/3.0.2/learn/glossary/#active-anti-entropy-aae
+[config reference#advanced]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference/#advanced-configuration
+[concept clusters]: {{<baseurl>}}riak/kv/3.0.2/learn/concepts/clusters
 
 > **Note: Technical preview**
 >

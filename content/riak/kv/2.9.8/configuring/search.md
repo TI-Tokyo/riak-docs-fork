@@ -2,28 +2,28 @@
 title: "Riak Search Settings"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Riak Search Settings"
     identifier: "configuring_search"
     weight: 160
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/2.9.8/ops/advanced/configs/search/
-  - /riak/kv/2.9.8/ops/advanced/configs/search/
+  - /riak/3.0.2/ops/advanced/configs/search/
+  - /riak/kv/3.0.2/ops/advanced/configs/search/
 ---
 
-[usage search]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/search
-[usage search schema]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/search-schemas
-[usage search data types]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/searching-data-types
-[usage custom extractors]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/custom-extractors
-[cluster-ops aae throttle]: {{<baseurl>}}riak/kv/2.9.8/using/cluster-operations/active-anti-entropy/#throttling
-[config reference]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference
-[config reference#search]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference/#search
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.8/learn/glossary/#active-anti-entropy-aae
-[security index]: {{<baseurl>}}riak/kv/2.9.8/using/security/
+[usage search]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/search
+[usage search schema]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/search-schemas
+[usage search data types]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/searching-data-types
+[usage custom extractors]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/custom-extractors
+[cluster-ops aae throttle]: {{<baseurl>}}riak/kv/3.0.2/using/cluster-operations/active-anti-entropy/#throttling
+[config reference]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference
+[config reference#search]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference/#search
+[glossary aae]: {{<baseurl>}}riak/kv/3.0.2/learn/glossary/#active-anti-entropy-aae
+[security index]: {{<baseurl>}}riak/kv/3.0.2/using/security/
 
 [java se downloads]: http://www.oracle.com/technetwork/java/javase/downloads
 [java se docs]: http://www.oracle.com/technetwork/java/javase/documentation

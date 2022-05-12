@@ -2,17 +2,17 @@
 title: "TicTac Active Anti-Entropy"
 description: "An Active Anti-Entropy library"
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "TicTac Active Anti-Entropy"
     identifier: "TicTac_aae"
     weight: 111
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak/kv/2.9.8/ops/advanced/tictacaae/
-  - /riak/2.9.8/ops/advanced/ticktacaae/
+  - /riak/kv/3.0.2/ops/advanced/tictacaae/
+  - /riak/3.0.2/ops/advanced/ticktacaae/
 ---
 
 

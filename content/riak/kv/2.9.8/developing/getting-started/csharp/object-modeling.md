@@ -3,17 +3,17 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with C Sharp"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Object Modeling"
     identifier: "getting_started_csharp_object"
     weight: 102
     parent: "getting_started_csharp"
 toc: true
 aliases:
-  - /riak/2.9.8/dev/taste-of-riak/object-modeling-csharp
-  - /riak/kv/2.9.8/dev/taste-of-riak/object-modeling-csharp
+  - /riak/3.0.2/dev/taste-of-riak/object-modeling-csharp
+  - /riak/kv/3.0.2/dev/taste-of-riak/object-modeling-csharp
 ---
 
 To get started, refer to [this source code][1] for the models that we'll

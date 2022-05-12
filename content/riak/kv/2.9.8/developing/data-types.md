@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Data Types"
     identifier: "developing_data_types"
     weight: 102
     parent: "developing"
 toc: true
 aliases:
-  - /riak/2.9.8/dev/using/data-types
-  - /riak/kv/2.9.8/dev/using/data-types
-  - /riak/2.9.8/dev/data-modeling/data-types
-  - /riak/kv/2.9.8/dev/data-modeling/data-types
+  - /riak/3.0.2/dev/using/data-types
+  - /riak/kv/3.0.2/dev/using/data-types
+  - /riak/3.0.2/dev/data-modeling/data-types
+  - /riak/kv/3.0.2/dev/data-modeling/data-types
 ---
 
 [wiki crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#Others

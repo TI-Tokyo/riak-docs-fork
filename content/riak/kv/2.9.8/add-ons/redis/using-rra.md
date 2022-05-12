@@ -2,9 +2,9 @@
 title: "Using Riak Redis Add-on"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Using Redis Addon"
     identifier: "add-ons_redis_getstarted"
     weight: 302
@@ -12,12 +12,12 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/kv/2.9.8/add-ons/redis/get-started-with-rra
+  - /riak/kv/3.0.2/add-ons/redis/get-started-with-rra
 ---
 
 [addon redis develop]: ../developing-rra/
 [addon redis setup]: ../set-up-rra/
-[dev api http]: {{<baseurl>}}riak/kv/2.9.8/developing/api/http/
+[dev api http]: {{<baseurl>}}riak/kv/3.0.2/developing/api/http/
 [ee]: https://www.tiot.jp/en/about-us/contact-us/
 
 

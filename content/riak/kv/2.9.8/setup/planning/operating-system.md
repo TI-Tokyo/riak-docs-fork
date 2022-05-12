@@ -2,9 +2,9 @@
 title: "Operating System Support"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "OS Support"
     identifier: "planning_os"
     weight: 101
@@ -13,7 +13,7 @@ toc: true
 aliases:
 ---
 
-[downloads]: {{<baseurl>}}riak/kv/2.9.8/downloads/
+[downloads]: {{<baseurl>}}riak/kv/3.0.2/downloads/
 
 We recommend deploying Riak KV on a mainstream Unix-like operating system.
 Mainstream distributions have larger support communities, making

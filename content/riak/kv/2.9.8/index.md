@@ -2,28 +2,28 @@
 title: "Riak KV"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.8:
+  riak_kv-3.0.2:
     name: "Riak KV"
     identifier: "index"
     weight: 100
     pre: riak
 toc: false
 aliases:
-  - /riak/2.9.8/
+  - /riak/3.0.2/
 ---
 
 [aboutenterprise]: https://www.tiot.jp/en/about-us/contact-us/
-[config index]: {{<baseurl>}}riak/kv/2.9.8/configuring
-[downloads]: {{<baseurl>}}riak/kv/2.9.8/downloads/
-[install index]: {{<baseurl>}}riak/kv/2.9.8/setup/installing/
-[plan index]: {{<baseurl>}}riak/kv/2.9.8/setup/planning
-[perf open files]: {{<baseurl>}}riak/kv/2.9.8/using/performance/open-files-limit
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.8/setup/installing/debian-ubuntu
-[usage search]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/search
-[getting started]: {{<baseurl>}}riak/kv/2.9.8/developing/getting-started
-[dev client libraries]: {{<baseurl>}}riak/kv/2.9.8/developing/client-libraries
+[config index]: {{<baseurl>}}riak/kv/3.0.2/configuring
+[downloads]: {{<baseurl>}}riak/kv/3.0.2/downloads/
+[install index]: {{<baseurl>}}riak/kv/3.0.2/setup/installing/
+[plan index]: {{<baseurl>}}riak/kv/3.0.2/setup/planning
+[perf open files]: {{<baseurl>}}riak/kv/3.0.2/using/performance/open-files-limit
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.0.2/setup/installing/debian-ubuntu
+[usage search]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/search
+[getting started]: {{<baseurl>}}riak/kv/3.0.2/developing/getting-started
+[dev client libraries]: {{<baseurl>}}riak/kv/3.0.2/developing/client-libraries
 
 
 
@@ -62,7 +62,7 @@ Are you brand new to Riak KV? Start by [downloading][downloads] Riak KV, and the
 3. [Configure Riak KV for your needs][config index]
 
 {{% note title="Developing with Riak KV" %}}
-If you are looking to integrate Riak KV with your existing tools, check out the [Developing with Riak KV]({{<baseurl>}}riak/kv/2.9.8/developing) docs. They provide instructions and examples for languages such as: Java, Ruby, Python, Go, Haskell, NodeJS, Erlang, and more.
+If you are looking to integrate Riak KV with your existing tools, check out the [Developing with Riak KV]({{<baseurl>}}riak/kv/3.0.2/developing) docs. They provide instructions and examples for languages such as: Java, Ruby, Python, Go, Haskell, NodeJS, Erlang, and more.
 {{% /note %}}
 
 ## Popular Docs
