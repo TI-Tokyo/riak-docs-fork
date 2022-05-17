@@ -1,20 +1,20 @@
 ---
-title: "Riak KV 2.9.8 Release Notes"
+title: "Riak KV 2.9.9 Release Notes"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: 2.9.9
 menu:
-  riak_kv-2.9.8:
+  riak_kv-2.9.9:
     name: "Release Notes"
     identifier: "index_release_notes"
     weight: 101
     parent: index
 toc: false
 aliases:
-  - /riak/2.9.8/community/release-notes
-  - /riak/kv/2.9.8/intro-v20
-  - /riak/2.9.8/intro-v20
-  - /riak/kv/2.9.8/introduction
+  - /riak/2.9.9/community/release-notes
+  - /riak/kv/2.9.9/intro-v20
+  - /riak/2.9.9/intro-v20
+  - /riak/kv/2.9.9/introduction
 ---
 
 Released Aug 7, 2021.
@@ -26,7 +26,7 @@ Minor stability improvements to leveled backend - see [leveled release notes](ht
 
 ## Previous Release Notes
 
-Please see the KV 2.9.8 release notes [here]({{<baseurl>}}riak/kv/2.9.8/release-notes/).
+Please see the KV 2.9.8 release notes [here]({{<baseurl>}}riak/kv/2.9.9/release-notes/).
 
 
 
