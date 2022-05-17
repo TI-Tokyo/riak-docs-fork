@@ -2,20 +2,20 @@
 title: "HTTP Search Index Info"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Search Index Info"
     identifier: "http_search_index_info"
     weight: 114
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/references/http/search-index-info
-  - /riak/kv/3.0.2/dev/references/http/search-index-info
+  - /riak/2.9.8/dev/references/http/search-index-info
+  - /riak/kv/2.9.8/dev/references/http/search-index-info
 ---
 
-Retrieves information about all currently available [Search indexes]({{<baseurl>}}riak/kv/3.0.2/developing/usage/search) in JSON format.
+Retrieves information about all currently available [Search indexes]({{<baseurl>}}riak/kv/2.9.8/developing/usage/search) in JSON format.
 
 ## Request
 

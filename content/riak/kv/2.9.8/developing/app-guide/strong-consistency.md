@@ -2,38 +2,38 @@
 title: "Strong Consistency"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Strong Consistency"
     identifier: "app_guide_strong_consistency"
     weight: 101
     parent: "developing_app_guide"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/advanced/strong-consistency
-  - /riak/kv/3.0.2/dev/advanced/strong-consistency
+  - /riak/2.9.8/dev/advanced/strong-consistency
+  - /riak/kv/2.9.8/dev/advanced/strong-consistency
 ---
 
-[use ref strong consistency]: {{<baseurl>}}riak/kv/3.0.2/using/reference/strong-consistency
-[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.2/learn/concepts/eventual-consistency
-[use ref strong consistency#trade-offs]: {{<baseurl>}}riak/kv/3.0.2/using/reference/strong-consistency/#trade-offs
-[glossary vnode]: {{<baseurl>}}riak/kv/3.0.2/learn/glossary/#vnode
-[config strong consistency#enable]: {{<baseurl>}}riak/kv/3.0.2/configuring/strong-consistency/#enabling-strong-consistency
-[usage bucket types]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/bucket-types
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/3.0.2/using/cluster-operations/bucket-types
-[apps replication properties]: {{<baseurl>}}riak/kv/3.0.2/developing/app-guide/replication-properties
-[config strong consistency]: {{<baseurl>}}riak/kv/3.0.2/configuring/strong-consistency
-[config strong consistency#fault]: {{<baseurl>}}riak/kv/3.0.2/configuring/strong-consistency/#fault-tolerance
-[concept causal context]: {{<baseurl>}}riak/kv/3.0.2/learn/concepts/causal-context
-[concept causal context#vector]: {{<baseurl>}}riak/kv/3.0.2/learn/concepts/causal-context/#vector-clocks
-[concept version vector]: {{<baseurl>}}riak/kv/3.0.2/learn/concepts/causal-context/#dotted-version-vectors
-[usage conflict resolution]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/conflict-resolution
-[usage update objects]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/updating-objects
-[use ref strong consistency#vs]: {{<baseurl>}}riak/kv/3.0.2/using/reference/strong-consistency/#strong-vs.-eventual-consistency
-[dev client libraries]: {{<baseurl>}}riak/kv/3.0.2/developing/client-libraries
-[getting started]: {{<baseurl>}}riak/kv/3.0.2/developing/getting-started
-[config strong consistency#details]: {{<baseurl>}}riak/kv/3.0.2/configuring/strong-consistency/#implementation-details
+[use ref strong consistency]: {{<baseurl>}}riak/kv/2.9.8/using/reference/strong-consistency
+[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.8/learn/concepts/eventual-consistency
+[use ref strong consistency#trade-offs]: {{<baseurl>}}riak/kv/2.9.8/using/reference/strong-consistency/#trade-offs
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.8/learn/glossary/#vnode
+[config strong consistency#enable]: {{<baseurl>}}riak/kv/2.9.8/configuring/strong-consistency/#enabling-strong-consistency
+[usage bucket types]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/bucket-types
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.8/using/cluster-operations/bucket-types
+[apps replication properties]: {{<baseurl>}}riak/kv/2.9.8/developing/app-guide/replication-properties
+[config strong consistency]: {{<baseurl>}}riak/kv/2.9.8/configuring/strong-consistency
+[config strong consistency#fault]: {{<baseurl>}}riak/kv/2.9.8/configuring/strong-consistency/#fault-tolerance
+[concept causal context]: {{<baseurl>}}riak/kv/2.9.8/learn/concepts/causal-context
+[concept causal context#vector]: {{<baseurl>}}riak/kv/2.9.8/learn/concepts/causal-context/#vector-clocks
+[concept version vector]: {{<baseurl>}}riak/kv/2.9.8/learn/concepts/causal-context/#dotted-version-vectors
+[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/conflict-resolution
+[usage update objects]: {{<baseurl>}}riak/kv/2.9.8/developing/usage/updating-objects
+[use ref strong consistency#vs]: {{<baseurl>}}riak/kv/2.9.8/using/reference/strong-consistency/#strong-vs.-eventual-consistency
+[dev client libraries]: {{<baseurl>}}riak/kv/2.9.8/developing/client-libraries
+[getting started]: {{<baseurl>}}riak/kv/2.9.8/developing/getting-started
+[config strong consistency#details]: {{<baseurl>}}riak/kv/2.9.8/configuring/strong-consistency/#implementation-details
 
 > **Please Note:**
 >

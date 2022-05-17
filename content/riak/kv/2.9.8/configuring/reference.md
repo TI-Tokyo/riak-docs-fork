@@ -2,17 +2,17 @@
 title: "Riak KV Configuration Reference"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Configuration Reference"
     identifier: "configuring_reference"
     weight: 140
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/3.0.2/ops/advanced/configs/configuration-files/
-  - /riak/kv/3.0.2/ops/advanced/configs/configuration-files/
+  - /riak/2.9.8/ops/advanced/configs/configuration-files/
+  - /riak/kv/2.9.8/ops/advanced/configs/configuration-files/
 ---
 
 [concept clusters]: ../../learn/concepts/clusters
@@ -228,7 +228,7 @@ executables are stored.</td>
 <tr>
 <td><code>platform_data_dir</code></td>
 <td>The directory in which Riak stores its storage backend data, as well
-as <a href="{{< baseurl >}}riak/kv/3.0.2/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
+as <a href="{{< baseurl >}}riak/kv/2.9.8/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
 <td><code>./data</code></td>
 </tr>
 
@@ -1607,7 +1607,7 @@ abandons the leader (in milliseconds). This must be set greater than the
 <tr>
 <td><code>alive_tokens</code></td>
 <td>Determines the number of ticks the leader will wait to hear from its
-associated <a href="{{< baseurl >}}riak/kv/3.0.2/learn/glossary/#vnode">vnode</a> before assuming that the vnode
+associated <a href="{{< baseurl >}}riak/kv/2.9.8/learn/glossary/#vnode">vnode</a> before assuming that the vnode
 is unhealthy and stepping down as leader. If the vnode does not respond
 to the leader before <code>ensemble_tick</code> *
 <code>alive_tokens</code> milliseconds have elapsed, the leader will
@@ -1756,8 +1756,8 @@ package) and in R14B04 via a custom repository and branch.</td>
 <tr>
 <td><code>vnode_management_timer</code></td>
 <td>Sets the frequency with which <a
-href="{{< baseurl >}}riak/kv/3.0.2/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
-href="{{< baseurl >}}riak/kv/3.0.2/learn/glossary/#hinted-handoff">handoff</a> between
+href="{{< baseurl >}}riak/kv/2.9.8/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
+href="{{< baseurl >}}riak/kv/2.9.8/learn/glossary/#hinted-handoff">handoff</a> between
 this node and other nodes in the cluster.</td>
 <td><code>10s</code> (10 seconds)</td>
 </tr>

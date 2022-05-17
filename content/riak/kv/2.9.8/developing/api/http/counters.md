@@ -2,17 +2,17 @@
 title: "HTTP Counters"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Counters"
     identifier: "http_counters"
     weight: 118
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/references/http/counters
-  - /riak/kv/3.0.2/dev/references/http/counters
+  - /riak/2.9.8/dev/references/http/counters
+  - /riak/kv/2.9.8/dev/references/http/counters
 ---
 
 Riak counters are a CRDT (convergent replicated data type) that (eventually)
@@ -54,7 +54,7 @@ GET /buckets/BUCKET/counters/KEY
 
 ## Response
 
-The regular POST/PUT ([HTTP Store Object]({{<baseurl>}}riak/kv/3.0.2/developing/api/http/store-object)) and GET ([HTTP Fetch Object]({{<baseurl>}}riak/kv/3.0.2/developing/api/http/fetch-object)) responses apply here.
+The regular POST/PUT ([HTTP Store Object]({{<baseurl>}}riak/kv/2.9.8/developing/api/http/store-object)) and GET ([HTTP Fetch Object]({{<baseurl>}}riak/kv/2.9.8/developing/api/http/fetch-object)) responses apply here.
 
 Caveats: Counters have no support for Secondary Indexes (2i), Links or Custom HTTP Metadata.
 

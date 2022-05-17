@@ -3,20 +3,20 @@ title_supertext: "Conflict Resolution:"
 title: "C Sharp"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "C Sharp"
     identifier: "usage_conflict_resolution_csharp"
     weight: 103
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/using/conflict-resolution/csharp
-  - /riak/kv/3.0.2/dev/using/conflict-resolution/csharp
+  - /riak/2.9.8/dev/using/conflict-resolution/csharp
+  - /riak/kv/2.9.8/dev/using/conflict-resolution/csharp
 ---
 
-For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/3.0.2/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that requires applications to resolve siblings according to use-case-specific
+For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.9.8/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that requires applications to resolve siblings according to use-case-specific
 criteria. Here, we'll provide a brief guide to conflict resolution using the
 official [Riak .NET client][riak_dotnet_client].
 

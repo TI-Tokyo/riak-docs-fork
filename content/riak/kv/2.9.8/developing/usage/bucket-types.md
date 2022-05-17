@@ -2,17 +2,17 @@
 title: "Bucket Types"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Bucket Types"
     identifier: "usage_bucket_types"
     weight: 108
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/advanced/bucket-types
-  - /riak/kv/3.0.2/dev/advanced/bucket-types
+  - /riak/2.9.8/dev/advanced/bucket-types
+  - /riak/kv/2.9.8/dev/advanced/bucket-types
 ---
 
 If you ever need to turn off indexing for a bucket, set the

@@ -2,21 +2,21 @@
 title: "V2 Multi-Datacenter Replication Reference: Scheduling Fullsync"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Scheduling Fullsync"
     identifier: "managing_ref_v2_fullsync"
     weight: 101
     parent: "managing_ref_v2"
 toc: true
 aliases:
-  - /riak/3.0.2/ops/mdc/v2/scheduling-fullsync
-  - /riak/kv/3.0.2/ops/mdc/v2/scheduling-fullsync
+  - /riak/2.9.8/ops/mdc/v2/scheduling-fullsync
+  - /riak/kv/2.9.8/ops/mdc/v2/scheduling-fullsync
 ---
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.0.2/using/reference/v3-multi-datacenter/scheduling-fullsync/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/2.9.8/using/reference/v3-multi-datacenter/scheduling-fullsync/) instead.
 {{% /note %}}
 
 

@@ -1,6 +1,6 @@
 ---
 layout: redirect
-target: "riak/kv/3.0.2/learn/use-cases/"
+target: "riak/kv/2.9.8/learn/use-cases/"
 aliases:
 ---
 

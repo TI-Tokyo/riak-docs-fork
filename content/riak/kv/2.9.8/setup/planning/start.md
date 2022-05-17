@@ -2,23 +2,23 @@
 title: "Start Planning"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Start Planning"
     identifier: "planning_start"
     weight: 100
     parent: "planning"
 toc: true
 aliases:
-  - /riak/3.0.2/ops/building/planning/system-planning
-  - /riak/kv/3.0.2/ops/building/planning/system-planning
+  - /riak/2.9.8/ops/building/planning/system-planning
+  - /riak/kv/2.9.8/ops/building/planning/system-planning
 ---
 
-[plan backend]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend
-[plan cluster capacity]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/cluster-capacity
-[plan backend bitcask]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/bitcask
-[plan bitcask capacity]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/bitcask-capacity-calc
+[plan backend]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend
+[plan cluster capacity]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/cluster-capacity
+[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/backend/bitcask
+[plan bitcask capacity]: {{<baseurl>}}riak/kv/2.9.8/setup/planning/bitcask-capacity-calc
 
 Here are some steps and recommendations designing and configuring your
 Riak cluster.

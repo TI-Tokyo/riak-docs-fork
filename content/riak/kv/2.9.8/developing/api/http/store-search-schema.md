@@ -2,20 +2,20 @@
 title: "HTTP Store Search Schema"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Store Search Schema"
     identifier: "http_store_search_schema"
     weight: 117
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/references/http/store-search-schema
-  - /riak/kv/3.0.2/dev/references/http/store-search-schema
+  - /riak/2.9.8/dev/references/http/store-search-schema
+  - /riak/kv/2.9.8/dev/references/http/store-search-schema
 ---
 
-Creates a new Riak [Search schema]({{<baseurl>}}riak/kv/3.0.2/developing/usage/search-schemas).
+Creates a new Riak [Search schema]({{<baseurl>}}riak/kv/2.9.8/developing/usage/search-schemas).
 
 ## Request
 
@@ -26,7 +26,7 @@ PUT /search/schema/<schema_name>
 ## Required Form Data
 
 In order to create a new Search schema, you must pass Riak a properly
-formed XML schema. More information can be found in the [Search Schema]({{<baseurl>}}riak/kv/3.0.2/developing/usage/search-schemas) document. If you've created a schema and stored it in the filed
+formed XML schema. More information can be found in the [Search Schema]({{<baseurl>}}riak/kv/2.9.8/developing/usage/search-schemas) document. If you've created a schema and stored it in the filed
 `my_schema.xml` and would like to create a new schema called
 `my_custom_schema`, you would use the following HTTP request:
 

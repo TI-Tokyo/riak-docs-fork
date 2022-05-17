@@ -2,23 +2,23 @@
 title: "Leveled"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Leveled"
     identifier: "planning_backend_leveled"
     weight: 101
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak/3.0.2/ops/advanced/backends/leveled/
-  - /riak/kv/3.0.2/ops/advanced/backends/leveled/
+  - /riak/2.9.8/ops/advanced/backends/leveled/
+  - /riak/kv/2.9.8/ops/advanced/backends/leveled/
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/3.0.2/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference
-[perf index]: {{<baseurl>}}riak/kv/3.0.2/using/performance
-[config reference#aae]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference/#active-anti-entropy
+[glossary vnode]: {{<baseurl>}}riak/kv/2.9.8/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference
+[perf index]: {{<baseurl>}}riak/kv/2.9.8/using/performance
+[config reference#aae]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference/#active-anti-entropy
 
 [leveled](https://github.com/martinsumner/leveled)
 

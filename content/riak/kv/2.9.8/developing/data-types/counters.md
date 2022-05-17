@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: Counters"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Counters"
     identifier: "data_types_counters"
     weight: 100
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/using/data-types/counters
-  - /riak/kv/3.0.2/dev/using/data-types/counters
-  - /riak/3.0.2/dev/data-modeling/data-types/counters
-  - /riak/kv/3.0.2/dev/data-modeling/data-types/counters
+  - /riak/2.9.8/dev/using/data-types/counters
+  - /riak/kv/2.9.8/dev/using/data-types/counters
+  - /riak/2.9.8/dev/data-modeling/data-types/counters
+  - /riak/kv/2.9.8/dev/data-modeling/data-types/counters
 ---
 
 Counters are a bucket-level Riak data type that can be used by themselves, associated with a bucket/key pair, or used [within a map](../maps#counters-within-maps). A counter's value can only be a positive integer, negative integer, or zero.

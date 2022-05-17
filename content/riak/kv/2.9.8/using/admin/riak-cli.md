@@ -2,23 +2,23 @@
 title: "riak Command Line Interface"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "riak CLI"
     identifier: "cluster_admin_riak_cli"
     weight: 102
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak/3.0.2/ops/running/tools/riak
-  - /riak/kv/3.0.2/ops/running/tools/riak
+  - /riak/2.9.8/ops/running/tools/riak
+  - /riak/kv/2.9.8/ops/running/tools/riak
 ---
 
-[configuration file]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference/
+[configuration file]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference/
 [escript]: http://www.erlang.org/doc/man/escript.html
-[`riak-admin`]: {{<baseurl>}}riak/kv/3.0.2/using/admin/riak-admin/#top
-[configuration]: {{<baseurl>}}riak/kv/3.0.2/configuring/reference/
+[`riak-admin`]: {{<baseurl>}}riak/kv/2.9.8/using/admin/riak-admin/#top
+[configuration]: {{<baseurl>}}riak/kv/2.9.8/configuring/reference/
 
 ## riak
 

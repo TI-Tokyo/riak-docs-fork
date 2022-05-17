@@ -2,25 +2,25 @@
 title: "Verifying a Riak KV Installation"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Verifying an Installation"
     identifier: "installing_verify"
     weight: 311
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.2/ops/installing/Post-Installation
-  - /riak/kv/3.0.2/ops/installing/Post-Installation
-  - /riak/3.0.2/installing/verify-install/
-  - /riak/kv/3.0.2/installing/verify-install/
+  - /riak/2.9.8/ops/installing/Post-Installation
+  - /riak/kv/2.9.8/ops/installing/Post-Installation
+  - /riak/2.9.8/installing/verify-install/
+  - /riak/kv/2.9.8/installing/verify-install/
 ---
 
-[client libraries]: {{<baseurl>}}riak/kv/3.0.2/developing/client-libraries
-[perf open files]: {{<baseurl>}}riak/kv/3.0.2/using/performance/open-files-limit
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/3.0.2/using/cluster-operations/bucket-types
-[cluster ops inspect node]: {{<baseurl>}}riak/kv/3.0.2/using/cluster-operations/inspecting-node
+[client libraries]: {{<baseurl>}}riak/kv/2.9.8/developing/client-libraries
+[perf open files]: {{<baseurl>}}riak/kv/2.9.8/using/performance/open-files-limit
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.8/using/cluster-operations/bucket-types
+[cluster ops inspect node]: {{<baseurl>}}riak/kv/2.9.8/using/cluster-operations/inspecting-node
 
 After you've installed Riak KV, we recommend checking the liveness of
 each node to ensure that requests are being properly served.

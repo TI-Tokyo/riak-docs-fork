@@ -1,20 +1,20 @@
 ---
-title: "Riak KV 3.0.2 Release Notes"
+title: "Riak KV 2.9.8 Release Notes"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Release Notes"
     identifier: "index_release_notes"
     weight: 101
     parent: index
 toc: false
 aliases:
-  - /riak/3.0.2/community/release-notes
-  - /riak/kv/3.0.2/intro-v20
-  - /riak/3.0.2/intro-v20
-  - /riak/kv/3.0.2/introduction
+  - /riak/2.9.8/community/release-notes
+  - /riak/kv/2.9.8/intro-v20
+  - /riak/2.9.8/intro-v20
+  - /riak/kv/2.9.8/introduction
 ---
 
 Released Dec 06, 2020.
@@ -40,7 +40,7 @@ The particular improvements are:
 
 - In riak_kv_ttaaefs_manager, some essential fixes to prevent excessive CPU load when comparing large volumes of keys and clocks, due to a failure to decode clocks correctly before passing to the exchange.
 
-Further significant improvements have been made to Tictac AAE full-sync, to greatly improve the efficiency of operation when there exists relatively large deltas between relatively large clusters (in terms of key counts). Those changes, which introduce the use of 'day_check', 'hour_check' and 'range_check' options to nval-based full-sync will be available in a future 3.0.2 release of Riak. For those wishing to use Tictac AAE full-sync at a non-trivial scale, it is recommended moving straight to 3.0.2 when it is available.
+Further significant improvements have been made to Tictac AAE full-sync, to greatly improve the efficiency of operation when there exists relatively large deltas between relatively large clusters (in terms of key counts). Those changes, which introduce the use of 'day_check', 'hour_check' and 'range_check' options to nval-based full-sync will be available in a future 2.9.8 release of Riak. For those wishing to use Tictac AAE full-sync at a non-trivial scale, it is recommended moving straight to 2.9.8 when it is available.
 
 ## Previous Release Notes
 

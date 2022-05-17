@@ -2,20 +2,20 @@
 title: "HTTP Search Query"
 description: ""
 project: "riak_kv"
-project_version: 3.0.2
+project_version: 2.9.8
 menu:
-  riak_kv-3.0.2:
+  riak_kv-2.9.8:
     name: "Search Query"
     identifier: "http_search_query"
     weight: 113
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.0.2/dev/references/http/search-query
-  - /riak/kv/3.0.2/dev/references/http/search-query
+  - /riak/2.9.8/dev/references/http/search-query
+  - /riak/kv/2.9.8/dev/references/http/search-query
 ---
 
-Performs a [Riak KV Search]({{<baseurl>}}riak/kv/3.0.2/developing/usage/search) query.
+Performs a [Riak KV Search]({{<baseurl>}}riak/kv/2.9.8/developing/usage/search) query.
 
 ## Request
 
@@ -40,7 +40,7 @@ The [response
   - /riakkv/latest/developing/api/http/search-query/
 ---
 The actual Search query itself. Examples can be found in
-    [Using Search]({{<baseurl>}}riak/kv/3.0.2/developing/usage/search). If a query is not specified, Riak will return
+    [Using Search]({{<baseurl>}}riak/kv/2.9.8/developing/usage/search). If a query is not specified, Riak will return
     information about the index itself, e.g. the number of documents
     indexed.
 
