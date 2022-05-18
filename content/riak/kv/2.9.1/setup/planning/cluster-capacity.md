@@ -11,8 +11,8 @@ menu:
     parent: "planning"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/planning/cluster
-  - /riak-docs/riak/kv/2.9.1/ops/building/planning/cluster
+  - /riak/2.9.1/ops/building/planning/cluster
+  - /riak/kv/2.9.1/ops/building/planning/cluster
 ---
 
 [plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.1/setup/planning/backend/leveldb

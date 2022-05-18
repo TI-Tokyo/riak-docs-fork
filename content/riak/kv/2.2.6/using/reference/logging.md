@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/logging
-  - /riak-docs/riak/kv/2.2.6/ops/running/logging
+  - /riak/2.2.6/ops/running/logging
+  - /riak/kv/2.2.6/ops/running/logging
 ---
 
 [cluster ops log]: {{<baseurl>}}riak/kv/2.2.6/using/cluster-operations/logging

@@ -49,20 +49,23 @@ contentOfMeta = (name) ->
 #      enabled, and stay orange if we're never going to fetch the JSON...
 generateVersionLists = () ->
   # Pull project/pathing information from the meta tags set up by Hugo.
-  project               = contentOfMeta("project")               # ex; riak_kv
-  current_version       = contentOfMeta("version")               # ex; 2.1.4
-  project_relative_path = contentOfMeta("project_relative_path") # ex; installing/ -or- undefined
-  project_relative_path = "" unless project_relative_path        # ex; installing/ -or- ""
+  project                   = contentOfMeta("project")                          # ex; riak_kv
+  current_version           = contentOfMeta("version")                          # ex; 2.1.4
+  project_relative_path     = contentOfMeta("project_relative_path")            # ex; installing/ -or- undefined
+  project_relative_path     = "" unless project_relative_path                   # ex; installing/ -or- ""
+  docs_root_url             = contentOfMeta("docs_root_url")                    # ex; http://docs.riak.com/ -or- undefined
+  docs_root_url             = "" unless docs_root_url                           # ex; http://docs.riak.com/ -or- ""
+  project_descriptions_path = docs_root_url + 'data/project_descriptions.json'  # ex; http://docs.riak.com/data/project_descriptions.json
 
   # The version_history <meta> tags will only exist if the front matter of the
   # given content .md page contains them, so these may be `undefined`.
-  meta_version_hisotry_in        = contentOfMeta("version_history_in")
+  meta_version_history_in        = contentOfMeta("version_history_in")
   meta_version_history_locations = contentOfMeta("version_history_locations")
   version_range      = undefined
   versions_locations = []
 
-  if meta_version_hisotry_in
-    version_range = SemVer.parseRange(meta_version_hisotry_in)
+  if meta_version_history_in
+    version_range = SemVer.parseRange(meta_version_history_in)
 
   if meta_version_history_locations
     locations_json = JSON.parse(meta_version_history_locations)
@@ -72,11 +75,11 @@ generateVersionLists = () ->
   # Fetch the Project Descriptions from the server, and do all the heavy lifting
   # inside the `success` callback.
   if project and project != "community" && project != "404"
-  then $.getJSON('/data/project_descriptions.json',
+  then $.getJSON(project_descriptions_path,
     (data) ->
       project_data = data[project]
 
-      project_path = project_data.path            # ex; /riak/kv
+      project_path = docs_root_url.replace(/\/+$/, '') + project_data.path # ex; http://docs.riak.com/riak/kv
       latest_rel   = project_data.latest          # ex; 2.1.4
       lts_series   = project_data['lts']          # ex; 2.0 -or- undefined
       archived_url = project_data['archived_url'] # ex; http://.. -or- undefined
@@ -163,7 +166,11 @@ generateVersionLists = () ->
               if SemVer.isInRange(release_sem_ver, range)
                 relative_path = url
                 break
-            anchor = project_path+"/"+release_version+"/"+relative_path
+            # relative_path can start with a slash or not
+            # so we ensure it does
+            unless relative_path.startsWith("/") then relative_path = "/"+relative_path
+
+            anchor = project_path+"/"+release_version+relative_path
             anchor_tag = '<a class="block" href="'+anchor+'">'
 
           # Build the full list element and add it to the html aggregator.

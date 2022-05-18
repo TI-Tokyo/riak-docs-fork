@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/2i
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/2i
+  - /riak/2.2.6/dev/advanced/2i
+  - /riak/kv/2.2.6/dev/advanced/2i
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.2.6/developing/usage/bucket-types

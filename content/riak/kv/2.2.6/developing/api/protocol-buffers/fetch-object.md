@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/fetch-object
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/fetch-object
+  - /riak/2.2.6/dev/references/protocol-buffers/fetch-object
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/fetch-object
 ---
 
 Fetch an object from the specified bucket type/bucket/key location

@@ -11,8 +11,8 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/vnodes
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/vnodes
+  - /riak/2.9.1/theory/concepts/vnodes
+  - /riak/kv/2.9.1/theory/concepts/vnodes
 ---
 
 
@@ -80,7 +80,7 @@ of all such values. The illustration below provides a visual
 representation of the Riak ring:
 
 ![The Riak
-Ring](http://docs.basho.com/shared/2.0.2/images/riak-ring.png?1416296175)
+Ring]({{<baseurl>}}images/shared/riak-ring.png)
 
 You can think of vnodes as managers, responsible for handling incoming
 requests from other nodes/vnodes, storing objects in the appropriate

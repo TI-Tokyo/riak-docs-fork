@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/secondary-indexes
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/secondary-indexes
+  - /riak/2.9.1/dev/references/http/secondary-indexes
+  - /riak/kv/2.9.1/dev/references/http/secondary-indexes
 ---
 
 [Secondary Indexes]({{<baseurl>}}riak/kv/2.9.1/developing/usage/secondary-indexes) allows an application to tag a Riak object with one or more field/value pairs. The object is indexed under these field/value pairs, and the application can later query the index to retrieve a list of matching keys.

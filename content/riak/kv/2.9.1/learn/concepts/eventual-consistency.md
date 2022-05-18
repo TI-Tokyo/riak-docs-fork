@@ -11,10 +11,10 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/Eventual-Consistency
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/Eventual-Consistency
-  - /riak-docs/riak/2.9.1/theory/concepts/eventual-consistency
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/eventual-consistency
+  - /riak/2.9.1/theory/concepts/Eventual-Consistency
+  - /riak/kv/2.9.1/theory/concepts/Eventual-Consistency
+  - /riak/2.9.1/theory/concepts/eventual-consistency
+  - /riak/kv/2.9.1/theory/concepts/eventual-consistency
 ---
 
 
@@ -78,7 +78,7 @@ implemented on the application side can be found in our guides to
 In addition to our official documentation, we also recommend checking
 out the [Understanding Riak's Configurable
 Behaviors](http://basho.com/understanding-riaks-configurable-behaviors-part-1/)
-series from [the Basho blog](http://basho.com/blog/).
+series from [the Basho blog](https://riak.com/blog/).
 
 ## A Simple Example of Eventual Consistency
 

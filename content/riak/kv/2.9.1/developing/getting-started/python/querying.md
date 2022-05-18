@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_python"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/querying-python
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/querying-python
+  - /riak/2.9.1/dev/taste-of-riak/querying-python
+  - /riak/kv/2.9.1/dev/taste-of-riak/querying-python
 ---
 
 #### A Quick Note on Querying and Schemas

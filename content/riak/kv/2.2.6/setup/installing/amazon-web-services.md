@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/installing/Installing-on-AWS-Marketplace
-  - /riak-docs/riak/kv/2.2.6/ops/building/installing/Installing-on-AWS-Marketplace
-  - /riak-docs/riak/2.2.6/installing/amazon-web-services/
-  - /riak-docs/riak/kv/2.2.6/installing/amazon-web-services/
+  - /riak/2.2.6/ops/building/installing/Installing-on-AWS-Marketplace
+  - /riak/kv/2.2.6/ops/building/installing/Installing-on-AWS-Marketplace
+  - /riak/2.2.6/installing/amazon-web-services/
+  - /riak/kv/2.2.6/installing/amazon-web-services/
 ---
 
 
@@ -72,7 +72,7 @@ The following clustering setup will _not_ be resilient to instance restarts
 unless deployed in Amazon VPC.
 {{% /note %}}
 
-{{% note title="Note on Package Based Installation"}}
+{{% note title="Note on Package Based Installation" %}}
  If installing to AWS by package, further configuration to _riak.conf_ to set the node name and listening IP addresses is necessary for the below steps to function.
 {{% /note %}}
 

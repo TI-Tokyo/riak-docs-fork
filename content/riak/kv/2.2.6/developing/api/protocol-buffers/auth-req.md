@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/auth-req
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/auth-req
+  - /riak/2.2.6/dev/references/protocol-buffers/auth-req
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/auth-req
 ---
 
 Sends a username (`user`) and password (`password`) to Riak as part of

@@ -11,8 +11,8 @@ menu:
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/recovery/repairing-indexes
-  - /riak-docs/riak/kv/2.9.1/ops/running/recovery/repairing-indexes
+  - /riak/2.9.1/ops/running/recovery/repairing-indexes
+  - /riak/kv/2.9.1/ops/running/recovery/repairing-indexes
 ---
 
 The `riak-admin repair-2i` command can be used to repair any stale or missing secondary indexes.  This command scans and repairs any mismatches between the secondary index data used for querying and the secondary index data stored in the Riak objects. It can be run on all partitions of a node or on a subset of them.  We recommend scheduling these repairs outside of peak load time.

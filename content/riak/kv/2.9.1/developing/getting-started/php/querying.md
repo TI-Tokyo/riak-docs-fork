@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_php"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/querying-php
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/querying-php
+  - /riak/2.9.1/dev/taste-of-riak/querying-php
+  - /riak/kv/2.9.1/dev/taste-of-riak/querying-php
 ---
 
 ## A Quick Note on Querying and Schemas

@@ -12,8 +12,8 @@ menu:
     parent: "usage_security"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/client-security/erlang
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/client-security/erlang
+  - /riak/2.2.6/dev/advanced/client-security/erlang
+  - /riak/kv/2.2.6/dev/advanced/client-security/erlang
 ---
 
 This tutorial shows you how to set up a Riak Erlang client to

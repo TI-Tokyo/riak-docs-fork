@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/installing/Installing-on-Solaris
-  - /riak-docs/riak/kv/2.2.6/ops/building/installing/Installing-on-Solaris
-  - /riak-docs/riak/2.2.6/installing/solaris/
-  - /riak-docs/riak/kv/2.2.6/installing/solaris/
+  - /riak/2.2.6/ops/building/installing/Installing-on-Solaris
+  - /riak/kv/2.2.6/ops/building/installing/Installing-on-Solaris
+  - /riak/2.2.6/installing/solaris/
+  - /riak/kv/2.2.6/installing/solaris/
 ---
 
 
@@ -58,14 +58,14 @@ Note that you must restart to have the above settings take effect.
 Download your version of the Riak binary package for Solaris 10:
 
 ```bash
-curl -o /tmp/BASHOriak-2.2.6-Solaris10-i386.pkg.gz https://files.tiot.jp/riak/kv/2.2/2.2.0/solaris/10/BASHOriak-2.2.0-Solaris10-x86_64.pkg.gz
+curl -o /tmp/BASHOriak-2.2.3-Solaris10-i386.pkg.gz https://files.tiot.jp/riak/kv/2.2/2.2.3/solaris/10/BASHOriak-2.2.3-Solaris10-x86_64.pkg.gz
 ```
 
 Next, install the package:
 
 ```bash
-gunzip /tmp/BASHOriak-2.2.6-Solaris10-i386.pkg.gz
-pkgadd /tmp/BASHOriak-2.2.6-Solaris10-i386.pkg
+gunzip /tmp/BASHOriak-2.2.3-Solaris10-i386.pkg.gz
+pkgadd /tmp/BASHOriak-2.2.3-Solaris10-i386.pkg
 ```
 
 After installing the package, be sure to include `/opt/riak/bin` in the

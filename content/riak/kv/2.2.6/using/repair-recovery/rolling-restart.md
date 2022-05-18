@@ -11,8 +11,8 @@ menu:
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/recovery/rolling-restart
-  - /riak-docs/riak/kv/2.2.6/ops/running/recovery/rolling-restart
+  - /riak/2.2.6/ops/running/recovery/rolling-restart
+  - /riak/kv/2.2.6/ops/running/recovery/rolling-restart
 ---
 
 Because Riak functions as a multi-node system, cluster-level [Riak version upgrades]({{<baseurl>}}riak/kv/2.2.6/setup/upgrading/cluster) and restarts can be performed on a node-by-node, "rolling" basis.

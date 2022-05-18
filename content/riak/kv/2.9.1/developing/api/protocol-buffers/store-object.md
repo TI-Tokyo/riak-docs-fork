@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/store-object
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/store-object
+  - /riak/2.9.1/dev/references/protocol-buffers/store-object
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/store-object
 ---
 
 Stores an object under the specified location, as determined by the

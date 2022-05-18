@@ -11,8 +11,8 @@ menu:
     parent: "developing_app_guide"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/mapreduce/
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/mapreduce/
+  - /riak/2.2.6/dev/advanced/mapreduce/
+  - /riak/kv/2.2.6/dev/advanced/mapreduce/
 ---
 
 [usage 2i]: {{<baseurl>}}riak/kv/2.2.6/developing/usage/secondary-indexes

@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/list-keys
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/list-keys
+  - /riak/2.2.6/dev/references/protocol-buffers/list-keys
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/list-keys
 ---
 
 List all of the keys in a bucket. This is a streaming call, with

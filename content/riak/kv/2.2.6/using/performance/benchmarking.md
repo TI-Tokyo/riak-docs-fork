@@ -11,8 +11,8 @@ menu:
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/benchmarking
-  - /riak-docs/riak/kv/2.2.6/ops/building/benchmarking
+  - /riak/2.2.6/ops/building/benchmarking
+  - /riak/kv/2.2.6/ops/building/benchmarking
 ---
 
 Basho Bench is a benchmarking tool created to conduct accurate and

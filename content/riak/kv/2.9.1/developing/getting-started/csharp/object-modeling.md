@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_csharp"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/object-modeling-csharp
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/object-modeling-csharp
+  - /riak/2.9.1/dev/taste-of-riak/object-modeling-csharp
+  - /riak/kv/2.9.1/dev/taste-of-riak/object-modeling-csharp
 ---
 
 To get started, refer to [this source code][1] for the models that we'll

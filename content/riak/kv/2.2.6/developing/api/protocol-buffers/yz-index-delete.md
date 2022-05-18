@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/yz-index-delete
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/yz-index-delete
+  - /riak/2.2.6/dev/references/protocol-buffers/yz-index-delete
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/yz-index-delete
 ---
 
 Delete a search index.

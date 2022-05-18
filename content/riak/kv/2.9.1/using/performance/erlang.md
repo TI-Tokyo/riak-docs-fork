@@ -11,8 +11,8 @@ menu:
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/tuning/erlang
-  - /riak-docs/riak/kv/2.9.1/ops/tuning/erlang
+  - /riak/2.9.1/ops/tuning/erlang
+  - /riak/kv/2.9.1/ops/tuning/erlang
 ---
 
 Riak was written almost exclusively in [Erlang](http://www.erlang.org)

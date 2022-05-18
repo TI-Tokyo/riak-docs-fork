@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/delete-search-index
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/delete-search-index
+  - /riak/2.2.6/dev/references/http/delete-search-index
+  - /riak/kv/2.2.6/dev/references/http/delete-search-index
 ---
 
 Deletes a Riak Search index.

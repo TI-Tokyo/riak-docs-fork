@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/get-bucket-props
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/get-bucket-props
+  - /riak/2.2.6/dev/references/protocol-buffers/get-bucket-props
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/get-bucket-props
 ---
 
 Fetch a bucket's properties.
@@ -106,5 +106,5 @@ message RpbCommitHook {
 ```
 
 {{% note title="Note on `RpbReplMode`" %}}
-The `RpbReplMode` is of use only to users of Riak CS's [Multi-Datacenter Replication capabilities](http://docs.basho.com/riak/cs/2.1.1/cookbooks/multi-datacenter-overview/)
+The `RpbReplMode` is of use only to users of Riak CS's [Multi-Datacenter Replication capabilities]({{< baseurl >}}riak/cs/2.1.1/cookbooks/multi-datacenter-overview/)
 {{% /note %}}

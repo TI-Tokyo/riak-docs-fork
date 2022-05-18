@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/search/document-store
-  - /riak-docs/riak/kv/2.9.1/dev/search/document-store
+  - /riak/2.9.1/dev/search/document-store
+  - /riak/kv/2.9.1/dev/search/document-store
 ---
 
 Although Riak wasn't explicitly created as a document store, two

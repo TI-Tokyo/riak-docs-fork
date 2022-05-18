@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/Installing-Riak-from-Source
-  - /riak-docs/riak/kv/2.2.6/ops/building/Installing-Riak-from-Source
-  - /riak-docs/riak/2.2.6/installing/source/
-  - /riak-docs/riak/kv/2.2.6/installing/source/
+  - /riak/2.2.6/ops/building/Installing-Riak-from-Source
+  - /riak/kv/2.2.6/ops/building/Installing-Riak-from-Source
+  - /riak/2.2.6/installing/source/
+  - /riak/kv/2.2.6/installing/source/
 ---
 
 

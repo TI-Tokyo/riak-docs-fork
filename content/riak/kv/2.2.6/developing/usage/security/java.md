@@ -12,8 +12,8 @@ menu:
     parent: "usage_security"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/advanced/client-security/java
-  - /riak-docs/riak/kv/2.2.6/dev/advanced/client-security/java
+  - /riak/2.2.6/dev/advanced/client-security/java
+  - /riak/kv/2.2.6/dev/advanced/client-security/java
 ---
 
 This tutorial shows you how to set up a Riak Java client to authenticate

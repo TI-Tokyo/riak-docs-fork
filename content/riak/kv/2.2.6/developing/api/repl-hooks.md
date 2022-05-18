@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v2/hooks
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v2/hooks
+  - /riak/2.2.6/ops/mdc/v2/hooks
+  - /riak/kv/2.2.6/ops/mdc/v2/hooks
 ---
 [object]: https://github.com/basho/riak_kv/blob/master/src/riak_object.erl 
 

@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/using/search
-  - /riak-docs/riak/kv/2.2.6/dev/using/search
+  - /riak/2.2.6/dev/using/search
+  - /riak/kv/2.2.6/dev/using/search
 ---
 
 [usage search schema]: ../search-schemas/

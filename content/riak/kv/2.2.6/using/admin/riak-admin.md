@@ -11,8 +11,8 @@ menu:
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/tools/riak-admin
-  - /riak-docs/riak/kv/2.2.6/ops/running/tools/riak-admin
+  - /riak/2.2.6/ops/running/tools/riak-admin
+  - /riak/kv/2.2.6/ops/running/tools/riak-admin
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.2.6/configuring/reference

@@ -11,8 +11,8 @@ menu:
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/nodes/renaming
-  - /riak-docs/riak/kv/2.9.1/ops/running/nodes/renaming
+  - /riak/2.9.1/ops/running/nodes/renaming
+  - /riak/kv/2.9.1/ops/running/nodes/renaming
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.9.1/configuring/reference

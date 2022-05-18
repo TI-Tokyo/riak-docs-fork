@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_csharp"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/querying-csharp
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/querying-csharp
+  - /riak/2.2.6/dev/taste-of-riak/querying-csharp
+  - /riak/kv/2.2.6/dev/taste-of-riak/querying-csharp
 ---
 
 ## C Sharp Version Setup

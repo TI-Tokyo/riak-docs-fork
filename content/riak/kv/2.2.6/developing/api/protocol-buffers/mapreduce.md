@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/mapreduce
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/mapreduce
+  - /riak/2.2.6/dev/references/protocol-buffers/mapreduce
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/mapreduce
 ---
 
 Execute a MapReduce job.

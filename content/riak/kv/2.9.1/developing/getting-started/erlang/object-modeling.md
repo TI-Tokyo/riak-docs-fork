@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_erlang"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/object-modeling-erlang
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/object-modeling-erlang
+  - /riak/2.9.1/dev/taste-of-riak/object-modeling-erlang
+  - /riak/kv/2.9.1/dev/taste-of-riak/object-modeling-erlang
 ---
 
 To get started, let's create the records that we'll be using.

@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/yz-index-get
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/yz-index-get
+  - /riak/2.9.1/dev/references/protocol-buffers/yz-index-get
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/yz-index-get
 ---
 
 Retrieve a search index from Riak Search.

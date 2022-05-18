@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/mapreduce
-  - /riak-docs/riak/kv/2.9.1/dev/using/mapreduce
+  - /riak/2.9.1/dev/using/mapreduce
+  - /riak/kv/2.9.1/dev/using/mapreduce
 ---
 
 [usage 2i]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/secondary-indexes

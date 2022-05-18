@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/get-bucket-props
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/get-bucket-props
+  - /riak/2.9.1/dev/references/http/get-bucket-props
+  - /riak/kv/2.9.1/dev/references/http/get-bucket-props
 ---
 
 Reads the bucket or bucket type properties.
@@ -50,7 +50,7 @@ The JSON object in the response will contain up to two entries, `"props"` and
 parameters.  The default is for only `"props"` to be present.
 
 See [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/2.9.1/developing/api/http/set-bucket-props) for more information about the available
-bucket properties. See [Managing Bucket Types Through the Command Line](http://docs.basho.com/riak/kv/2.2.0/using/reference/bucket-types/#managing-bucket-types-through-the-command-line) for more details about reading bucket types using  the `riak-admin bucket-type` interface.
+bucket properties. See [Managing Bucket Types Through the Command Line]({{< baseurl >}}riak/kv/2.9.1/using/reference/bucket-types/#managing-bucket-types-through-the-command-line) for more details about reading bucket types using  the `riak-admin bucket-type` interface.
 
 ## Example
 

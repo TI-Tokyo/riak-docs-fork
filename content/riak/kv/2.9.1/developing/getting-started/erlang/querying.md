@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_erlang"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/querying-erlang
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/querying-erlang
+  - /riak/2.9.1/dev/taste-of-riak/querying-erlang
+  - /riak/kv/2.9.1/dev/taste-of-riak/querying-erlang
 ---
 
 ## A Quick Note on Querying and Schemas

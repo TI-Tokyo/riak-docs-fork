@@ -11,8 +11,8 @@ menu:
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/tuning/open-files-limit/
-  - /riak-docs/riak/kv/2.2.6/ops/tuning/open-files-limit/
+  - /riak/2.2.6/ops/tuning/open-files-limit/
+  - /riak/kv/2.2.6/ops/tuning/open-files-limit/
 ---
 
 [plan backend]: {{<baseurl>}}riak/kv/2.2.6/setup/planning/backend/

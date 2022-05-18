@@ -12,8 +12,8 @@ menu:
     parent: "usage_conflict_resolution"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/using/conflict-resolution/php
-  - /riak-docs/riak/kv/2.2.6/dev/using/conflict-resolution/php
+  - /riak/2.2.6/dev/using/conflict-resolution/php
+  - /riak/kv/2.2.6/dev/using/conflict-resolution/php
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/2.2.6/developing/usage/conflict-resolution), we strongly recommend adopting a

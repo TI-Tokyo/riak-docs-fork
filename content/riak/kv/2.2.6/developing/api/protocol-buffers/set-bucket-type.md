@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/set-bucket-type
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/set-bucket-type
+  - /riak/2.2.6/dev/references/protocol-buffers/set-bucket-type
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/set-bucket-type
 ---
 
 Assigns a set of [bucket properties]({{<baseurl>}}riak/kv/2.2.6/developing/api/protocol-buffers/set-bucket-props) to a

@@ -11,8 +11,8 @@ menu:
     parent: "managing_security"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/authz
-  - /riak-docs/riak/kv/2.9.1/ops/running/authz
+  - /riak/2.9.1/ops/running/authz
+  - /riak/kv/2.9.1/ops/running/authz
 ---
 
 > **Note on Network security**

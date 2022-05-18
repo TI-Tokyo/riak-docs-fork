@@ -11,8 +11,8 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/using/libraries
-  - /riak-docs/riak/kv/2.2.6/dev/using/libraries
+  - /riak/2.2.6/dev/using/libraries
+  - /riak/kv/2.2.6/dev/using/libraries
 ---
 
 ## Basho-Supported Libraries

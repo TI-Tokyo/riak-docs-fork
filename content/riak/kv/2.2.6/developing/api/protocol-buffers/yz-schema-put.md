@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/yz-schema-put
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/yz-schema-put
+  - /riak/2.2.6/dev/references/protocol-buffers/yz-schema-put
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/yz-schema-put
 ---
 
 Create a new Solr [search schema]({{<baseurl>}}riak/kv/2.2.6/developing/usage/search-schemas).

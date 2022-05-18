@@ -11,8 +11,8 @@ menu:
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/erlang
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/erlang
+  - /riak/2.2.6/dev/taste-of-riak/erlang
+  - /riak/kv/2.2.6/dev/taste-of-riak/erlang
 ---
 
 If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.2.6/using/running-a-cluster) first.
