@@ -1,20 +1,20 @@
 ---
-title: "Riak KV 2.9.7 Release Notes"
+title: "Riak KV 3.0.1 Release Notes"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Release Notes"
     identifier: "index_release_notes"
     weight: 101
     parent: index
 toc: false
 aliases:
-  - /riak/2.9.7/community/release-notes
-  - /riak/kv/2.9.7/intro-v20
-  - /riak/2.9.7/intro-v20
-  - /riak/kv/2.9.7/introduction
+  - /riak/3.0.1/community/release-notes
+  - /riak/kv/3.0.1/intro-v20
+  - /riak/3.0.1/intro-v20
+  - /riak/kv/3.0.1/introduction
   - /riak/kv/latest/release-notes/
   - /riak/latest/release-notes/
   - /riak/kv/latest/release-notes/
@@ -40,13 +40,13 @@ If using riak_client directly (e.g. `{ok, C} = riak:local_client()`), then pleas
 
 Instead of `riak-admin` the command `riak admin` should now be used for admin CLI commands.
 
-Other than the limitations listed above, the release should be functionally identical to Riak KV 2.9.7. Throughput improvements may be seen as a result of the OTP 20 upgrade on some CPU-bound workloads. For disk-bound workloads, additional benefit may be achieved by upgrading further to OTP 22.
+Other than the limitations listed above, the release should be functionally identical to Riak KV 3.0.1. Throughput improvements may be seen as a result of the OTP 20 upgrade on some CPU-bound workloads. For disk-bound workloads, additional benefit may be achieved by upgrading further to OTP 22.
 
 [Previous Release Notes](#previous-release-notes)
 
 ## Previous Release Notes
 
-Please see the KV 2.9.7 release notes [here]({{<baseurl>}}riak/kv/2.9.7/release-notes/), the KV 2.9.4 release notes [here]({{<baseurl>}}riak/kv/2.9.4/release-notes/), and the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/).
+Please see the KV 3.0.1 release notes [here]({{<baseurl>}}riak/kv/3.0.1/release-notes/), the KV 2.9.4 release notes [here]({{<baseurl>}}riak/kv/2.9.4/release-notes/), and the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/).
 
 
 

@@ -2,27 +2,27 @@
 title: "Cluster Administration Commands"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Cluster Admin Commands"
     identifier: "cluster_admin_commands"
     weight: 100
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/running/cluster-admin
-  - /riak/kv/2.9.7/ops/running/cluster-admin
+  - /riak/3.0.1/ops/running/cluster-admin
+  - /riak/kv/3.0.1/ops/running/cluster-admin
   - /riak/latest/using/admin/commands/
   - /riak/kv/latest/using/admin/commands/
   - /riakkv/latest/using/admin/commands/
 ---
 
-[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/#cluster
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/clusters
-[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/adding-removing-nodes
-[use admin riak admin#cluster-plan]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/#cluster-plan
-[use admin riak admin#cluster-commit]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/#cluster-commit
+[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#cluster
+[concept clusters]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/clusters
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/adding-removing-nodes
+[use admin riak admin#cluster-plan]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#cluster-plan
+[use admin riak admin#cluster-commit]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#cluster-commit
 
 
 This document explains usage of the [`riak admin cluster`][use admin riak admin#cluster] interface, which enables you to perform a wide
@@ -407,11 +407,11 @@ indexes and vice versa using the `partition id` and `partition index`
 commands, respectively. Let's say that you run the `riak admin cluster
 partitions` command and see that you have a variety of partitions, one
 of which has an index of
-`1004782375664995756265033322.9.744576013453623296`. You can convert
+`1004782375664995756265033323.0.144576013453623296`. You can convert
 that index to an ID like this:
 
 ```bash
-riak admin cluster partition index=1004782375664995756265033322.9.744576013453623296
+riak admin cluster partition index=1004782375664995756265033323.0.144576013453623296
 ```
 
 Conversely, if you have a partition with an ID of 20, you can retrieve

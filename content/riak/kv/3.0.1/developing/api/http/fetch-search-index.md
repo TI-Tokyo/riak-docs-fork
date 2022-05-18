@@ -2,23 +2,23 @@
 title: "HTTP Fetch Search Index"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Fetch Search Index"
     identifier: "http_fetch_search_index"
     weight: 115
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/http/fetch-search-index
-  - /riak/kv/2.9.7/dev/references/http/fetch-search-index
+  - /riak/3.0.1/dev/references/http/fetch-search-index
+  - /riak/kv/3.0.1/dev/references/http/fetch-search-index
   - /riak/latest/developing/api/http/fetch-search-index
   - /riak/kv/latest/developing/api/http/fetch-search-index
   - /riakkv/latest/developing/api/http/fetch-search-index
 ---
 
-Retrieves information about a Riak Search [index]({{<baseurl>}}riak/kv/2.9.7/developing/usage/search/#simple-setup).
+Retrieves information about a Riak Search [index]({{<baseurl>}}riak/kv/3.0.1/developing/usage/search/#simple-setup).
 
 ## Request
 
@@ -49,7 +49,7 @@ The request timed out internally
 ## Response
 
 If the index is found, Riak will output a JSON object describing the
-index, including its name, the [`n_val`]({{<baseurl>}}riak/kv/2.9.7/developing/app-guide/replication-properties/#a-primer-on-n-r-and-w) associated with it, and the [search schema]({{<baseurl>}}riak/kv/2.9.7/developing/usage/search-schemas) used by the index. Here is an example:
+index, including its name, the [`n_val`]({{<baseurl>}}riak/kv/3.0.1/developing/app-guide/replication-properties/#a-primer-on-n-r-and-w) associated with it, and the [search schema]({{<baseurl>}}riak/kv/3.0.1/developing/usage/search-schemas) used by the index. Here is an example:
 
 ```json
 {

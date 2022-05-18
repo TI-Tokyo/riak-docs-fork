@@ -2,17 +2,17 @@
 title: "Amazon Web Services Performance Tuning"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Amazon Web Services"
     identifier: "performance_aws"
     weight: 106
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/tuning/aws
-  - /riak/kv/2.9.7/ops/tuning/aws
+  - /riak/3.0.1/ops/tuning/aws
+  - /riak/kv/3.0.1/ops/tuning/aws
   - /riak/latest/using/performance/amazon-web-services/
   - /riak/kv/latest/using/performance/amazon-web-services/
   - /riakkv/latest/using/performance/amazon-web-services/

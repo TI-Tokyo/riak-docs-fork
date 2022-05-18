@@ -3,17 +3,17 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with NodeJS"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Object Modeling"
     identifier: "getting_started_nodejs_object"
     weight: 102
     parent: "getting_started_nodejs"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/object-modeling-nodejs
-  - /riak/kv/2.9.7/dev/taste-of-riak/object-modeling-nodejs
+  - /riak/3.0.1/dev/taste-of-riak/object-modeling-nodejs
+  - /riak/kv/3.0.1/dev/taste-of-riak/object-modeling-nodejs
   - /riak/latest/developing/getting-started/nodejs/object-modeling/
   - /riak/kv/latest/developing/getting-started/nodejs/object-modeling/
   - /riakkv/latest/developing/getting-started/nodejs/object-modeling/

@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Data Types"
     identifier: "developing_data_types"
     weight: 102
     parent: "developing"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/using/data-types
-  - /riak/kv/2.9.7/dev/using/data-types
-  - /riak/2.9.7/dev/data-modeling/data-types
-  - /riak/kv/2.9.7/dev/data-modeling/data-types
+  - /riak/3.0.1/dev/using/data-types
+  - /riak/kv/3.0.1/dev/using/data-types
+  - /riak/3.0.1/dev/data-modeling/data-types
+  - /riak/kv/3.0.1/dev/data-modeling/data-types
   - /riak/latest/developing/data-types/
   - /riak/kv/latest/developing/data-types/
   - /riakkv/latest/developing/data-types/

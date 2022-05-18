@@ -2,34 +2,34 @@
 title: "Clusters"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Clusters"
     identifier: "learn_concepts_clusters"
     weight: 103
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/2.9.7/theory/concepts/Clusters
-  - /riak/kv/2.9.7/theory/concepts/Clusters
-  - /riak/2.9.7/theory/concepts/clusters
-  - /riak/kv/2.9.7/theory/concepts/clusters
+  - /riak/3.0.1/theory/concepts/Clusters
+  - /riak/kv/3.0.1/theory/concepts/Clusters
+  - /riak/3.0.1/theory/concepts/clusters
+  - /riak/kv/3.0.1/theory/concepts/clusters
   - /riak/latest/learn/concepts/clusters/
   - /riak/kv/latest/learn/concepts/clusters/
   - /riakkv/latest/learn/concepts/clusters/
 ---
 
 
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/buckets
-[concept keys objects]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/keys-and-objects
-[concept replication]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/replication
-[glossary node]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#node
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
-[learn dynamo]: {{<baseurl>}}riak/kv/2.9.7/learn/dynamo
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
-[usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/conflict-resolution
-[usage replication]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/replication
+[concept buckets]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/buckets
+[concept keys objects]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/keys-and-objects
+[concept replication]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/replication
+[glossary node]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#node
+[glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode
+[learn dynamo]: {{<baseurl>}}riak/kv/3.0.1/learn/dynamo
+[usage bucket types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types
+[usage conflict resolution]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/conflict-resolution
+[usage replication]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/replication
 
 
 Riak's default mode of operation is to work as a cluster consisting of

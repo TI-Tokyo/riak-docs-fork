@@ -3,19 +3,19 @@ title_supertext: "Installing on"
 title: "Solaris"
 description: ""
 project: "riak_kv"
-project_version: "2.9.7"
+project_version: "3.0.1"
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Solaris"
     identifier: "installing_solaris"
     weight: 306
     parent: "installing"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/installing/Installing-on-Solaris
-  - /riak/kv/2.9.7/ops/building/installing/Installing-on-Solaris
-  - /riak/2.9.7/installing/solaris/
-  - /riak/kv/2.9.7/installing/solaris/
+  - /riak/3.0.1/ops/building/installing/Installing-on-Solaris
+  - /riak/kv/3.0.1/ops/building/installing/Installing-on-Solaris
+  - /riak/3.0.1/installing/solaris/
+  - /riak/kv/3.0.1/installing/solaris/
   - /riak/kv/latest/setup/installing/solaris/
   - /riak/kv/latest/installing/solaris/
 ---

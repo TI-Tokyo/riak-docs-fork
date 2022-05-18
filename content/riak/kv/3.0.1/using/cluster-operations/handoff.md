@@ -2,17 +2,17 @@
 title: "Enabling and Disabling Handoff"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Handoff"
     identifier: "cluster_operations_handoff"
     weight: 107
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/running/handoff
-  - /riak/kv/2.9.7/ops/running/handoff
+  - /riak/3.0.1/ops/running/handoff
+  - /riak/kv/3.0.1/ops/running/handoff
   - /riak/latest/using/cluster-operations/handoff/
   - /riak/kv/latest/using/cluster-operations/handoff/
   - /riakkv/latest/using/cluster-operations/handoff/
@@ -71,7 +71,7 @@ riak admin handoff disable both --all
 ## Other Command-line Tools
 
 In addition to enabling and disabling handoff, the
-[`riak admin`]({{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/) interface enables you to
+[`riak admin`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/) interface enables you to
 retrieve a summary of handoff-related activity and other information.
 
 ### summary
@@ -108,7 +108,7 @@ ongoing transfers`. Otherwise, you will something like this:
 
 ### config
 
-This command displays the values for handoff-specific [configurable parameters]({{<baseurl>}}riak/kv/2.9.7/configuring/reference/#intra-cluster-handoff) on each node in
+This command displays the values for handoff-specific [configurable parameters]({{<baseurl>}}riak/kv/3.0.1/configuring/reference/#intra-cluster-handoff) on each node in
 the cluster, including:
 
 * `transfer_limit`

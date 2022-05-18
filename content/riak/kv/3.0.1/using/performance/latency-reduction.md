@@ -2,17 +2,17 @@
 title: "Latency Reduction Checklist"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Latency Reduction"
     identifier: "performance_latency_reduction"
     weight: 104
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/tuning/latency-reduction
-  - /riak/kv/2.9.7/ops/tuning/latency-reduction
+  - /riak/3.0.1/ops/tuning/latency-reduction
+  - /riak/kv/3.0.1/ops/tuning/latency-reduction
   - /riak/latest/using/performance/latency-reduction/
   - /riak/kv/latest/using/performance/latency-reduction/
   - /riakkv/latest/using/performance/latency-reduction/

@@ -3,17 +3,17 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with Ruby"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Object Modeling"
     identifier: "getting_started_ruby_object"
     weight: 102
     parent: "getting_started_ruby"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/object-modeling-ruby
-  - /riak/kv/2.9.7/dev/taste-of-riak/object-modeling-ruby
+  - /riak/3.0.1/dev/taste-of-riak/object-modeling-ruby
+  - /riak/kv/3.0.1/dev/taste-of-riak/object-modeling-ruby
   - /riak/latest/developing/getting-started/ruby/object-modeling/
   - /riak/kv/latest/developing/getting-started/ruby/object-modeling/
   - /riakkv/latest/developing/getting-started/ruby/object-modeling/

@@ -2,27 +2,27 @@
 title: "Downgrading"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Downgrading"
     identifier: "downgrading"
     weight: 103
     parent: "setup_index"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/upgrading/rolling-downgrades/
-  - /riak/kv/2.9.7/ops/upgrading/rolling-downgrades/
+  - /riak/3.0.1/ops/upgrading/rolling-downgrades/
+  - /riak/kv/3.0.1/ops/upgrading/rolling-downgrades/
   - /riak/kv/latest/setup/downgrade/
   - /riak/latest/setup/downgrade/
   - /riak/kv/latest/setup/downgrade/
   - /riakkv/latest/setup/downgrade/
 ---
 
-[rolling upgrade]: {{<baseurl>}}riak/kv/2.9.7/setup/upgrading/cluster
-[config ref]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
-[concept aae]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/active-anti-entropy/
-[aae status]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/#aae-status
+[rolling upgrade]: {{<baseurl>}}riak/kv/3.0.1/setup/upgrading/cluster
+[config ref]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
+[concept aae]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/active-anti-entropy/
+[aae status]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#aae-status
 
 Downgrades of Riak KV are tested and supported for two feature release versions, with the general procedure being similar to that of a [rolling upgrade][rolling upgrade].
 
@@ -57,7 +57,7 @@ For every node in the cluster:
 
 ### When Downgrading is No Longer an Option
 
-If you enabled LZ4 compression in LevelDB and/or enabled global expiration in LevelDB when you installed KV 2.9.7, you cannot downgrade.
+If you enabled LZ4 compression in LevelDB and/or enabled global expiration in LevelDB when you installed KV 3.0.1, you cannot downgrade.
 
 
 ## General Process

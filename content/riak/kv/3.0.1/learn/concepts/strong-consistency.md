@@ -2,24 +2,24 @@
 title: "Strong Consistency"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Strong Consistency"
     identifier: "learn_concepts_strong_consistency"
     weight: 109
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/2.9.7/theory/concepts/strong-consistency
-  - /riak/kv/2.9.7/theory/concepts/strong-consistency
+  - /riak/3.0.1/theory/concepts/strong-consistency
+  - /riak/kv/3.0.1/theory/concepts/strong-consistency
   - /riak/latest/learn/concepts/strong-consistency/
   - /riak/kv/latest/learn/concepts/strong-consistency/
   - /riakkv/latest/learn/concepts/strong-consistency/
 ---
 
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/eventual-consistency
+[usage bucket types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/eventual-consistency
 
 {{% note title="Please Note:" %}}
 Riak KV's strong consistency is an experimental feature and may be removed
@@ -30,7 +30,7 @@ Secondary Indexes, Riak Data Types and Commit Hooks. We do not recommend its
 usage in any production environment.
 {{% /note %}}
 
-Riak was originally designed as an [eventually consistent]({{<baseurl>}}riak/kv/2.9.7/learn/concepts/eventual-consistency) system, fundamentally geared toward providing partition
+Riak was originally designed as an [eventually consistent]({{<baseurl>}}riak/kv/3.0.1/learn/concepts/eventual-consistency) system, fundamentally geared toward providing partition
 (i.e. fault) tolerance and high read and write availability.
 
 While this focus on high availability is a great fit for many data
@@ -41,7 +41,7 @@ In Riak, strong consistency is applied [using bucket types][usage bucket types],
 enables developers to apply strong consistency guarantees on a per-key
 basis.
 
-Elsewhere in the documentation there are instructions for [enabling and using]({{<baseurl>}}riak/kv/2.9.7/developing/app-guide/strong-consistency/) strong consistency, as well as a [guide for operators]({{<baseurl>}}riak/kv/2.9.7/configuring/strong-consistency) looking to manage,
+Elsewhere in the documentation there are instructions for [enabling and using]({{<baseurl>}}riak/kv/3.0.1/developing/app-guide/strong-consistency/) strong consistency, as well as a [guide for operators]({{<baseurl>}}riak/kv/3.0.1/configuring/strong-consistency) looking to manage,
 configure, and monitor strong consistency.
 
 ## Strong vs. Eventual Consistency

@@ -3,20 +3,20 @@ title_supertext: "Installing on"
 title: "SmartOS"
 description: ""
 project: "riak_kv"
-project_version: "2.9.7"
+project_version: "3.0.1"
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "SmartOS"
     identifier: "installing_smartos"
     weight: 305
     parent: "installing"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/installing/Installing-on-SmartOS
-  - /riak/kv/2.9.7/ops/building/installing/Installing-on-SmartOS
-  - /riak/2.9.7/installing/smartos/
-  - /riak/kv/2.9.7/installing/smartos/
-  - /riak/kv/2.9.7/installing/smartos/
+  - /riak/3.0.1/ops/building/installing/Installing-on-SmartOS
+  - /riak/kv/3.0.1/ops/building/installing/Installing-on-SmartOS
+  - /riak/3.0.1/installing/smartos/
+  - /riak/kv/3.0.1/installing/smartos/
+  - /riak/kv/3.0.1/installing/smartos/
   - /riak/kv/latest/setup/installing/smartos/
   - /riak/kv/latest/installing/smartos/
 ---

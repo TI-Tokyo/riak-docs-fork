@@ -2,17 +2,17 @@
 title: "HTTP Get Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Get Bucket Properties"
     identifier: "http_get_bucket_props"
     weight: 100
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/http/get-bucket-props
-  - /riak/kv/2.9.7/dev/references/http/get-bucket-props
+  - /riak/3.0.1/dev/references/http/get-bucket-props
+  - /riak/kv/3.0.1/dev/references/http/get-bucket-props
   - /riak/latest/developing/api/http/get-bucket-props/
   - /riak/kv/latest/developing/api/http/get-bucket-props/
   - /riakkv/latest/developing/api/http/get-bucket-props/
@@ -36,7 +36,7 @@ Optional query parameters (only valid for the old format):
 
 * `props` - whether to return the bucket properties (`true` is the default)
 * `keys` - whether to return the keys stored in the bucket. (`false` is the
-default). See also [HTTP List Keys]({{<baseurl>}}riak/kv/2.9.7/developing/api/http/list-keys).
+default). See also [HTTP List Keys]({{<baseurl>}}riak/kv/3.0.1/developing/api/http/list-keys).
 
 ## Response
 
@@ -52,8 +52,8 @@ The JSON object in the response will contain up to two entries, `"props"` and
 `"keys"`, which are present or missing, according to the optional query
 parameters.  The default is for only `"props"` to be present.
 
-See [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/2.9.7/developing/api/http/set-bucket-props) for more information about the available
-bucket properties. See [Managing Bucket Types Through the Command Line]({{< baseurl >}}riak/kv/2.9.7/using/reference/bucket-types/#managing-bucket-types-through-the-command-line) for more details about reading bucket types using  the `riak admin bucket-type` interface.
+See [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/3.0.1/developing/api/http/set-bucket-props) for more information about the available
+bucket properties. See [Managing Bucket Types Through the Command Line]({{< baseurl >}}riak/kv/3.0.1/using/reference/bucket-types/#managing-bucket-types-through-the-command-line) for more details about reading bucket types using  the `riak admin bucket-type` interface.
 
 ## Example
 

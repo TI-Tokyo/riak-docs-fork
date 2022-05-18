@@ -2,27 +2,27 @@
 title: "LevelDB"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "LevelDB"
     identifier: "planning_backend_leveldb"
     weight: 101
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/advanced/backends/leveldb/
-  - /riak/kv/2.9.7/ops/advanced/backends/leveldb/
+  - /riak/3.0.1/ops/advanced/backends/leveldb/
+  - /riak/kv/3.0.1/ops/advanced/backends/leveldb/
   - /riak/latest/setup/planning/backend/leveldb/
   - /riak/kv/latest/setup/planning/backend/leveldb/
   - /riakkv/latest/setup/planning/backend/leveldb/
 ---
 
 [upgrade 2.0#upgrading-leveldB]: {{<baseurl>}}
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
-[perf index]: {{<baseurl>}}riak/kv/2.9.7/using/performance
-[config reference#aae]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#active-anti-entropy
+[glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
+[perf index]: {{<baseurl>}}riak/kv/3.0.1/using/performance
+[config reference#aae]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#active-anti-entropy
 
 > **Note on upgrading to 2.0**
 >
@@ -330,7 +330,7 @@ leveldb/
 |   |-- LOCK
 |   |-- LOG
 |   `-- MANIFEST-000002
-|-- 1004782375664995756265033322.9.744576013453623296
+|-- 1004782375664995756265033323.0.144576013453623296
 |   |-- 000005.log
 |   |-- CURRENT
 |   |-- LOCK
@@ -381,7 +381,7 @@ The result should look something like this:
 │   ├── sst_4
 │   ├── sst_5
 │   └── sst_6
-├── 1004782375664995756265033322.9.744576013453623296
+├── 1004782375664995756265033323.0.144576013453623296
 │   ├── 000003.log
 │   ├── CURRENT
 │   ├── LOCK

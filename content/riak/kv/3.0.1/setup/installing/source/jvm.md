@@ -2,27 +2,27 @@
 title: "Installing the JVM"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Installing the JVM"
     identifier: "installing_source_jvm"
     weight: 302
     parent: "installing_source"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/installing/jvm
-  - /riak/kv/2.9.7/ops/building/installing/jvm
-  - /riak/2.9.7/ops/building/installing/Installing-the-JVM
-  - /riak/kv/2.9.7/ops/building/installing/Installing-the-JVM
-  - /riak/2.9.7/installing/source/jvm/
-  - /riak/kv/2.9.7/installing/source/jvm/
+  - /riak/3.0.1/ops/building/installing/jvm
+  - /riak/kv/3.0.1/ops/building/installing/jvm
+  - /riak/3.0.1/ops/building/installing/Installing-the-JVM
+  - /riak/kv/3.0.1/ops/building/installing/Installing-the-JVM
+  - /riak/3.0.1/installing/source/jvm/
+  - /riak/kv/3.0.1/installing/source/jvm/
   - /riak/latest/setup/installing/source/jvm/
   - /riak/kv/latest/setup/installing/source/jvm/
   - /riakkv/latest/setup/installing/source/jvm/
 ---
 
-[usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
+[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
 
 If you are using [Riak Search 2.0][usage search], codename Yokozuna,
 you will need to install **Java 1.6 or later** to run [Apache

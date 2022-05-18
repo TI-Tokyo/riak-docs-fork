@@ -2,9 +2,9 @@
 title: "Installing Riak KV"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Installing"
     identifier: "installing"
     weight: 101
@@ -12,26 +12,26 @@ menu:
     pre: cog
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/installing
-  - /riak/kv/2.9.7/ops/building/installing
-  - /riak/2.9.7/installing/
-  - /riak/kv/2.9.7/installing/
+  - /riak/3.0.1/ops/building/installing
+  - /riak/kv/3.0.1/ops/building/installing
+  - /riak/3.0.1/installing/
+  - /riak/kv/3.0.1/installing/
   - /riak/kv/latest/setup/installing/
   - /riak/latest/setup/installing/
   - /riak/kv/latest/setup/installing/
   - /riakkv/latest/setup/installing/
 ---
 
-[install aws]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/amazon-web-services
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/debian-ubuntu
-[install freebsd]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/freebsd
-[install mac osx]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/mac-osx
-[install rhel & centos]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/rhel-centos
-[install suse]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/suse
-[install windows azure]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/windows-azure
-[install source index]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/source
+[install aws]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/amazon-web-services
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/debian-ubuntu
+[install freebsd]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/freebsd
+[install mac osx]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/mac-osx
+[install rhel & centos]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/rhel-centos
+[install suse]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/suse
+[install windows azure]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/windows-azure
+[install source index]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/source
 [community projects]: {{<baseurl>}}community/projects
-[upgrade index]: {{<baseurl>}}riak/kv/2.9.7/setup/upgrading
+[upgrade index]: {{<baseurl>}}riak/kv/3.0.1/setup/upgrading
 
 ## Supported Platforms
 

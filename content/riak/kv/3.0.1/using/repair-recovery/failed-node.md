@@ -2,17 +2,17 @@
 title: "Recovering a Failed Node"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Recover a Failed Node"
     identifier: "repair_recover_failed_node"
     weight: 104
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/running/recovery/failed-node
-  - /riak/kv/2.9.7/ops/running/recovery/failed-node
+  - /riak/3.0.1/ops/running/recovery/failed-node
+  - /riak/kv/3.0.1/ops/running/recovery/failed-node
   - /riak/latest/using/repair-recovery/failed-node/
   - /riak/kv/latest/using/repair-recovery/failed-node/
   - /riakkv/latest/using/repair-recovery/failed-node/

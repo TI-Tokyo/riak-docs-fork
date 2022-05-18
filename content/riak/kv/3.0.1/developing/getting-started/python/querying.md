@@ -3,17 +3,17 @@ title_supertext: "Getting Started:"
 title: "Querying with Python"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Querying"
     identifier: "getting_started_python_query"
     weight: 101
     parent: "getting_started_python"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/querying-python
-  - /riak/kv/2.9.7/dev/taste-of-riak/querying-python
+  - /riak/3.0.1/dev/taste-of-riak/querying-python
+  - /riak/kv/3.0.1/dev/taste-of-riak/querying-python
   - /riak/latest/developing/getting-started/python/querying/
   - /riak/kv/latest/developing/getting-started/python/querying/
   - /riakkv/latest/developing/getting-started/python/querying/
@@ -184,9 +184,9 @@ While this pattern is very easy and extremely fast with respect to queries and c
 ### Secondary Indexes
 
 {{% note %}}
-Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/bitcask) does not support secondary indexes.
+Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/bitcask) does not support secondary indexes.
 
-See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.7/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
+See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/3.0.1/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
 {{% /note %}}
 
 If you're coming from a SQL world, Secondary Indexes (2i) are a lot like SQL indexes.  They are a way to quickly lookup objects based on a secondary key, without scanning through the whole dataset.  This makes it very easy to find groups of related data by values, or even ranges of values.  To properly show this off, we will now add some more data to our application, and add some secondary index entries at the same time.

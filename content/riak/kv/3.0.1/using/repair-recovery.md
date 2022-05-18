@@ -2,9 +2,9 @@
 title: "Repair & Recovery"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Repair & Recovery"
     identifier: "managing_repair_recover"
     weight: 204

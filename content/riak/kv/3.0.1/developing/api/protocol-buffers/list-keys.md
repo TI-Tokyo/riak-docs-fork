@@ -2,17 +2,17 @@
 title: "PBC List Keys"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "List Keys"
     identifier: "pbc_list_keys"
     weight: 101
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/protocol-buffers/list-keys
-  - /riak/kv/2.9.7/dev/references/protocol-buffers/list-keys
+  - /riak/3.0.1/dev/references/protocol-buffers/list-keys
+  - /riak/kv/3.0.1/dev/references/protocol-buffers/list-keys
   - /riak/latest/developing/api/protocol-buffers/list-keys/
   - /riak/kv/latest/developing/api/protocol-buffers/list-keys/
   - /riakkv/latest/developing/api/protocol-buffers/list-keys/

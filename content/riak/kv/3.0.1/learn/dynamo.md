@@ -2,17 +2,17 @@
 title: "Dynamo: Amazon’s Highly Available Key-value Store"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Dynamo"
     identifier: "learn_dynamo"
     weight: 110
     parent: "learn"
 toc: false
 aliases:
-  - /riak/2.9.7/theory/dynamo
-  - /riak/kv/2.9.7/theory/dynamo
+  - /riak/3.0.1/theory/dynamo
+  - /riak/kv/3.0.1/theory/dynamo
   - /riak/latest/learn/dynamo/
   - /riak/kv/latest/learn/dynamo/
   - /riakkv/latest/learn/dynamo/
@@ -149,8 +149,8 @@ or redistribution.
 >
 > And, nodes can be added and removed from your Riak cluster as needed.
 
-[Consistent Hashing]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#consistent-hashing
-[Gossip Protocol]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#gossiping
+[Consistent Hashing]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#consistent-hashing
+[Gossip Protocol]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#gossiping
 
 In the past year, Dynamo has been the underlying storage technology for a number
 of the core services in Amazon’s e-commerce platform. It was able to scale to
@@ -670,8 +670,8 @@ verify the validity of the context object supplied in the put request.
 >
 > Riak KV has two APIs: an [HTTP API] and a [Protocol Buffers API].
 
-[HTTP API]: {{<baseurl>}}riak/kv/2.9.7/developing/api/http/
-[Protocol Buffers API]: {{<baseurl>}}riak/kv/2.9.7/developing/api/protocol-buffers/
+[HTTP API]: {{<baseurl>}}riak/kv/3.0.1/developing/api/http/
+[Protocol Buffers API]: {{<baseurl>}}riak/kv/3.0.1/developing/api/protocol-buffers/
 
 Dynamo treats both the key and the object supplied by the caller as an opaque
 array of bytes. It applies a MD5 hash on the key to generate a 128-bit
@@ -747,8 +747,8 @@ capacity, accounting for heterogeneity in the physical infrastructure.
 
 > [Further Reading on Partitioning in Riak KV] and [All about the Riak KV Ring].
 
-[Further Reading on Partitioning in Riak KV]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/clusters/
-[All about the Riak KV Ring]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/clusters/#the-ring
+[Further Reading on Partitioning in Riak KV]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/clusters/
+[All about the Riak KV Ring]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/clusters/#the-ring
 
 ### 4.3 Replication
 
@@ -871,7 +871,7 @@ require reconciliation.
 > As you may have already figured out, Riak KV uses vector clocks for object
 > versioning, too. Here are a whole host of resources to keep you busy for a while:
 >
-> [Vector Clock on Riak KV Glossary]({{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vector-clock)
+> [Vector Clock on Riak KV Glossary]({{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vector-clock)
 >
 > [Why Vector Clocks are Easy](http://basho.com/posts/technical/why-vector-clocks-are-easy/)
 > |
@@ -996,11 +996,11 @@ R and W are usually configured to be less than N, to provide better latency.
 >
 >Some more resources on R and W:
 >
->[REST API]({{<baseurl>}}riak/kv/2.9.7/developing/api/http/)
+>[REST API]({{<baseurl>}}riak/kv/3.0.1/developing/api/http/)
 >
->[Writing Data]({{<baseurl>}}riak/kv/2.9.7/developing/usage/creating-objects/)
+>[Writing Data]({{<baseurl>}}riak/kv/3.0.1/developing/usage/creating-objects/)
 >
->[Reading Data]({{<baseurl>}}riak/kv/2.9.7/developing/usage/reading-objects/)
+>[Reading Data]({{<baseurl>}}riak/kv/3.0.1/developing/usage/reading-objects/)
 
 Upon receiving a put() request for a key, the coordinator generates the vector
 clock for the new version and writes the new version locally. The coordinator
@@ -1021,7 +1021,7 @@ versions are then reconciled and the reconciled version superseding the current
 versions is written back.
 
 > Same for Riak KV. Reconciling divergent versions in Riak KV is called
-> [Read Repair]({{<baseurl>}}riak/kv/2.9.7/learn/concepts/replication/#read-repair).
+> [Read Repair]({{<baseurl>}}riak/kv/3.0.1/learn/concepts/replication/#read-repair).
 
 
 ### 4.6 Handling Failures: Hinted Handoff
@@ -1039,8 +1039,8 @@ consistent hashing ring.
 > You can glimpse at Riak KV's preference list (or *preflist*) calculation in
 > the [Replication] walkthrough.
 
-[Hinted handoff]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#hinted-handoff
-[Replication]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/replication/
+[Hinted handoff]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#hinted-handoff
+[Replication]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/replication/
 
 Consider the example of Dynamo configuration given in <a href="#figure-2">Figure
 2</a> with N=3. In this example, if node A is temporarily down or unreachable
@@ -1078,9 +1078,9 @@ datacenters allows us to handle entire data center failures without a data
 outage.
 
 > [Multi Datacenter Replication] was previously only implemented in the commercial extension to
-> Riak KV, called [Riak KV Enterprise Edition]. Now it is available in all versions from Riak KV 2.9.7 onwards.
+> Riak KV, called [Riak KV Enterprise Edition]. Now it is available in all versions from Riak KV 3.0.1 onwards.
 
-[Multi Datacenter Replication]: {{<baseurl>}}riak/kv/2.9.7/using/reference/v3-multi-datacenter/architecture/
+[Multi Datacenter Replication]: {{<baseurl>}}riak/kv/3.0.1/using/reference/v3-multi-datacenter/architecture/
 [Riak KV Enterprise Edition]: http://basho.com/products/riak-kv/
 
 
@@ -1131,15 +1131,15 @@ addressed, however, by the refined partitioning scheme described in Section 6.2.
 > This section is well expressed in [Adding and Removing Nodes] and
 > [Failure Scenarios].
 
-[Adding and Removing Nodes]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/adding-removing-nodes/
-[Failure Scenarios]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/eventual-consistency/
+[Adding and Removing Nodes]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/adding-removing-nodes/
+[Failure Scenarios]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/eventual-consistency/
 
 #### 4.8.1 Ring Membership
 
 > Riak KV operators can trigger node management via the
 > [riak admin command-line tool].
 
-[riak admin command-line tool]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/
+[riak admin command-line tool]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/
 
 In Amazon’s environment node outages (due to failures and maintenance tasks) are
 often transient but may last for extended intervals. A node outage rarely
@@ -1167,7 +1167,7 @@ membership change histories.
 > Riak KV's ring state holds membership information, and is propgated via
 > [gossiping], including random reconciliation, defaulting to once a minute.
 
-[gossiping]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#gossiping
+[gossiping]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#gossiping
 
 When a node starts for the first time, it chooses its set of tokens (virtual
 nodes in the consistent hash space) and maps nodes to their respective token
@@ -1202,7 +1202,7 @@ service. Typically seeds are fully functional nodes in the Dynamo ring.
 >
 > See _[The Node Join Process]_ for more.
 
-[The Node Join Process]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/adding-removing-nodes/#joining-nodes-to-form-a-cluster
+[The Node Join Process]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/adding-removing-nodes/#joining-nodes-to-form-a-cluster
 
 
 #### 4.8.3 Failure Detection
@@ -1296,11 +1296,11 @@ majority of Dynamo’s production instances use BDB Transactional Data Store.
 > supports [secondary indexes]). The Memory backend is an excellent choice when
 > speed is important and durability is not. It also has TTL support.
 
-[backend options]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/
-[Bitcask]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/bitcask/
-[LevelDB]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/leveldb/
-[Memory]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/memory/
-[secondary indexes]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/secondary-indexes/
+[backend options]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/
+[Bitcask]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/bitcask/
+[LevelDB]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/leveldb/
+[Memory]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/memory/
+[secondary indexes]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/secondary-indexes/
 
 The request coordination component is built on top of an event-driven messaging
 substrate where the message processing pipeline is split into multiple stages
@@ -1334,7 +1334,7 @@ relieves the anti-entropy protocol from having to do it.
 
 > Riak KV implements [Read Repair].
 
-[Read Repair]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/replication/#read-repair
+[Read Repair]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/replication/#read-repair
 
 As noted earlier, write requests are coordinated by one of the top N nodes in
 the preference list. Although it is desirable always to have the first node
@@ -1358,7 +1358,7 @@ the performance at the 99.9 percentile.
 > [Basho Bench] against your own Riak cluster to discover your own
 > optimal values.
 
-[Basho Bench]: {{<baseurl>}}riak/kv/2.9.7/using/performance/benchmarking/
+[Basho Bench]: {{<baseurl>}}riak/kv/3.0.1/using/performance/benchmarking/
 
 Dynamo is used by several services with different configurations. These
 instances differ by their version reconciliation logic, and read/write quorum
@@ -1380,7 +1380,7 @@ shopping cart.
 > counters.
 
 [Statebox]: https://github.com/mochi/statebox_riak
-[CRDTs (Commutative Replicated Data Types)]: {{<baseurl>}}riak/kv/2.9.7/developing/data-types/
+[CRDTs (Commutative Replicated Data Types)]: {{<baseurl>}}riak/kv/3.0.1/developing/data-types/
 
 
 * Timestamp based reconciliation: This case differs from the previous one only
@@ -1529,7 +1529,7 @@ strategies on load distribution.
 
 > Riak follows a SHA1 based consistent hashing for [partitioning].
 
-[partitioning]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/replication/#understanding-replication-by-example
+[partitioning]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/replication/#understanding-replication-by-example
 
 To study the load imbalance and its correlation with request load, the total
 number of requests received by each node was measured for a period of 24 hours -
@@ -1643,8 +1643,8 @@ system in a way that preserves these properties.
 >
 > See [The Node Join Process] and [Replacing a Node].
 
-[The Node Join Process]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/adding-removing-nodes/#joining-nodes-to-form-a-cluster
-[Replacing a Node]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/replacing-node/
+[The Node Join Process]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/adding-removing-nodes/#joining-nodes-to-form-a-cluster
+[Replacing a Node]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/replacing-node/
 
 The efficiency of these three strategies is evaluated for a system with S=30 and
 N=3. However, comparing these different strategies in a fair manner is hard as
@@ -1753,7 +1753,7 @@ on physical timestamps, any node can coordinate a write request.
 >
 > See [Load Balancing] for more information.
 
-[Load Balancing]: {{<baseurl>}}riak/kv/2.9.7/configuring/load-balancing-proxy/
+[Load Balancing]: {{<baseurl>}}riak/kv/3.0.1/configuring/load-balancing-proxy/
 
 An alternative approach to request coordination is to move the state machine to
 the client nodes. In this scheme client applications use a library to perform
@@ -1779,7 +1779,7 @@ using timestamps based versioning.
 > Note that the Riak clients do not coordinate with Riak's preference list, but
 > simply round-robin requests, letting the Riak cluster handle routing.
 
-[client libraries]: {{<baseurl>}}riak/kv/2.9.7/developing/client-libraries/
+[client libraries]: {{<baseurl>}}riak/kv/3.0.1/developing/client-libraries/
 
 An important advantage of the client-driven coordination approach is that a load
 balancer is no longer required to uniformly distribute client load. Fair load
@@ -1901,7 +1901,7 @@ is actively addressed by O(1) DHT systems(e.g., [14]).
 > [Basho Bench] to help discover your optimal setup. Nothing will give you
 > better numbers than real experimentation.
 
-[Basho Bench]: {{<baseurl>}}riak/kv/2.9.7/using/performance/benchmarking/
+[Basho Bench]: {{<baseurl>}}riak/kv/3.0.1/using/performance/benchmarking/
 
 ## 7. Conclusions
 
