@@ -29,6 +29,60 @@ running the `riak` command-line tool:
 riak chkconfig
 ```
 
+## configure full-sync Replication
+
+To enable full-sync replication on a cluster, the following configuration is required:
+
+`ttaaefs_scope = all`
+`ttaaefs_queuename = replq`
+`ttaaefs_localnval = 3`
+`ttaaefs_remotenval = 3`
+
+Then to configure a peer relationship:
+
+`ttaaefs_peerip = <ip_addr_node1>`
+`ttaaefs_peerport = 8087`
+`ttaaefs_peerprotocol = pb`
+
+Unlike when configuring a real-time replication sink, each node can only have a single peer relationship with another node in the remote cluster. Note though, that all full-sync commands run across the whole cluster. If a single peer relationship dies, some full-sync capacity is lost, but other peer relationships between different nodes will still cover the whole data set.
+
+Once there are peer relationships, a schedule is required, and a capacity must be defined.
+
+`ttaaefs_allcheck = 2`
+`ttaaefs_hourcheck = 0`
+`ttaaefs_daycheck = 22`
+`ttaaefs_rangecheck = 36`
+
+`ttaaefs_maxresults = 64`
+`ttaaefs_rangeboost = 8`
+The schedule is how many times each 24 hour period to run a check of the defined type. The schedule is re-shuffled at random each day, and is specific to that node's peer relationship.
+
+As this is a configuration for nval full-sync, all of the data will always be compared - by merging a cluster-wide tictac tree and comparing the trees of both clusters. If a delta is found by that comparison, the scheduled work item determines what to do next:
+
+all indicates that the whole database should be scanned for all time looking for deltas, but only for deltas in a limited number of broken leaves of the merkle tree (the ttaaefs_maxresults).
+
+hour or day restricts he scan to data modified in the past hour or past 24 hours.
+
+range is a "smart" check. It will not be run when past queries have indicated nothing can be done to resolve the delta (for example as the other cluster is ahead, and only the source cluster can prompt fixes). If past queries have shown the clusters to be synchronised, but then a delta occurs, the range_check will only scan for deltas since the last successful synchronisation. If another check discovers the majority of deltas are in a certain bucket or modified range, the range query will switch to using this as a constraint for the scan.
+
+Each check is constrained by `ttaaefs_maxresults`, so that it only tries to resolve issues in a subset of broken leaves in the tree of that scale (there are o(1M) leaves to the tree overall). However, the range checks will try and resolve more (as they are constrained by the range) - this will be the multiple of `ttaaefs_maxresults` and `ttaaefs_ranegboost`.
+
+It is normally preferable to under-configure the schedule. When over-configuring the schedule, i.e. setting too much repair work than capacity of the cluster allows, there are protections to queue those schedule items there is no capacity to serve, and proactively cancel items once the manager falls behind in the schedule. However, those cancellations will reset range_checks and so may delay the overall time to recover.
+
+It is possible to enhance the speed of recovery when there is capacity by manually requesting additional checks, or by temporarily overriding `ttaaefs_maxresults` and/or `ttaaefs_rangeboost`.
+
+In a cluster with 1bn keys, under a steady load including 2K PUTs per second, relative timings to complete different sync checks (assuming there exists a delta):
+
+`all_sync 150s - 200s;`
+
+`day_sync 20s - 30s;`
+
+`hour_sync 2s - 5s;`
+
+`range_sync` (depends on how recent the low point in the modified range is).
+
+Timings will vary depending on the total number of keys in the cluster, the rate of changes, the size of the delta and the precise hardware used. Full-sync repairs tend to be relatively demanding of CPU (rather than disk I/O), so available CPU capacity is important.
+
 ## riak.conf Settings
 
 Setting | Options | Default | Description
@@ -60,4 +114,3 @@ Setting | Options | Default | Description
 `tictacaae_exchangetick` | `` | `240000` | Exchanges are prompted every exchange tick, on each vnode. By default there is a tick every 4 minutes. Exchanges will skip when previous exchanges have not completed, in order to prevent a backlog of fetch-clock scans developing.
 `tictacaae_rebuildtick` | `` | `3600000` | Rebuilds will be triggered depending on the riak_kv.tictacaae_rebuildwait, but they must also be prompted by a tick. The tick size can be modified at run-time by setting the environment variable via riak attach.
 `tictacaae_maxresults` | `` | `256` | The Merkle tree used has 4096 * 1024 leaves. When a large discrepancy is discovered, only part of the discrepancy will be resolved each exchange - active anti-entropy is intended to be a background process for repairing long-term loss of data, hinted handoff and read-repair are the short-term and immediate answers to entropy. How much of the tree is repaired each pass is defined by the tictacaae_maxresults.
-
