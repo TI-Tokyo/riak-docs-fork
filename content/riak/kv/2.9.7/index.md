@@ -2,38 +2,34 @@
 title: "Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "3.0.1"
-
+project_version: 2.9.7
 menu:
-  riak_kv-3.0.1:
+  riak_kv-2.9.7:
     name: "Riak KV"
     identifier: "index"
     weight: 100
     pre: riak
 toc: false
 aliases:
-  - /riak-docs/riak/3.0.1/
-
+  - /riak/2.9.7/
 ---
 
 [aboutenterprise]: https://www.tiot.jp/en/about-us/contact-us/
-[config index]: {{<baseurl>}}riak/kv/3.0.1/configuring
-[downloads]: {{<baseurl>}}riak/kv/3.0.1/downloads/
-[install index]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/
-[plan index]: {{<baseurl>}}riak/kv/3.0.1/setup/planning
-[perf open files]: {{<baseurl>}}riak/kv/3.0.1/using/performance/open-files-limit
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/debian-ubuntu
-[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
-[getting started]: {{<baseurl>}}riak/kv/3.0.1/developing/getting-started
-[dev client libraries]: {{<baseurl>}}riak/kv/3.0.1/developing/client-libraries
+[config index]: {{<baseurl>}}riak/kv/2.9.7/configuring
+[downloads]: {{<baseurl>}}riak/kv/2.9.7/downloads/
+[install index]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/
+[plan index]: {{<baseurl>}}riak/kv/2.9.7/setup/planning
+[perf open files]: {{<baseurl>}}riak/kv/2.9.7/using/performance/open-files-limit
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/debian-ubuntu
+[usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
+[getting started]: {{<baseurl>}}riak/kv/2.9.7/developing/getting-started
+[dev client libraries]: {{<baseurl>}}riak/kv/2.9.7/developing/client-libraries
 
 
 
 Riak KV is a distributed NoSQL database designed to deliver maximum data availability by distributing data across multiple servers. As long as your Riak KV client can reach one Riak server, it should be able to write data.
 
-
-Riak KV 3.0.1 is the first Open Source only release that includes the features of the former [Riak KV Enterprise][aboutenterprise] product such as multi-datacenter cluster replication, which ensures low-latency and robust business continuity.
-
+Riak KV 2.9.0p5 is the first of the Riak KV 2.9.x family which has been designed specially as the upgrade path from Riak KV 2.2.x to Riak KV 3.0.x. As such the feature set of Riak KV 2.9.x will be the same as Riak KV 3.0.x with the main differences being the performance benefits KV 3.0.x enjoys from using more modern versions of Erlang and the minor change in KV 3.0.x command line based commands owing to the move to relx.
 
 ## Supported Operating Systems
 
@@ -66,7 +62,7 @@ Are you brand new to Riak KV? Start by [downloading][downloads] Riak KV, and the
 3. [Configure Riak KV for your needs][config index]
 
 {{% note title="Developing with Riak KV" %}}
-If you are looking to integrate Riak KV with your existing tools, check out the [Developing with Riak KV]({{<baseurl>}}riak/kv/3.0.1/developing) docs. They provide instructions and examples for languages such as: Java, Ruby, Python, Go, Haskell, NodeJS, Erlang, and more.
+If you are looking to integrate Riak KV with your existing tools, check out the [Developing with Riak KV]({{<baseurl>}}riak/kv/2.9.7/developing) docs. They provide instructions and examples for languages such as: Java, Ruby, Python, Go, Haskell, NodeJS, Erlang, and more.
 {{% /note %}}
 
 ## Popular Docs
@@ -76,8 +72,3 @@ If you are looking to integrate Riak KV with your existing tools, check out the 
 3. [Developing with Riak KV: Searching][usage search]
 4. [Developing with Riak KV: Getting Started][getting started]
 5. [Developing with Riak KV: Client Libraries][dev client libraries]
-
-
-
-
-
