@@ -2,17 +2,17 @@
 title: "PBC Server Info"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Server Info"
     identifier: "pbc_server_info"
     weight: 111
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/protocol-buffers/server-info
-  - /riak/kv/2.9.7/dev/references/protocol-buffers/server-info
+  - /riak/3.0.1/dev/references/protocol-buffers/server-info
+  - /riak/kv/3.0.1/dev/references/protocol-buffers/server-info
   - /riak/latest/developing/api/protocol-buffers/server-info/
   - /riak/kv/latest/developing/api/protocol-buffers/server-info/
   - /riakkv/latest/developing/api/protocol-buffers/server-info/

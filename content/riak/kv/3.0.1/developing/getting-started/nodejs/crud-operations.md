@@ -3,9 +3,9 @@ title_supertext: "Getting Started:"
 title: "CRUD Operations with NodeJS"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "CRUD Operations"
     identifier: "getting_started_nodejs_crud"
     weight: 100

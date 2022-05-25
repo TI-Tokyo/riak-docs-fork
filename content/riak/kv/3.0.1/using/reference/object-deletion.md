@@ -2,16 +2,16 @@
 title: "Object Deletion Reference"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Object Deletion"
     identifier: "managing_ref_object_deletion"
     weight: 103
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/advanced/deletion
+  - /riak/3.0.1/ops/advanced/deletion
   - /riak/latest/using/reference/object-deletion/
   - /riak/kv/latest/using/reference/object-deletion/
   - /riakkv/latest/using/reference/object-deletion/

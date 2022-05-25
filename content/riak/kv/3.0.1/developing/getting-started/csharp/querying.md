@@ -3,17 +3,17 @@ title_supertext: "Getting Started:"
 title: "Querying with C Sharp"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Querying"
     identifier: "getting_started_csharp_query"
     weight: 101
     parent: "getting_started_csharp"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/querying-csharp
-  - /riak/kv/2.9.7/dev/taste-of-riak/querying-csharp
+  - /riak/3.0.1/dev/taste-of-riak/querying-csharp
+  - /riak/kv/3.0.1/dev/taste-of-riak/querying-csharp
   - /riak/latest/developing/getting-started/csharp/querying/
   - /riak/kv/latest/developing/getting-started/csharp/querying/
   - /riakkv/latest/developing/getting-started/csharp/querying/
@@ -128,9 +128,9 @@ intrinsic relationships.
 ## Secondary Indexes
 
 {{% note %}}
-Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/bitcask) does not support secondary indexes.
+Secondary indexes in Riak KV require a sorted backend: [Memory]({{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/memory) or [LevelDB]({{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/leveldb). [Bitcask]({{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/bitcask) does not support secondary indexes.
 
-See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/2.9.7/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
+See [Using Secondary Indexes (2i)]({{<baseurl>}}riak/kv/3.0.1/developing/usage/secondary-indexes) for more information on developing with secondary indexes.
 {{% /note %}}
 
 If you're coming from an SQL world, Secondary Indexes (2i) are a lot

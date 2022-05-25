@@ -2,17 +2,17 @@
 title: "PBC Ping"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Ping"
     identifier: "pbc_ping"
     weight: 110
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/protocol-buffers/ping
-  - /riak/kv/2.9.7/dev/references/protocol-buffers/ping
+  - /riak/3.0.1/dev/references/protocol-buffers/ping
+  - /riak/kv/3.0.1/dev/references/protocol-buffers/ping
   - /riak/latest/developing/api/protocol-buffers/ping/
   - /riak/kv/latest/developing/api/protocol-buffers/ping/
   - /riakkv/latest/developing/api/protocol-buffers/ping/

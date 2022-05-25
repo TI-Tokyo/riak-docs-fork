@@ -2,30 +2,30 @@
 title: "Security & Firewalls"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Security"
     identifier: "managing_security"
     weight: 205
     parent: "managing"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/advanced/security
-  - /riak/kv/2.9.7/ops/advanced/security
+  - /riak/3.0.1/ops/advanced/security
+  - /riak/kv/3.0.1/ops/advanced/security
   - /riak/latest/using/security/
   - /riak/kv/latest/using/security/
   - /riakkv/latest/using/security/
 ---
 
-[config reference search]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#search
-[config search enabling]: {{<baseurl>}}riak/kv/2.9.7/configuring/search/#enabling-riak-search
-[config v3 ssl]: {{<baseurl>}}riak/kv/2.9.7/configuring/v3-multi-datacenter/ssl
+[config reference search]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#search
+[config search enabling]: {{<baseurl>}}riak/kv/3.0.1/configuring/search/#enabling-riak-search
+[config v3 ssl]: {{<baseurl>}}riak/kv/3.0.1/configuring/v3-multi-datacenter/ssl
 [JMX]: http://www.oracle.com/technetwork/java/javase/tech/javamanagement-140525.html
-[security basics]: {{<baseurl>}}riak/kv/2.9.7/using/security/basics
-[security managing]: {{<baseurl>}}riak/kv/2.9.7/using/security/managing-sources/
+[security basics]: {{<baseurl>}}riak/kv/3.0.1/using/security/basics
+[security managing]: {{<baseurl>}}riak/kv/3.0.1/using/security/managing-sources/
 [Solr]: http://lucene.apache.org/solr/
-[usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
+[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
 
 > **Internal security**
 >

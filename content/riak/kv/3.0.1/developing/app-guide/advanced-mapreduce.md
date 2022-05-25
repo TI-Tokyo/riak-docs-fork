@@ -2,28 +2,28 @@
 title: "Advanced MapReduce"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Advanced MapReduce"
     identifier: "app_guide_mapreduce"
     weight: 103
     parent: "developing_app_guide"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/advanced/mapreduce/
-  - /riak/kv/2.9.7/dev/advanced/mapreduce/
+  - /riak/3.0.1/dev/advanced/mapreduce/
+  - /riak/kv/3.0.1/dev/advanced/mapreduce/
   - /riak/latest/developing/app-guide/advanced-mapreduce/
   - /riak/kv/latest/developing/app-guide/advanced-mapreduce/
   - /riakkv/latest/developing/app-guide/advanced-mapreduce/
 ---
 
-[usage 2i]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/secondary-indexes
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.7/developing/app-guide/replication-properties
-[use ref custom code]: {{<baseurl>}}riak/kv/2.9.7/using/reference/custom-code
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
+[usage 2i]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/secondary-indexes
+[apps replication properties]: {{<baseurl>}}riak/kv/3.0.1/developing/app-guide/replication-properties
+[use ref custom code]: {{<baseurl>}}riak/kv/3.0.1/using/reference/custom-code
+[usage bucket types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types
+[glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
 [google mr]: http://research.google.com/archive/mapreduce.html
 [mapping list]: http://hackage.haskell.org/package/base-4.7.0.0/docs/Prelude.html#v:map
 [function contrib]: https://github.com/basho/riak_function_contrib
@@ -384,7 +384,7 @@ Erlang client.
 {{% note title="Distributing Erlang MapReduce Code" %}}
 Any modules and functions you use in your Erlang MapReduce calls must be
 available on all nodes in the cluster. Please read about
-[installing custom code]({{<baseurl>}}riak/kv/2.9.7/using/reference/custom-code).
+[installing custom code]({{<baseurl>}}riak/kv/3.0.1/using/reference/custom-code).
 {{% /note %}}
 
 ### Erlang Example

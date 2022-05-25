@@ -3,19 +3,19 @@ title_supertext: "Installing on"
 title: "Windows Azure"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Windows Azure"
     identifier: "installing_windows_azure"
     weight: 308
     parent: "installing"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/installing/Installing-on-Windows-Azure
-  - /riak/kv/2.9.7/ops/building/installing/Installing-on-Windows-Azure
-  - /riak/2.9.7/installing/windows-azure/
-  - /riak/kv/2.9.7/installing/windows-azure/
+  - /riak/3.0.1/ops/building/installing/Installing-on-Windows-Azure
+  - /riak/kv/3.0.1/ops/building/installing/Installing-on-Windows-Azure
+  - /riak/3.0.1/installing/windows-azure/
+  - /riak/kv/3.0.1/installing/windows-azure/
   - /riak/kv/latest/setup/installing/windows-azure/
   - /riak/latest/setup/installing/windows-azure/
   - /riak/kv/latest/setup/installing/windows-azure/

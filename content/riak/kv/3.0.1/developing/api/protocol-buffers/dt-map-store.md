@@ -2,17 +2,17 @@
 title: "PBC Data Type Map Store"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Data Type Map Store"
     identifier: "pbc_dt_map_store"
     weight: 119
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/protocol-buffers/dt-map-store
-  - /riak/kv/2.9.7/dev/references/protocol-buffers/dt-map-store
+  - /riak/3.0.1/dev/references/protocol-buffers/dt-map-store
+  - /riak/kv/3.0.1/dev/references/protocol-buffers/dt-map-store
   - /riak/latest/developing/api/protocol-buffers/dt-map-store/
   - /riak/kv/latest/developing/api/protocol-buffers/dt-map-store/
   - /riakkv/latest/developing/api/protocol-buffers/dt-map-store/
@@ -69,7 +69,7 @@ message MapUpdate {
 }
 ```
 
-The `MapField` parameter is explained above. The operations used to update fields depend on the Data Type in that field, i.e. `CounterOp` messages to update counters, `SetOp` messages to update sets, etc. Updating counters is covered in [PBC Data Type Counter Store]({{<baseurl>}}riak/kv/2.9.7/developing/api/protocol-buffers/dt-counter-store) while updating sets is covered in [PBC Data Type Set Store]({{<baseurl>}}riak/kv/2.9.7/developing/api/protocol-buffers/dt-set-store).
+The `MapField` parameter is explained above. The operations used to update fields depend on the Data Type in that field, i.e. `CounterOp` messages to update counters, `SetOp` messages to update sets, etc. Updating counters is covered in [PBC Data Type Counter Store]({{<baseurl>}}riak/kv/3.0.1/developing/api/protocol-buffers/dt-counter-store) while updating sets is covered in [PBC Data Type Set Store]({{<baseurl>}}riak/kv/3.0.1/developing/api/protocol-buffers/dt-set-store).
 
 If you are updating a flag, you do so by including a `FlagOp` message. As shown in the `MapUpdate` message above, this operation takes one of two values: `ENABLE` and `DISABLE` (`1` and `2`, respectively).
 

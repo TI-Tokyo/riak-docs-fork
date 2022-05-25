@@ -2,43 +2,43 @@
 title: "riak admin Command Line Interface"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "riak admin CLI"
     identifier: "cluster_admin_cli"
     weight: 101
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/running/tools/riak admin
-  - /riak/kv/2.9.7/ops/running/tools/riak admin
+  - /riak/3.0.1/ops/running/tools/riak admin
+  - /riak/kv/3.0.1/ops/running/tools/riak admin
   - /riak/latest/using/admin/riak admin/
   - /riak/kv/latest/using/admin/riak admin/
   - /riakkv/latest/using/admin/riak admin/
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
-[use admin commands]: {{<baseurl>}}riak/kv/2.9.7/using/admin/commands
-[use admin commands#join]: {{<baseurl>}}riak/kv/2.9.7/using/admin/commands/#join
-[use admin commands#leave]: {{<baseurl>}}riak/kv/2.9.7/using/admin/commands/#leave
-[cluster ops backup]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/backing-up
-[config reference#node-metadata]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#node-metadata
-[cluster ops change info]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/changing-cluster-info
-[usage mapreduce]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/mapreduce
-[usage commit hooks]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/commit-hooks
-[config reference#ring]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#ring
-[cluster ops inspect node]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/inspecting-node
-[use ref monitoring]: {{<baseurl>}}riak/kv/2.9.7/using/reference/statistics-monitoring
-[downgrade]: {{<baseurl>}}riak/kv/2.9.7/setup/downgrade
-[security index]: {{<baseurl>}}riak/kv/2.9.7/using/security/
-[security managing]: {{<baseurl>}}riak/kv/2.9.7/using/security/managing-sources
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/bucket-types
-[cluster ops 2i]: {{<baseurl>}}riak/kv/2.9.7/using/reference/secondary-indexes
-[repair recover index]: {{<baseurl>}}riak/kv/2.9.7/using/repair-recovery
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/strong-consistency
-[cluster ops handoff]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/handoff
-[use admin riak admin#stats]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/#stats
+[config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
+[use admin commands]: {{<baseurl>}}riak/kv/3.0.1/using/admin/commands
+[use admin commands#join]: {{<baseurl>}}riak/kv/3.0.1/using/admin/commands/#join
+[use admin commands#leave]: {{<baseurl>}}riak/kv/3.0.1/using/admin/commands/#leave
+[cluster ops backup]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/backing-up
+[config reference#node-metadata]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#node-metadata
+[cluster ops change info]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/changing-cluster-info
+[usage mapreduce]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/mapreduce
+[usage commit hooks]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/commit-hooks
+[config reference#ring]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#ring
+[cluster ops inspect node]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/inspecting-node
+[use ref monitoring]: {{<baseurl>}}riak/kv/3.0.1/using/reference/statistics-monitoring
+[downgrade]: {{<baseurl>}}riak/kv/3.0.1/setup/downgrade
+[security index]: {{<baseurl>}}riak/kv/3.0.1/using/security/
+[security managing]: {{<baseurl>}}riak/kv/3.0.1/using/security/managing-sources
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/bucket-types
+[cluster ops 2i]: {{<baseurl>}}riak/kv/3.0.1/using/reference/secondary-indexes
+[repair recover index]: {{<baseurl>}}riak/kv/3.0.1/using/repair-recovery
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/strong-consistency
+[cluster ops handoff]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/handoff
+[use admin riak admin#stats]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#stats
 
 ## `riak admin`
 

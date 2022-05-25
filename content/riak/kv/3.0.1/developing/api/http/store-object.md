@@ -2,17 +2,17 @@
 title: "HTTP Store Object"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Store Object"
     identifier: "http_store_object"
     weight: 106
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/http/store-object
-  - /riak/kv/2.9.7/dev/references/http/store-object
+  - /riak/3.0.1/dev/references/http/store-object
+  - /riak/kv/3.0.1/dev/references/http/store-object
   - /riak/latest/developing/api/http/store-object/
   - /riak/kv/latest/developing/api/http/store-object/
   - /riakkv/latest/developing/api/http/store-object/
@@ -43,8 +43,8 @@ object when read.
 * `X-Riak-Meta-*` - any additional metadata headers that should be stored with
 the object.
 * `X-Riak-Index-*` - index entries under which this object should be indexed.
-[Read more about Secondary Indexing]({{<baseurl>}}riak/kv/2.9.7/developing/api/http/secondary-indexes)
-* `Link` - user and system-defined links to other resources. [Read more about Links.]({{<baseurl>}}riak/kv/2.9.7/developing/api/http/link-walking)
+[Read more about Secondary Indexing]({{<baseurl>}}riak/kv/3.0.1/developing/api/http/secondary-indexes)
+* `Link` - user and system-defined links to other resources. [Read more about Links.]({{<baseurl>}}riak/kv/3.0.1/developing/api/http/link-walking)
 
 Optional headers (only valid on `PUT`):
 
@@ -88,7 +88,7 @@ Important headers:
 * `Location` a relative URL to the newly-created object (when submitting without
 a key)
 
-If `returnbody=true`, any of the response headers expected from [HTTP Fetch Object]({{<baseurl>}}riak/kv/2.9.7/developing/api/http/fetch-object) may be present. Like when fetching the object, `300 Multiple Choices`
+If `returnbody=true`, any of the response headers expected from [HTTP Fetch Object]({{<baseurl>}}riak/kv/3.0.1/developing/api/http/fetch-object) may be present. Like when fetching the object, `300 Multiple Choices`
 may be returned if siblings existed or were created as part of the operation,
 and the response can be dealt with similarly.
 

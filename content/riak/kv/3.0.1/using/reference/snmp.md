@@ -2,9 +2,9 @@
 title: "Simple Network Management Protocol"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "SNMP"
     identifier: "managing_ref_snmp"
     weight: 107
@@ -12,8 +12,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/2.9.7/ops/running/monitoring/snmp
-  - /riak/kv/2.9.7/ops/running/monitoring/snmp
+  - /riak/3.0.1/ops/running/monitoring/snmp
+  - /riak/kv/3.0.1/ops/running/monitoring/snmp
   - /riak/latest/using/reference/snmp/
   - /riak/kv/latest/using/reference/snmp/
   - /riakkv/latest/using/reference/snmp/

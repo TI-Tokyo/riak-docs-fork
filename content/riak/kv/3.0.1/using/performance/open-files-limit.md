@@ -2,24 +2,24 @@
 title: "Open Files Limit"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Open Files Limit"
     identifier: "performance_open_files_limit"
     weight: 101
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/tuning/open-files-limit/
-  - /riak/kv/2.9.7/ops/tuning/open-files-limit/
+  - /riak/3.0.1/ops/tuning/open-files-limit/
+  - /riak/kv/3.0.1/ops/tuning/open-files-limit/
   - /riak/latest/using/performance/open-files-limit/
   - /riak/kv/latest/using/performance/open-files-limit/
   - /riakkv/latest/using/performance/open-files-limit/
   - /riak/kv/latest/ops/tuning/open-files-limit/
 ---
 
-[plan backend]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/
+[plan backend]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/
 [blog oracle]: http://blogs.oracle.com/elving/entry/too_many_open_files
 
 Riak KV can accumulate a large number of open file handles during operation. The creation of numerous data files is normal, and the [backend][plan backend] performs periodic merges of data file collections to avoid accumulating file handles.

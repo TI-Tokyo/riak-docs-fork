@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: HyperLogLogs"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "HyperLogLogs"
     identifier: "data_types_hyperloglogs"
     weight: 100
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/using/data-types/hyperloglogs
-  - /riak/kv/2.9.7/dev/using/data-types/hyperloglogs
-  - /riak/2.9.7/dev/data-modeling/data-types/hyperloglogs
-  - /riak/kv/2.9.7/dev/data-modeling/data-types/hyperloglogs
+  - /riak/3.0.1/dev/using/data-types/hyperloglogs
+  - /riak/kv/3.0.1/dev/using/data-types/hyperloglogs
+  - /riak/3.0.1/dev/data-modeling/data-types/hyperloglogs
+  - /riak/kv/3.0.1/dev/data-modeling/data-types/hyperloglogs
   - /riak/latest/developing/data-types/hyperloglogs/
   - /riak/kv/latest/developing/data-types/hyperloglogs/
   - /riakkv/latest/developing/data-types/hyperloglogs/

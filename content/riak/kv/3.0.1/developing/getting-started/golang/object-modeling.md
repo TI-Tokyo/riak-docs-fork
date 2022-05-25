@@ -3,17 +3,17 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with Go"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Object Modeling"
     identifier: "getting_started_go_object"
     weight: 102
     parent: "getting_started_go"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/object-modeling-golang
-  - /riak/kv/2.9.7/dev/taste-of-riak/object-modeling-golang
+  - /riak/3.0.1/dev/taste-of-riak/object-modeling-golang
+  - /riak/kv/3.0.1/dev/taste-of-riak/object-modeling-golang
   - /riak/latest/developing/getting-started/golang/object-modeling/
   - /riak/kv/latest/developing/getting-started/golang/object-modeling/
   - /riakkv/latest/developing/getting-started/golang/object-modeling/
@@ -138,7 +138,7 @@ func (t *Timeline) GetId() string {
 }
 ````
 
-We'll be using the bucket `Users` to store our data. We won't be [using bucket types]({{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types) here, so we don't need to specify one.
+We'll be using the bucket `Users` to store our data. We won't be [using bucket types]({{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types) here, so we don't need to specify one.
 
 To use these records to store data, we will first have to create a user
 record. Then, when a user creates a message, we will append that message

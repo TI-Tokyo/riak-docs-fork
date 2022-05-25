@@ -3,9 +3,9 @@ draft: true
 title: "New to NoSQL?"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 #menu:
-#  riak_kv-2.9.7:
+#  riak_kv-3.0.1:
 #    name: "New to NoSQL?"
 #    identifier: "learn_new_nosql"
 #    weight: 102

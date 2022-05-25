@@ -2,16 +2,16 @@
 title: "Riak KV"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Riak KV"
     identifier: "index"
     weight: 100
     pre: riak
 toc: false
 aliases:
-  - /riak/2.9.7/
+  - /riak/3.0.1/
   - /riak/kv/latest/
   - /riak/latest/
   - /riak/kv/latest/
@@ -19,15 +19,15 @@ aliases:
 ---
 
 [aboutenterprise]: https://www.tiot.jp/en/about-us/contact-us/
-[config index]: {{<baseurl>}}riak/kv/2.9.7/configuring
-[downloads]: {{<baseurl>}}riak/kv/2.9.7/downloads/
-[install index]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/
-[plan index]: {{<baseurl>}}riak/kv/2.9.7/setup/planning
-[perf open files]: {{<baseurl>}}riak/kv/2.9.7/using/performance/open-files-limit
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/debian-ubuntu
-[usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
-[getting started]: {{<baseurl>}}riak/kv/2.9.7/developing/getting-started
-[dev client libraries]: {{<baseurl>}}riak/kv/2.9.7/developing/client-libraries
+[config index]: {{<baseurl>}}riak/kv/3.0.1/configuring
+[downloads]: {{<baseurl>}}riak/kv/3.0.1/downloads/
+[install index]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/
+[plan index]: {{<baseurl>}}riak/kv/3.0.1/setup/planning
+[perf open files]: {{<baseurl>}}riak/kv/3.0.1/using/performance/open-files-limit
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/debian-ubuntu
+[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
+[getting started]: {{<baseurl>}}riak/kv/3.0.1/developing/getting-started
+[dev client libraries]: {{<baseurl>}}riak/kv/3.0.1/developing/client-libraries
 
 
 

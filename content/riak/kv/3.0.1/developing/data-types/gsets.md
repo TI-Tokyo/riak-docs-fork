@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types:GSets"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "GSets"
     identifier: "data_types_gsets"
     weight: 101
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/using/data-types/gsets
-  - /riak/kv/2.9.7/dev/using/data-types/gsets
-  - /riak/2.9.7/dev/data-modeling/data-types/gsets
-  - /riak/kv/2.9.7/dev/data-modeling/data-types/gsets
+  - /riak/3.0.1/dev/using/data-types/gsets
+  - /riak/kv/3.0.1/dev/using/data-types/gsets
+  - /riak/3.0.1/dev/data-modeling/data-types/gsets
+  - /riak/kv/3.0.1/dev/data-modeling/data-types/gsets
   - /riak/latest/developing/data-types/gsets/
   - /riak/kv/latest/developing/data-types/gsets/
   - /riakkv/latest/developing/data-types/gsets/

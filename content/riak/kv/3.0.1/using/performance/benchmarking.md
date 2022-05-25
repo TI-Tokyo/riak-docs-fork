@@ -2,17 +2,17 @@
 title: "Benchmarking"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Benchmarking"
     identifier: "performance_benchmarking"
     weight: 100
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/benchmarking
-  - /riak/kv/2.9.7/ops/building/benchmarking
+  - /riak/3.0.1/ops/building/benchmarking
+  - /riak/kv/3.0.1/ops/building/benchmarking
   - /riak/latest/using/performance/benchmarking/
   - /riak/kv/latest/using/performance/benchmarking/
   - /riakkv/latest/using/performance/benchmarking/
@@ -54,7 +54,7 @@ You can download the pre-built packages below, or build it from source.
 
 #### Prerequisites
 
-* Erlang must be installed. See [Installing Erlang]({{<baseurl>}}riak/kv/2.9.7/setup/installing/source/erlang) for instructions
+* Erlang must be installed. See [Installing Erlang]({{<baseurl>}}riak/kv/3.0.1/setup/installing/source/erlang) for instructions
     and versioning requirements. Note: Unless you're an experienced
     Erlang developer, we recommend that you use Ubuntu 14.04 LTS (and
     not CentOS), when building ```basho_bench``` from source.  Later

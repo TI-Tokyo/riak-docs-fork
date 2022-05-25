@@ -2,17 +2,17 @@
 title: "Getting Started with NodeJS"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "NodeJS"
     identifier: "getting_started_nodejs"
     weight: 104
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/nodejs
-  - /riak/kv/2.9.7/dev/taste-of-riak/nodejs
+  - /riak/3.0.1/dev/taste-of-riak/nodejs
+  - /riak/kv/3.0.1/dev/taste-of-riak/nodejs
   - /riak/latest/developing/getting-started/nodejs/
   - /riak/kv/latest/developing/getting-started/nodejs/
   - /riakkv/latest/developing/getting-started/nodejs/
@@ -24,7 +24,7 @@ aliases:
 [nodejs_wiki]: https://github.com/basho/riak-nodejs-client/wiki
 
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.7/using/running-a-cluster) first.
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.0.1/using/running-a-cluster) first.
 
 To try this flavor of Riak, a working installation of Node.js 0.12 or later is
 required.
@@ -100,7 +100,7 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/2.9.7/developing/getting-started/nodejs/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/3.0.1/developing/getting-started/nodejs/crud-operations)
 
 
 
