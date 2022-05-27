@@ -79,15 +79,16 @@ generateVersionLists = () ->
     (data) ->
       project_data = data[project]
 
-      project_path = docs_root_url.replace(/\/+$/, '') + project_data.path # ex; http://docs.riak.com/riak/kv
-      latest_rel   = project_data.latest          # ex; 2.1.4
-      lts_series   = project_data['lts']          # ex; 2.0 -or- undefined
-      archived_url = project_data['archived_url'] # ex; http://.. -or- undefined
+      project_path  = docs_root_url.replace(/\/+$/, '') + project_data.path # ex; http://docs.riak.com/riak/kv
+      latest_rel    = project_data.latest          # ex; 2.1.4
+      lts_series    = project_data['lts']          # ex; [2.9, 3.0] -or- undefined
+      archive_below = project_data['archive_below'] # ex; 2.2 -or- undefined
+      archived_url  = project_data['archived_url'] # ex; http://.. -or- undefined
 
       # Aggregator for the resulting HTML. To be added into the
       # div.selector-pane--versions
       version_selector_list_html = ''
-
+      has_archived = false
       # Loop over each release set.
       for release_set, set_index in project_data.releases.reverse()
 
@@ -102,7 +103,14 @@ generateVersionLists = () ->
         #     to ensure scrollbars are always intractable. Without this explicit
         #     z-index, the scrollbar of a __sizing-box may be partially covered
         #     by the padding of a selector-list immediately to its right.
-        version_selector_list_html += '<div class="inline-block   selector-list__sizing-box" style="z-index:'+(100-set_index)+';">'
+        archived_class = ''
+        if archive_below and release_set[0] < archive_below
+          archived_class = ' release-is-archived-and-hidden'
+          has_archived = true
+
+        version_selector_list_html += '<div class="inline-block   selector-list__sizing-box'
+        version_selector_list_html += archived_class
+        version_selector_list_html += '" style="z-index:'+(100-set_index)+';">'
 
         arrow_str = '<span class="inline-block   edge-fader__arrow edge-fader__arrow--invisible"></span>'
         version_selector_list_html += '<div class="edge-fader edge-fader--top ">' + arrow_str + '</div>'
@@ -120,7 +128,13 @@ generateVersionLists = () ->
         # of `release_version` string matches the `lts_series` string), add an
         # LTS tag to the top of the list.
         # NB. There may be no LTS series set on a give product.
-        if lts_series and release_set[0].match("^"+lts_series)
+        is_lts = false
+        if lts_series
+          for lts_name in lts_series
+            if release_set[0].match("^"+lts_name)
+              is_lts = true
+
+        if is_lts
           class_list = ["selector-list__element",
                         "selector-list__element--"+list_depth,
                         "selector-list__element--lts-flag"]
@@ -204,10 +218,24 @@ generateVersionLists = () ->
           '<li class="'+class_list.join("\n")+'"><a class="block" href="'+archived_url+'">older</a></li>'
         version_selector_list_html += '</ul></div></div>'
 
+      if has_archived
+        class_list = ["selector-list__element",
+                      "selector-list__element--other"]
+
+        # We can skip the Edge Fader here, b/c we know there's only ever going
+        # to be one "Older" element.
+        #NB. See above note re: whitespace.
+        version_selector_list_html += '<div class="inline-block   selector-list__sizing-box    selector-other-releases">'
+        version_selector_list_html += '<div class="overflow-y   selector-list__scroll-box">'
+
+        version_selector_list_html += '<ul class="selector-list">\n'
+        version_selector_list_html +=
+          '<li class="'+class_list.join("\n")+'"><button class="other__btn" type="button">other</button></li>'
+
+        version_selector_list_html += '</ul></div></div>'
 
       # What we've all been waiting for; make the DOM modification.
       $('.selector-pane--versions').html(version_selector_list_html)
-
 
       # With the lists added to the DOM, we can capture the height of the
       # tallest one, and set the height of the selector-pane's __shadow-box
@@ -226,7 +254,6 @@ generateVersionLists = () ->
       $version_pane__shadow.css('height', tallest_list + (2).rem())
       $version_pane__sizing.css('height', tallest_list + (2).rem())
 
-
       ## HACK:
       #  Because these dynamic elements were added after the JQuery.ready()
       #  clause that defied 'scroll' and 'click' event listeners on all other
@@ -242,6 +269,16 @@ generateVersionLists = () ->
 
       $('.edge-fader__arrow').on('click.selector-fader-arrow',
         EdgeFader.onClickCallback
+      )
+
+      # When the other button is clicked, hide the button, show the hidden series and fix
+      # the height
+      # TODO: fix height
+      $('.selector-other-releases').on('click',
+        (event) ->
+          $('.release-is-archived-and-hidden').toggleClass('release-is-archived-and-hidden');
+          $('.selector-other-releases').toggleClass('release-is-archived-and-hidden');
+          window.dispatchEvent(new Event('resize'));
       )
 
     ) # *end getJSON callback*
