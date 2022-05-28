@@ -67,7 +67,7 @@ Installing Riak 2.9.10 with [Homebrew](http://brew.sh/) is easy:
 brew install --devrel riak
 ```
 
-By default, this will place a `2.9.1` folder in
+By default, this will place a `2.9.10` folder in
 `/usr/local/Cellar/riak`.
 
 Be aware that you will most likely see the following message after

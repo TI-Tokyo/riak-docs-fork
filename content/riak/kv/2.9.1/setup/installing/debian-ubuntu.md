@@ -86,57 +86,57 @@ sudo apt-get install libpam0g-dev
 #### Ubuntu Bionic Beaver (18.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/bionic64/riak_2.9.0-1_amd64.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/bionic64/riak-2.9.1-1_amd64.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 #### Ubuntu Xenial Xerus (16.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/xenial64/riak_2.9.0-1_amd64.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/xenial64/riak-2.9.1-1_amd64.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 #### Ubuntu Trusty Tahr (14.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/trusty64/riak_2.9.0-1_amd64.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/trusty64/riak-2.9.1-1_amd64.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 #### Ubuntu Precise Pangolin (12.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/precise64/riak_2.9.0-1_amd64.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/ubuntu/precise64/riak-2.9.1-1_amd64.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 #### Debian Stretch (9.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/debian/9/riak_2.9.0-1_amd64.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/debian/9/riak-2.9.1-1_amd64.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 #### Debian Jessie (8.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/debian/8/riak_2.9.0-1_amd64.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/debian/8/riak-2.9.1-1_amd64.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 #### Debian Wheezy (7.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/debian/7/riak_2.9.0-1_amd64.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/debian/7/riak-2.9.1-1_amd64.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 #### Raspbian Buster
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.9/2.9.1/raspbian/buster/riak_2.9.0-1_armhf.deb
-sudo dpkg -i riak_2.9.0-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/raspbian/buster/riak-2.9.1-1_armhf.deb
+sudo dpkg -i riak-2.9.1-1_amd64.deb
 ```
 
 

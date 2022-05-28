@@ -117,14 +117,14 @@ You can install on AWS 2 using yum, which we recommend:
 
 ```bash
 wget https://files.tiot.jp/riak/kv/2.9/2.9.9/amazon/2/riak-2.9.9-1.amzn2x86_64.rpm
-sudo yum localinstall -y riak_2.9.0-1.amzn2x86_64.rpm
+sudo yum localinstall -y riak-2.9.9-1.amzn2x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
 wget https://files.tiot.jp/riak/kv/2.9/2.9.9/amazon/2/riak-2.9.9-1.amzn2x86_64.rpm
-sudo rpm -i riak_2.9.0-1.amzn2x86_64.rpm
+sudo rpm -i riak-2.9.9-1.amzn2x86_64.rpm
 ```
 
 
@@ -134,14 +134,14 @@ You can install on AWS 2016.09 using yum, which we recommend:
 
 ```bash
 wget https://files.tiot.jp/riak/kv/2.9/2.9.9/amazon/2016.09/riak-2.9.9-1.amzn1x86_64.rpm
-sudo yum localinstall -y riak_2.9.0-1.amzn1x86_64.rpm
+sudo yum localinstall -y riak-2.9.9-1.amzn1x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
 wget https://files.tiot.jp/riak/kv/2.9/2.9.9/amazon/2016.09/riak-2.9.9-1.amzn1x86_64.rpm
-sudo rpm -i riak_2.9.0-1.amzn1x86_64.rpm
+sudo rpm -i riak-2.9.9-1.amzn1x86_64.rpm
 ```
 ## Next Steps
 
