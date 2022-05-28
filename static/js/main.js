@@ -13273,7 +13273,7 @@ Interaction is a mater of expanding the pane when the .selector__btn is clicked
         for (set_index = i = 0, len = ref.length; i < len; set_index = ++i) {
           release_set = ref[set_index];
           archived_class = '';
-          if (archive_below && release_set[0] < archive_below) {
+          if (archive_below && release_set[0] < archive_below && release_set[release_set.length - 1] < current_version) {
             archived_class = ' release-is-archived-and-hidden';
             has_archived = true;
           }
