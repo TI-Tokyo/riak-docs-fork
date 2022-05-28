@@ -2,23 +2,23 @@
 title: "Using Commit Hooks"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Using Commit Hooks"
     identifier: "usage_commit_hooks"
     weight: 109
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/using/commit-hooks
-  - /riak/kv/2.9.7/dev/using/commit-hooks
+  - /riak/3.0.1/dev/using/commit-hooks
+  - /riak/kv/3.0.1/dev/using/commit-hooks
   - /riak/latest/developing/usage/commit-hooks/
   - /riak/kv/latest/developing/usage/commit-hooks/
   - /riakkv/latest/developing/usage/commit-hooks/
 ---
 
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
+[usage bucket types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types
 
 Pre- and post-commit hooks are functions that are invoked before or
 after an object has been written to Riak. To provide a few examples,
@@ -34,7 +34,7 @@ invoked can cause nasty feedback loops which will wedge the hook into an
 infinite cycle unless the hook functions are carefully written to detect
 and short-circuit such cycles.
 
-Pre- and post-commit hooks are applied at the [bucket]({{<baseurl>}}riak/kv/2.9.7/learn/concepts/buckets) level,
+Pre- and post-commit hooks are applied at the [bucket]({{<baseurl>}}riak/kv/3.0.1/learn/concepts/buckets) level,
 [using bucket types][usage bucket types]. They are run once per successful response to the
 client.
 
@@ -43,7 +43,7 @@ functions.
 
 ## Setting Commit Hooks Using Bucket Types
 
-Because hooks are defined at the bucket level, you can create [bucket types]({{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types)
+Because hooks are defined at the bucket level, you can create [bucket types]({{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types)
 that associate one or more hooks with any bucket that bears that type.
 Let's create a bucket type called `with_post_commit` that adds a
 post-commit hook to operations on any bucket that bears the
@@ -90,7 +90,7 @@ Riak object being modified. Remember that deletes are also considered
 "writes," and so pre-commit hooks will be fired when a delete occurs in
 the bucket as well. This means that hook functions will need to inspect
 the object for the `X-Riak-Deleted` metadata entry (more on this in our
-documentation on [object deletion]({{<baseurl>}}riak/kv/2.9.7/using/reference/object-deletion)) to determine whether a delete is
+documentation on [object deletion]({{<baseurl>}}riak/kv/3.0.1/using/reference/object-deletion)) to determine whether a delete is
 occurring.
 
 Erlang pre-commit functions are allowed three possible return values:
@@ -106,7 +106,7 @@ This can either be the same object passed to the function or an updated version 
   - /riak/kv/latest/developing/usage/commit-hooks/
   - /riakkv/latest/developing/usage/commit-hooks/
 ---
-The atom `fail` will cause Riak to fail the write and send a 403 Forbidden error response (in the [HTTP API]({{<baseurl>}}riak/kv/2.9.7/developing/api/http)) along with a generic error message about why the write was blocked.
+The atom `fail` will cause Riak to fail the write and send a 403 Forbidden error response (in the [HTTP API]({{<baseurl>}}riak/kv/3.0.1/developing/api/http)) along with a generic error message about why the write was blocked.
 - `{fail, Reason}`
   - /riak/latest/developing/usage/commit-hooks/
   - /riak/kv/latest/developing/usage/commit-hooks/

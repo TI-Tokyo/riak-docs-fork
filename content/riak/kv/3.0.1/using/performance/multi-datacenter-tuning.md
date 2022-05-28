@@ -3,9 +3,9 @@ title_supertext: "Multi Data Center Replication:"
 title: "System Tuning"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Multi-Datacenter Replication"
     identifier: "performance_multi_datacenter_tuning"
     weight: 110
@@ -18,7 +18,7 @@ aliases:
   - /riakkv/latest/using/performance/multi-datacenter-tuning/
 ---
 
-[perf index]: {{<baseurl>}}riak/kv/2.9.7/using/performance
+[perf index]: {{<baseurl>}}riak/kv/3.0.1/using/performance
 
 Depending on the size of your objects and your replication latency
 needs, you may need to configure your kernel settings to optimize

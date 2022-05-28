@@ -2,31 +2,31 @@
 title: "Riak Search Settings"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Riak Search Settings"
     identifier: "configuring_search"
     weight: 160
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/advanced/configs/search/
-  - /riak/kv/2.9.7/ops/advanced/configs/search/
+  - /riak/3.0.1/ops/advanced/configs/search/
+  - /riak/kv/3.0.1/ops/advanced/configs/search/
   - /riak/latest/configuring/search/
   - /riak/kv/latest/configuring/search/
   - /riakkv/latest/configuring/search/
 ---
 
-[usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
-[usage search schema]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search-schemas
-[usage search data types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/searching-data-types
-[usage custom extractors]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/custom-extractors
-[cluster-ops aae throttle]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/active-anti-entropy/#throttling
-[config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
-[config reference#search]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#search
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#active-anti-entropy-aae
-[security index]: {{<baseurl>}}riak/kv/2.9.7/using/security/
+[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
+[usage search schema]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search-schemas
+[usage search data types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/searching-data-types
+[usage custom extractors]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/custom-extractors
+[cluster-ops aae throttle]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/active-anti-entropy/#throttling
+[config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
+[config reference#search]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#search
+[glossary aae]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#active-anti-entropy-aae
+[security index]: {{<baseurl>}}riak/kv/3.0.1/using/security/
 
 [java se downloads]: http://www.oracle.com/technetwork/java/javase/downloads
 [java se docs]: http://www.oracle.com/technetwork/java/javase/documentation

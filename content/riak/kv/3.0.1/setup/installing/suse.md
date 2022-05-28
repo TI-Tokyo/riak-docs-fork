@@ -3,26 +3,26 @@ title_supertext: "Installing on"
 title: "SUSE"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "SUSE"
     identifier: "installing_suse"
     weight: 307
     parent: "installing"
 toc: false
 aliases:
-  - /riak/2.9.7/ops/building/installing/Installing-on-SUSE
-  - /riak/kv/2.9.7/ops/building/installing/Installing-on-SUSE
-  - /riak/2.9.7/installing/suse/
-  - /riak/kv/2.9.7/installing/suse/
+  - /riak/3.0.1/ops/building/installing/Installing-on-SUSE
+  - /riak/kv/3.0.1/ops/building/installing/Installing-on-SUSE
+  - /riak/3.0.1/installing/suse/
+  - /riak/kv/3.0.1/installing/suse/
   - /riak/kv/latest/setup/installing/suse/
   - /riak/latest/setup/installing/suse/
   - /riak/kv/latest/setup/installing/suse/
   - /riakkv/latest/setup/installing/suse/
 ---
 
-[install verify]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/verify
+[install verify]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/verify
 
 {{% note title="SUSE End of Life (EOL) for Riak KV 2.2.3" %}}
 SUSE is no longer supported in Riak KV 2.9.7+. If you are interested in using Riak KV on SUSE, you can still [build from source](../source). The steps below have been left here for reference only and are no longer maintained.

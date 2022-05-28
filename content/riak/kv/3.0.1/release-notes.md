@@ -1,20 +1,20 @@
 ---
-title: "Riak KV 2.9.7 Release Notes"
+title: "Riak KV 3.0.1 Release Notes"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Release Notes"
     identifier: "index_release_notes"
     weight: 101
     parent: index
 toc: false
 aliases:
-  - /riak/2.9.7/community/release-notes
-  - /riak/kv/2.9.7/intro-v20
-  - /riak/2.9.7/intro-v20
-  - /riak/kv/2.9.7/introduction
+  - /riak/3.0.1/community/release-notes
+  - /riak/kv/3.0.1/intro-v20
+  - /riak/3.0.1/intro-v20
+  - /riak/kv/3.0.1/introduction
   - /riak/kv/latest/release-notes/
   - /riak/latest/release-notes/
   - /riak/kv/latest/release-notes/

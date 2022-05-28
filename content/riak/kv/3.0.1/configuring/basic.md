@@ -2,42 +2,42 @@
 title: "Basic Riak KV Configuration"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Basic Configuration"
     identifier: "configuring_basic"
     weight: 100
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/configuration/
-  - /riak/kv/2.9.7/ops/building/configuration/
+  - /riak/3.0.1/ops/building/configuration/
+  - /riak/kv/3.0.1/ops/building/configuration/
   - /riak/latest/configuring/basic/
   - /riak/kv/latest/configuring/basic/
   - /riakkv/latest/configuring/basic/
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
-[use running cluster]: {{<baseurl>}}riak/kv/2.9.7/using/running-a-cluster
-[use admin riak admin#member-status]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/#member-status
-[perf erlang]: {{<baseurl>}}riak/kv/2.9.7/using/performance/erlang
-[plan start]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/start
-[plan best practices]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/best-practices
-[cluster ops backup]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/backing-up
-[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/adding-removing-nodes
-[plan backend]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/multi
-[plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/bitcask
-[usage bucket types]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
-[apps replication properties]: {{<baseurl>}}riak/kv/2.9.7/developing/app-guide/replication-properties
-[concept buckets]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/buckets
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/eventual-consistency
-[perf benchmark]: {{<baseurl>}}riak/kv/2.9.7/using/performance/benchmarking
-[perf open files]: {{<baseurl>}}riak/kv/2.9.7/using/performance/open-files-limit
-[perf index]: {{<baseurl>}}riak/kv/2.9.7/using/performance
-[perf aws]: {{<baseurl>}}riak/kv/2.9.7/using/performance/amazon-web-services
-[Cluster Capacity Planning]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/cluster-capacity/#ring-size-number-of-partitions
+[config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
+[use running cluster]: {{<baseurl>}}riak/kv/3.0.1/using/running-a-cluster
+[use admin riak admin#member-status]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#member-status
+[perf erlang]: {{<baseurl>}}riak/kv/3.0.1/using/performance/erlang
+[plan start]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/start
+[plan best practices]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/best-practices
+[cluster ops backup]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/backing-up
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/adding-removing-nodes
+[plan backend]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend
+[plan backend multi]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/multi
+[plan backend bitcask]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/bitcask
+[usage bucket types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types
+[apps replication properties]: {{<baseurl>}}riak/kv/3.0.1/developing/app-guide/replication-properties
+[concept buckets]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/buckets
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/eventual-consistency
+[perf benchmark]: {{<baseurl>}}riak/kv/3.0.1/using/performance/benchmarking
+[perf open files]: {{<baseurl>}}riak/kv/3.0.1/using/performance/open-files-limit
+[perf index]: {{<baseurl>}}riak/kv/3.0.1/using/performance
+[perf aws]: {{<baseurl>}}riak/kv/3.0.1/using/performance/amazon-web-services
+[Cluster Capacity Planning]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/cluster-capacity/#ring-size-number-of-partitions
 
 This document covers the parameters that are commonly adjusted when
 setting up a new cluster. We recommend that you also review the detailed
@@ -219,7 +219,7 @@ For more on bucket properties, we recommend reviewing our docs on
 
 If the default bucket properties are modified in your configuration
 files and the node is restarted, any existing buckets will **not** be
-directly impacted, although the mechanism described in [HTTP Reset Bucket Properties]({{<baseurl>}}riak/kv/2.9.7/developing/api/http/reset-bucket-props) can be used to force them to pick up the new
+directly impacted, although the mechanism described in [HTTP Reset Bucket Properties]({{<baseurl>}}riak/kv/3.0.1/developing/api/http/reset-bucket-props) can be used to force them to pick up the new
 defaults.
 
 ## System tuning

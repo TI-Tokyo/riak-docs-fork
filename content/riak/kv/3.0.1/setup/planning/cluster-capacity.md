@@ -2,29 +2,29 @@
 title: "Cluster Capacity Planning"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Cluster Capacity"
     identifier: "planning_cluster_capacity"
     weight: 103
     parent: "planning"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/planning/cluster
-  - /riak/kv/2.9.7/ops/building/planning/cluster
+  - /riak/3.0.1/ops/building/planning/cluster
+  - /riak/kv/3.0.1/ops/building/planning/cluster
   - /riak/latest/setup/planning/cluster-capacity/
   - /riak/kv/latest/setup/planning/cluster-capacity/
   - /riakkv/latest/setup/planning/cluster-capacity/
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/leveldb
-[plan bitcask capacity]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/bitcask-capacity-calc
-[plan index]: {{<baseurl>}}riak/kv/2.9.7/setup/planning
-[concept replication]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/replication
-[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin/#cluster
-[config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
-[perf benchmark]: {{<baseurl>}}riak/kv/2.9.7/using/performance/benchmarking
+[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/leveldb
+[plan bitcask capacity]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/bitcask-capacity-calc
+[plan index]: {{<baseurl>}}riak/kv/3.0.1/setup/planning
+[concept replication]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/replication
+[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#cluster
+[config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
+[perf benchmark]: {{<baseurl>}}riak/kv/3.0.1/using/performance/benchmarking
 [LVM]: http://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)
 
 

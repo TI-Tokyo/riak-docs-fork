@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: Counters"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Counters"
     identifier: "data_types_counters"
     weight: 100
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/using/data-types/counters
-  - /riak/kv/2.9.7/dev/using/data-types/counters
-  - /riak/2.9.7/dev/data-modeling/data-types/counters
-  - /riak/kv/2.9.7/dev/data-modeling/data-types/counters
+  - /riak/3.0.1/dev/using/data-types/counters
+  - /riak/kv/3.0.1/dev/using/data-types/counters
+  - /riak/3.0.1/dev/data-modeling/data-types/counters
+  - /riak/kv/3.0.1/dev/data-modeling/data-types/counters
   - /riak/latest/developing/data-types/counters/
   - /riak/kv/latest/developing/data-types/counters/
   - /riakkv/latest/developing/data-types/counters/

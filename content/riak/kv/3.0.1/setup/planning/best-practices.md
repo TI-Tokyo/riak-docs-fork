@@ -2,26 +2,26 @@
 title: "Scaling and Operating Riak Best Practices"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Best Practices"
     identifier: "planning_best_practices"
     weight: 105
     parent: "planning"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/building/planning/best-practices
-  - /riak/kv/2.9.7/ops/building/planning/best-practices
+  - /riak/3.0.1/ops/building/planning/best-practices
+  - /riak/kv/3.0.1/ops/building/planning/best-practices
   - /riak/latest/setup/planning/best-practices/
   - /riak/kv/latest/setup/planning/best-practices/
   - /riakkv/latest/setup/planning/best-practices/
 ---
 
-[use ref handoff]: {{<baseurl>}}riak/kv/2.9.7/using/reference/handoff
-[config mapreduce]: {{<baseurl>}}riak/kv/2.9.7/configuring/mapreduce
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#active-anti-entropy-aae
-[cluster ops add remove node]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/adding-removing-nodes
+[use ref handoff]: {{<baseurl>}}riak/kv/3.0.1/using/reference/handoff
+[config mapreduce]: {{<baseurl>}}riak/kv/3.0.1/configuring/mapreduce
+[glossary aae]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#active-anti-entropy-aae
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/adding-removing-nodes
 
 Riak KV is a database designed for easy operation and scaling. Below are some best practices that will enable you to improve performance and reliability at all stages in the life of your Riak cluster.
 

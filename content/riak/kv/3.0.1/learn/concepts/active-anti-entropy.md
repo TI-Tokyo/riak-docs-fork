@@ -2,31 +2,31 @@
 title: "Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Active Anti-Entropy"
     identifier: "learn_concepts_aae"
     weight: 100
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/2.9.7/theory/concepts/aae
-  - /riak/kv/2.9.7/theory/concepts/aae
+  - /riak/3.0.1/theory/concepts/aae
+  - /riak/kv/3.0.1/theory/concepts/aae
   - /riak/latest/learn/concepts/active-anti-entropy/
   - /riak/kv/latest/learn/concepts/active-anti-entropy/
   - /riakkv/latest/learn/concepts/active-anti-entropy/
 ---
 
-[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/v3-multi-datacenter
-[cluster ops aae]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/active-anti-entropy
-[concept clusters]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/clusters
-[concept eventual consistency]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/eventual-consistency
-[config aae]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#active-anti-entropy
-[glossary read rep]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#read-repair
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
+[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/v3-multi-datacenter
+[cluster ops aae]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/active-anti-entropy
+[concept clusters]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/clusters
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/eventual-consistency
+[config aae]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#active-anti-entropy
+[glossary read rep]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#read-repair
+[glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode
 [Merkle tree]: http://en.wikipedia.org/wiki/Merkle_tree
-[usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
+[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
 
 
 In a [clustered][concept clusters], [eventually consistent][concept eventual consistency] system like Riak, conflicts between object replicas stored

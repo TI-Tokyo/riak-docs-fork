@@ -2,17 +2,17 @@
 title: "HTTP Reset Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Reset Bucket Properties"
     identifier: "http_reset_bucket_props"
     weight: 102
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/http/reset-bucket-props
-  - /riak/kv/2.9.7/dev/references/http/reset-bucket-props
+  - /riak/3.0.1/dev/references/http/reset-bucket-props
+  - /riak/kv/3.0.1/dev/references/http/reset-bucket-props
   - /riak/latest/developing/api/http/reset-bucket-props/
   - /riak/kv/latest/developing/api/http/reset-bucket-props/
   - /riakkv/latest/developing/api/http/reset-bucket-props/

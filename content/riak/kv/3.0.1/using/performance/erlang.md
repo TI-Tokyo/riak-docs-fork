@@ -2,17 +2,17 @@
 title: "Erlang VM Tuning"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Erlang VM"
     identifier: "performance_erlang"
     weight: 105
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/tuning/erlang
-  - /riak/kv/2.9.7/ops/tuning/erlang
+  - /riak/3.0.1/ops/tuning/erlang
+  - /riak/kv/3.0.1/ops/tuning/erlang
   - /riak/latest/using/performance/erlang/
   - /riak/kv/latest/using/performance/erlang/
   - /riakkv/latest/using/performance/erlang/

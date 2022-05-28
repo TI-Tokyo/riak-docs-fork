@@ -1,6 +1,6 @@
 ---
 layout: redirect
-target: "riak/kv/2.9.7/learn/use-cases/"
+target: "riak/kv/3.0.1/learn/use-cases/"
 aliases:
   - /riak/latest/developing/data-modeling/
   - /riak/kv/latest/developing/data-modeling/

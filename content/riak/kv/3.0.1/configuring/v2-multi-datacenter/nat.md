@@ -3,9 +3,9 @@ title_supertext: "V2 Multi-Datacenter Replication:"
 title: "With NAT"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "With NAT"
     identifier: "configuring_v2_replication_nat"
     weight: 101
@@ -13,17 +13,17 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/2.9.7/ops/mdc/v2/nat
-  - /riak/kv/2.9.7/ops/mdc/v2/nat
+  - /riak/3.0.1/ops/mdc/v2/nat
+  - /riak/kv/3.0.1/ops/mdc/v2/nat
   - /riak/latest/configuring/v2-multi-datacenter/nat/
   - /riak/kv/latest/configuring/v2-multi-datacenter/nat/
   - /riakkv/latest/configuring/v2-multi-datacenter/nat/
 ---
 
-[config v2 ssl]: {{<baseurl>}}riak/kv/2.9.7/configuring/v2-multi-datacenter/ssl
+[config v2 ssl]: {{<baseurl>}}riak/kv/3.0.1/configuring/v2-multi-datacenter/ssl
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/2.9.7/configuring/v3-multi-datacenter/nat/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.0.1/configuring/v3-multi-datacenter/nat/) instead.
 {{% /note %}}
 
 Riak supports replication of data on networks that use static

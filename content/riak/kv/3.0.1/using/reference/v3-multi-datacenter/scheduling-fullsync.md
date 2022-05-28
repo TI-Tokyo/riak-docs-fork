@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter Replication Reference:"
 title: "Scheduling Fullsync"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Scheduling Fullsync"
     identifier: "managing_ref_v3_fullsync"
     weight: 103
@@ -13,14 +13,14 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/2.9.7/ops/mdc/v3/scheduling-fullsync
-  - /riak/kv/2.9.7/ops/mdc/v3/scheduling-fullsync
+  - /riak/3.0.1/ops/mdc/v3/scheduling-fullsync
+  - /riak/kv/3.0.1/ops/mdc/v3/scheduling-fullsync
   - /riak/latest/using/reference/v3-multi-datacenter/scheduling-fullsync/
   - /riak/kv/latest/using/reference/v3-multi-datacenter/scheduling-fullsync/
   - /riakkv/latest/using/reference/v3-multi-datacenter/scheduling-fullsync/
 ---
 
-[config reference#advanced]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference/#advanced-configuration
+[config reference#advanced]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#advanced-configuration
 
 The `fullsync_interval` parameter can be configured in the `riak-repl`
 section of [`advanced.config`][config reference#advanced] with either:

@@ -1,20 +1,20 @@
 ---
-title: "Upgrading to Riak KV 2.9.7"
+title: "Upgrading to Riak KV 3.0.1"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
-    name: "Upgrading to 2.9.7"
+  riak_kv-3.0.1:
+    name: "Upgrading to 3.0.1"
     identifier: "upgrading_version"
     weight: 101
     parent: "upgrading"
 toc: true
 aliases:
-  - /riak/2.9.7/upgrade-v20/
-  - /riak/kv/2.9.7/ops/upgrading/rolling-upgrades/
-  - /riak/kv/2.9.7/ops/upgrading/rolling-upgrades/
-  - /riak/kv/2.9.7/setup/upgrading/cluster/
+  - /riak/3.0.1/upgrade-v20/
+  - /riak/kv/3.0.1/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.0.1/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.0.1/setup/upgrading/cluster/
 
   - /riak/kv/latest/setup/upgrading/version/
   - /riak/latest/setup/upgrading/version/
@@ -23,23 +23,23 @@ aliases:
 ---
 
 
-[production checklist]: {{<baseurl>}}riak/kv/2.9.7/setup/upgrading/checklist
-[use admin riak control]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak-control
-[use admin commands]: {{<baseurl>}}riak/kv/2.9.7/using/admin/commands
-[use admin riak admin]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak admin
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/secondary-indexes
-[release notes]: {{<baseurl>}}riak/kv/2.9.7/release-notes
+[production checklist]: {{<baseurl>}}riak/kv/3.0.1/setup/upgrading/checklist
+[use admin riak control]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak-control
+[use admin commands]: {{<baseurl>}}riak/kv/3.0.1/using/admin/commands
+[use admin riak admin]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/secondary-indexes
+[release notes]: {{<baseurl>}}riak/kv/3.0.1/release-notes
 [riak enterprise]: http://basho.com/products/riak-kv/
-[cluster ops mdc]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/v3-multi-datacenter
-[config v3 mdc]: {{<baseurl>}}riak/kv/2.9.7/configuring/v3-multi-datacenter
-[jmx monitor]: {{<baseurl>}}riak/kv/2.9.7/using/reference/jmx
-[snmp]: {{<baseurl>}}riak/kv/2.9.7/using/reference/snmp
-[Release Notes]: {{<baseurl>}}riak/kv/2.9.7/release-notes
+[cluster ops mdc]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/v3-multi-datacenter
+[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.1/configuring/v3-multi-datacenter
+[jmx monitor]: {{<baseurl>}}riak/kv/3.0.1/using/reference/jmx
+[snmp]: {{<baseurl>}}riak/kv/3.0.1/using/reference/snmp
+[Release Notes]: {{<baseurl>}}riak/kv/3.0.1/release-notes
 
 
 ## Overview
 
-You can upgrade one node or your whole cluster to Riak KV 2.9.7 by following the instructions below.
+You can upgrade one node or your whole cluster to Riak KV 3.0.1 by following the instructions below.
 
 {{% note title="Tip" %}} KV nodes negotiate with each other to determine supported operating modes. This allows clusters containing mixed-versions of Riak KV to interoperate without special configuration, and simplifies rolling upgrades.
 {{% /note %}}
@@ -75,7 +75,7 @@ The leveled backend is not compatible with other backends in terms of the serial
 * Then as a second phase run a rolling series of node transfers to replace the nodes with the previous backend, with nodes with the leveled backend.
 
 {{% note %}}
-You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 2.9.7 only if you plan to use Riak search.
+You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 3.0.1 only if you plan to use Riak search.
 {{% /note %}}
 
 
@@ -200,7 +200,7 @@ Once all of the clusters have been upgraded to version 2.2.0 or greater, this ov
 6\. Restart Riak KV:
 
 {{% note %}}
-You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 2.9.7 if you wish to use Riak search. If you do not have it installed, please install it now.
+You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 3.0.1 if you wish to use Riak search. If you do not have it installed, please install it now.
 {{% /note %}}
 
 

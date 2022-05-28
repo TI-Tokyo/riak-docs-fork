@@ -2,17 +2,17 @@
 title: "PBC Search"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Search"
     identifier: "pbc_search"
     weight: 109
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/protocol-buffers/search
-  - /riak/kv/2.9.7/dev/references/protocol-buffers/search
+  - /riak/3.0.1/dev/references/protocol-buffers/search
+  - /riak/kv/3.0.1/dev/references/protocol-buffers/search
   - /riak/latest/developing/api/protocol-buffers/search/
   - /riak/kv/latest/developing/api/protocol-buffers/search/
   - /riakkv/latest/developing/api/protocol-buffers/search/

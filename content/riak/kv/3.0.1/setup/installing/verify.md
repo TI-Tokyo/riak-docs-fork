@@ -2,29 +2,29 @@
 title: "Verifying a Riak KV Installation"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Verifying an Installation"
     identifier: "installing_verify"
     weight: 311
     parent: "installing"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/installing/Post-Installation
-  - /riak/kv/2.9.7/ops/installing/Post-Installation
-  - /riak/2.9.7/installing/verify-install/
-  - /riak/kv/2.9.7/installing/verify-install/
+  - /riak/3.0.1/ops/installing/Post-Installation
+  - /riak/kv/3.0.1/ops/installing/Post-Installation
+  - /riak/3.0.1/installing/verify-install/
+  - /riak/kv/3.0.1/installing/verify-install/
   - /riak/kv/latest/setup/installing/verify/
   - /riak/latest/setup/installing/verify/
   - /riak/kv/latest/setup/installing/verify/
   - /riakkv/latest/setup/installing/verify/
 ---
 
-[client libraries]: {{<baseurl>}}riak/kv/2.9.7/developing/client-libraries
-[perf open files]: {{<baseurl>}}riak/kv/2.9.7/using/performance/open-files-limit
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/bucket-types
-[cluster ops inspect node]: {{<baseurl>}}riak/kv/2.9.7/using/cluster-operations/inspecting-node
+[client libraries]: {{<baseurl>}}riak/kv/3.0.1/developing/client-libraries
+[perf open files]: {{<baseurl>}}riak/kv/3.0.1/using/performance/open-files-limit
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/bucket-types
+[cluster ops inspect node]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/inspecting-node
 
 After you've installed Riak KV, we recommend checking the liveness of
 each node to ensure that requests are being properly served.

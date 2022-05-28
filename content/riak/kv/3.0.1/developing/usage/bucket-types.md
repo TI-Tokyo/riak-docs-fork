@@ -2,17 +2,17 @@
 title: "Bucket Types"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Bucket Types"
     identifier: "usage_bucket_types"
     weight: 108
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/advanced/bucket-types
-  - /riak/kv/2.9.7/dev/advanced/bucket-types
+  - /riak/3.0.1/dev/advanced/bucket-types
+  - /riak/kv/3.0.1/dev/advanced/bucket-types
   - /riak/latest/developing/usage/bucket-types/
   - /riak/kv/latest/developing/usage/bucket-types/
   - /riakkv/latest/developing/usage/bucket-types/

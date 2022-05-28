@@ -2,17 +2,17 @@
 title: "Repairing Secondary Indexes"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Repair Secondary Indexes"
     identifier: "repair_recover_2i"
     weight: 105
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/running/recovery/repairing-indexes
-  - /riak/kv/2.9.7/ops/running/recovery/repairing-indexes
+  - /riak/3.0.1/ops/running/recovery/repairing-indexes
+  - /riak/kv/3.0.1/ops/running/recovery/repairing-indexes
   - /riak/latest/using/repair-recovery/secondary-indexes/
   - /riak/kv/latest/using/repair-recovery/secondary-indexes/
   - /riakkv/latest/using/repair-recovery/secondary-indexes/

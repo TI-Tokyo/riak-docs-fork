@@ -2,9 +2,9 @@
 title: "Write Once"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Write Once"
     identifier: "app_guide_write_once"
     weight: 102
@@ -13,17 +13,17 @@ toc: true
 version_history:
   in: "2.1.0+"
 aliases:
-  - /riak/2.9.7/dev/advanced/write-once
-  - /riak/kv/2.9.7/dev/advanced/write-once
+  - /riak/3.0.1/dev/advanced/write-once
+  - /riak/kv/3.0.1/dev/advanced/write-once
   - /riak/latest/developing/app-guide/write-once/
   - /riak/kv/latest/developing/app-guide/write-once/
   - /riakkv/latest/developing/app-guide/write-once/
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
-[bucket type]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/bucket-types
-[Riak data types]: {{<baseurl>}}riak/kv/2.9.7/developing/data-types
-[strong consistency]: {{<baseurl>}}riak/kv/2.9.7/developing/app-guide/strong-consistency
+[glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode
+[bucket type]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types
+[Riak data types]: {{<baseurl>}}riak/kv/3.0.1/developing/data-types
+[strong consistency]: {{<baseurl>}}riak/kv/3.0.1/developing/app-guide/strong-consistency
 
 Write-once buckets are buckets whose entries are intended to be written exactly once and never updated or overwritten. Buckets of this type circumvent the normal "coordinated PUT" path, which would otherwise result in a read on the coordinating vnode before the write. Avoiding coordinated PUTs results in higher throughput and lower PUT latency, though at the cost of different semantics in the degenerate case of sibling resolution.
 
@@ -152,7 +152,7 @@ LevelDB. Riak will automatically fall back to synchronous writes with all other
 backends.
 
 {{% note title="Note on the `multi` backend" %}}
-The [Multi]({{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/multi) backend does not
+The [Multi]({{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/multi) backend does not
 support asynchronous writes. Therefore, if LevelDB is used with the Multi
 backend, it will be used in synchronous mode.
 {{% /note %}}

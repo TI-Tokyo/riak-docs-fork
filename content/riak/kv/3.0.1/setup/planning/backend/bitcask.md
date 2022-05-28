@@ -2,17 +2,17 @@
 title: "Bitcask"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Bitcask"
     identifier: "planning_backend_bitcask"
     weight: 100
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak/2.9.7/ops/advanced/backends/bitcask/
-  - /riak/kv/2.9.7/ops/advanced/backends/bitcask/
+  - /riak/3.0.1/ops/advanced/backends/bitcask/
+  - /riak/kv/3.0.1/ops/advanced/backends/bitcask/
   - /riak/latest/setup/planning/backend/bitcask/
   - /riak/kv/latest/setup/planning/backend/bitcask/
   - /riakkv/latest/setup/planning/backend/bitcask/
@@ -20,18 +20,18 @@ aliases:
 
 [github bitcask]: https://github.com/basho/bitcask
 [bitcask design pdf]: http://basho.com/assets/bitcask-intro.pdf
-[use admin riak cli]: {{<baseurl>}}riak/kv/2.9.7/using/admin/riak-cli
-[config reference]: {{<baseurl>}}riak/kv/2.9.7/configuring/reference
-[glossary vnode]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#vnode
-[learn clusters]: {{<baseurl>}}riak/kv/2.9.7/learn/concepts/clusters
-[plan backend multi]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/backend/multi
-[usage search]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/search
+[use admin riak cli]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak-cli
+[config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference
+[glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode
+[learn clusters]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/clusters
+[plan backend multi]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/multi
+[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
 
-[glossary aae]: {{<baseurl>}}riak/kv/2.9.7/learn/glossary/#active-anti-entropy-aae
-[perf open files]: {{<baseurl>}}riak/kv/2.9.7/using/performance/open-files-limit
+[glossary aae]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#active-anti-entropy-aae
+[perf open files]: {{<baseurl>}}riak/kv/3.0.1/using/performance/open-files-limit
 
-[plan bitcask capacity]: {{<baseurl>}}riak/kv/2.9.7/setup/planning/bitcask-capacity-calc
-[usage delete objects]: {{<baseurl>}}riak/kv/2.9.7/developing/usage/deleting-objects
+[plan bitcask capacity]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/bitcask-capacity-calc
+[usage delete objects]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/deleting-objects
 
 [Bitcask][github bitcask] is an Erlang application that provides an API for storing and retrieving key/value data using log-structured hash tables that provide very fast access. The [design][bitcask design pdf] of Bitcask was inspired, in part, by log-structured filesystems and log file merging.
 

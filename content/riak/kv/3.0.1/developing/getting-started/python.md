@@ -2,17 +2,17 @@
 title: "Getting Started with Python"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Python"
     identifier: "getting_started_python"
     weight: 102
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/python
-  - /riak/kv/2.9.7/dev/taste-of-riak/python
+  - /riak/3.0.1/dev/taste-of-riak/python
+  - /riak/kv/3.0.1/dev/taste-of-riak/python
   - /riak/latest/developing/getting-started/python/
   - /riak/kv/latest/developing/getting-started/python/
   - /riakkv/latest/developing/getting-started/python/
@@ -20,7 +20,7 @@ aliases:
 
 
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.7/using/running-a-cluster) first.
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.0.1/using/running-a-cluster) first.
 
 To try this flavor of Riak, a working installation of Python is
 required, with Python 2.7 preferred. One of the Python package managers,
@@ -114,7 +114,7 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/2.9.7/developing/getting-started/python/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/3.0.1/developing/getting-started/python/crud-operations)
 
 
 

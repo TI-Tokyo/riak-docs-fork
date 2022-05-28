@@ -2,17 +2,17 @@
 title: "Getting Started with Ruby"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Ruby"
     identifier: "getting_started_ruby"
     weight: 101
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/taste-of-riak/ruby
-  - /riak/kv/2.9.7/dev/taste-of-riak/ruby
+  - /riak/3.0.1/dev/taste-of-riak/ruby
+  - /riak/kv/3.0.1/dev/taste-of-riak/ruby
   - /riak/latest/developing/getting-started/ruby/
   - /riak/kv/latest/developing/getting-started/ruby/
   - /riakkv/latest/developing/getting-started/ruby/
@@ -20,7 +20,7 @@ aliases:
 
 
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.7/using/running-a-cluster) first. To try this flavor
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.0.1/using/running-a-cluster) first. To try this flavor
 of Riak, a working installation of Ruby is required.
 
 ## Client Setup
@@ -64,7 +64,7 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/2.9.7/developing/getting-started/ruby/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/3.0.1/developing/getting-started/ruby/crud-operations)
 
 
 

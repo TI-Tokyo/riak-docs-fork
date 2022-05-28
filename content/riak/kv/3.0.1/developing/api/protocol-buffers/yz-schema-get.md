@@ -2,23 +2,23 @@
 title: "PBC Yokozuna Schema Get"
 description: ""
 project: "riak_kv"
-project_version: 2.9.7
+project_version: 3.0.1
 menu:
-  riak_kv-2.9.7:
+  riak_kv-3.0.1:
     name: "Yokozuna Schema Get"
     identifier: "pbc_yz_schema_get"
     weight: 123
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/2.9.7/dev/references/protocol-buffers/yz-schema-get
-  - /riak/kv/2.9.7/dev/references/protocol-buffers/yz-schema-get
+  - /riak/3.0.1/dev/references/protocol-buffers/yz-schema-get
+  - /riak/kv/3.0.1/dev/references/protocol-buffers/yz-schema-get
   - /riak/latest/developing/api/protocol-buffers/yz-schema-get/
   - /riak/kv/latest/developing/api/protocol-buffers/yz-schema-get/
   - /riakkv/latest/developing/api/protocol-buffers/yz-schema-get/
 ---
 
-Fetch a [search schema]({{<baseurl>}}riak/kv/2.9.7/developing/usage/search-schemas) from Riak Search.
+Fetch a [search schema]({{<baseurl>}}riak/kv/3.0.1/developing/usage/search-schemas) from Riak Search.
 
 ## Request
 
