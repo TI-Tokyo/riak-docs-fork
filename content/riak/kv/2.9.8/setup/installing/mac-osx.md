@@ -41,7 +41,7 @@ appropriate platform:
 ### 64-bit
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.8/osx/10.11/riak-2.9.8-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.9/2.9.8/osx/10.11/riak-2.9.8-OSX-x86_64.tar.gz
 tar xzvf riak-2.9.8-osx-x86_64.tar.gz
 ```
 
@@ -101,7 +101,7 @@ If you do not have Erlang already installed, see [Installing Erlang][install sou
 Next, download and unpack the source distribution.
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.8/riak-2.9.8.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.9/2.9.8/riak-2.9.8.tar.gz
 tar zxvf riak-2.9.8.tar.gz
 cd riak-2.9.8
 make rel

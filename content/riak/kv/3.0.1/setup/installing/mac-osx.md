@@ -45,7 +45,7 @@ appropriate platform:
 ### 64-bit
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/3.0.1/osx/10.11/riak-3.0.1-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/kv/3.0/3.0.1/osx/10.11/riak-3.0.1-OSX-x86_64.tar.gz
 tar xzvf riak-3.0.1-osx-x86_64.tar.gz
 ```
 
@@ -105,7 +105,7 @@ If you do not have Erlang already installed, see [Installing Erlang][install sou
 Next, download and unpack the source distribution.
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/3.0.1/riak-3.0.1.tar.gz
+curl -O https://files.tiot.jp/riak/kv/3.0/3.0.1/riak-3.0.1.tar.gz
 tar zxvf riak-3.0.1.tar.gz
 cd riak-3.0.1
 make rel

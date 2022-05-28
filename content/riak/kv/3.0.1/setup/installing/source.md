@@ -64,7 +64,7 @@ or cloned source.
 Download the Riak source package from the [Download Center][downloads] and build:
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/3.0.1/riak-3.0.1.tar.gz
+curl -O https://files.tiot.jp/riak/kv/3.0/3.0.1/riak-3.0.1.tar.gz
 tar zxvf riak-3.0.1.tar.gz
 cd riak-3.0.1
 make locked-deps
