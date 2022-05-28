@@ -104,7 +104,9 @@ generateVersionLists = () ->
         #     z-index, the scrollbar of a __sizing-box may be partially covered
         #     by the padding of a selector-list immediately to its right.
         archived_class = ''
-        if archive_below and release_set[0] < archive_below
+        # Make hidden if archive_below is set, the series is below that level, and the current_version is 
+        # more than the highest in the series (i.e. current_version = 2.0.9 should make all 2.0.x visible).
+        if archive_below and release_set[0] < archive_below and release_set[release_set.length-1] < current_version
           archived_class = ' release-is-archived-and-hidden'
           has_archived = true
 
