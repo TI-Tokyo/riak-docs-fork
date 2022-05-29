@@ -20,7 +20,7 @@ aliases:
 
 
 
-[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
+[install verify]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/verify
 
 {{% note title="Solaris End of Life (EOL) for Riak KV 2.2.0" %}}
 Solaris is no longer supported in Riak KV 2.2.1+. If you are interested in using Riak KV on Solaris, you can still [build from source](../source). The steps below have been left here for reference only and are no longer maintained.
