@@ -47,19 +47,9 @@ Below is the example output if there is one Search index, called
 
 #### Typical Error Codes
 
-* `404 Object Not Found`
-  - /riak/latest/developing/api/http/search-index-info/
-  - /riak/kv/latest/developing/api/http/search-index-info/
-  - /riakkv/latest/developing/api/http/search-index-info/
----
-Typically returned if Riak Search is not
+* `404 Object Not Found` - Typically returned if Riak Search is not
     currently enabled on the node
-* `503 Service Unavailable`
-  - /riak/latest/developing/api/http/search-index-info/
-  - /riak/kv/latest/developing/api/http/search-index-info/
-  - /riakkv/latest/developing/api/http/search-index-info/
----
-The request timed out internally
+* `503 Service Unavailable` - The request timed out internally
 
 
 
