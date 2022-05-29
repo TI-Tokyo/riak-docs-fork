@@ -42,7 +42,7 @@ The system is now stable under specific load tests designed to trigger AAE failu
 
 ## Previous Release Notes
 
-Please see the KV 2.9.4 release notes [here]({{<baseurl>}}riak/kv/2.9.2/release-notes/), the KV 2.9.2 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/), and the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.0p5/release-notes/).
+Please see the KV 2.9.4 release notes [here]({{<baseurl>}}riak/kv/2.9.2/release-notes/), the KV 2.9.2 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/), and the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.7/release-notes/).
 
 
 
