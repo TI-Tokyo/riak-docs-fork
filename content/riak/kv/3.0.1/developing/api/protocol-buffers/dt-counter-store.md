@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/dt-counter-store
   - /riak/kv/3.0.1/dev/references/protocol-buffers/dt-counter-store
-  - /riak/latest/developing/api/protocol-buffers/dt-counter-store/
-  - /riak/kv/latest/developing/api/protocol-buffers/dt-counter-store/
-  - /riakkv/latest/developing/api/protocol-buffers/dt-counter-store/
+
 ---
 
 An operation to update a [counter]({{<baseurl>}}riak/kv/3.0.1/developing/data-types).

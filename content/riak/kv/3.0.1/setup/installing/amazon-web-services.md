@@ -16,10 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-on-AWS-Marketplace
   - /riak/3.0.1/installing/amazon-web-services/
   - /riak/kv/3.0.1/installing/amazon-web-services/
-  - /riak/kv/latest/setup/installing/amazon-web-services/
-  - /riak/latest/setup/installing/amazon-web-services/
-  - /riak/kv/latest/setup/installing/amazon-web-services/
-  - /riakkv/latest/setup/installing/amazon-web-services/
+
 ---
 
 

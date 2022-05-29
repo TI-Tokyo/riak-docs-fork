@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/data-modeling/
   - /riak/kv/3.0.1/dev/data-modeling/
-  - /riak/latest/learn/use-cases/
-  - /riak/kv/latest/learn/use-cases/
-  - /riakkv/latest/learn/use-cases/
+
 ---
 
 

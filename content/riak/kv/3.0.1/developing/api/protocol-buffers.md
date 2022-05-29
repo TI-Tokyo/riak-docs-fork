@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers
   - /riak/kv/3.0.1/dev/references/protocol-buffers
-  - /riak/latest/developing/api/protocol-buffers/
-  - /riak/kv/latest/developing/api/protocol-buffers/
-  - /riakkv/latest/developing/api/protocol-buffers/
+
 ---
 
 This is an overview of the operations you can perform using the
@@ -136,18 +134,8 @@ message RpbErrorResp {
 
 ### Values
 
-* `errmsg`
-  - /riak/latest/developing/api/protocol-buffers/
-  - /riak/kv/latest/developing/api/protocol-buffers/
-  - /riakkv/latest/developing/api/protocol-buffers/
----
-A string representation of what went wrong
-* `errcode`
-  - /riak/latest/developing/api/protocol-buffers/
-  - /riak/kv/latest/developing/api/protocol-buffers/
-  - /riakkv/latest/developing/api/protocol-buffers/
----
-A numeric code. Currently, only `RIAKC_ERR_GENERAL=1`
+* `errmsg) - A string representation of what went wrong
+* `errcode) - A numeric code. Currently, only `RIAKC_ERR_GENERAL=1`
   is defined.
 
 ## Bucket Operations

@@ -11,10 +11,7 @@ menu:
     pre: beaker
 toc: true
 aliases:
-  - /riak/kv/latest/learn/
-  - /riak/latest/learn/
-  - /riak/kv/latest/learn/
-  - /riakkv/latest/learn/
+
 ---
 
 [learn why riak]: ./why-riak-kv/

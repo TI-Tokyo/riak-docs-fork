@@ -15,9 +15,7 @@ aliases:
   - /riak/kv/3.0.1/theory/concepts/Buckets
   - /riak/3.0.1/theory/concepts/buckets
   - /riak/kv/3.0.1/theory/concepts/buckets
-  - /riak/latest/learn/concepts/buckets/
-  - /riak/kv/latest/learn/concepts/buckets/
-  - /riakkv/latest/learn/concepts/buckets/
+
 ---
 
 [apps cluster metadata]: {{<baseurl>}}riak/kv/3.0.1/developing/app-guide/cluster-metadata

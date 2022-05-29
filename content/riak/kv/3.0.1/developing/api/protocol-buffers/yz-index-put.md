@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/yz-index-put
   - /riak/kv/3.0.1/dev/references/protocol-buffers/yz-index-put
-  - /riak/latest/developing/api/protocol-buffers/yz-index-put/
-  - /riak/kv/latest/developing/api/protocol-buffers/yz-index-put/
-  - /riakkv/latest/developing/api/protocol-buffers/yz-index-put/
+
 ---
 
 Create a new index or modify an existing index.

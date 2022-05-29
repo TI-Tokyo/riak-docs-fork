@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/using/conflict-resolution/java
   - /riak/kv/3.0.1/dev/using/conflict-resolution/java
-  - /riak/latest/developing/usage/conflict-resolution/java/
-  - /riak/kv/latest/developing/usage/conflict-resolution/java/
-  - /riakkv/latest/developing/usage/conflict-resolution/java/
+
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/3.0.1/developing/usage/conflict-resolution), we strongly recommend adopting a

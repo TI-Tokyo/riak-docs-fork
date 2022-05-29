@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/get-bucket-props
   - /riak/kv/3.0.1/dev/references/protocol-buffers/get-bucket-props
-  - /riak/latest/developing/api/protocol-buffers/get-bucket-props/
-  - /riak/kv/latest/developing/api/protocol-buffers/get-bucket-props/
-  - /riakkv/latest/developing/api/protocol-buffers/get-bucket-props/
+
 ---
 
 Fetch a bucket's properties.

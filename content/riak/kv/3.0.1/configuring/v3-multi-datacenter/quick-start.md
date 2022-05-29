@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v3/quick-start
   - /riak/kv/3.0.1/ops/mdc/v3/quick-start
-  - /riak/latest/configuring/v3-multi-datacenter/quick-start/
-  - /riak/kv/latest/configuring/v3-multi-datacenter/quick-start/
-  - /riakkv/latest/configuring/v3-multi-datacenter/quick-start/
+
 ---
 
 [perf index]: {{<baseurl>}}riak/kv/3.0.1/using/performance

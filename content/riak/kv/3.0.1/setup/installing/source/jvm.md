@@ -17,9 +17,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-the-JVM
   - /riak/3.0.1/installing/source/jvm/
   - /riak/kv/3.0.1/installing/source/jvm/
-  - /riak/latest/setup/installing/source/jvm/
-  - /riak/kv/latest/setup/installing/source/jvm/
-  - /riakkv/latest/setup/installing/source/jvm/
+
 ---
 
 [usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search

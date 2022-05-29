@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http/counters
   - /riak/kv/3.0.1/dev/references/http/counters
-  - /riak/latest/developing/api/http/counters/
-  - /riak/kv/latest/developing/api/http/counters/
-  - /riakkv/latest/developing/api/http/counters/
+
 ---
 
 Riak counters are a CRDT (convergent replicated data type) that (eventually)

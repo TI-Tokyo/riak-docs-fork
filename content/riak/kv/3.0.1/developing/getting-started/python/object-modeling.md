@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/object-modeling-python
   - /riak/kv/3.0.1/dev/taste-of-riak/object-modeling-python
-  - /riak/latest/developing/getting-started/python/object-modeling/
-  - /riak/kv/latest/developing/getting-started/python/object-modeling/
-  - /riakkv/latest/developing/getting-started/python/object-modeling/
+
 ---
 
 To get started, let's create the data structures that we'll be using.

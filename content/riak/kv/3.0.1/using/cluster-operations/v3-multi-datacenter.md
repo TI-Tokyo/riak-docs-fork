@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v3/operations
   - /riak/kv/3.0.1/ops/mdc/v3/operations
-  - /riak/latest/using/cluster-operations/v3-multi-datacenter/
-  - /riak/kv/latest/using/cluster-operations/v3-multi-datacenter/
-  - /riakkv/latest/using/cluster-operations/v3-multi-datacenter/
+
 ---
 
 [config v3 mdc]: {{<baseurl>}}riak/kv/3.0.1/configuring/v3-multi-datacenter

@@ -12,9 +12,7 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/latest/add-ons/redis/redis-add-on-features/
-  - /riak/kv/latest/add-ons/redis/redis-add-on-features/
-  - /riakkv/latest/add-ons/redis/redis-add-on-features/
+
 ---
 
 [ee]: https://www.tiot.jp/en/about-us/contact-us/

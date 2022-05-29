@@ -11,9 +11,7 @@ menu:
     parent: "learn"
 toc: true
 aliases:
-  - /riak/latest/learn/glossary/
-  - /riak/kv/latest/learn/glossary/
-  - /riakkv/latest/learn/glossary/
+
 ---
 
 

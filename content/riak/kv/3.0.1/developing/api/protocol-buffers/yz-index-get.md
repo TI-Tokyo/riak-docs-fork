@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/yz-index-get
   - /riak/kv/3.0.1/dev/references/protocol-buffers/yz-index-get
-  - /riak/latest/developing/api/protocol-buffers/yz-index-get/
-  - /riak/kv/latest/developing/api/protocol-buffers/yz-index-get/
-  - /riakkv/latest/developing/api/protocol-buffers/yz-index-get/
+
 ---
 
 Retrieve a search index from Riak Search.

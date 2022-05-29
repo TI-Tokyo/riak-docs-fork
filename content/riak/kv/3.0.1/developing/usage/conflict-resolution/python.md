@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/using/conflict-resolution/python
   - /riak/kv/3.0.1/dev/using/conflict-resolution/python
-  - /riak/latest/developing/usage/conflict-resolution/python/
-  - /riak/kv/latest/developing/usage/conflict-resolution/python/
-  - /riakkv/latest/developing/usage/conflict-resolution/python/
+
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/3.0.1/developing/usage/conflict-resolution), we strongly recommend adopting a

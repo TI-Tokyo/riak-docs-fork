@@ -11,9 +11,7 @@ menu:
     parent: "planning"
 toc: true
 aliases:
-  - /riak/latest/setup/planning/operating-system/
-  - /riak/kv/latest/setup/planning/operating-system/
-  - /riakkv/latest/setup/planning/operating-system/
+
 ---
 
 [downloads]: {{<baseurl>}}riak/kv/3.0.1/downloads/

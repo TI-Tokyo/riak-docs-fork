@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/building/basic-cluster-setup
   - /riak/kv/3.0.1/ops/building/basic-cluster-setup
-  - /riak/latest/using/running-a-cluster/
-  - /riak/kv/latest/using/running-a-cluster/
-  - /riakkv/latest/using/running-a-cluster/
+
 ---
 
 Configuring a Riak cluster involves instructing each node to listen on a

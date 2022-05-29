@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/using/search
   - /riak/kv/3.0.1/dev/using/search
-  - /riak/latest/developing/usage/search/
-  - /riak/kv/latest/developing/usage/search/
-  - /riakkv/latest/developing/usage/search/
+
 ---
 
 [usage search schema]: ../search-schemas/

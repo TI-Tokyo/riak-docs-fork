@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v3/nat
   - /riak/kv/3.0.1/ops/mdc/v3/nat
-  - /riak/latest/configuring/v3-multi-datacenter/nat/
-  - /riak/kv/latest/configuring/v3-multi-datacenter/nat/
-  - /riakkv/latest/configuring/v3-multi-datacenter/nat/
+
 ---
 
 [config v3 ssl]: {{<baseurl>}}riak/kv/3.0.1/configuring/v3-multi-datacenter/ssl

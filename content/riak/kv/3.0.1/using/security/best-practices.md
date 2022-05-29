@@ -12,9 +12,7 @@ menu:
     parent: "managing_security"
 toc: true
 aliases:
-  - /riak/latest/using/security/best-practices/
-  - /riak/kv/latest/using/security/best-practices/
-  - /riakkv/latest/using/security/best-practices/
+
 ---
 
 ## Hanc capellae

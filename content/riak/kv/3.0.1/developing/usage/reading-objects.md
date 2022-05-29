@@ -11,9 +11,7 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak/latest/developing/usage/reading-objects/
-  - /riak/kv/latest/developing/usage/reading-objects/
-  - /riakkv/latest/developing/usage/reading-objects/
+
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode

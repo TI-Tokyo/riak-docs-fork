@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/kv/3.0.1/ops/tuning/linux/
   - /riak/3.0.1/ops/tuning/linux/
-  - /riak/latest/using/performance/
-  - /riak/kv/latest/using/performance/
-  - /riakkv/latest/using/performance/
+
 ---
 
 Many Unix-like operating systems and distributions are tuned for desktop

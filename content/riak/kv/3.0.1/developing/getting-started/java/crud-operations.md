@@ -12,9 +12,7 @@ menu:
     parent: "getting_started_java"
 toc: true
 aliases:
-  - /riak/latest/developing/getting-started/java/crud-operations/
-  - /riak/kv/latest/developing/getting-started/java/crud-operations/
-  - /riakkv/latest/developing/getting-started/java/crud-operations/
+
 ---
 
 ## Creating Objects in Riak

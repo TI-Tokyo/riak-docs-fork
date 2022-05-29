@@ -15,9 +15,7 @@ aliases:
   - /riak/kv/3.0.1/theory/concepts/Eventual-Consistency
   - /riak/3.0.1/theory/concepts/eventual-consistency
   - /riak/kv/3.0.1/theory/concepts/eventual-consistency
-  - /riak/latest/learn/concepts/eventual-consistency/
-  - /riak/kv/latest/learn/concepts/eventual-consistency/
-  - /riakkv/latest/learn/concepts/eventual-consistency/
+
 ---
 
 

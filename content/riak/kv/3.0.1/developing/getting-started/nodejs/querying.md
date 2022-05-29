@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/querying-nodejs
   - /riak/kv/3.0.1/dev/taste-of-riak/querying-nodejs
-  - /riak/latest/developing/getting-started/nodejs/querying/
-  - /riak/kv/latest/developing/getting-started/nodejs/querying/
-  - /riakkv/latest/developing/getting-started/nodejs/querying/
+
 ---
 
 ## Node.js Version Setup

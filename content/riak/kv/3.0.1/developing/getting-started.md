@@ -11,9 +11,7 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak/latest/developing/getting-started/
-  - /riak/kv/latest/developing/getting-started/
-  - /riakkv/latest/developing/getting-started/
+
 ---
 
 [install index]: {{<baseurl>}}riak/kv/3.0.1/setup/installing

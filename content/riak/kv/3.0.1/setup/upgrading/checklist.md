@@ -13,10 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/upgrading/production-checklist/
   - /riak/kv/3.0.1/ops/upgrading/production-checklist/
-  - /riak/kv/latest/setup/upgrading/checklist/
-  - /riak/latest/setup/upgrading/checklist/
-  - /riak/kv/latest/setup/upgrading/checklist/
-  - /riakkv/latest/setup/upgrading/checklist/
+
 ---
 
 [perf open files]: {{<baseurl>}}riak/kv/3.0.1/using/performance/open-files-limit

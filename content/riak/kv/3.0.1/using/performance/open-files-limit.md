@@ -13,10 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/tuning/open-files-limit/
   - /riak/kv/3.0.1/ops/tuning/open-files-limit/
-  - /riak/latest/using/performance/open-files-limit/
-  - /riak/kv/latest/using/performance/open-files-limit/
-  - /riakkv/latest/using/performance/open-files-limit/
-  - /riak/kv/latest/ops/tuning/open-files-limit/
+
 ---
 
 [plan backend]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/

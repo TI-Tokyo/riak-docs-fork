@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http
   - /riak/kv/3.0.1/dev/references/http
-  - /riak/latest/developing/api/http/
-  - /riak/kv/latest/developing/api/http/
-  - /riakkv/latest/developing/api/http/
+
 ---
 
 Riak has a rich, full-featured HTTP 1.1 API. This is an overview of the

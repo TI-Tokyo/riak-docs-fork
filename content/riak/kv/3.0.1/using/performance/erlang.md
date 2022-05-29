@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/tuning/erlang
   - /riak/kv/3.0.1/ops/tuning/erlang
-  - /riak/latest/using/performance/erlang/
-  - /riak/kv/latest/using/performance/erlang/
-  - /riakkv/latest/using/performance/erlang/
+
 ---
 
 Riak was written almost exclusively in [Erlang](http://www.erlang.org)

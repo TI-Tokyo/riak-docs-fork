@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/advanced/riak-control
   - /riak/kv/3.0.1/ops/advanced/riak-control
-  - /riak/latest/using/admin/riak-control/
-  - /riak/kv/latest/using/admin/riak-control/
-  - /riakkv/latest/using/admin/riak-control/
+
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference

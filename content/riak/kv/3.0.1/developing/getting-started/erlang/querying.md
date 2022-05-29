@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/querying-erlang
   - /riak/kv/3.0.1/dev/taste-of-riak/querying-erlang
-  - /riak/latest/developing/getting-started/erlang/querying/
-  - /riak/kv/latest/developing/getting-started/erlang/querying/
-  - /riakkv/latest/developing/getting-started/erlang/querying/
+
 ---
 
 

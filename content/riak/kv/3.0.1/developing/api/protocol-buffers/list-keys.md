@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/list-keys
   - /riak/kv/3.0.1/dev/references/protocol-buffers/list-keys
-  - /riak/latest/developing/api/protocol-buffers/list-keys/
-  - /riak/kv/latest/developing/api/protocol-buffers/list-keys/
-  - /riakkv/latest/developing/api/protocol-buffers/list-keys/
+
 ---
 
 List all of the keys in a bucket. This is a streaming call, with
@@ -36,12 +34,7 @@ message RpbListKeysReq {
 
 Optional Parameters
 
-* `bucket`
-  - /riak/latest/developing/api/protocol-buffers/list-keys/
-  - /riak/kv/latest/developing/api/protocol-buffers/list-keys/
-  - /riakkv/latest/developing/api/protocol-buffers/list-keys/
----
-bucket to get keys from
+* `bucket) - bucket to get keys from
 
 ## Response
 

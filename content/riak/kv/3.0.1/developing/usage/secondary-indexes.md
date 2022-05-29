@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/using/2i
   - /riak/kv/3.0.1/dev/using/2i
-  - /riak/latest/developing/usage/secondary-indexes/
-  - /riak/kv/latest/developing/usage/secondary-indexes/
-  - /riakkv/latest/developing/usage/secondary-indexes/
+
 ---
 
 [plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/leveldb
@@ -860,32 +858,12 @@ curl -v -XPUT 127.0.0.1:8098/types/indexes/buckets/people/keys/veronica \
 The above objects will end up having the following secondary indexes,
 respectively:
 
-* `Larry`
-  - /riak/latest/developing/usage/secondary-indexes/
-  - /riak/kv/latest/developing/usage/secondary-indexes/
-  - /riakkv/latest/developing/usage/secondary-indexes/
----
-Binary index `field1_bin` and integer index `field2_int`
-* `Moe`
-  - /riak/latest/developing/usage/secondary-indexes/
-  - /riak/kv/latest/developing/usage/secondary-indexes/
-  - /riakkv/latest/developing/usage/secondary-indexes/
----
-Binary index `field1_bin` and integer index `field2_int`
+* `Larry) - Binary index `field1_bin` and integer index `field2_int`
+* `Moe) - Binary index `field1_bin` and integer index `field2_int`
   (note that the index names are set to lowercase by Riak)
-* `Curly`
-  - /riak/latest/developing/usage/secondary-indexes/
-  - /riak/kv/latest/developing/usage/secondary-indexes/
-  - /riakkv/latest/developing/usage/secondary-indexes/
----
-Binary index `field1_bin` and integer index `field2_int`
+* `Curly) - Binary index `field1_bin` and integer index `field2_int`
   (note again that the index names are set to lowercase)
-* `Veronica`
-  - /riak/latest/developing/usage/secondary-indexes/
-  - /riak/kv/latest/developing/usage/secondary-indexes/
-  - /riakkv/latest/developing/usage/secondary-indexes/
----
-Binary index `field1_bin` with the values `val4`,
+* `Veronica) - Binary index `field1_bin` with the values `val4`,
   `val4a`, and `val4b` and integer index `field2_int` with the values
   `1004`, `1005`, `1006`, and `1007` (note that redundancies have been removed)
 

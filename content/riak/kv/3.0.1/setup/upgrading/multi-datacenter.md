@@ -12,10 +12,7 @@ project_version: 3.0.1
 #    parent: "upgrading"
 toc: true
 aliases:
-  - /riak/kv/latest/setup/upgrading/multi-datacenter/
-  - /riak/latest/setup/upgrading/multi-datacenter/
-  - /riak/kv/latest/setup/upgrading/multi-datacenter/
-  - /riakkv/latest/setup/upgrading/multi-datacenter/
+
 ---
 
 ## TODO

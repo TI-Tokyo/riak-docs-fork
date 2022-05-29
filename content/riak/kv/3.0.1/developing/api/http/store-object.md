@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http/store-object
   - /riak/kv/3.0.1/dev/references/http/store-object
-  - /riak/latest/developing/api/http/store-object/
-  - /riak/kv/latest/developing/api/http/store-object/
-  - /riakkv/latest/developing/api/http/store-object/
+
 ---
 
 Stores an object under the specified bucket / key. Storing an object comes in

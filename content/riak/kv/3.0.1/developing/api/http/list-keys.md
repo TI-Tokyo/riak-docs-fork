@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http/list-keys
   - /riak/kv/3.0.1/dev/references/http/list-keys
-  - /riak/latest/developing/api/http/list-keys/
-  - /riak/kv/latest/developing/api/http/list-keys/
-  - /riakkv/latest/developing/api/http/list-keys/
+
 ---
 
 Lists keys in a bucket.

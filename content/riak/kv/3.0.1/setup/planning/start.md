@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/building/planning/system-planning
   - /riak/kv/3.0.1/ops/building/planning/system-planning
-  - /riak/latest/setup/planning/start/
-  - /riak/kv/latest/setup/planning/start/
-  - /riakkv/latest/setup/planning/start/
+
 ---
 
 [plan backend]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend

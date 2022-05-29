@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/building/configuration/
   - /riak/kv/3.0.1/ops/building/configuration/
-  - /riak/latest/configuring/basic/
-  - /riak/kv/latest/configuring/basic/
-  - /riakkv/latest/configuring/basic/
+
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference

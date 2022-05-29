@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http/store-search-index
   - /riak/kv/3.0.1/dev/references/http/store-search-index
-  - /riak/latest/developing/api/http/store-search-index
-  - /riak/kv/latest/developing/api/http/store-search-index
-  - /riakkv/latest/developing/api/http/store-search-index
+
 ---
 
 Creates a new Riak Search [index]({{<baseurl>}}riak/kv/3.0.1/developing/usage/search/#simple-setup).
@@ -46,28 +44,13 @@ More information can be found in [Using Search]({{<baseurl>}}riak/kv/3.0.1/devel
 
 ## Normal Response Codes
 
-* `204 No Content`
-  - /riak/latest/developing/api/http/store-search-
-  - /riak/kv/latest/developing/api/http/store-search-
-  - /riakkv/latest/developing/api/http/store-search-
----
-The index has been successfully created
+* `204 No Content) - The index has been successfully created
 
 ## Typical Error Codes
 
-* `409 Conflict`
-  - /riak/latest/developing/api/http/store-search-
-  - /riak/kv/latest/developing/api/http/store-search-
-  - /riakkv/latest/developing/api/http/store-search-
----
-The index cannot be created because there is
+* `409 Conflict) - The index cannot be created because there is
     already an index with that name
-* `503 Service Unavailable`
-  - /riak/latest/developing/api/http/store-search-
-  - /riak/kv/latest/developing/api/http/store-search-
-  - /riakkv/latest/developing/api/http/store-search-
----
-The request timed out internally
+* `503 Service Unavailable) - The request timed out internally
 
 
 

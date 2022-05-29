@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http/list-buckets
   - /riak/kv/3.0.1/dev/references/http/list-buckets
-  - /riak/latest/developing/api/http/list-buckets/
-  - /riak/kv/latest/developing/api/http/list-buckets/
-  - /riakkv/latest/developing/api/http/list-buckets/
+
 ---
 
 Lists all known buckets (ones that have keys stored in them).

@@ -12,9 +12,7 @@ menu:
     parent: "managing_security"
 toc: true
 aliases:
-  - /riak/latest/using/security/v2-v3-ssl-ca/
-  - /riak/kv/latest/using/security/v2-v3-ssl-ca/
-  - /riakkv/latest/using/security/v2-v3-ssl-ca/
+
 ---
 
 ## Hanc capellae

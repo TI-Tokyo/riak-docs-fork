@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/advanced/security
   - /riak/kv/3.0.1/ops/advanced/security
-  - /riak/latest/using/security/
-  - /riak/kv/latest/using/security/
-  - /riakkv/latest/using/security/
+
 ---
 
 [config reference search]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#search

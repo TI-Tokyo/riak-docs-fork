@@ -12,9 +12,7 @@ project_version: 3.0.1
 #    parent: "planning"
 toc: true
 aliases:
-  - /riak/latest/setup/planning/future/
-  - /riak/kv/latest/setup/planning/future/
-  - /riakkv/latest/setup/planning/future/
+
 ---
 
 **TODO: Add content**

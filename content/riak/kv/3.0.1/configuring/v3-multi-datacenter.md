@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v3/configuration
   - /riak/kv/3.0.1/ops/mdc/v3/configuration
-  - /riak/latest/configuring/v3-multi-datacenter/
-  - /riak/kv/latest/configuring/v3-multi-datacenter/
-  - /riakkv/latest/configuring/v3-multi-datacenter/
+
 ---
 
 [config reference#advanced]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#advanced-configuration

@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/object-modeling-java
   - /riak/kv/3.0.1/dev/taste-of-riak/object-modeling-java
-  - /riak/latest/developing/getting-started/java/object-modeling/
-  - /riak/kv/latest/developing/getting-started/java/object-modeling/
-  - /riakkv/latest/developing/getting-started/java/object-modeling/
+
 ---
 
 To get started, let's create the models that we'll be using.

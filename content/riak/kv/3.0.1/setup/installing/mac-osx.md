@@ -16,10 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-on-Mac-OS-X
   - /riak/3.0.1/installing/mac-osx/
   - /riak/kv/3.0.1/installing/mac-osx/
-  - /riak/kv/latest/setup/installing/mac-osx/
-  - /riak/latest/setup/installing/mac-osx/
-  - /riak/kv/latest/setup/installing/mac-osx/
-  - /riakkv/latest/setup/installing/mac-osx/
+
 ---
 
 

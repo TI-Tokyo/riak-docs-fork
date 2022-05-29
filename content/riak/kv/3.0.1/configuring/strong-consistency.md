@@ -11,9 +11,7 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
+
 ---
 
 [apps strong consistency]: {{<baseurl>}}riak/kv/3.0.1/developing/app-guide/strong-consistency
@@ -317,31 +315,7 @@ Item | Meaning
 `Ring Ready` | If `true`, then all of the [vnodes][glossary vnode] in the cluster have seen the current <a href="{{<baseurl>}}riak/kv/3.0.1/learn/concepts/clusters/#the-ring">ring</a>, which means that the strong consistency subsystem can be used; if `false`, then the system is not yet ready. If you have recently added or removed one or more nodes to/from the cluster, it may take some time for `Ring Ready` to change.
 `Validation` | This will display `strong` if the `tree_validation` setting in <code><a href="{{<baseurl>}}riak/kv/3.0.1/configuring/reference/#strong-consistency">riak.conf</a></code> has been set to `on` and `weak` if set to `off`.
 `Metadata` | This depends on the value of the `synchronous_tree_updates` setting in <code><a href="{{<baseurl>}}riak/kv/3.0.1/configuring/reference/#strong-consistency">riak.conf</a></code>, which determines whether strong consistency-related Merkle trees are updated synchronously or asynchronously. If `best-effort replication (asynchronous)`, then `synchronous_tree_updates` is set to `false`; if `guaranteed replication (synchronous)` then `synchronous_tree_updates` is set to `true`.
-`Ensembles` | This displays a list of all of the currently existing ensembles active in the cluster.<br /><ul><li><code>Ensemble</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-The ID of the ensemble</li><li><code>Quorum</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-The number of ensemble peers that are either leading or following</li><li><code>Nodes</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-The number of nodes currently online</li><li><code>Leader</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-The current leader node for the ensemble</li></ul>
+`Ensembles` | This displays a list of all of the currently existing ensembles active in the cluster.<br /><ul><li><code>Ensemble</code> - The ID of the ensemble</li><li><code>Quorum</code> - The number of ensemble peers that are either leading or following</li><li><code>Nodes</code> - The number of nodes currently online</li><li><code>Leader</code> - The current leader node for the ensemble</li></ul>
 
 **Note**: The **root ensemble**, designated by `root` in the sample
 output above, is a special ensemble that stores a list of nodes and
@@ -392,37 +366,7 @@ Item | Meaning
 `Id` | The ID for the ensemble used internally by Riak, expressed as a 3-tuple. All ensembles are `kv`; the second element names the ring partition for which the ensemble is responsible; and the third element is the `n_val` for the keys for which the ensemble is responsible.
 `Leader` | Identifies the ensemble's leader. In this case, the leader is on node `riak@riak2` and is identified as peer `2` in the ensemble.
 `Leader ready` | States whether the ensemble's leader is ready to respond to requests. If not, requests to the ensemble will fail.
-`Peers` | A list of peer [vnodes][glossary vnode] associated with the ensemble.<br /><ul><li><code>Peer</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-The ID of the peer</li><li><code>Status</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-Whether the peer is a leader or a follower</li><li><code>Trusted</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-Whether the peer's Merkle tree is currently considered trusted or not</li><li><code>Epoch</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-The current consensus epoch for the peer. The epoch is incremented each time the leader changes.</li><li><code>Node</code>
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-The node on which the peer resides.</li></ul>
+`Peers` | A list of peer [vnodes][glossary vnode] associated with the ensemble.<br /><ul><li><code>Peer</code> - The ID of the peer</li><li><code>Status</code> - Whether the peer is a leader or a follower</li><li><code>Trusted</code> - Whether the peer's Merkle tree is currently considered trusted or not</li><li><code>Epoch</code> - The current consensus epoch for the peer. The epoch is incremented each time the leader changes.</li><li><code>Node</code> - The node on which the peer resides.</li></ul>
 
 More information on leaders, peers, Merkle trees, and other details can
 be found in [Implementation Details](#implementation-details) below.
@@ -675,31 +619,13 @@ irregularities are acceptable.
 The following Riak features are not currently available in strongly
 consistent buckets:
 
-* [Secondary indexes][cluster ops 2i]
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-If you do attach
+* [Secondary indexes][cluster ops 2i] - If you do attach
   secondary index metadata to objects in strongly consistent buckets,
   strongly consistent operations can still proceed, but that metadata
   will be silently ignored.
-* [Riak Data Types][dev data types]
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-Data Types can currently be
+* [Riak Data Types][dev data types] - Data Types can currently be
   used only in an eventually consistent fashion
-* [Using commit hooks][usage commit hooks]
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-Neither pre- nor post-commit hooks are supported in strongly consistent buckets. If you do associate a
+* [Using commit hooks][usage commit hooks] - Neither pre- nor post-commit hooks are supported in strongly consistent buckets. If you do associate a
   strongly consistent bucket with one or more commit hooks, strongly
   consistent operations can proceed as normal in that bucket, but all
   commit hooks will be silently ignored.
@@ -715,59 +641,29 @@ and read locks in applications that use strong consistency.
 There are a few known issues that you should be aware of when using the
 latest version of strong consistency.
 
-* **Consistent reads of never-written keys create tombstones**
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-A
+* **Consistent reads of never-written keys create tombstones** - A
   [tombstone][cluster ops obj del] will be written if you perform a read
   against a key that a majority of peers claims to not exist. This is
   necessary for certain corner cases in which offline or unreachable
   replicas containing partially written data need to be rolled back in
   the future.
-* **Consistent keys and key listing**
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-In Riak, key listing
+* **Consistent keys and key listing** - In Riak, key listing
   operations, such as listing all the keys in a bucket, do not filter
   out tombstones. While this is rarely a problem for
   non-strongly-consistent keys, it does present an issue for strong
   consistency due to the tombstone issues mentioned above.
-* **Secondary indexes not supported**
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-Strongly consistent
+* **Secondary indexes not supported** - Strongly consistent
   operations do not support [secondary indexes][cluster ops 2i] \(2i) at this time. Furthermore, any other metadata
   attached to objects, even if not related to 2i, will be silently
   ignored by Riak in strongly consistent buckets.
-* **Multi-Datacenter Replication not supported**
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-At this time,
+* **Multi-Datacenter Replication not supported** - At this time,
   consistent keys are *not* replicated across clusters using Multi-
   Datacenter Replication \(MDC). This is because MDC Replication currently supports only eventually consistent replication across clusters. Mixing strongly
   consistent data within a cluster with eventually consistent data
   between clusters is difficult to reason about from the perspective of
   applications. In a future version of Riak, we will add support for
   strongly consistent replication across multiple datacenters/clusters.
-* **Client library exceptions**
-aliases:
-  - /riak/latest/configuring/strong-consistency/
-  - /riak/kv/latest/configuring/strong-consistency/
-  - /riakkv/latest/configuring/strong-consistency/
----
-Basho's official [client
+* **Client library exceptions** - Basho's official [client
   libraries][dev client libraries] convert errors returned by Riak into generic exceptions,
   with a message derived from the returned server-side error message.
 

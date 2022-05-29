@@ -16,8 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-on-Solaris
   - /riak/3.0.1/installing/solaris/
   - /riak/kv/3.0.1/installing/solaris/
-  - /riak/kv/latest/setup/installing/solaris/
-  - /riak/kv/latest/installing/solaris/
+
 ---
 
 

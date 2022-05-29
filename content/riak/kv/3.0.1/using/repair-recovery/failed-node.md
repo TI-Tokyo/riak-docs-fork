@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/running/recovery/failed-node
   - /riak/kv/3.0.1/ops/running/recovery/failed-node
-  - /riak/latest/using/repair-recovery/failed-node/
-  - /riak/kv/latest/using/repair-recovery/failed-node/
-  - /riakkv/latest/using/repair-recovery/failed-node/
+
 ---
 
 ## General Recovery Notes

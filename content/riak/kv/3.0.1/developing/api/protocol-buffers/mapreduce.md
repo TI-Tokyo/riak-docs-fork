@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/mapreduce
   - /riak/kv/3.0.1/dev/references/protocol-buffers/mapreduce
-  - /riak/latest/developing/api/protocol-buffers/mapreduce/
-  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
-  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
+
 ---
 
 Execute a MapReduce job.
@@ -33,28 +31,13 @@ message RpbMapRedReq {
 
 Required Parameters
 
-* `request`
-  - /riak/latest/developing/api/protocol-buffers/mapreduce/
-  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
-  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
----
-MapReduce job
+* `request) - MapReduce job
 * `content_type` - Encoding for MapReduce job
 
 Mapreduce jobs can be encoded in two different ways
 
-* `application/json`
-  - /riak/latest/developing/api/protocol-buffers/mapreduce/
-  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
-  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
----
-JSON-encoded MapReduce job
-* `application/x-erlang-binary`
-  - /riak/latest/developing/api/protocol-buffers/mapreduce/
-  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
-  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
----
-Erlang external term format
+* `application/json) - JSON-encoded MapReduce job
+* `application/x-erlang-binary) - Erlang external term format
 
 The JSON encoding is the same as [REST API]({{<baseurl>}}riak/kv/3.0.1/developing/usage/mapreduce/#rest) and
 the external term format is the same as the [local Erlang API]({{<baseurl>}}riak/kv/3.0.1/developing/app-guide/advanced-mapreduce/#erlang)
@@ -77,12 +60,7 @@ message RpbMapRedResp {
 
 Values
 
-* `phase`
-  - /riak/latest/developing/api/protocol-buffers/mapreduce/
-  - /riak/kv/latest/developing/api/protocol-buffers/mapreduce/
-  - /riakkv/latest/developing/api/protocol-buffers/mapreduce/
----
-Phase number of the MapReduce job
+* `phase) - Phase number of the MapReduce job
 * `response` - Response encoded with the content_type submitted
 * `done` - Set `true` on the last response packet
 

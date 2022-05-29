@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/mdc/statistics
   - /riak/kv/3.0.1/ops/mdc/statistics
-  - /riak/latest/using/reference/multi-datacenter/statistics/
-  - /riak/kv/latest/using/reference/multi-datacenter/statistics/
-  - /riakkv/latest/using/reference/multi-datacenter/statistics/
+
 ---
 
 The following definitions describe the output of `riak-repl status`.

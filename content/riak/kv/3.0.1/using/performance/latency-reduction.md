@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/tuning/latency-reduction
   - /riak/kv/3.0.1/ops/tuning/latency-reduction
-  - /riak/latest/using/performance/latency-reduction/
-  - /riak/kv/latest/using/performance/latency-reduction/
-  - /riakkv/latest/using/performance/latency-reduction/
+
 ---
 
 Although latency is unavoidable in distributed systems like Riak, there

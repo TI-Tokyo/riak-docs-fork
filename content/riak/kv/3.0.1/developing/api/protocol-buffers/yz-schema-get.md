@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/yz-schema-get
   - /riak/kv/3.0.1/dev/references/protocol-buffers/yz-schema-get
-  - /riak/latest/developing/api/protocol-buffers/yz-schema-get/
-  - /riak/kv/latest/developing/api/protocol-buffers/yz-schema-get/
-  - /riakkv/latest/developing/api/protocol-buffers/yz-schema-get/
+
 ---
 
 Fetch a [search schema]({{<baseurl>}}riak/kv/3.0.1/developing/usage/search-schemas) from Riak Search.

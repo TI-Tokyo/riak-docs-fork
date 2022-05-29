@@ -16,10 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-on-SUSE
   - /riak/3.0.1/installing/suse/
   - /riak/kv/3.0.1/installing/suse/
-  - /riak/kv/latest/setup/installing/suse/
-  - /riak/latest/setup/installing/suse/
-  - /riak/kv/latest/setup/installing/suse/
-  - /riakkv/latest/setup/installing/suse/
+
 ---
 
 [install verify]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/verify

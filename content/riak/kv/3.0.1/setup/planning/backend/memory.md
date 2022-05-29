@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/advanced/backends/memory/
   - /riak/kv/3.0.1/ops/advanced/backends/memory/
-  - /riak/latest/setup/planning/backend/memory/
-  - /riak/kv/latest/setup/planning/backend/memory/
-  - /riakkv/latest/setup/planning/backend/memory/
+
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference

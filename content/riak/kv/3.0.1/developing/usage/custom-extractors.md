@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/search/custom-extractors
   - /riak/kv/3.0.1/dev/search/custom-extractors
-  - /riak/latest/developing/usage/custom-extractors/
-  - /riak/kv/latest/developing/usage/custom-extractors/
-  - /riakkv/latest/developing/usage/custom-extractors/
+
 ---
 
 Solr, and by extension Riak Search, has default extractors for a wide
@@ -41,19 +39,9 @@ We'll show you how to do so by way of example.
 Creating a custom extract involves creating an Erlang interface that
 implements two functions:
 
-* `extract/1`
-  - /riak/latest/developing/usage/custom-extractors/
-  - /riak/kv/latest/developing/usage/custom-extractors/
-  - /riakkv/latest/developing/usage/custom-extractors/
----
-Takes the contents of the object and calls `extract/2` 
+* `extract/1) - Takes the contents of the object and calls `extract/2` 
     with the same contents and an empty list
-* `extract/2`
-  - /riak/latest/developing/usage/custom-extractors/
-  - /riak/kv/latest/developing/usage/custom-extractors/
-  - /riakkv/latest/developing/usage/custom-extractors/
----
-Takes the contents of the object and returns an Erlang
+* `extract/2) - Takes the contents of the object and returns an Erlang
     [proplist](http://www.erlang.org/doc/man/proplists.html) with a
     single field name and a single value associated with that name
 

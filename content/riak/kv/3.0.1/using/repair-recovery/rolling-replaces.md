@@ -11,9 +11,7 @@ menu:
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak/latest/using/repair-recovery/rolling-replaces/
-  - /riak/kv/latest/using/repair-recovery/rolling-replaces/
-  - /riakkv/latest/using/repair-recovery/rolling-replaces/
+
 ---
 
 [upgrade]: {{<baseurl>}}riak/kv/3.0.1/setup/upgrading/cluster/

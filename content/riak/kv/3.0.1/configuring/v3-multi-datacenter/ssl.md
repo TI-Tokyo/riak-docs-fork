@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v3/ssl
   - /riak/kv/3.0.1/ops/mdc/v3/ssl
-  - /riak/latest/configuring/v3-multi-datacenter/ssl/
-  - /riak/kv/latest/configuring/v3-multi-datacenter/ssl/
-  - /riakkv/latest/configuring/v3-multi-datacenter/ssl/
+
 ---
 
 [config reference#advanced.config]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference/#the-advanced-config-file

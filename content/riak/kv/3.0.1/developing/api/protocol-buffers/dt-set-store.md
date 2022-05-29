@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/dt-set-store
   - /riak/kv/3.0.1/dev/references/protocol-buffers/dt-set-store
-  - /riak/latest/developing/api/protocol-buffers/dt-set-store/
-  - /riak/kv/latest/developing/api/protocol-buffers/dt-set-store/
-  - /riakkv/latest/developing/api/protocol-buffers/dt-set-store/
+
 ---
 
 An operation to update a set, either on its own (at the bucket/key

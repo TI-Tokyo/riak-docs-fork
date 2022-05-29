@@ -15,13 +15,6 @@ version_history:
 aliases:
   - /riak/3.0.1/ops/upgrading/rolling-upgrades/
   - /riak/kv/3.0.1/ops/upgrading/rolling-upgrades/
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/latest/ops/upgrading/rolling-upgrades/
-  - /riak/kv/latest/ops/advanced/upgrading-cluster
-  - /riak/kv/latest/setup/upgrading/cluster
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/kv/latest/setup/upgrading/cluster/
-  - /riakkv/latest/setup/upgrading/cluster/
 ---
 
 [production checklist]: {{<baseurl>}}riak/kv/3.0.1/setup/upgrading/checklist
@@ -265,46 +258,10 @@ directories.
 6. Copy any customizations from your backed-up vm.args to the
    `riak_ee` installed vm.args file, these files may be identical.
 7. The app.config file from `riak_ee` will be significantly different from your backed-up file. While it will contain all of the same sections as your original, it will have many new ones. Copy the customizations from your original app.config file into the appropriate sections in the new one. Ensure that the following sections are present in app.config:
-  * `riak_core`
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/latest/ops/upgrading/rolling-upgrades/
-  - /riak/kv/latest/ops/advanced/upgrading-cluster
-  - /riak/kv/latest/setup/upgrading/cluster
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/kv/latest/setup/upgrading/cluster/
-  - /riakkv/latest/setup/upgrading/cluster/
----
-the `cluster_mgr` setting must be present. See [MDC v3 Configuration][config v3 mdc] for more information.
-  * `riak_repl`
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/latest/ops/upgrading/rolling-upgrades/
-  - /riak/kv/latest/ops/advanced/upgrading-cluster
-  - /riak/kv/latest/setup/upgrading/cluster
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/kv/latest/setup/upgrading/cluster/
-  - /riakkv/latest/setup/upgrading/cluster/
----
-See [MDC v3 Configuration][config v3 mdc] for more information.
-  * `riak_jmx`
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/latest/ops/upgrading/rolling-upgrades/
-  - /riak/kv/latest/ops/advanced/upgrading-cluster
-  - /riak/kv/latest/setup/upgrading/cluster
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/kv/latest/setup/upgrading/cluster/
-  - /riakkv/latest/setup/upgrading/cluster/
----
-See [JMX Monitoring][jmx monitor] for more information.
-  * `snmp`
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/latest/ops/upgrading/rolling-upgrades/
-  - /riak/kv/latest/ops/advanced/upgrading-cluster
-  - /riak/kv/latest/setup/upgrading/cluster
-  - /riak/latest/setup/upgrading/cluster/
-  - /riak/kv/latest/setup/upgrading/cluster/
-  - /riakkv/latest/setup/upgrading/cluster/
----
-See [SNMP][snmp] for more information.
+  * `riak_core` - the `cluster_mgr` setting must be present. See [MDC v3 Configuration][config v3 mdc] for more information.
+  * `riak_repl` - See [MDC v3 Configuration][config v3 mdc] for more information.
+  * `riak_jmx` - See [JMX Monitoring][jmx monitor] for more information.
+  * `snmp` - See [SNMP][snmp] for more information.
 8. Start Riak KV on the upgraded node.
 
 ## Basho Patches

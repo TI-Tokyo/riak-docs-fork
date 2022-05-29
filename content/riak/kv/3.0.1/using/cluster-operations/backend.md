@@ -12,9 +12,7 @@ project_version: 3.0.1
 #    parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak/latest/using/cluster-operations/backend/
-  - /riak/kv/latest/using/cluster-operations/backend/
-  - /riakkv/latest/using/cluster-operations/backend/
+
 ---
 
 **TODO: Add content**

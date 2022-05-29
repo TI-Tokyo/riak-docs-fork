@@ -12,9 +12,7 @@ menu:
     parent: "getting_started_erlang"
 toc: true
 aliases:
-  - /riak/latest/developing/getting-started/erlang/crud-operations/
-  - /riak/kv/latest/developing/getting-started/erlang/crud-operations/
-  - /riakkv/latest/developing/getting-started/erlang/crud-operations/
+
 ---
 
 ## Creating Objects In Riak

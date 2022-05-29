@@ -16,10 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-on-FreeBSD
   - /riak/3.0.1/installing/freebsd/
   - /riak/kv/3.0.1/installing/freebsd/
-  - /riak/kv/latest/setup/installing/freebsd/
-  - /riak/latest/setup/installing/freebsd/
-  - /riak/kv/latest/setup/installing/freebsd/
-  - /riakkv/latest/setup/installing/freebsd/
+
 ---
 
 

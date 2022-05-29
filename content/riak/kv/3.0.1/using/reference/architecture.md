@@ -12,9 +12,7 @@ project_version: 3.0.1
 #    parent: "managing_ref"
 toc: true
 aliases:
-  - /riak/latest/using/reference/architecture/
-  - /riak/kv/latest/using/reference/architecture/
-  - /riakkv/latest/using/reference/architecture/
+
 ---
 
 <!-- TODO: Content -->

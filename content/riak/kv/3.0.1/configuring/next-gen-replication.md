@@ -15,9 +15,7 @@ version_history:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/latest/configuring/next-gen-replication/
-  - /riak/kv/latest/configuring/next-gen-replication/
-  - /riakkv/latest/configuring/next-gen-replication/
+
 ---
 
 The configuration for Next Gen Replication is kept in

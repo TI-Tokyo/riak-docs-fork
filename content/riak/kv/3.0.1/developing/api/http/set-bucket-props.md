@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http/set-bucket-props
   - /riak/kv/3.0.1/dev/references/http/set-bucket-props
-  - /riak/latest/developing/api/http/set-bucket-props/
-  - /riak/kv/latest/developing/api/http/set-bucket-props/
-  - /riakkv/latest/developing/api/http/set-bucket-props/
+
 ---
 
 Sets bucket properties like "n_val" and "allow_mult".

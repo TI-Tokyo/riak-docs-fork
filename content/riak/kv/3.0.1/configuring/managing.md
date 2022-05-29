@@ -11,9 +11,7 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/latest/configuring/managing/
-  - /riak/kv/latest/configuring/managing/
-  - /riakkv/latest/configuring/managing/
+
 ---
 
 [use admin riak cli]: {{<baseurl>}}riak/kv/3.0.1/using/admin/riak-cli

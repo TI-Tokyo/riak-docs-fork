@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/theory/concepts/keys-and-values
   - /riak/kv/3.0.1/theory/concepts/keys-and-values
-  - /riak/latest/learn/concepts/keys-and-objects/
-  - /riak/kv/latest/learn/concepts/keys-and-objects/
-  - /riakkv/latest/learn/concepts/keys-and-objects/
+
 ---
 
 [concept buckets]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/buckets

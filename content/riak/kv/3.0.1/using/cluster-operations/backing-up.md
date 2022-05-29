@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/running/backups
   - /riak/kv/3.0.1/ops/running/backups
-  - /riak/latest/using/cluster-operations/backing-up/
-  - /riak/kv/latest/using/cluster-operations/backing-up/
-  - /riakkv/latest/using/cluster-operations/backing-up/
+
 ---
 
 [concept clusters]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/clusters

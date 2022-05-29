@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/backend-api
   - /riak/kv/3.0.1/dev/references/backend-api
-  - /riak/latest/developing/api/backend/
-  - /riak/kv/latest/developing/api/backend/
-  - /riakkv/latest/developing/api/backend/
+
 ---
 
 [plan backend]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend

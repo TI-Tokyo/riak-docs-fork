@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/advanced/bucket-types
   - /riak/kv/3.0.1/dev/advanced/bucket-types
-  - /riak/latest/developing/usage/bucket-types/
-  - /riak/kv/latest/developing/usage/bucket-types/
-  - /riakkv/latest/developing/usage/bucket-types/
+
 ---
 
 If you ever need to turn off indexing for a bucket, set the

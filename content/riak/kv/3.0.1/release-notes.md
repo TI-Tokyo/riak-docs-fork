@@ -15,10 +15,7 @@ aliases:
   - /riak/kv/3.0.1/intro-v20
   - /riak/3.0.1/intro-v20
   - /riak/kv/3.0.1/introduction
-  - /riak/kv/latest/release-notes/
-  - /riak/latest/release-notes/
-  - /riak/kv/latest/release-notes/
-  - /riakkv/latest/release-notes/
+
 ---
 
 Released Aug 20, 2020.

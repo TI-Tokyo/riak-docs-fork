@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/running/handoff/
   - /riak/kv/3.0.1/ops/running/handoff/
-  - /riak/latest/using/reference/handoff/
-  - /riak/kv/latest/using/reference/handoff/
-  - /riakkv/latest/using/reference/handoff/
+
 ---
 
 [cluster ops handoff]: {{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/handoff

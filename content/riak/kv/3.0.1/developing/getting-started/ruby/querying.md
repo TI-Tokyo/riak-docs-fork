@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/querying-ruby
   - /riak/kv/3.0.1/dev/taste-of-riak/querying-ruby
-  - /riak/latest/developing/getting-started/ruby/querying/
-  - /riak/kv/latest/developing/getting-started/ruby/querying/
-  - /riakkv/latest/developing/getting-started/ruby/querying/
+
 ---
 
 #### A Quick Note on Querying and Schemas

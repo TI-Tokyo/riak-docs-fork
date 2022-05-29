@@ -19,11 +19,6 @@ listed_projects:
 aliases:
   - /riak/3.0.1/downloads
   - /riak/kv/3.0.1/downloads
-  - /riak/kv/latest/downloads/
-  - /riak/latest/downloads/
-  - /riak/latest/downloads/
-  - /riak/kv/latest/downloads/
-  - /riakkv/latest/downloads/
 ---
 
 

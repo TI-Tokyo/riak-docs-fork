@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/mdc/v2/architecture
   - /riak/kv/3.0.1/ops/mdc/v2/architecture
-  - /riak/latest/using/reference/v2-multi-datacenter/architecture/
-  - /riak/kv/latest/using/reference/v2-multi-datacenter/architecture/
-  - /riakkv/latest/using/reference/v2-multi-datacenter/architecture/
+
 ---
 
 {{% note title="Deprecation Warning" %}}

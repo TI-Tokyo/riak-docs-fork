@@ -13,9 +13,7 @@ toc: true
 commercial_offering: true
 aliases:
   - /riak/kv/3.0.1/add-ons/redis/get-started-with-rra
-  - /riak/latest/add-ons/redis/using-rra/
-  - /riak/kv/latest/add-ons/redis/using-rra/
-  - /riakkv/latest/add-ons/redis/using-rra/
+
 ---
 
 [addon redis develop]: ../developing-rra/

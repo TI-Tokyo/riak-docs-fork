@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/secondary-indexes
   - /riak/kv/3.0.1/dev/references/protocol-buffers/secondary-indexes
-  - /riak/latest/developing/api/protocol-buffers/secondary-indexes/
-  - /riak/kv/latest/developing/api/protocol-buffers/secondary-indexes/
-  - /riakkv/latest/developing/api/protocol-buffers/secondary-indexes/
+
 ---
 
 Request a set of keys that match a secondary index query.

@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/querying-python
   - /riak/kv/3.0.1/dev/taste-of-riak/querying-python
-  - /riak/latest/developing/getting-started/python/querying/
-  - /riak/kv/latest/developing/getting-started/python/querying/
-  - /riakkv/latest/developing/getting-started/python/querying/
+
 ---
 
 #### A Quick Note on Querying and Schemas

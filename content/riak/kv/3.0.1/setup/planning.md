@@ -11,10 +11,7 @@ menu:
     parent: "setup_index"
 toc: true
 aliases:
-  - /riak/kv/latest/setup/planning/
-  - /riak/latest/setup/planning/
-  - /riak/kv/latest/setup/planning/
-  - /riakkv/latest/setup/planning/
+
 ---
 
 [plan start]: ./start

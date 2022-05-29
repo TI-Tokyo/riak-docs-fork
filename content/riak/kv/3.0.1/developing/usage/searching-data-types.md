@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/search/search-data-types
   - /riak/kv/3.0.1/dev/search/search-data-types
-  - /riak/latest/developing/usage/searching-data-types/
-  - /riak/kv/latest/developing/usage/searching-data-types/
-  - /riakkv/latest/developing/usage/searching-data-types/
+
 ---
 
 Although [Riak Data Types]({{<baseurl>}}riak/kv/3.0.1/developing/data-types) function differently from other

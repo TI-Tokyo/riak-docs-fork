@@ -1,10 +1,6 @@
 ---
 layout: redirect
 target: "riak/kv/3.0.1/learn/use-cases/"
-aliases:
-  - /riak/latest/developing/data-modeling/
-  - /riak/kv/latest/developing/data-modeling/
-  - /riakkv/latest/developing/data-modeling/
 ---
 
 This page exists solely to redirect from the generated URL to the above `target`

@@ -11,9 +11,7 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak/latest/using/reference/strong-consistency/
-  - /riak/kv/latest/using/reference/strong-consistency/
-  - /riakkv/latest/using/reference/strong-consistency/
+
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types

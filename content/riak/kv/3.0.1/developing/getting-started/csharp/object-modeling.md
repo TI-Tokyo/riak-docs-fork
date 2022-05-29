@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/object-modeling-csharp
   - /riak/kv/3.0.1/dev/taste-of-riak/object-modeling-csharp
-  - /riak/latest/developing/getting-started/csharp/object-modeling/
-  - /riak/kv/latest/developing/getting-started/csharp/object-modeling/
-  - /riakkv/latest/developing/getting-started/csharp/object-modeling/
+
 ---
 
 To get started, refer to [this source code][1] for the models that we'll

@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v3/aae
   - /riak/kv/3.0.1/ops/mdc/v3/aae
-  - /riak/latest/using/reference/v3-multi-datacenter/aae/
-  - /riak/kv/latest/using/reference/v3-multi-datacenter/aae/
-  - /riakkv/latest/using/reference/v3-multi-datacenter/aae/
+
 ---
 
 [glossary aae]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#active-anti-entropy-aae

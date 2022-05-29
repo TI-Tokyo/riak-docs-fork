@@ -11,9 +11,7 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/latest/configuring/backend/
-  - /riak/kv/latest/configuring/backend/
-  - /riakkv/latest/configuring/backend/
+
 ---
 
 [plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.1/setup/planning/backend/leveldb

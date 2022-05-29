@@ -13,9 +13,7 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/latest/using/performance/multi-datacenter-tuning/
-  - /riak/kv/latest/using/performance/multi-datacenter-tuning/
-  - /riakkv/latest/using/performance/multi-datacenter-tuning/
+
 ---
 
 [perf index]: {{<baseurl>}}riak/kv/3.0.1/using/performance

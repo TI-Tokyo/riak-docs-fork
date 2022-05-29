@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/mdc/per-bucket
   - /riak/kv/3.0.1/ops/mdc/per-bucket
-  - /riak/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riak/kv/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riakkv/latest/using/reference/multi-datacenter/per-bucket-replication/
+
 ---
 
 To enable or disable replication per bucket, you can use the `repl`
@@ -26,40 +24,15 @@ Some changes have occurred between 1.1 and 1.2.
 These `repl` values are available in Riak Enterprise version 1.1 and
 above:
 
-  * `true`
-  - /riak/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riak/kv/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riakkv/latest/using/reference/multi-datacenter/per-bucket-replication/
----
-Enable replication (realtime + fullsync)
-  * `false`
-  - /riak/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riak/kv/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riakkv/latest/using/reference/multi-datacenter/per-bucket-replication/
----
-Disable replication (realtime + fullsync)
+  * `true) - Enable replication (realtime + fullsync)
+  * `false) - Disable replication (realtime + fullsync)
 
 These option values are only available in Riak Enterprise version 1.2
 and above:
 
-  * `realtime`
-  - /riak/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riak/kv/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riakkv/latest/using/reference/multi-datacenter/per-bucket-replication/
----
-Replication only occurs in realtime for this bucket
-  * `fullsync`
-  - /riak/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riak/kv/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riakkv/latest/using/reference/multi-datacenter/per-bucket-replication/
----
-Replication only occurs during a fullsync operation
-  * `both`
-  - /riak/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riak/kv/latest/using/reference/multi-datacenter/per-bucket-replication/
-  - /riakkv/latest/using/reference/multi-datacenter/per-bucket-replication/
----
-Replication occurs in realtime and during fullsync
+  * `realtime) - Replication only occurs in realtime for this bucket
+  * `fullsync) - Replication only occurs during a fullsync operation
+  * `both) - Replication occurs in realtime and during fullsync
 
 ### Example of Disabling
 

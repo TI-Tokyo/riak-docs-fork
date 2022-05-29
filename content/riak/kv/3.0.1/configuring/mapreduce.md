@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/advanced/configs/mapreduce/
   - /riak/kv/3.0.1/ops/advanced/configs/mapreduce/
-  - /riak/latest/configuring/mapreduce/
-  - /riak/kv/latest/configuring/mapreduce/
-  - /riakkv/latest/configuring/mapreduce/
+
 ---
 
 [usage mapreduce]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/mapreduce

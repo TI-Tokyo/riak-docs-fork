@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/java
   - /riak/kv/3.0.1/dev/taste-of-riak/java
-  - /riak/latest/developing/getting-started/java/
-  - /riak/kv/latest/developing/getting-started/java/
-  - /riakkv/latest/developing/getting-started/java/
+
 ---
 
 

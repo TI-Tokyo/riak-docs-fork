@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/http/list-resources
   - /riak/kv/3.0.1/dev/references/http/list-resources
-  - /riak/latest/developing/api/http/list-resources/
-  - /riak/kv/latest/developing/api/http/list-resources/
-  - /riakkv/latest/developing/api/http/list-resources/
+
 ---
 
 List available HTTP resources for the Riak node. This can be used by clients to

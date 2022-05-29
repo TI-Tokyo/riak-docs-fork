@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v3/architecture
   - /riak/kv/3.0.1/ops/mdc/v3/architecture
-  - /riak/latest/using/reference/v3-multi-datacenter/architecture/
-  - /riak/kv/latest/using/reference/v3-multi-datacenter/architecture/
-  - /riakkv/latest/using/reference/v3-multi-datacenter/architecture/
+
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode

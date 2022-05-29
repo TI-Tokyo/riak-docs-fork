@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/theory/concepts/vnodes
   - /riak/kv/3.0.1/theory/concepts/vnodes
-  - /riak/latest/learn/concepts/vnodes/
-  - /riak/kv/latest/learn/concepts/vnodes/
-  - /riakkv/latest/learn/concepts/vnodes/
+
 ---
 
 

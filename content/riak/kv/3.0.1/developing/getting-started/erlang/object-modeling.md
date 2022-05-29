@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/taste-of-riak/object-modeling-erlang
   - /riak/kv/3.0.1/dev/taste-of-riak/object-modeling-erlang
-  - /riak/latest/developing/getting-started/erlang/object-modeling/
-  - /riak/kv/latest/developing/getting-started/erlang/object-modeling/
-  - /riakkv/latest/developing/getting-started/erlang/object-modeling/
+
 ---
 
 To get started, let's create the records that we'll be using.

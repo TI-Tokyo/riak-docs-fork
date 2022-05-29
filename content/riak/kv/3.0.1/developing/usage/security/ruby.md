@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/advanced/client-security/ruby
   - /riak/kv/3.0.1/dev/advanced/client-security/ruby
-  - /riak/latest/developing/usage/security/ruby/
-  - /riak/kv/latest/developing/usage/security/ruby/
-  - /riakkv/latest/developing/usage/security/ruby/
+
 ---
 
 This tutorial shows you how to set up a Riak Ruby client to authenticate

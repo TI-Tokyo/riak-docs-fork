@@ -16,10 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-on-RHEL-and-CentOS
   - /riak/3.0.1/installing/rhel-centos/
   - /riak/kv/3.0.1/installing/rhel-centos/
-  - /riak/kv/latest/setup/installing/rhel-centos/
-  - /riak/latest/setup/installing/rhel-centos/
-  - /riak/kv/latest/setup/installing/rhel-centos/
-  - /riakkv/latest/setup/installing/rhel-centos/
+
 ---
 
 

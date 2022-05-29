@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v2/quick-start
   - /riak/kv/3.0.1/ops/mdc/v2/quick-start
-  - /riak/latest/configuring/v2-multi-datacenter/quick-start/
-  - /riak/kv/latest/configuring/v2-multi-datacenter/quick-start/
-  - /riakkv/latest/configuring/v2-multi-datacenter/quick-start/
+
 ---
 
 {{% note title="Deprecation Warning" %}}

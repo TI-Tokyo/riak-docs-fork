@@ -12,9 +12,7 @@ menu:
     parent: "getting_started_csharp"
 toc: true
 aliases:
-  - /riak/latest/developing/getting-started/csharp/crud-operations/
-  - /riak/kv/latest/developing/getting-started/csharp/crud-operations/
-  - /riakkv/latest/developing/getting-started/csharp/crud-operations/
+
 ---
 
 ### Creating Objects In Riak

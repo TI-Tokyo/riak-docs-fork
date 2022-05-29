@@ -11,9 +11,7 @@ menu:
     parent: "learn"
 toc: true
 aliases:
-  - /riak/latest/learn/concepts/
-  - /riak/kv/latest/learn/concepts/
-  - /riakkv/latest/learn/concepts/
+
 ---
 
 [concept aae]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/active-anti-entropy

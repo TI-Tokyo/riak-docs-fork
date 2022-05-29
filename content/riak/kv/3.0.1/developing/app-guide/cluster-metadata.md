@@ -11,9 +11,7 @@ menu:
     parent: "developing_app_guide"
 toc: true
 aliases:
-  - /riak/latest/developing/app-guide/cluster-metadata/
-  - /riak/kv/latest/developing/app-guide/cluster-metadata/
-  - /riakkv/latest/developing/app-guide/cluster-metadata/
+
 ---
 
 Cluster metadata is a subsystem inside of Riak that enables systems

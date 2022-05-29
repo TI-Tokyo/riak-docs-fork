@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/advanced/strong-consistency
   - /riak/kv/3.0.1/dev/advanced/strong-consistency
-  - /riak/latest/developing/app-guide/strong-consistency/
-  - /riak/kv/latest/developing/app-guide/strong-consistency/
-  - /riakkv/latest/developing/app-guide/strong-consistency/
+
 ---
 
 [use ref strong consistency]: {{<baseurl>}}riak/kv/3.0.1/using/reference/strong-consistency

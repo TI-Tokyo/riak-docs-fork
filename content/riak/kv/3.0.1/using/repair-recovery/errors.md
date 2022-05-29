@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/running/recovery/errors
   - /riak/kv/3.0.1/ops/running/recovery/errors
-  - /riak/latest/using/repair-recovery/errors/
-  - /riak/kv/latest/using/repair-recovery/errors/
-  - /riakkv/latest/using/repair-recovery/errors/
+
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/3.0.1/configuring/reference

@@ -15,12 +15,6 @@ version_history:
 aliases:
   - /riak/3.0.1/ops/advanced/upgrading-search-2
   - /riak/kv/3.0.1/ops/advanced/upgrading-search-2
-  - /riak/latest/ops/advanced/upgrading-search-2
-  - /riak/kv/latest/ops/advanced/upgrading-search-2
-  - /riak/kv/latest/setup/upgrading/search
-  - /riak/latest/setup/upgrading/search/
-  - /riak/kv/latest/setup/upgrading/search/
-  - /riakkv/latest/setup/upgrading/search/
 ---
 
 If you're using Search in a version of Riak prior to 2.0 (1.3.0 to

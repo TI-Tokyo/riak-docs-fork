@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/dt-union
   - /riak/kv/3.0.1/dev/references/protocol-buffers/dt-union
-  - /riak/latest/developing/api/protocol-buffers/dt-union/
-  - /riak/kv/latest/developing/api/protocol-buffers/dt-union/
-  - /riakkv/latest/developing/api/protocol-buffers/dt-union/
+
 ---
 
 A "union" type for update operations.

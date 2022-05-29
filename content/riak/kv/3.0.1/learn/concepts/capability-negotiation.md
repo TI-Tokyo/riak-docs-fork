@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/theory/concepts/capability-negotiation
   - /riak/kv/3.0.1/theory/concepts/capability-negotiation
-  - /riak/latest/learn/concepts/capability-negotiation/
-  - /riak/kv/latest/learn/concepts/capability-negotiation/
-  - /riakkv/latest/learn/concepts/capability-negotiation/
+
 ---
 
 

@@ -15,9 +15,7 @@ commercial_offering: true
 aliases:
   - /riak/3.0.1/ops/mdc/v2/hooks
   - /riak/kv/3.0.1/ops/mdc/v2/hooks
-  - /riak/latest/developing/api/repl-hooks/
-  - /riak/kv/latest/developing/api/repl-hooks/
-  - /riakkv/latest/developing/api/repl-hooks/
+
 ---
 [object]: https://github.com/basho/riak_kv/blob/master/src/riak_object.erl 
 

@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/set-client-id
   - /riak/kv/3.0.1/dev/references/protocol-buffers/set-client-id
-  - /riak/latest/developing/api/protocol-buffers/set-client-id/
-  - /riak/kv/latest/developing/api/protocol-buffers/set-client-id/
-  - /riakkv/latest/developing/api/protocol-buffers/set-client-id/
+
 ---
 
 {{% note title="Deprecation notice" %}}

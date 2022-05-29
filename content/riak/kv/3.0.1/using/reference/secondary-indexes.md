@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/advanced/2i
   - /riak/kv/3.0.1/dev/advanced/2i
-  - /riak/latest/using/reference/secondary-indexes/
-  - /riak/kv/latest/using/reference/secondary-indexes/
-  - /riakkv/latest/using/reference/secondary-indexes/
+
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/bucket-types

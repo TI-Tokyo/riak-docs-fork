@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/advanced/client-security
   - /riak/kv/3.0.1/dev/advanced/client-security
-  - /riak/latest/developing/usage/security/
-  - /riak/kv/latest/developing/usage/security/
-  - /riakkv/latest/developing/usage/security/
+
 ---
 
 Versions of Riak 2.0 and later come equipped with a [security subsystem]({{<baseurl>}}riak/kv/3.0.1/using/security/basics) that enables you to choose

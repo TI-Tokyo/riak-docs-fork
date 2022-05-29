@@ -14,9 +14,6 @@ version_history:
 toc: true
 aliases:
   - /riak-docs/riak/3.0.1/dev/using/nextgenreplication
-  - /riak/latest/developing/usage/next-gen-replication/
-  - /riak/kv/latest/developing/usage/next-gen-replication/
-  - /riakkv/latest/developing/usage/next-gen-replication/
 ---
 [concept TicTac aae]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/tictac-active-anti-entropy
 [concept causal context vc]: {{<baseurl>}}riak/kv/3.0.1/learn/concepts/causal-context/#vector-clocks

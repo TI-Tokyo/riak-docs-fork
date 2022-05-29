@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/dt-fetch
   - /riak/kv/3.0.1/dev/references/protocol-buffers/dt-fetch
-  - /riak/latest/developing/api/protocol-buffers/dt-fetch/
-  - /riak/kv/latest/developing/api/protocol-buffers/dt-fetch/
-  - /riakkv/latest/developing/api/protocol-buffers/dt-fetch/
+
 ---
 
 The equivalent of [`RpbGetReq`]({{<baseurl>}}riak/kv/3.0.1/developing/api/protocol-buffers/fetch-object) for [Riak Data Types]({{<baseurl>}}riak/kv/3.0.1/developing/data-types). This request results in a `DtFetchResp`

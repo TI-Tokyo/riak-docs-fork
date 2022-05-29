@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/references/protocol-buffers/list-buckets
   - /riak/kv/3.0.1/dev/references/protocol-buffers/list-buckets
-  - /riak/latest/developing/api/protocol-buffers/list-buckets/
-  - /riak/kv/latest/developing/api/protocol-buffers/list-buckets/
-  - /riakkv/latest/developing/api/protocol-buffers/list-buckets/
+
 ---
 
 List all of the bucket names available.
@@ -42,12 +40,7 @@ message RpbListBucketsResp {
 
 Values
 
-* `buckets`
-  - /riak/latest/developing/api/protocol-buffers/list-buckets/
-  - /riak/kv/latest/developing/api/protocol-buffers/list-buckets/
-  - /riakkv/latest/developing/api/protocol-buffers/list-buckets/
----
-Buckets on the server
+* `buckets) - Buckets on the server
 
 ## Example
 

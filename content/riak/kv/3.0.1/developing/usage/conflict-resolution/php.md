@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/using/conflict-resolution/php
   - /riak/kv/3.0.1/dev/using/conflict-resolution/php
-  - /riak/latest/developing/usage/conflict-resolution/php/
-  - /riak/kv/latest/developing/usage/conflict-resolution/php/
-  - /riakkv/latest/developing/usage/conflict-resolution/php/
+
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/3.0.1/developing/usage/conflict-resolution), we strongly recommend adopting a

@@ -11,9 +11,7 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak/latest/developing/api/
-  - /riak/kv/latest/developing/api/
-  - /riakkv/latest/developing/api/
+
 ---
 
 [dev api http]: ./http

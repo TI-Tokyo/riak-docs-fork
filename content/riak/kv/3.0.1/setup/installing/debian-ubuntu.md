@@ -16,10 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/Installing-on-Debian-and-Ubuntu
   - /riak/3.0.1/installing/debian-ubuntu/
   - /riak/kv/3.0.1/installing/debian-ubuntu/
-  - /riak/kv/latest/setup/installing/debian-ubuntu/
-  - /riak/latest/setup/installing/debian-ubuntu/
-  - /riak/kv/latest/setup/installing/debian-ubuntu/
-  - /riakkv/latest/setup/installing/debian-ubuntu/
+
 ---
 
 [install source index]: {{<baseurl>}}riak/kv/3.0.1/setup/installing/source/

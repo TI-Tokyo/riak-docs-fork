@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/running/security-sources
   - /riak/kv/3.0.1/ops/running/security-sources
-  - /riak/latest/using/security/managing-sources/
-  - /riak/kv/latest/using/security/managing-sources/
-  - /riakkv/latest/using/security/managing-sources/
+
 ---
 
 If you're looking for more general information on Riak Security, it may

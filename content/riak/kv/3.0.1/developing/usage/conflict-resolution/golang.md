@@ -14,9 +14,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/using/conflict-resolution/golang
   - /riak/kv/3.0.1/dev/using/conflict-resolution/golang
-  - /riak/latest/developing/usage/conflict-resolution/golang/
-  - /riak/kv/latest/developing/usage/conflict-resolution/golang/
-  - /riakkv/latest/developing/usage/conflict-resolution/golang/
+
 ---
 
 For reasons explained in the [Introduction to conflict resolution]({{<baseurl>}}riak/kv/3.0.1/developing/usage/conflict-resolution), we strongly recommend adopting a conflict resolution strategy that

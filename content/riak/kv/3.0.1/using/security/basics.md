@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/ops/running/authz
   - /riak/kv/3.0.1/ops/running/authz
-  - /riak/latest/using/security/basics/
-  - /riak/kv/latest/using/security/basics/
-  - /riakkv/latest/using/security/basics/
+
 ---
 
 > **Note on Network security**

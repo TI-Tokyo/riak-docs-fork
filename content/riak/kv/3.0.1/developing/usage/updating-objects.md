@@ -13,9 +13,7 @@ toc: true
 aliases:
   - /riak/3.0.1/dev/using/updates
   - /riak/kv/3.0.1/dev/using/updates
-  - /riak/latest/developing/usage/updating-objects/
-  - /riak/kv/latest/developing/usage/updating-objects/
-  - /riakkv/latest/developing/usage/updating-objects/
+
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode

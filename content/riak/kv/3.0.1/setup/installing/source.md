@@ -16,10 +16,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/Installing-Riak-from-Source
   - /riak/3.0.1/installing/source/
   - /riak/kv/3.0.1/installing/source/
-  - /riak/kv/latest/setup/installing/source/
-  - /riak/latest/setup/installing/source/
-  - /riak/kv/latest/setup/installing/source/
-  - /riakkv/latest/setup/installing/source/
+
 ---
 
 

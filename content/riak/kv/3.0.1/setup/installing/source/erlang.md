@@ -15,10 +15,7 @@ aliases:
   - /riak/kv/3.0.1/ops/building/installing/erlang
   - /riak/3.0.1/installing/source/erlang/
   - /riak/kv/3.0.1/installing/source/erlang/
-  - /riak/kv/latest/setup/installing/source/erlang/
-  - /riak/latest/setup/installing/source/erlang/
-  - /riak/kv/latest/setup/installing/source/erlang/
-  - /riakkv/latest/setup/installing/source/erlang/
+
 ---
 
 [install index]: {{<baseurl>}}riak/kv/3.0.1/setup/installing
