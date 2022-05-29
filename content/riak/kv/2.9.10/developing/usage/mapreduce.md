@@ -81,21 +81,11 @@ separate physical hosts.
 
 There are two steps in a MapReduce query:
 
-* **Map**
-  - /riak/latest/developing/usage/mapreduce/
-  - /riak/kv/latest/developing/usage/mapreduce/
-  - /riakkv/latest/developing/usage/mapreduce/
----
-The data collection phase, which breaks up large chunks of
+* **Map** - The data collection phase, which breaks up large chunks of
   work into smaller ones and then takes action on each chunk. Map
   phases consist of a function and a list of objects on which the map
   operation will operate.
-* **Reduce**
-  - /riak/latest/developing/usage/mapreduce/
-  - /riak/kv/latest/developing/usage/mapreduce/
-  - /riakkv/latest/developing/usage/mapreduce/
----
-The data collation or processing phase, which combines
+* **Reduce** - The data collation or processing phase, which combines
   the results from the map step into a single output. The reduce phase
   is optional.
 
