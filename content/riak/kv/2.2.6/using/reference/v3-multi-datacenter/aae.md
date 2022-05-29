@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v3/aae
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v3/aae
+  - /riak/2.2.6/ops/mdc/v3/aae
+  - /riak/kv/2.2.6/ops/mdc/v3/aae
 ---
 
 [glossary aae]: {{<baseurl>}}riak/kv/2.2.6/learn/glossary/#active-anti-entropy-aae

@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/building/installing/Installing-on-Mac-OS-X
-  - /riak-docs/riak/kv/2.2.6/ops/building/installing/Installing-on-Mac-OS-X
-  - /riak-docs/riak/2.2.6/installing/mac-osx/
-  - /riak-docs/riak/kv/2.2.6/installing/mac-osx/
+  - /riak/2.2.6/ops/building/installing/Installing-on-Mac-OS-X
+  - /riak/kv/2.2.6/ops/building/installing/Installing-on-Mac-OS-X
+  - /riak/2.2.6/installing/mac-osx/
+  - /riak/kv/2.2.6/installing/mac-osx/
 ---
 
 

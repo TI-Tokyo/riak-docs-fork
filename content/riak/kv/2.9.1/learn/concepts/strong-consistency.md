@@ -11,8 +11,8 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/strong-consistency
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/strong-consistency
+  - /riak/2.9.1/theory/concepts/strong-consistency
+  - /riak/kv/2.9.1/theory/concepts/strong-consistency
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types

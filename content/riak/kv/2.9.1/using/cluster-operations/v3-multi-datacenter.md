@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/mdc/v3/operations
-  - /riak-docs/riak/kv/2.9.1/ops/mdc/v3/operations
+  - /riak/2.9.1/ops/mdc/v3/operations
+  - /riak/kv/2.9.1/ops/mdc/v3/operations
 ---
 
 [config v3 mdc]: {{<baseurl>}}riak/kv/2.9.1/configuring/v3-multi-datacenter

@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/installing/Installing-on-FreeBSD
-  - /riak-docs/riak/kv/2.9.1/ops/building/installing/Installing-on-FreeBSD
-  - /riak-docs/riak/2.9.1/installing/freebsd/
-  - /riak-docs/riak/kv/2.9.1/installing/freebsd/
+  - /riak/2.9.1/ops/building/installing/Installing-on-FreeBSD
+  - /riak/kv/2.9.1/ops/building/installing/Installing-on-FreeBSD
+  - /riak/2.9.1/installing/freebsd/
+  - /riak/kv/2.9.1/installing/freebsd/
 ---
 
 
@@ -42,14 +42,14 @@ You can install the Riak binary package on FreeBSD remotely using the
 ### For FreeBSD 11.x
 
 ```bash
-sudo pkg_add -r https://files.tiot.jp/riak/kv/2.2/2.9.1/freebsd/11.1/riak-2.9.1.txz
+sudo pkg_add -r https://files.tiot.jp/riak/kv/2.9/2.9.1/freebsd/11.1/riak-2.9.1.txz
 ```
 
 
 ### For FreeBSD 10.x
 
 ```bash
-sudo pkg_add -r https://files.tiot.jp/riak/kv/2.2/2.9.1/freebsd/10.4/riak-2.9.1.txz
+sudo pkg_add -r https://files.tiot.jp/riak/kv/2.9/2.9.1/freebsd/10.4/riak-2.9.1.txz
 ```
 
 When Riak is installed, a message is displayed with information about the installation and available documentation.

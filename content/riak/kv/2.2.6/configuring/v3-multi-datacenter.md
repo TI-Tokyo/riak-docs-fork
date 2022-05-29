@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v3/configuration
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v3/configuration
+  - /riak/2.2.6/ops/mdc/v3/configuration
+  - /riak/kv/2.2.6/ops/mdc/v3/configuration
 ---
 
 [config reference#advanced]: {{<baseurl>}}riak/kv/2.2.6/configuring/reference/#advanced-configuration

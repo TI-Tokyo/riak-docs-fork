@@ -11,8 +11,8 @@ menu:
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/recovery/failed-node
-  - /riak-docs/riak/kv/2.9.1/ops/running/recovery/failed-node
+  - /riak/2.9.1/ops/running/recovery/failed-node
+  - /riak/kv/2.9.1/ops/running/recovery/failed-node
 ---
 
 ## General Recovery Notes

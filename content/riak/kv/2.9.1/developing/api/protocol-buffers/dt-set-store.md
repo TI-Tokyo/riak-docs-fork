@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/dt-set-store
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/dt-set-store
+  - /riak/2.9.1/dev/references/protocol-buffers/dt-set-store
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/dt-set-store
 ---
 
 An operation to update a set, either on its own (at the bucket/key

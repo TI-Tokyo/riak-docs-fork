@@ -12,8 +12,8 @@ menu:
     parent: "usage_security"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/advanced/client-security/python
-  - /riak-docs/riak/kv/2.9.1/dev/advanced/client-security/python
+  - /riak/2.9.1/dev/advanced/client-security/python
+  - /riak/kv/2.9.1/dev/advanced/client-security/python
 ---
 
 This tutorial shows you how to set up a Riak Python client to

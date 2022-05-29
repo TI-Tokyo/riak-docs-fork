@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/fetch-object
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/fetch-object
+  - /riak/2.2.6/dev/references/http/fetch-object
+  - /riak/kv/2.2.6/dev/references/http/fetch-object
 ---
 
 Reads an object from the specified bucket/key.

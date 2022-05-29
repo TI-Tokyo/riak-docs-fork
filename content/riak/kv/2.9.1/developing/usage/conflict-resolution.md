@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/conflict-resolution
-  - /riak-docs/riak/kv/2.9.1/dev/using/conflict-resolution
+  - /riak/2.9.1/dev/using/conflict-resolution
+  - /riak/kv/2.9.1/dev/using/conflict-resolution
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/bucket-types

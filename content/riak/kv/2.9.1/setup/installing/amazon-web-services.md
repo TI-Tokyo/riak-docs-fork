@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/installing/Installing-on-AWS-Marketplace
-  - /riak-docs/riak/kv/2.9.1/ops/building/installing/Installing-on-AWS-Marketplace
-  - /riak-docs/riak/2.9.1/installing/amazon-web-services/
-  - /riak-docs/riak/kv/2.9.1/installing/amazon-web-services/
+  - /riak/2.9.1/ops/building/installing/Installing-on-AWS-Marketplace
+  - /riak/kv/2.9.1/ops/building/installing/Installing-on-AWS-Marketplace
+  - /riak/2.9.1/installing/amazon-web-services/
+  - /riak/kv/2.9.1/installing/amazon-web-services/
 ---
 
 
@@ -72,7 +72,7 @@ The following clustering setup will _not_ be resilient to instance restarts
 unless deployed in Amazon VPC.
 {{% /note %}}
 
-{{% note title="Note on Package Based Installation"}}
+{{% note title="Note on Package Based Installation" %}}
  If installing to AWS by package, further configuration to _riak.conf_ to set the node name and listening IP addresses is necessary for the below steps to function.
 {{% /note %}}
 
@@ -116,15 +116,15 @@ You now have a Riak cluster running on AWS.
 You can install on AWS 2 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.1/amazon/2/riak-2.9.1-1.amzn2x86_64.rpm
-sudo yum localinstall -y riak_2.9.0-1.amzn2x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/amazon/2/riak-2.9.1-1.amzn2x86_64.rpm
+sudo yum localinstall -y riak-2.9.1-1.amzn2x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.1/amazon/2/riak-2.9.1-1.amzn2x86_64.rpm
-sudo rpm -i riak_2.9.0-1.amzn2x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/amazon/2/riak-2.9.1-1.amzn2x86_64.rpm
+sudo rpm -i riak-2.9.1-1.amzn2x86_64.rpm
 ```
 
 
@@ -133,15 +133,15 @@ sudo rpm -i riak_2.9.0-1.amzn2x86_64.rpm
 You can install on AWS 2016.09 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.1/amazon/2016.09/riak-2.9.1-1.amzn1x86_64.rpm
-sudo yum localinstall -y riak_2.9.0-1.amzn1x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/amazon/2016.09/riak-2.9.1-1.amzn1x86_64.rpm
+sudo yum localinstall -y riak-2.9.1-1.amzn1x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/2.2/2.9.1/amazon/2016.09/riak-2.9.1-1.amzn1x86_64.rpm
-sudo rpm -i riak_2.9.0-1.amzn1x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.9/2.9.1/amazon/2016.09/riak-2.9.1-1.amzn1x86_64.rpm
+sudo rpm -i riak-2.9.1-1.amzn1x86_64.rpm
 ```
 ## Next Steps
 

@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/store-search-schema
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/store-search-schema
+  - /riak/2.9.1/dev/references/http/store-search-schema
+  - /riak/kv/2.9.1/dev/references/http/store-search-schema
 ---
 
 Creates a new Riak [Search schema]({{<baseurl>}}riak/kv/2.9.1/developing/usage/search-schemas).

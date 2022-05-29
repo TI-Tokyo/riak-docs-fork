@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/http/reset-bucket-props
-  - /riak-docs/riak/kv/2.9.1/dev/references/http/reset-bucket-props
+  - /riak/2.9.1/dev/references/http/reset-bucket-props
+  - /riak/kv/2.9.1/dev/references/http/reset-bucket-props
 ---
 
 Resets bucket properties like `n_val` and `allow_mult` back to the

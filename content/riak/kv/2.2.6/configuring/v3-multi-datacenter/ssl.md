@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/mdc/v3/ssl
-  - /riak-docs/riak/kv/2.2.6/ops/mdc/v3/ssl
+  - /riak/2.2.6/ops/mdc/v3/ssl
+  - /riak/kv/2.2.6/ops/mdc/v3/ssl
 ---
 
 [config reference#advanced.config]: {{<baseurl>}}riak/kv/2.2.6/configuring/reference/#the-advanced-config-file

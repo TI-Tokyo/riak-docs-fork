@@ -11,8 +11,8 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/theory/concepts/aae
-  - /riak-docs/riak/kv/2.2.6/theory/concepts/aae
+  - /riak/2.2.6/theory/concepts/aae
+  - /riak/kv/2.2.6/theory/concepts/aae
 ---
 
 [cluster ops v3 mdc]: {{<baseurl>}}riak/kv/2.2.6/using/cluster-operations/v3-multi-datacenter

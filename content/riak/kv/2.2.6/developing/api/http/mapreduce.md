@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/mapreduce
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/mapreduce
+  - /riak/2.2.6/dev/references/http/mapreduce
+  - /riak/kv/2.2.6/dev/references/http/mapreduce
 ---
 
 [MapReduce]({{<baseurl>}}riak/kv/2.2.6/developing/usage/mapreduce) is a generic way to query Riak by specifying inputs and constructing a set of map, reduce, and link phases through which data will flow.

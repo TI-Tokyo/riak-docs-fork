@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/search-index-info
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/search-index-info
+  - /riak/2.2.6/dev/references/http/search-index-info
+  - /riak/kv/2.2.6/dev/references/http/search-index-info
 ---
 
 Retrieves information about all currently available [Search indexes]({{<baseurl>}}riak/kv/2.2.6/developing/usage/search) in JSON format.

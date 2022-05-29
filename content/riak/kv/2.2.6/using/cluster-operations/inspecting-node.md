@@ -11,8 +11,8 @@ menu:
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/nodes/inspecting
-  - /riak-docs/riak/kv/2.2.6/ops/running/nodes/inspecting
+  - /riak/2.2.6/ops/running/nodes/inspecting
+  - /riak/kv/2.2.6/ops/running/nodes/inspecting
 ---
 
 When inspection of a Riak node to gather metrics on performance or

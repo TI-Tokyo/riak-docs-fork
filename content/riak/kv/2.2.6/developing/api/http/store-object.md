@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/store-object
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/store-object
+  - /riak/2.2.6/dev/references/http/store-object
+  - /riak/kv/2.2.6/dev/references/http/store-object
 ---
 
 Stores an object under the specified bucket / key. Storing an object comes in

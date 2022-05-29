@@ -11,8 +11,8 @@ menu:
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/taste-of-riak/php
-  - /riak-docs/riak/kv/2.9.1/dev/taste-of-riak/php
+  - /riak/2.9.1/dev/taste-of-riak/php
+  - /riak/kv/2.9.1/dev/taste-of-riak/php
 ---
 
 If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.1/using/running-a-cluster) first.

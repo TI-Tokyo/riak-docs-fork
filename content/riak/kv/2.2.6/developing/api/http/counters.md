@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/counters
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/counters
+  - /riak/2.2.6/dev/references/http/counters
+  - /riak/kv/2.2.6/dev/references/http/counters
 ---
 
 Riak counters are a CRDT (convergent replicated data type) that (eventually)

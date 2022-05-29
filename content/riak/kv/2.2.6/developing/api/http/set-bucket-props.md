@@ -11,8 +11,8 @@ menu:
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/http/set-bucket-props
-  - /riak-docs/riak/kv/2.2.6/dev/references/http/set-bucket-props
+  - /riak/2.2.6/dev/references/http/set-bucket-props
+  - /riak/kv/2.2.6/dev/references/http/set-bucket-props
 ---
 
 Sets bucket properties like "n_val" and "allow_mult".

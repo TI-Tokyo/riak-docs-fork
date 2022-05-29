@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref_v2"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/mdc/v2/scheduling-fullsync
-  - /riak-docs/riak/kv/2.9.1/ops/mdc/v2/scheduling-fullsync
+  - /riak/2.9.1/ops/mdc/v2/scheduling-fullsync
+  - /riak/kv/2.9.1/ops/mdc/v2/scheduling-fullsync
 ---
 
 {{% note title="Deprecation Warning" %}}

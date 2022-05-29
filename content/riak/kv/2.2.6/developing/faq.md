@@ -12,8 +12,8 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/community/faqs/developing
-  - /riak-docs/riak/kv/2.2.6/community/faqs/developing
+  - /riak/2.2.6/community/faqs/developing
+  - /riak/kv/2.2.6/community/faqs/developing
 ---
 
 [[Basho Bench]: {{<baseurl>}}riak/kv/2.2.6/using/performance/benchmarking

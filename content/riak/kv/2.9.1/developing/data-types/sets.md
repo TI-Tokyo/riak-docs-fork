@@ -12,10 +12,10 @@ menu:
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/using/data-types/sets
-  - /riak-docs/riak/kv/2.9.1/dev/using/data-types/sets
-  - /riak-docs/riak/2.9.1/dev/data-modeling/data-types/sets
-  - /riak-docs/riak/kv/2.9.1/dev/data-modeling/data-types/sets
+  - /riak/2.9.1/dev/using/data-types/sets
+  - /riak/kv/2.9.1/dev/using/data-types/sets
+  - /riak/2.9.1/dev/data-modeling/data-types/sets
+  - /riak/kv/2.9.1/dev/data-modeling/data-types/sets
 ---
 
 Sets are a bucket-level Riak data type that can be used by themselves, associated with a bucket/key pair, or used [within a map](../maps#sets-within-maps).

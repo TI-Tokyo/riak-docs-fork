@@ -11,10 +11,10 @@ menu:
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/theory/concepts/Clusters
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/Clusters
-  - /riak-docs/riak/2.9.1/theory/concepts/clusters
-  - /riak-docs/riak/kv/2.9.1/theory/concepts/clusters
+  - /riak/2.9.1/theory/concepts/Clusters
+  - /riak/kv/2.9.1/theory/concepts/Clusters
+  - /riak/2.9.1/theory/concepts/clusters
+  - /riak/kv/2.9.1/theory/concepts/clusters
 ---
 
 

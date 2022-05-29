@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/advanced/client-security
-  - /riak-docs/riak/kv/2.9.1/dev/advanced/client-security
+  - /riak/2.9.1/dev/advanced/client-security
+  - /riak/kv/2.9.1/dev/advanced/client-security
 ---
 
 Versions of Riak 2.0 and later come equipped with a [security subsystem]({{<baseurl>}}riak/kv/2.9.1/using/security/basics) that enables you to choose

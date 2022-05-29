@@ -12,8 +12,8 @@ menu:
     parent: "getting_started_ruby"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/object-modeling-ruby
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/object-modeling-ruby
+  - /riak/2.2.6/dev/taste-of-riak/object-modeling-ruby
+  - /riak/kv/2.2.6/dev/taste-of-riak/object-modeling-ruby
 ---
 
 To get started, let's create the models that we'll be using. Since the

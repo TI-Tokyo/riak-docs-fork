@@ -11,8 +11,8 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/advanced/configs/configuration-files/
-  - /riak-docs/riak/kv/2.9.1/ops/advanced/configs/configuration-files/
+  - /riak/2.9.1/ops/advanced/configs/configuration-files/
+  - /riak/kv/2.9.1/ops/advanced/configs/configuration-files/
 ---
 
 [concept clusters]: ../../learn/concepts/clusters
@@ -203,7 +203,7 @@ executables are stored.</td>
 <tr>
 <td><code>platform_data_dir</code></td>
 <td>The directory in which Riak stores its storage backend data, as well
-as <a href="http://docs.basho.com/riak/kv/2.9.1/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
+as <a href="{{< baseurl >}}riak/kv/2.9.1/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
 <td><code>./data</code></td>
 </tr>
 
@@ -1582,7 +1582,7 @@ abandons the leader (in milliseconds). This must be set greater than the
 <tr>
 <td><code>alive_tokens</code></td>
 <td>Determines the number of ticks the leader will wait to hear from its
-associated <a href="http://docs.basho.com/riak/kv/2.9.1/learn/glossary/#vnode">vnode</a> before assuming that the vnode
+associated <a href="{{< baseurl >}}riak/kv/2.9.1/learn/glossary/#vnode">vnode</a> before assuming that the vnode
 is unhealthy and stepping down as leader. If the vnode does not respond
 to the leader before <code>ensemble_tick</code> *
 <code>alive_tokens</code> milliseconds have elapsed, the leader will
@@ -1731,8 +1731,8 @@ package) and in R14B04 via a custom repository and branch.</td>
 <tr>
 <td><code>vnode_management_timer</code></td>
 <td>Sets the frequency with which <a
-href="http://docs.basho.com/riak/kv/2.9.1/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
-href="http://docs.basho.com/riak/kv/2.9.1/learn/glossary/#hinted-handoff">handoff</a> between
+href="{{< baseurl >}}riak/kv/2.9.1/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
+href="{{< baseurl >}}riak/kv/2.9.1/learn/glossary/#hinted-handoff">handoff</a> between
 this node and other nodes in the cluster.</td>
 <td><code>10s</code> (10 seconds)</td>
 </tr>
@@ -1879,7 +1879,7 @@ filter.</td>
 <code>rt_heartbeat_interval</code> seconds. Setting
 <code>rt_heartbeat_interval </code> to <code>undefined</code> disables
 the realtime heartbeat. This feature is available only in Riak KV
-Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.9.1 onwards.</td>
+Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.2.6 onwards.</td>
 <td><code>15</code></td>
 </tr>
 
@@ -1888,7 +1888,7 @@ Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.9.1 onwards.</td>
 <td>If a heartbeat response is not received within the time period
 specified by this setting (in seconds), the source connection exits and
 will be re-established. This feature is available only in Riak KV
-Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.9.1 onwards.</td>
+Enterprise Edition 1.3.2 - 2.2.3 and then from Riak KV 2.2.6 onwards.</td>
 <td><code>15</code></td>
 </tr>
 
@@ -1907,7 +1907,7 @@ other Riak subsystems that may be contending for the same resources.
 This will help to prevent system response degradations during times of
 heavy load from multiple background tasks. To disable background
 coordination, set this parameter to `false`. This feature is available
-only in Riak KV Enterprise Edition 2.0 and later as well as Riak KV 2.9.1 onwards.</td>
+only in Riak KV Enterprise Edition 2.0 and later as well as Riak KV 2.2.6 onwards.</td>
 <td><code>true</code></td>
 </tr>
 

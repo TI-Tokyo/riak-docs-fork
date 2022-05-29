@@ -11,8 +11,8 @@ menu:
     parent: "learn"
 toc: false
 aliases:
-  - /riak-docs/riak/2.2.6/theory/dynamo
-  - /riak-docs/riak/kv/2.2.6/theory/dynamo
+  - /riak/2.2.6/theory/dynamo
+  - /riak/kv/2.2.6/theory/dynamo
 ---
 
 <div style="text-align:center;font-style:italic">
@@ -1372,12 +1372,12 @@ shopping cart.
 > remanding more complex reconciliation to the client. There are several tools
 > to help simplify this task, such as [Statebox].
 >
-> Riak KV supports a simple reconciliation strategy, called [CRDTs] (Commutative
-> Replicated Data Types), for reconciling common data types like sets and
+> Riak KV supports a simple reconciliation strategy, called [CRDTs (Commutative
+> Replicated Data Types)], for reconciling common data types like sets and
 > counters.
 
 [Statebox]: https://github.com/mochi/statebox_riak
-[CRDTs]: {{<baseurl>}}riak/kv/2.2.6/developing/data-types/
+[CRDTs (Commutative Replicated Data Types)]: {{<baseurl>}}riak/kv/2.2.6/developing/data-types/
 
 
 * Timestamp based reconciliation: This case differs from the previous one only
@@ -1905,7 +1905,7 @@ is actively addressed by O(1) DHT systems(e.g., [14]).
 > This paper was an overview of Riak from a Dynamo point-of-view. To get a
 > better sense of the Riak ecosystem, read our ever-expanding [documentation].
 
-[documentation]: https://docs.basho.com
+[documentation]: {{<baseurl>}}
 
 This paper described Dynamo, a highly available and scalable data store, used
 for storing state of a number of core services of Amazon.com’s e-commerce

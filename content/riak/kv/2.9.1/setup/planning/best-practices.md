@@ -11,8 +11,8 @@ menu:
     parent: "planning"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/planning/best-practices
-  - /riak-docs/riak/kv/2.9.1/ops/building/planning/best-practices
+  - /riak/2.9.1/ops/building/planning/best-practices
+  - /riak/kv/2.9.1/ops/building/planning/best-practices
 ---
 
 [use ref handoff]: {{<baseurl>}}riak/kv/2.9.1/using/reference/handoff

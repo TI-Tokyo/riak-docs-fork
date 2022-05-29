@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/using/2i
-  - /riak-docs/riak/kv/2.2.6/dev/using/2i
+  - /riak/2.2.6/dev/using/2i
+  - /riak/kv/2.2.6/dev/using/2i
 ---
 
 [plan backend leveldb]: {{<baseurl>}}riak/kv/2.2.6/setup/planning/backend/leveldb

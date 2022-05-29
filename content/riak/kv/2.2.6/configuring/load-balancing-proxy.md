@@ -11,8 +11,8 @@ menu:
     parent: "configuring"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/advanced/configs/load-balanacing-proxy/
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/configs/load-balanacing-proxy/
+  - /riak/2.2.6/ops/advanced/configs/load-balanacing-proxy/
+  - /riak/kv/2.2.6/ops/advanced/configs/load-balanacing-proxy/
 ---
 
 [perf open files]: {{<baseurl>}}riak/kv/2.2.6/using/performance/open-files-limit

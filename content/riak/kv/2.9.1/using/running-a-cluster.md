@@ -11,8 +11,8 @@ menu:
     parent: "managing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/basic-cluster-setup
-  - /riak-docs/riak/kv/2.9.1/ops/building/basic-cluster-setup
+  - /riak/2.9.1/ops/building/basic-cluster-setup
+  - /riak/kv/2.9.1/ops/building/basic-cluster-setup
 ---
 
 Configuring a Riak cluster involves instructing each node to listen on a

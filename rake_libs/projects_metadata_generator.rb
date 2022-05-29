@@ -48,6 +48,7 @@ def generate_projects_metadata()
     project_hash[:releases]      = description["releases"]
     project_hash[:latest]        = description["latest"]
     project_hash[:lts]           = description["lts"]           if description["lts"]
+    project_hash[:archive_below] = description["archive_below"] if description["archive_below"]
     project_hash[:archived_url]  = description["archived_url"]  if description["archived_url"]
   end
 

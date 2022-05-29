@@ -12,10 +12,10 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/Installing-Riak-from-Source
-  - /riak-docs/riak/kv/2.9.1/ops/building/Installing-Riak-from-Source
-  - /riak-docs/riak/2.9.1/installing/source/
-  - /riak-docs/riak/kv/2.9.1/installing/source/
+  - /riak/2.9.1/ops/building/Installing-Riak-from-Source
+  - /riak/kv/2.9.1/ops/building/Installing-Riak-from-Source
+  - /riak/2.9.1/installing/source/
+  - /riak/kv/2.9.1/installing/source/
 ---
 
 
@@ -60,7 +60,7 @@ or cloned source.
 Download the Riak source package from the [Download Center][downloads] and build:
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.1/riak-2.9.1.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.9/2.9.1/riak-2.9.1.tar.gz
 tar zxvf riak-2.9.1.tar.gz
 cd riak-2.9.1
 make locked-deps

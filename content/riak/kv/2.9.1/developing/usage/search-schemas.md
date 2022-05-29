@@ -11,8 +11,8 @@ menu:
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/advanced/search-schema
-  - /riak-docs/riak/kv/2.9.1/dev/advanced/search-schema
+  - /riak/2.9.1/dev/advanced/search-schema
+  - /riak/kv/2.9.1/dev/advanced/search-schema
 ---
 
 [concept clusters]: {{<baseurl>}}riak/kv/2.9.1/learn/concepts/clusters
@@ -21,7 +21,7 @@ aliases:
 >
 > This document refers to the new Riak Search 2.0 with
 [Solr](http://lucene.apache.org/solr/) integration (codenamed
-Yokozuna). For information about the deprecated Riak Search, visit [the old Using Riak Search docs](http://docs.basho.com/riak/1.4.10/dev/using/search/).
+Yokozuna).
 
 Riak Search is built for ease of use, allowing you to write values into
 Riak and query for values using Solr. Riak Search does a lot of work

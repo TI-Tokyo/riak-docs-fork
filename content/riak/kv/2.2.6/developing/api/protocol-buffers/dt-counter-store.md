@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/dt-counter-store
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/dt-counter-store
+  - /riak/2.2.6/dev/references/protocol-buffers/dt-counter-store
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/dt-counter-store
 ---
 
 An operation to update a [counter]({{<baseurl>}}riak/kv/2.2.6/developing/data-types).

@@ -11,8 +11,8 @@ menu:
     parent: "developing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/data-modeling/key-value/
-  - /riak-docs/riak/kv/2.9.1/dev/data-modeling/key-value/
+  - /riak/2.9.1/dev/data-modeling/key-value/
+  - /riak/kv/2.9.1/dev/data-modeling/key-value/
 ---
 
 While Riak enables you to take advantage of a wide variety of features

@@ -11,8 +11,8 @@ menu:
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/taste-of-riak/ruby
-  - /riak-docs/riak/kv/2.2.6/dev/taste-of-riak/ruby
+  - /riak/2.2.6/dev/taste-of-riak/ruby
+  - /riak/kv/2.2.6/dev/taste-of-riak/ruby
 ---
 
 

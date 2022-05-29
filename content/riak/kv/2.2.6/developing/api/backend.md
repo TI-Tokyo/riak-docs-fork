@@ -11,8 +11,8 @@ menu:
     parent: "developing_apis"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/backend-api
-  - /riak-docs/riak/kv/2.2.6/dev/references/backend-api
+  - /riak/2.2.6/dev/references/backend-api
+  - /riak/kv/2.2.6/dev/references/backend-api
 ---
 
 [plan backend]: {{<baseurl>}}riak/kv/2.2.6/setup/planning/backend

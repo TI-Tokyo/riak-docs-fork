@@ -11,12 +11,12 @@ menu:
     parent: "installing_source"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/building/installing/jvm
-  - /riak-docs/riak/kv/2.9.1/ops/building/installing/jvm
-  - /riak-docs/riak/2.9.1/ops/building/installing/Installing-the-JVM
-  - /riak-docs/riak/kv/2.9.1/ops/building/installing/Installing-the-JVM
-  - /riak-docs/riak/2.9.1/installing/source/jvm/
-  - /riak-docs/riak/kv/2.9.1/installing/source/jvm/
+  - /riak/2.9.1/ops/building/installing/jvm
+  - /riak/kv/2.9.1/ops/building/installing/jvm
+  - /riak/2.9.1/ops/building/installing/Installing-the-JVM
+  - /riak/kv/2.9.1/ops/building/installing/Installing-the-JVM
+  - /riak/2.9.1/installing/source/jvm/
+  - /riak/kv/2.9.1/installing/source/jvm/
 ---
 
 [usage search]: {{<baseurl>}}riak/kv/2.9.1/developing/usage/search

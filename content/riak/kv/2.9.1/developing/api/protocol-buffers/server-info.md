@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/server-info
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/server-info
+  - /riak/2.9.1/dev/references/protocol-buffers/server-info
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/server-info
 ---
 
 A message from Riak that contains two pieces of information about the

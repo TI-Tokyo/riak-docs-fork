@@ -11,8 +11,8 @@ menu:
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/advanced/runtime
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/runtime
+  - /riak/2.2.6/ops/advanced/runtime
+  - /riak/kv/2.2.6/ops/advanced/runtime
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.2.6/configuring/reference

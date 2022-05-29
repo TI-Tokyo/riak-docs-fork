@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/dev/references/protocol-buffers/dt-fetch
-  - /riak-docs/riak/kv/2.2.6/dev/references/protocol-buffers/dt-fetch
+  - /riak/2.2.6/dev/references/protocol-buffers/dt-fetch
+  - /riak/kv/2.2.6/dev/references/protocol-buffers/dt-fetch
 ---
 
 The equivalent of [`RpbGetReq`]({{<baseurl>}}riak/kv/2.2.6/developing/api/protocol-buffers/fetch-object) for [Riak Data Types]({{<baseurl>}}riak/kv/2.2.6/developing/data-types). This request results in a `DtFetchResp`

@@ -12,8 +12,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/monitoring/snmp
-  - /riak-docs/riak/kv/2.9.1/ops/running/monitoring/snmp
+  - /riak/2.9.1/ops/running/monitoring/snmp
+  - /riak/kv/2.9.1/ops/running/monitoring/snmp
 ---
 
 Riak Enterprise provided a built-in SNMP server that allows an external system, such as Hyperic, to query the Riak node for statistics such as the average get and put times as well as the number of puts and gets. This document only covers SNMP v2c support at this time which was the last supported version. After the release of Riak KV 2.2.3 Enterprise Edition, support for SNMP has been dropped. The below configuration examples are left for people analysing legacy settings and only work with the Enterprise Edition of Riak KV 2.2.3 or lower.

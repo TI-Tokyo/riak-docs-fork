@@ -11,18 +11,18 @@ menu:
     parent: "managing"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/advanced/security
-  - /riak-docs/riak/kv/2.2.6/ops/advanced/security
+  - /riak/2.2.6/ops/advanced/security
+  - /riak/kv/2.2.6/ops/advanced/security
 ---
 
-[config reference search]: {{<baseurl>}}riak/kv/2.1.4/configuring/reference/#search
-[config search enabling]: {{<baseurl>}}riak/kv/2.1.4/configuring/search/#enabling-riak-search
-[config v3 ssl]: {{<baseurl>}}riak/kv/2.1.4/configuring/v3-multi-datacenter/ssl
+[config reference search]: {{<baseurl>}}riak/kv/2.2.6/configuring/reference/#search
+[config search enabling]: {{<baseurl>}}riak/kv/2.2.6/configuring/search/#enabling-riak-search
+[config v3 ssl]: {{<baseurl>}}riak/kv/2.2.6/configuring/v3-multi-datacenter/ssl
 [JMX]: http://www.oracle.com/technetwork/java/javase/tech/javamanagement-140525.html
-[security basics]: {{<baseurl>}}riak/kv/2.1.4/using/security/basics
-[security managing]: {{<baseurl>}}riak/kv/2.1.4/using/security/managing-sources/
+[security basics]: {{<baseurl>}}riak/kv/2.2.6/using/security/basics
+[security managing]: {{<baseurl>}}riak/kv/2.2.6/using/security/managing-sources/
 [Solr]: http://lucene.apache.org/solr/
-[usage search]: {{<baseurl>}}riak/kv/2.1.4/developing/usage/search
+[usage search]: {{<baseurl>}}riak/kv/2.2.6/developing/usage/search
 
 > **Internal security**
 >

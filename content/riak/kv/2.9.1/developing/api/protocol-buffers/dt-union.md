@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/dt-union
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/dt-union
+  - /riak/2.9.1/dev/references/protocol-buffers/dt-union
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/dt-union
 ---
 
 A "union" type for update operations.

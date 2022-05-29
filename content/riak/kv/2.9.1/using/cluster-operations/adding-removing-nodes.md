@@ -11,8 +11,8 @@ menu:
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/ops/running/nodes/adding-removing
-  - /riak-docs/riak/kv/2.9.1/ops/running/nodes/adding-removing
+  - /riak/2.9.1/ops/running/nodes/adding-removing
+  - /riak/kv/2.9.1/ops/running/nodes/adding-removing
 ---
 
 [use running cluster]: {{<baseurl>}}riak/kv/2.9.1/using/running-a-cluster

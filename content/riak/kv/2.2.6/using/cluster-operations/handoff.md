@@ -11,8 +11,8 @@ menu:
     parent: "managing_cluster_operations"
 toc: true
 aliases:
-  - /riak-docs/riak/2.2.6/ops/running/handoff
-  - /riak-docs/riak/kv/2.2.6/ops/running/handoff
+  - /riak/2.2.6/ops/running/handoff
+  - /riak/kv/2.2.6/ops/running/handoff
 ---
 
 Riak KV provides a command-line interface for enabling and disabling handoff on the fly, without needing to set your configuration and restart the node. To

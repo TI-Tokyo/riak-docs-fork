@@ -11,8 +11,8 @@ menu:
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak-docs/riak/2.9.1/dev/references/protocol-buffers/set-client-id
-  - /riak-docs/riak/kv/2.9.1/dev/references/protocol-buffers/set-client-id
+  - /riak/2.9.1/dev/references/protocol-buffers/set-client-id
+  - /riak/kv/2.9.1/dev/references/protocol-buffers/set-client-id
 ---
 
 {{% note title="Deprecation notice" %}}
