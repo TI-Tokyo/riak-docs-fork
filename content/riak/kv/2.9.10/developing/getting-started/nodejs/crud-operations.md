@@ -11,10 +11,6 @@ menu:
     weight: 100
     parent: "getting_started_nodejs"
 toc: true
-aliases:
-  - /riak/latest/developing/getting-started/nodejs/crud-operations/
-  - /riak/kv/latest/developing/getting-started/nodejs/crud-operations/
-  - /riakkv/latest/developing/getting-started/nodejs/crud-operations/
 ---
 
 [nodejs_wiki]: https://github.com/basho/riak-nodejs-client/wiki

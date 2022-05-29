@@ -10,10 +10,6 @@ menu:
     weight: 101
     parent: "managing_troubleshooting"
 toc: true
-aliases:
-  - /riak/latest/using/troubleshooting/http-204/
-  - /riak/kv/latest/using/troubleshooting/http-204/
-  - /riakkv/latest/using/troubleshooting/http-204/
 ---
 
 In the HTTP standard, a `204 No Content` is returned when the request was successful but there is nothing to return other than HTTP headers.

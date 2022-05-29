@@ -10,11 +10,6 @@ menu:
     weight: 102
     parent: "setup_index"
 toc: true
-aliases:
-  - /riak/kv/latest/setup/upgrading/
-  - /riak/latest/setup/upgrading/
-  - /riak/kv/latest/setup/upgrading/
-  - /riakkv/latest/setup/upgrading/
 ---
 
 [upgrade checklist]: ./checklist

@@ -10,10 +10,6 @@ menu:
     weight: 110
     parent: "configuring"
 toc: true
-aliases:
-  - /riak/latest/configuring/backend/
-  - /riak/kv/latest/configuring/backend/
-  - /riakkv/latest/configuring/backend/
 ---
 
 [plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.10/setup/planning/backend/leveldb

@@ -12,10 +12,6 @@ menu:
     parent: "managing_performance"
 toc: true
 commercial_offering: true
-aliases:
-  - /riak/latest/using/performance/multi-datacenter-tuning/
-  - /riak/kv/latest/using/performance/multi-datacenter-tuning/
-  - /riakkv/latest/using/performance/multi-datacenter-tuning/
 ---
 
 [perf index]: {{<baseurl>}}riak/kv/2.9.10/using/performance

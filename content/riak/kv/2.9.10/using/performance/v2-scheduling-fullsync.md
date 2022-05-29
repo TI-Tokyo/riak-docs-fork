@@ -11,10 +11,6 @@ menu:
     parent: "managing_performance"
 toc: true
 commercial_offering: true
-aliases:
-  - /riak/latest/using/performance/v2-scheduling-fullsync/
-  - /riak/kv/latest/using/performance/v2-scheduling-fullsync/
-  - /riakkv/latest/using/performance/v2-scheduling-fullsync/
 ---
 
 {{% note title="Deprecation Warning" %}}

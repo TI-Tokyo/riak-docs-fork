@@ -10,10 +10,6 @@ menu:
     weight: 114
     parent: "managing_ref"
 toc: true
-aliases:
-  - /riak/latest/using/reference/v3-multi-datacenter/
-  - /riak/kv/latest/using/reference/v3-multi-datacenter/
-  - /riakkv/latest/using/reference/v3-multi-datacenter/
 ---
 
 [v3 mdc arch]: ./architecture

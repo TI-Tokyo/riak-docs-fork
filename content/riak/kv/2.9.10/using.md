@@ -10,11 +10,6 @@ menu:
     weight: 201
     pre: database
 toc: true
-aliases:
-  - /riak/kv/latest/using/
-  - /riak/latest/using/
-  - /riak/kv/latest/using/
-  - /riakkv/latest/using/
 ---
 
 [use running cluster]: ../using/running-a-cluster
