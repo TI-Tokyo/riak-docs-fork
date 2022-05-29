@@ -16,9 +16,6 @@ aliases:
   - /riak/kv/2.9.10/dev/using/data-types
   - /riak/2.9.10/dev/data-modeling/data-types
   - /riak/kv/2.9.10/dev/data-modeling/data-types
-  - /riak/latest/developing/data-types/
-  - /riak/kv/latest/developing/data-types/
-  - /riakkv/latest/developing/data-types/
 ---
 
 [wiki crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#Others

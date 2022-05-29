@@ -17,8 +17,6 @@ aliases:
   - /riak/2.9.10/installing/smartos/
   - /riak/kv/2.9.10/installing/smartos/
   - /riak/kv/2.9.10/installing/smartos/
-  - /riak/kv/latest/setup/installing/smartos/
-  - /riak/kv/latest/installing/smartos/
 ---
 
 [install verify]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/verify

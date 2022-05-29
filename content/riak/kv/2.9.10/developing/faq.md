@@ -14,9 +14,6 @@ toc: true
 aliases:
   - /riak/2.9.10/community/faqs/developing
   - /riak/kv/2.9.10/community/faqs/developing
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
 ---
 
 [[Basho Bench]: {{<baseurl>}}riak/kv/2.9.10/using/performance/benchmarking

@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers
   - /riak/kv/2.9.10/dev/references/protocol-buffers
-  - /riak/latest/developing/api/protocol-buffers/
-  - /riak/kv/latest/developing/api/protocol-buffers/
-  - /riakkv/latest/developing/api/protocol-buffers/
 ---
 
 This is an overview of the operations you can perform using the

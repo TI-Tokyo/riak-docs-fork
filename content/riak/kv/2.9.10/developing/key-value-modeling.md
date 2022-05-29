@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/data-modeling/key-value/
   - /riak/kv/2.9.10/dev/data-modeling/key-value/
-  - /riak/latest/developing/key-value-modeling/
-  - /riak/kv/latest/developing/key-value-modeling/
-  - /riakkv/latest/developing/key-value-modeling/
 ---
 
 While Riak enables you to take advantage of a wide variety of features

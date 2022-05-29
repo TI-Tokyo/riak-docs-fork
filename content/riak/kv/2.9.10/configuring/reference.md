@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/configs/configuration-files/
   - /riak/kv/2.9.10/ops/advanced/configs/configuration-files/
-  - /riak/latest/configuring/reference/
-  - /riak/kv/latest/configuring/reference/
-  - /riakkv/latest/configuring/reference/
 ---
 
 [concept clusters]: ../../learn/concepts/clusters

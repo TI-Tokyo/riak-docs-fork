@@ -13,10 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/using/conflict-resolution
   - /riak/kv/2.9.10/dev/using/conflict-resolution
-  - /riak/latest/developing/usage/conflict-resolution/
-  - /riak/kv/latest/developing/usage/conflict-resolution/
-  - /riakkv/latest/developing/usage/conflict-resolution/
-  - /riak/kv/latest/dev/using/conflict-resolution/
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.10/developing/usage/bucket-types

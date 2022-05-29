@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/using/application-guide/
   - /riak/kv/2.9.10/dev/using/application-guide/
-  - /riak/latest/developing/app-guide/
-  - /riak/kv/latest/developing/app-guide/
-  - /riakkv/latest/developing/app-guide/
 ---
 
 [usage conflict resolution]: {{<baseurl>}}riak/kv/2.9.10/developing/usage/conflict-resolution

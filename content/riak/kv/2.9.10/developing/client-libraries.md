@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/using/libraries
   - /riak/kv/2.9.10/dev/using/libraries
-  - /riak/latest/developing/client-libraries/
-  - /riak/kv/latest/developing/client-libraries/
-  - /riakkv/latest/developing/client-libraries/
 ---
 
 ## Basho-Supported Libraries

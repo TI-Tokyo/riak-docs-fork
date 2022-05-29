@@ -15,9 +15,6 @@ commercial_offering: true
 aliases:
   - /riak/2.9.10/ops/mdc/v2/nat
   - /riak/kv/2.9.10/ops/mdc/v2/nat
-  - /riak/latest/configuring/v2-multi-datacenter/nat/
-  - /riak/kv/latest/configuring/v2-multi-datacenter/nat/
-  - /riakkv/latest/configuring/v2-multi-datacenter/nat/
 ---
 
 [config v2 ssl]: {{<baseurl>}}riak/kv/2.9.10/configuring/v2-multi-datacenter/ssl
