@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/backends/leveldb/
   - /riak/kv/2.9.10/ops/advanced/backends/leveldb/
-  - /riak/latest/setup/planning/backend/leveldb/
-  - /riak/kv/latest/setup/planning/backend/leveldb/
-  - /riakkv/latest/setup/planning/backend/leveldb/
 ---
 
 [upgrade 2.0#upgrading-leveldB]: {{<baseurl>}}

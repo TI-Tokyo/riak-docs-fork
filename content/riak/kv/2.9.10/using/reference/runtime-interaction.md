@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/runtime
   - /riak/kv/2.9.10/ops/advanced/runtime
-  - /riak/latest/using/reference/runtime-interaction/
-  - /riak/kv/latest/using/reference/runtime-interaction/
-  - /riakkv/latest/using/reference/runtime-interaction/
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.9.10/configuring/reference

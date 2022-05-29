@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/fetch-object
   - /riak/kv/2.9.10/dev/references/protocol-buffers/fetch-object
-  - /riak/latest/developing/api/protocol-buffers/fetch-object/
-  - /riak/kv/latest/developing/api/protocol-buffers/fetch-object/
-  - /riakkv/latest/developing/api/protocol-buffers/fetch-object/
 ---
 
 Fetch an object from the specified bucket type/bucket/key location

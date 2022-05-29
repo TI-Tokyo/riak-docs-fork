@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/nodes/inspecting
   - /riak/kv/2.9.10/ops/running/nodes/inspecting
-  - /riak/latest/using/cluster-operations/inspecting-node/
-  - /riak/kv/latest/using/cluster-operations/inspecting-node/
-  - /riakkv/latest/using/cluster-operations/inspecting-node/
 ---
 
 When inspection of a Riak node to gather metrics on performance or

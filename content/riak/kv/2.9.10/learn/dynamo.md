@@ -13,9 +13,6 @@ toc: false
 aliases:
   - /riak/2.9.10/theory/dynamo
   - /riak/kv/2.9.10/theory/dynamo
-  - /riak/latest/learn/dynamo/
-  - /riak/kv/latest/learn/dynamo/
-  - /riakkv/latest/learn/dynamo/
 ---
 
 <div style="text-align:center;font-style:italic">

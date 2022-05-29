@@ -14,9 +14,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/taste-of-riak/object-modeling-golang
   - /riak/kv/2.9.10/dev/taste-of-riak/object-modeling-golang
-  - /riak/latest/developing/getting-started/golang/object-modeling/
-  - /riak/kv/latest/developing/getting-started/golang/object-modeling/
-  - /riakkv/latest/developing/getting-started/golang/object-modeling/
 ---
 
 {{% note title="Code Download" %}}

@@ -12,9 +12,6 @@ menu:
 toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/deletion
-  - /riak/latest/using/reference/object-deletion/
-  - /riak/kv/latest/using/reference/object-deletion/
-  - /riakkv/latest/using/reference/object-deletion/
 ---
 
 [concept eventual consistency]: ../../../learn/concepts/eventual-consistency

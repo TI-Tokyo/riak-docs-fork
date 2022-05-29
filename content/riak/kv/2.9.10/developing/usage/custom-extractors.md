@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/search/custom-extractors
   - /riak/kv/2.9.10/dev/search/custom-extractors
-  - /riak/latest/developing/usage/custom-extractors/
-  - /riak/kv/latest/developing/usage/custom-extractors/
-  - /riakkv/latest/developing/usage/custom-extractors/
 ---
 
 Solr, and by extension Riak Search, has default extractors for a wide

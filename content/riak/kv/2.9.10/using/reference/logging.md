@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/logging
   - /riak/kv/2.9.10/ops/running/logging
-  - /riak/latest/using/reference/logging/
-  - /riak/kv/latest/using/reference/logging/
-  - /riakkv/latest/using/reference/logging/
 ---
 
 [cluster ops log]: {{<baseurl>}}riak/kv/2.9.10/using/cluster-operations/logging

@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/ping
   - /riak/kv/2.9.10/dev/references/protocol-buffers/ping
-  - /riak/latest/developing/api/protocol-buffers/ping/
-  - /riak/kv/latest/developing/api/protocol-buffers/ping/
-  - /riakkv/latest/developing/api/protocol-buffers/ping/
 ---
 
 Check if the server is alive

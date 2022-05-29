@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/link-walking
   - /riak/kv/2.9.10/dev/references/http/link-walking
-  - /riak/latest/developing/api/http/link-walking/
-  - /riak/kv/latest/developing/api/http/link-walking/
-  - /riakkv/latest/developing/api/http/link-walking/
 ---
 
 {{% note title="Deprecation Warning" %}}

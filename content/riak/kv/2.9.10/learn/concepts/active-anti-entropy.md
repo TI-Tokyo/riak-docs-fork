@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/theory/concepts/aae
   - /riak/kv/2.9.10/theory/concepts/aae
-  - /riak/latest/learn/concepts/active-anti-entropy/
-  - /riak/kv/latest/learn/concepts/active-anti-entropy/
-  - /riakkv/latest/learn/concepts/active-anti-entropy/
 ---
 
 [cluster ops v3 mdc]: {{<baseurl>}}riak/kv/2.9.10/using/cluster-operations/v3-multi-datacenter

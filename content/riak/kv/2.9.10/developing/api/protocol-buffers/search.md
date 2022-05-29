@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/search
   - /riak/kv/2.9.10/dev/references/protocol-buffers/search
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
 ---
 
 Send a Search request to retrieve a list of documents, along with a few

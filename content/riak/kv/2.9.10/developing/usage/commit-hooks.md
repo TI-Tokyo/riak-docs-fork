@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/using/commit-hooks
   - /riak/kv/2.9.10/dev/using/commit-hooks
-  - /riak/latest/developing/usage/commit-hooks/
-  - /riak/kv/latest/developing/usage/commit-hooks/
-  - /riakkv/latest/developing/usage/commit-hooks/
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.10/developing/usage/bucket-types

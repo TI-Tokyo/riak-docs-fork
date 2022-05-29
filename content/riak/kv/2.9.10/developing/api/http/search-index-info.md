@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/search-index-info
   - /riak/kv/2.9.10/dev/references/http/search-index-info
-  - /riak/latest/developing/api/http/search-index-info/
-  - /riak/kv/latest/developing/api/http/search-index-info/
-  - /riakkv/latest/developing/api/http/search-index-info/
 ---
 
 Retrieves information about all currently available [Search indexes]({{<baseurl>}}riak/kv/2.9.10/developing/usage/search) in JSON format.

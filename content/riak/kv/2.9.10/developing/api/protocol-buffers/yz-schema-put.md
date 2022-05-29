@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/yz-schema-put
   - /riak/kv/2.9.10/dev/references/protocol-buffers/yz-schema-put
-  - /riak/latest/developing/api/protocol-buffers/yz-schema-put/
-  - /riak/kv/latest/developing/api/protocol-buffers/yz-schema-put/
-  - /riakkv/latest/developing/api/protocol-buffers/yz-schema-put/
 ---
 
 Create a new Solr [search schema]({{<baseurl>}}riak/kv/2.9.10/developing/usage/search-schemas).

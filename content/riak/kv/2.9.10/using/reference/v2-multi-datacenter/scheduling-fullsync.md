@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/mdc/v2/scheduling-fullsync
   - /riak/kv/2.9.10/ops/mdc/v2/scheduling-fullsync
-  - /riak/latest/using/reference/v2-multi-datacenter/scheduling-fullsync/
-  - /riak/kv/latest/using/reference/v2-multi-datacenter/scheduling-fullsync/
-  - /riakkv/latest/using/reference/v2-multi-datacenter/scheduling-fullsync/
 ---
 
 {{% note title="Deprecation Warning" %}}

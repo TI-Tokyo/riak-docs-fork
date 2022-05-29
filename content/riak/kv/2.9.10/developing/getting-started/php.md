@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/taste-of-riak/php
   - /riak/kv/2.9.10/dev/taste-of-riak/php
-  - /riak/latest/developing/getting-started/php/
-  - /riak/kv/latest/developing/getting-started/php/
-  - /riakkv/latest/developing/getting-started/php/
 ---
 
 If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.10/using/running-a-cluster) first.

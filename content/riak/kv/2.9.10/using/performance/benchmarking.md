@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/building/benchmarking
   - /riak/kv/2.9.10/ops/building/benchmarking
-  - /riak/latest/using/performance/benchmarking/
-  - /riak/kv/latest/using/performance/benchmarking/
-  - /riakkv/latest/using/performance/benchmarking/
 ---
 
 Basho Bench is a benchmarking tool created to conduct accurate and

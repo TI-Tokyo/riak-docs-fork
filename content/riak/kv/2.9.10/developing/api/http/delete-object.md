@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/delete-object
   - /riak/kv/2.9.10/dev/references/http/delete-object
-  - /riak/latest/developing/api/http/delete-object/
-  - /riak/kv/latest/developing/api/http/delete-object/
-  - /riakkv/latest/developing/api/http/delete-object/
 ---
 
 Deletes an object from the specified bucket / key.

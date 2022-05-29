@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/recovery/failure-recovery
   - /riak/kv/2.9.10/ops/running/recovery/failure-recovery
-  - /riak/latest/using/repair-recovery/failure-recovery/
-  - /riak/kv/latest/using/repair-recovery/failure-recovery/
-  - /riakkv/latest/using/repair-recovery/failure-recovery/
 ---
 
 Riak was built to withstand---or at the very least reduce the severity

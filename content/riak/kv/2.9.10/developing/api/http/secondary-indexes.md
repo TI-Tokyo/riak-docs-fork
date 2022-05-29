@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/secondary-indexes
   - /riak/kv/2.9.10/dev/references/http/secondary-indexes
-  - /riak/latest/developing/api/http/secondary-indexes/
-  - /riak/kv/latest/developing/api/http/secondary-indexes/
-  - /riakkv/latest/developing/api/http/secondary-indexes/
 ---
 
 [Secondary Indexes]({{<baseurl>}}riak/kv/2.9.10/developing/usage/secondary-indexes) allows an application to tag a Riak object with one or more field/value pairs. The object is indexed under these field/value pairs, and the application can later query the index to retrieve a list of matching keys.

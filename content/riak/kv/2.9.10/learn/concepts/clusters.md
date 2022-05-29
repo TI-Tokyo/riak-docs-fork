@@ -15,9 +15,6 @@ aliases:
   - /riak/kv/2.9.10/theory/concepts/Clusters
   - /riak/2.9.10/theory/concepts/clusters
   - /riak/kv/2.9.10/theory/concepts/clusters
-  - /riak/latest/learn/concepts/clusters/
-  - /riak/kv/latest/learn/concepts/clusters/
-  - /riakkv/latest/learn/concepts/clusters/
 ---
 
 

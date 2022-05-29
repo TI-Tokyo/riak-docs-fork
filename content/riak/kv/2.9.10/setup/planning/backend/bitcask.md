@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/backends/bitcask/
   - /riak/kv/2.9.10/ops/advanced/backends/bitcask/
-  - /riak/latest/setup/planning/backend/bitcask/
-  - /riak/kv/latest/setup/planning/backend/bitcask/
-  - /riakkv/latest/setup/planning/backend/bitcask/
 ---
 
 [github bitcask]: https://github.com/basho/bitcask

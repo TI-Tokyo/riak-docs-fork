@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/theory/concepts/strong-consistency
   - /riak/kv/2.9.10/theory/concepts/strong-consistency
-  - /riak/latest/learn/concepts/strong-consistency/
-  - /riak/kv/latest/learn/concepts/strong-consistency/
-  - /riakkv/latest/learn/concepts/strong-consistency/
 ---
 
 [usage bucket types]: {{<baseurl>}}riak/kv/2.9.10/developing/usage/bucket-types

@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/advanced/mapreduce/
   - /riak/kv/2.9.10/dev/advanced/mapreduce/
-  - /riak/latest/developing/app-guide/advanced-mapreduce/
-  - /riak/kv/latest/developing/app-guide/advanced-mapreduce/
-  - /riakkv/latest/developing/app-guide/advanced-mapreduce/
 ---
 
 [usage 2i]: {{<baseurl>}}riak/kv/2.9.10/developing/usage/secondary-indexes

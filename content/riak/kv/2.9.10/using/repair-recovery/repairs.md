@@ -19,10 +19,6 @@ aliases:
   - /riak/kv/2.9.10/ops/running/recovery/repairing-leveldb
   - /riak/2.9.10/ops/running/recovery/repairing-partitions
   - /riak/kv/2.9.10/ops/running/recovery/repairing-partitions
-  - /riak/latest/using/repair-recovery/repairs/
-  - /riak/kv/latest/using/repair-recovery/repairs/
-  - /riakkv/latest/using/repair-recovery/repairs/
-  - /riak/latest/ops/running/recovery/repairing-partitions/
 ---
 
 [cluster ops aae]: {{<baseurl>}}riak/kv/2.9.10/using/cluster-operations/active-anti-entropy/

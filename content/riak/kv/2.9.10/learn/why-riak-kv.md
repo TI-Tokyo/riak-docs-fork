@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/theory/why-riak/
   - /riak/kv/2.9.10/theory/why-riak/
-  - /riak/latest/learn/why-riak-kv/
-  - /riak/kv/latest/learn/why-riak-kv/
-  - /riakkv/latest/learn/why-riak-kv/
 ---
 
 

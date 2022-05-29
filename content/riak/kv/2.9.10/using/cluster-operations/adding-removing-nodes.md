@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/nodes/adding-removing
   - /riak/kv/2.9.10/ops/running/nodes/adding-removing
-  - /riak/latest/using/cluster-operations/adding-removing-nodes/
-  - /riak/kv/latest/using/cluster-operations/adding-removing-nodes/
-  - /riakkv/latest/using/cluster-operations/adding-removing-nodes/
 ---
 
 [use running cluster]: {{<baseurl>}}riak/kv/2.9.10/using/running-a-cluster

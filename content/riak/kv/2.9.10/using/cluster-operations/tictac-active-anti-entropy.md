@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/kv/2.9.10/ops/advanced/tictacaae/
   - /riak/2.9.10/ops/advanced/ticktacaae/
-  - /riak/latest/using/cluster-operations/tictac-active-anti-entropy/
-  - /riak/kv/latest/using/cluster-operations/tictac-active-anti-entropy/
-  - /riakkv/latest/using/cluster-operations/tictac-active-anti-entropy/
 ---
 
 

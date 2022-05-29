@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/theory/concepts/context
   - /riak/kv/2.9.10/theory/concepts/context
-  - /riak/latest/learn/concepts/causal-context/
-  - /riak/kv/latest/learn/concepts/causal-context/
-  - /riakkv/latest/learn/concepts/causal-context/
 ---
 
 

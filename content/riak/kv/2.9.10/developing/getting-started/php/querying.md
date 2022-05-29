@@ -14,9 +14,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/taste-of-riak/querying-php
   - /riak/kv/2.9.10/dev/taste-of-riak/querying-php
-  - /riak/latest/developing/getting-started/php/querying/
-  - /riak/kv/latest/developing/getting-started/php/querying/
-  - /riakkv/latest/developing/getting-started/php/querying/
 ---
 
 ## A Quick Note on Querying and Schemas

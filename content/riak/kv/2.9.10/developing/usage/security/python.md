@@ -14,9 +14,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/advanced/client-security/python
   - /riak/kv/2.9.10/dev/advanced/client-security/python
-  - /riak/latest/developing/usage/security/python/
-  - /riak/kv/latest/developing/usage/security/python/
-  - /riakkv/latest/developing/usage/security/python/
 ---
 
 This tutorial shows you how to set up a Riak Python client to

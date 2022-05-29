@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/store-search-index
   - /riak/kv/2.9.10/dev/references/http/store-search-index
-  - /riak/latest/developing/api/http/store-search-index
-  - /riak/kv/latest/developing/api/http/store-search-index
-  - /riakkv/latest/developing/api/http/store-search-index
 ---
 
 Creates a new Riak Search [index]({{<baseurl>}}riak/kv/2.9.10/developing/usage/search/#simple-setup).

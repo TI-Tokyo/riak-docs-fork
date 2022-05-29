@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/fetch-search-index
   - /riak/kv/2.9.10/dev/references/http/fetch-search-index
-  - /riak/latest/developing/api/http/fetch-search-index
-  - /riak/kv/latest/developing/api/http/fetch-search-index
-  - /riakkv/latest/developing/api/http/fetch-search-index
 ---
 
 Retrieves information about a Riak Search [index]({{<baseurl>}}riak/kv/2.9.10/developing/usage/search/#simple-setup).

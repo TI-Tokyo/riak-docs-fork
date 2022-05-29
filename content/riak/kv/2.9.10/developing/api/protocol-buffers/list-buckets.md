@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/list-buckets
   - /riak/kv/2.9.10/dev/references/protocol-buffers/list-buckets
-  - /riak/latest/developing/api/protocol-buffers/list-buckets/
-  - /riak/kv/latest/developing/api/protocol-buffers/list-buckets/
-  - /riakkv/latest/developing/api/protocol-buffers/list-buckets/
 ---
 
 List all of the bucket names available.

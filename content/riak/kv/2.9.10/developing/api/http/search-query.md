@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/search-query
   - /riak/kv/2.9.10/dev/references/http/search-query
-  - /riak/latest/developing/api/http/search-query/
-  - /riak/kv/latest/developing/api/http/search-query/
-  - /riakkv/latest/developing/api/http/search-query/
 ---
 
 Performs a [Riak KV Search]({{<baseurl>}}riak/kv/2.9.10/developing/usage/search) query.

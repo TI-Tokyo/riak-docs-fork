@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/mdc/monitoring
   - /riak/kv/2.9.10/ops/mdc/monitoring
-  - /riak/latest/using/reference/multi-datacenter/monitoring/
-  - /riak/kv/latest/using/reference/multi-datacenter/monitoring/
-  - /riakkv/latest/using/reference/multi-datacenter/monitoring/
 ---
 
 Monitoring Riak's realtime replication allows you to identify trends and

@@ -15,9 +15,6 @@ version_history:
 aliases:
   - /riak/2.9.10/dev/advanced/write-once
   - /riak/kv/2.9.10/dev/advanced/write-once
-  - /riak/latest/developing/app-guide/write-once/
-  - /riak/kv/latest/developing/app-guide/write-once/
-  - /riakkv/latest/developing/app-guide/write-once/
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.9.10/learn/glossary/#vnode

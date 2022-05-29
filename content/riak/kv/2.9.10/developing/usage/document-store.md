@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/search/document-store
   - /riak/kv/2.9.10/dev/search/document-store
-  - /riak/latest/developing/usage/document-store/
-  - /riak/kv/latest/developing/usage/document-store/
-  - /riakkv/latest/developing/usage/document-store/
 ---
 
 Although Riak wasn't explicitly created as a document store, two

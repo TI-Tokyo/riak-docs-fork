@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/reset-bucket-props
   - /riak/kv/2.9.10/dev/references/http/reset-bucket-props
-  - /riak/latest/developing/api/http/reset-bucket-props/
-  - /riak/kv/latest/developing/api/http/reset-bucket-props/
-  - /riakkv/latest/developing/api/http/reset-bucket-props/
 ---
 
 Resets bucket properties like `n_val` and `allow_mult` back to the

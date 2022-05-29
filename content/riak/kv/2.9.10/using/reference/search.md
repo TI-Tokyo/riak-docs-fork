@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/advanced/search
   - /riak/kv/2.9.10/dev/advanced/search
-  - /riak/latest/using/reference/search/
-  - /riak/kv/latest/using/reference/search/
-  - /riakkv/latest/using/reference/search/
 ---
 
 [concept clusters]: {{<baseurl>}}riak/kv/2.9.10/learn/concepts/clusters

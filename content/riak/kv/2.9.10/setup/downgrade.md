@@ -13,10 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/upgrading/rolling-downgrades/
   - /riak/kv/2.9.10/ops/upgrading/rolling-downgrades/
-  - /riak/kv/latest/setup/downgrade/
-  - /riak/latest/setup/downgrade/
-  - /riak/kv/latest/setup/downgrade/
-  - /riakkv/latest/setup/downgrade/
 ---
 
 [rolling upgrade]: {{<baseurl>}}riak/kv/2.9.10/setup/upgrading/cluster

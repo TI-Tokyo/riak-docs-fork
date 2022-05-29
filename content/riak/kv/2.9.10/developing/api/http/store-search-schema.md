@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/store-search-schema
   - /riak/kv/2.9.10/dev/references/http/store-search-schema
-  - /riak/latest/developing/api/http/store-search-schema/
-  - /riak/kv/latest/developing/api/http/store-search-schema/
-  - /riakkv/latest/developing/api/http/store-search-schema/
 ---
 
 Creates a new Riak [Search schema]({{<baseurl>}}riak/kv/2.9.10/developing/usage/search-schemas).
