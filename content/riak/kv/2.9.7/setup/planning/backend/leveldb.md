@@ -66,26 +66,16 @@ A number of changes have been introduced in the LevelDB backend in Riak
 
 ## Strengths
 
-1. **License**
-  - /riak/latest/setup/planning/backend/leveldb/
-  - /riak/kv/latest/setup/planning/backend/leveldb/
-  - /riakkv/latest/setup/planning/backend/leveldb/
----
-The LevelDB and eLevelDB licenses are the [New BSD
+1. **License** - The LevelDB and eLevelDB licenses are the [New BSD
    License](http://www.opensource.org/licenses/bsd-license.php) and the
    [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html),
    respectively. We'd like to thank Google and the authors of LevelDB at
    Google for choosing a completely FLOSS license so that everyone can
    benefit from this innovative storage engine.
-2. **Data compression**
-  - /riak/latest/setup/planning/backend/leveldb/
-  - /riak/kv/latest/setup/planning/backend/leveldb/
-  - /riakkv/latest/setup/planning/backend/leveldb/
----
-LevelDB provides two compression algorithms
+2. **Data compression** - LevelDB provides two compression algorithms
    to reduce storage size and increase efficient use of storage bandwidth:
-      * Google's [Snappy](https://code.google.com/p/snappy/) data compression
-      * [LZ4](https://en.wikipedia.org/wiki/LZ4_(compression_algorithm)) data
+    * Google's [Snappy](https://code.google.com/p/snappy/) data compression
+    * [LZ4](https://en.wikipedia.org/wiki/LZ4_(compression_algorithm)) data
         compression
 
     Enabling compression means more CPU usage but less disk space. Compression

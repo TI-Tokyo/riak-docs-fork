@@ -215,22 +215,9 @@ Field | Description
 `strategy` | A replication strategy defines an implementation of the Riak Replication protocol. Valid values: `keylist`, `syncv1`
 `fullsync_worker` | The Erlang process ID of the fullsync worker
 `waiting_to_retry` | The listeners currently waiting to retry replication after a failure
-`connected` | A list of connected clients<ul><li>`connected`
-  - /riak/latest/using/cluster-operations/v2-multi-datacenter/
-  - /riak/kv/latest/using/cluster-operations/v2-multi-datacenter/
-  - /riakkv/latest/using/cluster-operations/v2-multi-datacenter/
----
-The IP address and port of a connected client (site)</li><li>`cluster_name`
-  - /riak/latest/using/cluster-operations/v2-multi-datacenter/
-  - /riak/kv/latest/using/cluster-operations/v2-multi-datacenter/
-  - /riakkv/latest/using/cluster-operations/v2-multi-datacenter/
----
-The name of the connected client (site)</li><li>`connecting`
-  - /riak/latest/using/cluster-operations/v2-multi-datacenter/
-  - /riak/kv/latest/using/cluster-operations/v2-multi-datacenter/
-  - /riakkv/latest/using/cluster-operations/v2-multi-datacenter/
----
-The PID, IP address, and port of a client currently establishing a connection</li></ul>
+`connected` | A list of connected clients<ul><li>`connected` - 
+The IP address and port of a connected client (site)</li><li>`cluster_name` - 
+The name of the connected client (site)</li><li>`connecting` - The PID, IP address, and port of a client currently establishing a connection</li></ul>
 `state` | State shows what the current replication strategy is currently processing. The following definitions appear in the status output if keylist strategy is being used. They can be used by Basho support to identify replication issues.<ul><li>`request_partition`</li><li>`wait_for_fullsync`</li><li>`send_keylist`</li><li>`wait_ack`</li></ul>
 
 ## Bounded Queue
