@@ -4,7 +4,7 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/index/"
+  - "/riakcs/latest/"
 ---
 
 Redirects `someroot/latest/somepath` to `someroot/{latest}/somepath` 
