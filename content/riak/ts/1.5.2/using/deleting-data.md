@@ -14,7 +14,7 @@ version_history:
   in: "1.5.2+"
 aliases:
   - /riakts/1.5.2/using/deleting-data/
-  - /riak/ts/latest/using/deleting-data/
+
 ---
 
 [delete]: {{<baseurl>}}riak/ts/1.5.2/using/querying/delete

@@ -15,7 +15,7 @@ version_history:
 aliases:
   - /riakts/1.5.2/setup/downgrading/
   - /riakts/1.5.2/downgrading/
-  - /riak/ts/latest/setup/downgrading/
+
 ---
 
 ## Caution
