@@ -17,7 +17,7 @@ aliases:
   - /riak/kv/3.0.4/introduction
 ---
 
-Released Dec 06, 2020.
+Released April 2nd, 2021.
 
 
 ## Overview
