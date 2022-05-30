@@ -33,12 +33,7 @@ message RpbListKeysReq {
 
 Optional Parameters
 
-* `bucket`
-  - /riak/latest/developing/api/protocol-buffers/list-keys/
-  - /riak/kv/latest/developing/api/protocol-buffers/list-keys/
-  - /riakkv/latest/developing/api/protocol-buffers/list-keys/
----
-bucket to get keys from
+* `bucket` - bucket to get keys from
 
 ## Response
 
