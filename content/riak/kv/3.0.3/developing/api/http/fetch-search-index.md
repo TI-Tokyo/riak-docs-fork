@@ -29,25 +29,9 @@ GET /search/index/<index_name>
 
 ## Typical Error Codes
 
-* `404 Object Not Found`
-  - /riak/latest/developing/api/http/fetch-search-
-  - /riak/kv/latest/developing/api/http/fetch-search-
-  - /riakkv/latest/developing/api/http/fetch-search-
-  - /riak/latest/developing/api/http/fetch-search-index/
-  - /riak/kv/latest/developing/api/http/fetch-search-index/
-  - /riakkv/latest/developing/api/http/fetch-search-index/
----
-No Search index with that name is currently
+* `404 Object Not Found` - No Search index with that name is currently
     available
-* `503 Service Unavailable`
-  - /riak/latest/developing/api/http/fetch-search-
-  - /riak/kv/latest/developing/api/http/fetch-search-
-  - /riakkv/latest/developing/api/http/fetch-search-
-  - /riak/latest/developing/api/http/fetch-search-index/
-  - /riak/kv/latest/developing/api/http/fetch-search-index/
-  - /riakkv/latest/developing/api/http/fetch-search-index/
----
-The request timed out internally
+* `503 Service Unavailable` - The request timed out internally
 
 ## Response
 

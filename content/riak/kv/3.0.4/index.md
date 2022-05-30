@@ -12,9 +12,6 @@ menu:
 toc: false
 aliases:
   - /riak/3.0.4/
-  - /riak/latest/
-  - /riak/kv/latest/
-  - /riakkv/latest/
 ---
 
 

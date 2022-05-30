@@ -133,18 +133,8 @@ message RpbErrorResp {
 
 ### Values
 
-* `errmsg`
-  - /riak/latest/developing/api/protocol-buffers/
-  - /riak/kv/latest/developing/api/protocol-buffers/
-  - /riakkv/latest/developing/api/protocol-buffers/
----
-A string representation of what went wrong
-* `errcode`
-  - /riak/latest/developing/api/protocol-buffers/
-  - /riak/kv/latest/developing/api/protocol-buffers/
-  - /riakkv/latest/developing/api/protocol-buffers/
----
-A numeric code. Currently, only `RIAKC_ERR_GENERAL=1`
+* `errmsg` - A string representation of what went wrong
+* `errcode` - A numeric code. Currently, only `RIAKC_ERR_GENERAL=1`
   is defined.
 
 ## Bucket Operations

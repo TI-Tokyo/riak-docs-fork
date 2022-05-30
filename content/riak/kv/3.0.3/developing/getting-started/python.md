@@ -33,24 +33,9 @@ python`.
 
 First, you must install some packages needed by the Riak Python client:
 
-* `python-dev`
-  - /riak/latest/developing/getting-started/python/
-  - /riak/kv/latest/developing/getting-started/python/
-  - /riakkv/latest/developing/getting-started/python/
----
-Header files and a static library for Python
-* `libffi-dev`
-  - /riak/latest/developing/getting-started/python/
-  - /riak/kv/latest/developing/getting-started/python/
-  - /riakkv/latest/developing/getting-started/python/
----
-Foreign function interface library
-* `libssl-dev`
-  - /riak/latest/developing/getting-started/python/
-  - /riak/kv/latest/developing/getting-started/python/
-  - /riakkv/latest/developing/getting-started/python/
----
-libssl and libcrypto development libraries
+* `python-dev` - Header files and a static library for Python
+* `libffi-dev` - Foreign function interface library
+* `libssl-dev` - libssl and libcrypto development libraries
 
 ### Ubuntu (12.04 & 14.04)
 
