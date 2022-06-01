@@ -12,7 +12,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/riakshell/
-
+  - /riak/ts/latest/using/riakshell/
 ---
 
 [nodename]: {{<baseurl>}}riak/kv/2.2.0/using/cluster-operations/changing-cluster-info/

@@ -13,7 +13,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/security/sources-management
-
+  - /riak/ts/latest/using/security/sources-management/
 ---
 
 [cidr]: http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing

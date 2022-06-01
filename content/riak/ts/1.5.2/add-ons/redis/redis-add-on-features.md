@@ -12,7 +12,7 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-
+  - /riak/ts/latest/add-ons/redis/redis-add-on-features/
 ---
 
 [ee]: http://basho.com/contact/

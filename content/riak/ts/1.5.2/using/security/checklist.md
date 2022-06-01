@@ -13,7 +13,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/security/checklist
-
+  - /riak/ts/latest/using/security/checklist/
 ---
 
 [enable ssl]: ../enable-disable/#enabling-ssl

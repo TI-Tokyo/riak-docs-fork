@@ -12,7 +12,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/querying/select/group-by
-
+  - /riak/ts/latest/using/querying/select/group-by/
 ---
 
 [aggregate function]: ../aggregate-functions

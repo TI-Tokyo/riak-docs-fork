@@ -19,6 +19,7 @@ aliases:
   - /riakts/1.5.2/installing/installing/
   - /riakts/1.5.2/setup/installing/
   - /riak/ts/1.5.2/installing/
+  - /riak/ts/latest/setup/installing/
   - /riak/ts/latest/installing/
 ---
 

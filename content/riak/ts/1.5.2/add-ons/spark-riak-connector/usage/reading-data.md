@@ -12,7 +12,7 @@ menu:
     parent: "spark_riak_usage"
 toc: true
 aliases:
-
+  - /riak/ts/latest/add-ons/spark-riak-connector/usage/reading-data/
 ---
 
 ## Reading Data From TS Table

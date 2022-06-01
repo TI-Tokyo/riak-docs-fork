@@ -12,7 +12,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/querying/explain
-
+  - /riak/ts/latest/using/querying/explain/
 ---
 
 [creating-activating]: {{<baseurl>}}riak/ts/1.5.2/using/creating-activating

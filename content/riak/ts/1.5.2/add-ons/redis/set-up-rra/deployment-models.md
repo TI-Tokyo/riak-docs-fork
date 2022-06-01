@@ -12,7 +12,7 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-
+  - /riak/ts/latest/add-ons/redis/set-up-rra/deployment-models/
 ---
 
 [Local-deployment]: {{<baseurl>}}images/redis/rra_deployment_local.png

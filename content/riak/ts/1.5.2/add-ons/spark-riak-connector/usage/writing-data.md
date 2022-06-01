@@ -12,7 +12,7 @@ menu:
     parent: "spark_riak_usage"
 toc: true
 aliases:
-
+  - /riak/ts/latest/add-ons/spark-riak-connector/usage/writing-data/
 ---
 
 ## Writing Data To TS Table

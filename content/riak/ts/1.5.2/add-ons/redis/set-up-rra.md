@@ -12,7 +12,7 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-
+  - /riak/ts/latest/add-ons/redis/set-up-rra/
 ---
 
 [addon redis develop]: ../developing-rra/

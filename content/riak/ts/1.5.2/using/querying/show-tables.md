@@ -12,7 +12,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/querying/show-tables
-
+  - /riak/ts/latest/using/querying/show-tables/
 ---
 
 [riak shell]: {{<baseurl>}}riak/ts/1.5.2/using/riakshell

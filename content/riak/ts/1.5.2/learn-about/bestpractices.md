@@ -13,7 +13,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/learn-about/bestpractices/
-
+  - /riak/ts/latest/learn-about/bestpractices/
 ---
 
 

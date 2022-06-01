@@ -11,7 +11,7 @@ menu:
     parent: "addons_spark_riak"
 toc: true
 aliases:
-
+  - /riak/ts/latest/add-ons/spark-riak-connector/getting/
 ---
 
 > **Note:**

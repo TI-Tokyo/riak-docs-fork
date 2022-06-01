@@ -13,7 +13,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/security/notify-basho
-
+  - /riak/ts/latest/using/security/notify-basho/
 ---
 
 Data security is an important and sensitive issue. A real-world approach to security allows us to balance appropriate levels of security and related overhead while creating a fast, scalable, and operationally straightforward database.

@@ -18,6 +18,7 @@ aliases:
   - /riakts/1.5.2/installing/debian-ubuntu/
   - /riakts/1.5.2/setup/installing/debian-ubuntu/
   - /riak/ts/1.5.2/installing/debian-ubuntu/
+  - /riak/ts/latest/setup/installing/debian-ubuntu/
   - /riak/ts/latest/installing/debian-ubuntu/
 ---
 

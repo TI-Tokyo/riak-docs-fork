@@ -14,7 +14,7 @@ version_history:
   in: "1.5.2+"
 aliases:
   - /riakts/1.5.2/using/querying/delete
-
+  - /riak/ts/latest/using/querying/delete/
 ---
 
 [query guidelines]: {{<baseurl>}}riak/ts/1.5.2/using/querying/guidelines/

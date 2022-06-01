@@ -13,7 +13,7 @@ toc: true
 version_history:
   in: "1.5.2+"
 aliases:
-
+  - /riak/ts/latest/using/querying/select/limit/
 ---
 
 [select]: {{<baseurl>}}riak/ts/1.5.2/using/querying/select

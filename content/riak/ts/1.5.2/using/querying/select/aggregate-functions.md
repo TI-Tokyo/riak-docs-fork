@@ -19,6 +19,7 @@ aliases:
   - /riak/ts/latest/using/aggregate-functions/
   - /riak/ts/1.5.2/using/aggregate-functions/
   - /riakts/1.5.2/using/querying/select/aggregate-functions/
+  - /riak/ts/latest/using/querying/select/aggregate-functions/
 ---
 
 

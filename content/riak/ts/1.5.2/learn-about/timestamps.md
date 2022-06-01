@@ -13,7 +13,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/learn-about/timestamps/
-
+  - /riak/ts/latest/learn-about/timestamps/
 ---
 
 [ISO 8601]: https://en.wikipedia.org/wiki/ISO_8601

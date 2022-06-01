@@ -13,7 +13,7 @@ toc: true
 aliases:
   - /riakts/1.5.2/using/querying/basic-querying
   - /riakts/1.5.2/using/querying/guidelines
-
+  - /riak/ts/latest/using/querying/guidelines/
 ---
 
 [table arch]: ../../../learn-about/tablearchitecture/#data-modeling

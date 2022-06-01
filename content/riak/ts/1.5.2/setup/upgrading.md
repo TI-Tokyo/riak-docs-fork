@@ -15,7 +15,7 @@ version_history:
 aliases:
   - /riakts/1.5.2/setup/upgrading/
   - /riakts/1.5.2/upgrading/
-
+  - /riak/ts/latest/setup/upgrading/
 ---
 
 [use admin commands]: {{<baseurl>}}riak/kv/2.2.0/using/admin/commands

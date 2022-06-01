@@ -12,7 +12,7 @@ menu:
     parent: "spark_riak_usage"
 toc: true
 aliases:
-
+  - /riak/ts/latest/add-ons/spark-riak-connector/usage/config-spark-context/
 ---
 
 The following `import` statements should be included at the top of your Spark application to enable the connector:
