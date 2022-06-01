@@ -1,5 +1,5 @@
 ---
-title: "Riak KV"
+title: "Riak KV 2.2.0"
 description: ""
 project: "riak_kv"
 project_version: "2.2.0"
