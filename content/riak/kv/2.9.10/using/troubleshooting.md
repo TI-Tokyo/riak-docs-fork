@@ -10,10 +10,6 @@ menu:
     weight: 207
     parent: "managing"
 toc: true
-aliases:
-  - /riak/latest/using/troubleshooting/
-  - /riak/kv/latest/using/troubleshooting/
-  - /riakkv/latest/using/troubleshooting/
 ---
 
 [http 204]: ./http-204

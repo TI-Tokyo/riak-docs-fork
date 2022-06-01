@@ -10,10 +10,6 @@ menu:
     weight: 110
     parent: "managing_cluster_operations"
 toc: true
-aliases:
-  - /riak/latest/using/cluster-operations/strong-consistency/
-  - /riak/kv/latest/using/cluster-operations/strong-consistency/
-  - /riakkv/latest/using/cluster-operations/strong-consistency/
 ---
 
 {{% note title="Please Note:" %}}

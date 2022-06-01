@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/store-object
   - /riak/kv/2.9.10/dev/references/protocol-buffers/store-object
-  - /riak/latest/developing/api/protocol-buffers/store-object/
-  - /riak/kv/latest/developing/api/protocol-buffers/store-object/
-  - /riakkv/latest/developing/api/protocol-buffers/store-object/
 ---
 
 Stores an object under the specified location, as determined by the

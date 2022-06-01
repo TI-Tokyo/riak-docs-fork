@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/backends/leveled/
   - /riak/kv/2.9.10/ops/advanced/backends/leveled/
-  - /riak/latest/setup/planning/backend/leveled/
-  - /riak/kv/latest/setup/planning/backend/leveled/
-  - /riakkv/latest/setup/planning/backend/leveled/
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.9.10/learn/glossary/#vnode

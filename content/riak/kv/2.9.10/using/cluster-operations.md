@@ -10,10 +10,6 @@ menu:
     weight: 203
     parent: "managing"
 toc: true
-aliases:
-  - /riak/latest/using/cluster-operations/
-  - /riak/kv/latest/using/cluster-operations/
-  - /riakkv/latest/using/cluster-operations/
 ---
 
 [ops add remove node]: ./adding-removing-nodes

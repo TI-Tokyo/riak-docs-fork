@@ -39,4 +39,4 @@ This release includes:
 
 ## Previous Release Notes
 
-Please see the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/), and the KV 2.9.0p5 release notes [here]({{<baseurl>}}riak/kv/2.9.0p5/release-notes/).
+Please see the KV 2.9.1 release notes [here]({{<baseurl>}}riak/kv/2.9.1/release-notes/), and the KV 2.9.0p5 release notes [here]({{<baseurl>}}riak/kv/2.9.2/release-notes/).

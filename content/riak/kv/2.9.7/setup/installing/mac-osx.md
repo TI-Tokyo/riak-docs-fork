@@ -41,7 +41,7 @@ appropriate platform:
 ### 64-bit
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.7/osx/10.11/riak-2.9.7-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.9/2.9.7/osx/10.11/riak-2.9.7-OSX-x86_64.tar.gz
 tar xzvf riak-2.9.7-osx-x86_64.tar.gz
 ```
 
@@ -63,7 +63,7 @@ Installing Riak 2.9.7 with [Homebrew](http://brew.sh/) is easy:
 brew install --devrel riak
 ```
 
-By default, this will place a `2.9.1` folder in
+By default, this will place a `2.9.7` folder in
 `/usr/local/Cellar/riak`.
 
 Be aware that you will most likely see the following message after
@@ -101,7 +101,7 @@ If you do not have Erlang already installed, see [Installing Erlang][install sou
 Next, download and unpack the source distribution.
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.7/riak-2.9.7.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.9/2.9.7/riak-2.9.7.tar.gz
 tar zxvf riak-2.9.7.tar.gz
 cd riak-2.9.7
 make rel

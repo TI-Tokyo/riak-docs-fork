@@ -15,11 +15,6 @@ aliases:
   - /riak/kv/2.9.10/ops/upgrading/rolling-upgrades/
   - /riak/kv/2.9.10/ops/upgrading/rolling-upgrades/
   - /riak/kv/2.9.10/setup/upgrading/cluster/
-
-  - /riak/kv/latest/setup/upgrading/version/
-  - /riak/latest/setup/upgrading/version/
-  - /riak/kv/latest/setup/upgrading/version/
-  - /riakkv/latest/setup/upgrading/version/
 ---
 
 
@@ -168,20 +163,8 @@ sudo dpkg -i »riak_package_name«.deb
 * A standard package uninstall should not have removed your data directories, but if it did, move your backup to where the data directory should be.
 * Then copy any customizations from your backed-up vm.args/riak.conf to the newly installed vm.args/riak.conf file (these files may be identical).
 * The advanced.config file from the newly installed version will be significantly different from your backed-up file. It will have many new sections along with the original ones. Copy the customizations from your original advanced.config file into the appropriate sections in the new one. Ensure that the following sections are present in advanced.conf:
-  * `riak_core`
-  - /riak/kv/latest/setup/upgrading/version/
-  - /riak/latest/setup/upgrading/version/
-  - /riak/kv/latest/setup/upgrading/version/
-  - /riakkv/latest/setup/upgrading/version/
----
-the `cluster_mgr` setting must be present. See [MDC v3 Configuration][config v3 mdc] for more information.
-  * `riak_repl`
-  - /riak/kv/latest/setup/upgrading/version/
-  - /riak/latest/setup/upgrading/version/
-  - /riak/kv/latest/setup/upgrading/version/
-  - /riakkv/latest/setup/upgrading/version/
----
-See [MDC v3 Configuration][config v3 mdc] for more information.
+  * `riak_core` - the `cluster_mgr` setting must be present. See [MDC v3 Configuration][config v3 mdc] for more information.
+  * `riak_repl` - See [MDC v3 Configuration][config v3 mdc] for more information.
   * There is a sample configuration included at the end of the [Release Notes][release notes] for reference purposes.
 
 5.d\. (**EE Only with MDC**)If you need to replicate to EE clusters with versions less than 2.2.0, the capability override for bucket properties should be in the `riak_repl` proplist of the advanced.config file:

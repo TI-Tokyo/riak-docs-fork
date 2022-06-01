@@ -10,10 +10,6 @@ menu:
     weight: 104
     parent: "learn"
 toc: true
-aliases:
-  - /riak/latest/learn/concepts/
-  - /riak/kv/latest/learn/concepts/
-  - /riakkv/latest/learn/concepts/
 ---
 
 [concept aae]: {{<baseurl>}}riak/kv/2.9.10/learn/concepts/active-anti-entropy

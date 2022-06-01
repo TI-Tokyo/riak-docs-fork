@@ -10,10 +10,6 @@ menu:
     weight: 101
     parent: "developing"
 toc: true
-aliases:
-  - /riak/latest/developing/usage/
-  - /riak/kv/latest/developing/usage/
-  - /riakkv/latest/developing/usage/
 ---
 
 ## In This Section

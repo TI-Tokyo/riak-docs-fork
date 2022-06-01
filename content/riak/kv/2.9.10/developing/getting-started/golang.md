@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/taste-of-riak/golang
   - /riak/kv/2.9.10/dev/taste-of-riak/golang
-  - /riak/latest/developing/getting-started/golang/
-  - /riak/kv/latest/developing/getting-started/golang/
-  - /riakkv/latest/developing/getting-started/golang/
 ---
 
 If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/2.9.10/using/running-a-cluster) first and ensure you have

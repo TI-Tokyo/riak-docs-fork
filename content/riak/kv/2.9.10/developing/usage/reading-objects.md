@@ -10,10 +10,6 @@ menu:
     weight: 101
     parent: "developing_usage"
 toc: true
-aliases:
-  - /riak/latest/developing/usage/reading-objects/
-  - /riak/kv/latest/developing/usage/reading-objects/
-  - /riakkv/latest/developing/usage/reading-objects/
 ---
 
 [glossary vnode]: {{<baseurl>}}riak/kv/2.9.10/learn/glossary/#vnode

@@ -15,9 +15,6 @@ aliases:
   - /riak/kv/2.9.10/theory/concepts/Replication
   - /riak/2.9.10/theory/concepts/replication
   - /riak/kv/2.9.10/theory/concepts/replication
-  - /riak/latest/learn/concepts/replication/
-  - /riak/kv/latest/learn/concepts/replication/
-  - /riakkv/latest/learn/concepts/replication/
 ---
 
 

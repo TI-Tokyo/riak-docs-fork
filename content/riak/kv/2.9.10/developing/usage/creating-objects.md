@@ -10,10 +10,6 @@ menu:
     weight: 100
     parent: "developing_usage"
 toc: true
-aliases:
-  - /riak/latest/developing/usage/creating-objects/
-  - /riak/kv/latest/developing/usage/creating-objects/
-  - /riakkv/latest/developing/usage/creating-objects/
 ---
 
 [usage content types]: {{<baseurl>}}riak/kv/2.9.10/developing/usage/content-types

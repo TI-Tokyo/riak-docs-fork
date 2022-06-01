@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/building/planning/best-practices
   - /riak/kv/2.9.10/ops/building/planning/best-practices
-  - /riak/latest/setup/planning/best-practices/
-  - /riak/kv/latest/setup/planning/best-practices/
-  - /riakkv/latest/setup/planning/best-practices/
 ---
 
 [use ref handoff]: {{<baseurl>}}riak/kv/2.9.10/using/reference/handoff

@@ -12,7 +12,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/querying/single-key-fetch
-  - /riak/ts/latest/using/querying/single-key-fetch/
+
 ---
 
 You may find the need to fetch a single key from Riak TS. The below examples show you how to perform a single key fetch in each of our official clients that support Riak TS.

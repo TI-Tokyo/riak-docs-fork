@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/configs/load-balanacing-proxy/
   - /riak/kv/2.9.10/ops/advanced/configs/load-balanacing-proxy/
-  - /riak/latest/configuring/load-balancing-proxy/
-  - /riak/kv/latest/configuring/load-balancing-proxy/
-  - /riakkv/latest/configuring/load-balancing-proxy/
 ---
 
 [perf open files]: {{<baseurl>}}riak/kv/2.9.10/using/performance/open-files-limit

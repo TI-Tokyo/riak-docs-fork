@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/yz-index-delete
   - /riak/kv/2.9.10/dev/references/protocol-buffers/yz-index-delete
-  - /riak/latest/developing/api/protocol-buffers/yz-index-delete/
-  - /riak/kv/latest/developing/api/protocol-buffers/yz-index-delete/
-  - /riakkv/latest/developing/api/protocol-buffers/yz-index-delete/
 ---
 
 Delete a search index.

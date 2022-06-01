@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/mdc/monitoring
   - /riak/kv/2.9.10/ops/mdc/monitoring
-  - /riak/latest/using/reference/multi-datacenter/monitoring/
-  - /riak/kv/latest/using/reference/multi-datacenter/monitoring/
-  - /riakkv/latest/using/reference/multi-datacenter/monitoring/
 ---
 
 Monitoring Riak's realtime replication allows you to identify trends and
@@ -52,11 +49,6 @@ graphing of realtime replication statistics:
 * Is the realtime replication queue backed up?
 * Have any errors occurred on either the source or sink cluster?
 * Have any objects been dropped from the realtime queue?
-
-  - /riak/latest/using/reference/multi-datacenter/monitoring/
-  - /riak/kv/latest/using/reference/multi-datacenter/monitoring/
-  - /riakkv/latest/using/reference/multi-datacenter/monitoring/
----
 
 #### Is the realtime replication queue backed up?
 
@@ -103,11 +95,6 @@ increases to the maximum size of the queue (displayed in the
 `realtime_queue_stats` section of the replication status output as
 `max_bytes`) can be made to accommodate a usage pattern of expected high
 load.
-
-  - /riak/latest/using/reference/multi-datacenter/monitoring/
-  - /riak/kv/latest/using/reference/multi-datacenter/monitoring/
-  - /riakkv/latest/using/reference/multi-datacenter/monitoring/
----
 
 Although the above statistics have been highlighted to answer specific
 questions, other statistics can also be helpful in diagnosing issues

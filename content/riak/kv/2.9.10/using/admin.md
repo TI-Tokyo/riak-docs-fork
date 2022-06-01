@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/cluster-admin
   - /riak/kv/2.9.10/ops/running/cluster-admin
-  - /riak/latest/using/admin/
-  - /riak/kv/latest/using/admin/
-  - /riakkv/latest/using/admin/
 ---
 
 [use admin commands]: ./commands/

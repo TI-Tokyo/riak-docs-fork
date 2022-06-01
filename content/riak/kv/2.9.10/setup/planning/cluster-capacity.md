@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/building/planning/cluster
   - /riak/kv/2.9.10/ops/building/planning/cluster
-  - /riak/latest/setup/planning/cluster-capacity/
-  - /riak/kv/latest/setup/planning/cluster-capacity/
-  - /riakkv/latest/setup/planning/cluster-capacity/
 ---
 
 [plan backend leveldb]: {{<baseurl>}}riak/kv/2.9.10/setup/planning/backend/leveldb

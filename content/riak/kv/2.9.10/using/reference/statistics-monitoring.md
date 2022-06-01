@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/stats-and-monitoring
   - /riak/kv/2.9.10/ops/running/stats-and-monitoring
-  - /riak/latest/using/reference/statistics-monitoring/
-  - /riak/kv/latest/using/reference/statistics-monitoring/
-  - /riakkv/latest/using/reference/statistics-monitoring/
 ---
 
 Riak provides data related to current operating status, which includes

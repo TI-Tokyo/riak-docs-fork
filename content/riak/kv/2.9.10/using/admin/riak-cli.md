@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/tools/riak
   - /riak/kv/2.9.10/ops/running/tools/riak
-  - /riak/latest/using/admin/riak-cli/
-  - /riak/kv/latest/using/admin/riak-cli/
-  - /riakkv/latest/using/admin/riak-cli/
 ---
 
 [configuration file]: {{<baseurl>}}riak/kv/2.9.10/configuring/reference/

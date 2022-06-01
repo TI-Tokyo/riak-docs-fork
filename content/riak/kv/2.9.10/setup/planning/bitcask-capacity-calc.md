@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/building/planning/bitcask
   - /riak/kv/2.9.10/ops/building/planning/bitcask
-  - /riak/latest/setup/planning/bitcask-capacity-calc/
-  - /riak/kv/latest/setup/planning/bitcask-capacity-calc/
-  - /riakkv/latest/setup/planning/bitcask-capacity-calc/
 ---
 
 [plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.10/setup/planning/backend/bitcask

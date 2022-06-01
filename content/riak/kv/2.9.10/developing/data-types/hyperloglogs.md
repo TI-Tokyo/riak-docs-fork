@@ -16,9 +16,6 @@ aliases:
   - /riak/kv/2.9.10/dev/using/data-types/hyperloglogs
   - /riak/2.9.10/dev/data-modeling/data-types/hyperloglogs
   - /riak/kv/2.9.10/dev/data-modeling/data-types/hyperloglogs
-  - /riak/latest/developing/data-types/hyperloglogs/
-  - /riak/kv/latest/developing/data-types/hyperloglogs/
-  - /riakkv/latest/developing/data-types/hyperloglogs/
 ---
 
 The examples in this section will show you how to use hyperloglogs on their own.

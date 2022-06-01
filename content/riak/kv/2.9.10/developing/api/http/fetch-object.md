@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/fetch-object
   - /riak/kv/2.9.10/dev/references/http/fetch-object
-  - /riak/latest/developing/api/http/fetch-object/
-  - /riak/kv/latest/developing/api/http/fetch-object/
-  - /riakkv/latest/developing/api/http/fetch-object/
 ---
 
 Reads an object from the specified bucket/key.

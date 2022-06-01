@@ -10,10 +10,6 @@ menu:
     weight: 102
     parent: "managing_ref"
 toc: true
-aliases:
-  - /riak/latest/using/reference/bucket-types/
-  - /riak/kv/latest/using/reference/bucket-types/
-  - /riakkv/latest/using/reference/bucket-types/
 ---
 
 Bucket types allow groups of buckets to share configuration details and

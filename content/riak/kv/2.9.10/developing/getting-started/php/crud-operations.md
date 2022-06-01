@@ -11,10 +11,6 @@ menu:
     weight: 100
     parent: "getting_started_php"
 toc: true
-aliases:
-  - /riak/latest/developing/getting-started/php/crud-operations/
-  - /riak/kv/latest/developing/getting-started/php/crud-operations/
-  - /riakkv/latest/developing/getting-started/php/crud-operations/
 ---
 
 ## Creating Objects In Riak

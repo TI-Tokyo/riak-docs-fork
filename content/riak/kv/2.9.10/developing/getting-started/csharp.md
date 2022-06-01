@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/taste-of-riak/csharp
   - /riak/kv/2.9.10/dev/taste-of-riak/csharp
-  - /riak/latest/developing/getting-started/csharp/
-  - /riak/kv/latest/developing/getting-started/csharp/
-  - /riakkv/latest/developing/getting-started/csharp/
 ---
 
 

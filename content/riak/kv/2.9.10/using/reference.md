@@ -10,10 +10,6 @@ menu:
     weight: 208
     parent: "managing"
 toc: true
-aliases:
-  - /riak/latest/using/reference/
-  - /riak/kv/latest/using/reference/
-  - /riakkv/latest/using/reference/
 ---
 
 [ref log]: ./logging

@@ -17,11 +17,9 @@ aliases:
   - /riak/2.9.10/installing/smartos/
   - /riak/kv/2.9.10/installing/smartos/
   - /riak/kv/2.9.10/installing/smartos/
-  - /riak/kv/latest/setup/installing/smartos/
-  - /riak/kv/latest/installing/smartos/
 ---
 
-[install verify]: {{<baseurl>}}riak/kv/2.9.0p5/setup/installing/verify
+[install verify]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/verify
 
 {{% note title="SmartOS End of Life (EOL) for Riak KV 2.0.0" %}}
 SmartOS is no longer supported in Riak KV 2.0.0+. If you are interested in using Riak KV on SmartOS, you can still [build from source](../source). The steps below have been left here for reference only and are no longer maintained.

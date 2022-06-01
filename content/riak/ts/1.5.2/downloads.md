@@ -18,7 +18,6 @@ listed_projects:
       install_instructions_set: "installing"
 aliases:
   - /riakts/1.5.2/downloads/
-  - /riak/ts/latest/downloads/
 ---
 
 

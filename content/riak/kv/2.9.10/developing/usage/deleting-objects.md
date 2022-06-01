@@ -10,10 +10,6 @@ menu:
     weight: 103
     parent: "developing_usage"
 toc: true
-aliases:
-  - /riak/latest/developing/usage/deleting-objects/
-  - /riak/kv/latest/developing/usage/deleting-objects/
-  - /riakkv/latest/developing/usage/deleting-objects/
 ---
 
 The delete command follows a predictable pattern and looks like this:

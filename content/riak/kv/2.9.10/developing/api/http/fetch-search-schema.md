@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/fetch-search-schema
   - /riak/kv/2.9.10/dev/references/http/fetch-search-schema
-  - /riak/latest/developing/api/http/fetch-search-schema/
-  - /riak/kv/latest/developing/api/http/fetch-search-schema/
-  - /riakkv/latest/developing/api/http/fetch-search-schema/
 ---
 
 Retrieves a Riak KV [search schema]({{<baseurl>}}riak/kv/2.9.10/developing/usage/search-schemas).
@@ -33,12 +30,7 @@ GET /search/schema/<schema_name>
 ## Typical Error Codes
 
 * `404 Object Not Found`
-* `503 Service Unavailable`
-  - /riak/latest/developing/api/http/fetch-search-schema/
-  - /riak/kv/latest/developing/api/http/fetch-search-schema/
-  - /riakkv/latest/developing/api/http/fetch-search-schema/
----
-The request timed out internally
+* `503 Service Unavailable` - The request timed out internally
 
 ## Response
 

@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/running/nodes/renaming
   - /riak/kv/2.9.10/ops/running/nodes/renaming
-  - /riak/latest/using/cluster-operations/changing-cluster-info/
-  - /riak/kv/latest/using/cluster-operations/changing-cluster-info/
-  - /riakkv/latest/using/cluster-operations/changing-cluster-info/
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/2.9.10/configuring/reference

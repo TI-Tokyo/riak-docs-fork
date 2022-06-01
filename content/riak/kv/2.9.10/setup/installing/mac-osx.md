@@ -16,10 +16,6 @@ aliases:
   - /riak/kv/2.9.10/ops/building/installing/Installing-on-Mac-OS-X
   - /riak/2.9.10/installing/mac-osx/
   - /riak/kv/2.9.10/installing/mac-osx/
-  - /riak/kv/latest/setup/installing/mac-osx/
-  - /riak/latest/setup/installing/mac-osx/
-  - /riak/kv/latest/setup/installing/mac-osx/
-  - /riakkv/latest/setup/installing/mac-osx/
 ---
 
 
@@ -45,7 +41,7 @@ appropriate platform:
 ### 64-bit
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.10/osx/10.11/riak-2.9.10-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.9/2.9.10/osx/10.11/riak-2.9.10-OSX-x86_64.tar.gz
 tar xzvf riak-2.9.10-osx-x86_64.tar.gz
 ```
 
@@ -67,7 +63,7 @@ Installing Riak 2.9.10 with [Homebrew](http://brew.sh/) is easy:
 brew install --devrel riak
 ```
 
-By default, this will place a `2.9.1` folder in
+By default, this will place a `2.9.10` folder in
 `/usr/local/Cellar/riak`.
 
 Be aware that you will most likely see the following message after
@@ -105,7 +101,7 @@ If you do not have Erlang already installed, see [Installing Erlang][install sou
 Next, download and unpack the source distribution.
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/2.2/2.9.10/riak-2.9.10.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.9/2.9.10/riak-2.9.10.tar.gz
 tar zxvf riak-2.9.10.tar.gz
 cd riak-2.9.10
 make rel

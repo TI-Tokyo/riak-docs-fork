@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/http/get-bucket-props
   - /riak/kv/2.9.10/dev/references/http/get-bucket-props
-  - /riak/latest/developing/api/http/get-bucket-props/
-  - /riak/kv/latest/developing/api/http/get-bucket-props/
-  - /riakkv/latest/developing/api/http/get-bucket-props/
 ---
 
 Reads the bucket or bucket type properties.

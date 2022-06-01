@@ -14,9 +14,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/taste-of-riak/querying-java
   - /riak/kv/2.9.10/dev/taste-of-riak/querying-java
-  - /riak/latest/developing/getting-started/java/querying/
-  - /riak/kv/latest/developing/getting-started/java/querying/
-  - /riakkv/latest/developing/getting-started/java/querying/
 ---
 
 ## Java Version Setup

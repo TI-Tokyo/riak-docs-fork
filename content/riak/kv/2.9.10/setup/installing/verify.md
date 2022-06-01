@@ -15,10 +15,6 @@ aliases:
   - /riak/kv/2.9.10/ops/installing/Post-Installation
   - /riak/2.9.10/installing/verify-install/
   - /riak/kv/2.9.10/installing/verify-install/
-  - /riak/kv/latest/setup/installing/verify/
-  - /riak/latest/setup/installing/verify/
-  - /riak/kv/latest/setup/installing/verify/
-  - /riakkv/latest/setup/installing/verify/
 ---
 
 [client libraries]: {{<baseurl>}}riak/kv/2.9.10/developing/client-libraries

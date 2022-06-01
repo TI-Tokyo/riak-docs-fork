@@ -11,10 +11,6 @@ menu:
     parent: "add-ons_redis"
 toc: true
 commercial_offering: true
-aliases:
-  - /riak/latest/add-ons/redis/developing-rra/
-  - /riak/kv/latest/add-ons/redis/developing-rra/
-  - /riakkv/latest/add-ons/redis/developing-rra/
 ---
 
 [redis-clients]: http://redis.io/clients

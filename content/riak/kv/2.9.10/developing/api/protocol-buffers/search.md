@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/search
   - /riak/kv/2.9.10/dev/references/protocol-buffers/search
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
 ---
 
 Send a Search request to retrieve a list of documents, along with a few
@@ -41,72 +38,22 @@ message RpbSearchQueryReq {
 
 Required Parameters
 
-* `q`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-The contents of the query
-* `index`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-The name of the index to search
+* `q` - The contents of the query
+* `index` - The name of the index to search
 
 Optional Parameters
 
-* `rows`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-The maximum number of rows to return
-* `start`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-A start offset, i.e. the number of keys to skip before
+* `rows` - The maximum number of rows to return
+* `start` - A start offset, i.e. the number of keys to skip before
   returning values
-* `sort`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-How the search results are to be sorted
-* `filter`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-Filters search with additional query scoped to inline
+* `sort` - How the search results are to be sorted
+* `filter` - Filters search with additional query scoped to inline
   fields
-* `df`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-Override the `default_field` setting in the schema file
-* `op`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-`and` or `or`, to override the `default_op` operation setting
+* `df` - Override the `default_field` setting in the schema file
+* `op` - `and` or `or`, to override the `default_op` operation setting
   in the schema file
-* `fl`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-Return the fields limit
-* `presort`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-Presort. The options are `key` or `score`
+* `fl` - Return the fields limit
+* `presort` - Presort. The options are `key` or `score`
 
 
 ## Response
@@ -139,24 +86,9 @@ message RpbSearchQueryResp {
 
 Values
 
-* `docs`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-A list of docs that match the search request
-* `max_score`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-The top score returned
-* `num_found`
-  - /riak/latest/developing/api/protocol-buffers/search/
-  - /riak/kv/latest/developing/api/protocol-buffers/search/
-  - /riakkv/latest/developing/api/protocol-buffers/search/
----
-Returns the total number of values matched by this
+* `docs` - A list of docs that match the search request
+* `max_score` - The top score returned
+* `num_found` - Returns the total number of values matched by this
   search
 
 

@@ -50,12 +50,6 @@ aliases:
 
   You can also set auto-expire using the [Memory] storage backend, but it will be limited by RAM.
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Is there better performance for a few objects in many buckets, or many objects in a few buckets?**
 
 
@@ -63,12 +57,6 @@ aliases:
   Generally speaking, it does not matter if you have many buckets with a small number of objects or a small number of buckets with a large number of objects. Buckets that use the cluster's default bucket properties (which can be set in your `app.config` file) are essentially free.
 
   If the buckets require different bucket properties, however, those custom properties incur some cost because changes in bucket properties must be gossiped around the cluster. If you create many, many buckets with custom properties, the cost can indeed have an impact.
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Can I list buckets or keys in production?**
 
@@ -81,12 +69,6 @@ aliases:
   A filter must be applied to all of the objects in the system in order to find those residing in a particular bucket. Buckets are intended for configuration purposes (e.g. replication properties) rather than for general queries.
 
   To keep track of groups of objects there are several options with various trade-offs: secondary indexes, search, or a list using links.
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Why do secondary indexes (2i) return inconsistent results after using `force-remove` to drop a node from the cluster?**
 
@@ -220,11 +202,6 @@ E: 4-9-14-12*
     <tr><td>2-4-7-9-12-15</td><td>2-5-7-9-12-15</td></tr>
     </table>
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: How do I load 3rd-party Javascript libraries for use in MapReduce functions?**
   Is it possible to load third-party javascript libraries (like Underscore.js) to be available in MapReduce functions?
 
@@ -243,11 +220,6 @@ E: 4-9-14-12*
   ```
 
   You can find more details in the [Configuration Files] document.
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Is it possible to use key filtering to just return a list of keys that match a particular pattern without performing a MapReduce on it?**
   When running a MapReduce query, a map phase results in Riak pulling an object off of disk. Some queries are only interested in the keys of an object and not the value. Is it possible to run a MapReduce query that does not have to pull objects off of disk?
@@ -300,12 +272,6 @@ E: 4-9-14-12*
   }
   ```
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: How can I observe object sizes and sibling counts?**
 
 
@@ -324,12 +290,6 @@ E: 4-9-14-12*
   node_get_fsm_objsize_99 : 0
   node_get_fsm_objsize_100 : 0
   ```
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: A node left the cluster before handing off all data. How can I resolve this?**
 
@@ -354,24 +314,12 @@ E: 4-9-14-12*
   [gen_server:cast(riak_core_node_watcher, {up, Node, [riak_kv]}) || Node
   ```
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Is there a limit on the size of files that can be stored on Riak?**
 
 
 **A:**
   There isn't a limit on object size, but we suggest you keep it to no more than 1-2MB for performance reasons. Variables such as network speed can directly affect the maximum usable object size for a given cluster. You should use a tool like [Basho Bench] to determine the performance of your cluster with a given object size before moving to production use. Or if your use case demands storing many large objects, you may want to consider the [Riak CS] object storage system, which is designed for precisely that purpose.
   
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Does the bucket name impact key storage size?**
 
 
@@ -385,24 +333,11 @@ E: 4-9-14-12*
 
   Total size = 40 + 15 + 10 = **65 bytes**.
 
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Are Riak-generated keys unique within a bucket?**
 
 
 **A:**
   It's not guaranteed, but you are extremely unlikely to get collisions. Riak generates keys using an Erlang-generated unique ID and a timestamp hashed with SHA-1 and base-62 encoded for URL safety.
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Where are bucket properties stored?**
 
@@ -413,22 +348,12 @@ E: 4-9-14-12*
 
   The bucket properties stay in the ring and cluster metadata even if the bucket is empty.
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Are Riak keys / buckets case sensitive?**
 
 
 **A:**
   Yes, they are case sensitive and treated as binaries (byte buffers). Thus, `mykey` is not equal to `MyKey`.
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Can I run my own Erlang applications in the same VM as Riak?**
 
@@ -441,23 +366,11 @@ E: 4-9-14-12*
   3. When your application or Riak need more capacity, you can scale them separately to meet your production needs.
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Is there a simple way to reload an Erlang module for MapReduce across a cluster?**
 
 
 **A:**
   Assuming that the module is in your code path, you can run `c:nl(ModName)` from the Erlang console .
-
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: How do I spread requests across---i.e. load balance---a Riak cluster?**
 
@@ -466,12 +379,6 @@ E: 4-9-14-12*
   There are at least two acceptable strategies for load balancing requests across your Riak cluster: **virtual IPs** and **reverse-proxy**.
 
   For further information see [System Planning].
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 <a name="restart-merges"></a>
 **Q: Why does it seem that Bitcask merging is only triggered when a Riak node is restarted?**
@@ -495,12 +402,6 @@ E: 4-9-14-12*
 
   If Riak was never restarted, the merge would eventually happen when writes roll over to a new data file. Bitcask rolls writes over to a new data file once the currently active file has exceeded a certain size (2 GB by default).
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: When retrieving a list of siblings I am getting the same vtag multiple times.**
   When retrieving a list of siblings via the REST interface, I am seeing the same vtag appear multiple times. Is this normal? I thought vtags were unique. Are they referring to the same sibling?
 
@@ -511,13 +412,6 @@ E: 4-9-14-12*
   It is possible to get siblings with the same vtag during vector clock pruning and read/repair.
 
   See [vector clocks] for more information.
-
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: How should I structure larger data objects?**
   I have a data object that is denormalized, with multiple child data objects, and stored as a nested JSON hash. However, retrieving and storing this object becomes increasingly costly as my application modifies and adds pieces to the object. Would breaking the object into smaller pieces improve performance? What are the tradeoffs?
@@ -531,12 +425,6 @@ E: 4-9-14-12*
 
   If the parent and child objects are not too tightly coupled (or the children are updated much more frequently), then splitting them along conceptual boundaries will improve performance in your application by decreasing payload size and reducing update conflicts. Generally, you will want to add links to connect the objects for easy fetching and traversal.
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Is there any way in Riak to limit access to a user or a group of users?**
 
 
@@ -546,23 +434,12 @@ E: 4-9-14-12*
   If you need to restrict access, consider putting an authenticating reverse-proxy server in front of it.
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Is there a way to enforce a schema on data in a given bucket?**
   Suppose I'd like to set up a bucket to store data adhering to a particular schema. Is there any way to set this up with Riak? This way, when my application attempts to store data in a particular bucket, it will check with this schema first before storing it. Otherwise, it will produce an error.
 
 
 **A:**
   Riak does not implement any form of schema validation. A pre-commit hook can be used in this scenario but would need to be written by your development team. You can read more about [commit hooks] in the docs. This document provides two pre-commit hook examples, one in Erlang that restricts objects that are too large and one in Javascript that restricts non-JSON content.
-
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: How does the Erlang Riak Client manage node failures?**
   Does the Erlang Riak Client manage its own reconnect logic? What should a client do to maintain the connection or reconnect in case of nodes going down?
@@ -571,26 +448,11 @@ E: 4-9-14-12*
 **A:**
   The [Erlang Riak Client] gives you several options for how to manage connections. You can set these when starting a `riakc_pb_socket` process or by using the `set_options` function.
 
-  * `queue_if_disconnected` (default: `false`)
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-requests will be queued when the connection to the server is lost.
-  * `auto_reconnect` (default: `false`)
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatically. This is set to `true` if `queue_if_disconnected` is set to `true`.
+  * `queue_if_disconnected` (default: `false`) - requests will be queued when the connection to the server is lost.
+  * `auto_reconnect` (default: `false`) - if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatically. This is set to `true` if `queue_if_disconnected` is set to `true`.
 
   If these options are both false, connection errors will be returned to the process-making requests as `{error, Reason}` tuples.
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Is there a limiting factor for the number of buckets in a cluster?**
 
@@ -601,11 +463,6 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
   More on [Bucket Properties].
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Is it possible to configure a single bucket's properties in `app.config`?**
 
 
@@ -614,11 +471,6 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
 
   You can read more on `app.config` in [Configuration Files].
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Is there a simple command to delete a bucket?**
 
@@ -631,22 +483,12 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
   ```
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Can Riak be configured to fail an update instead of generating a conflict?**
 
 
 **A:**
   No. The closest thing would be to use the `If-None-Match` header, but that is only supported in the HTTP interface and probably won't accomplish what you're trying to do.
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: How can I limit the number of keys retrieved?**
 
@@ -657,22 +499,12 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
   You could also run `keys=stream` and close the connection when you have the designated number. This will not, however, reduce load on the Riak cluster. It will only reduce load on your client.
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: How is the real hash value for replicas calculated based on the preflist?**
 
 
 **A:**
   The hash is calculated first and then the next subsequent *N* partitions are chosen for the preflist.
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Do client libraries support load balancing/round robin?**
 
@@ -694,11 +526,6 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
   Yes. In general, the smaller the number of keys a bucket holds, the faster MapReduce operations will run.
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: How do I filter out `not_found` from MapReduce results?**
   If I want to filter out the `not_found` in my MapReduce, should I do it in the reduce phase? I have a MapReduce job that returns what I'm looking for, but I want to filter out the `not_found` entries so that I only get a list back with the keys.
 
@@ -706,11 +533,6 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
 **A:**
   There is a built-in function for this that ships with Riak. Check out `Riak.filterNotFound` from the [built-in functions list].
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Is it possible to call a reduce function at specific intervals during a map function?**
   When doing the map step on a whole bucket, can I choose how many keys to map before calling the reduce? I am generating a lot of data in memory and it could be reduced if I could call the following reduce step more often.
@@ -720,11 +542,6 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
   Not currently. The reduce function is run occasionally as the bucket is processed and MapReduce doesn't wait for the whole map process to finish before running the reduce.
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: When searching over a bucket using MapReduce, is it recommended to perform the search during the map phase or the reduce phase?**
 
 
@@ -732,22 +549,12 @@ if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatic
   Aside from the performance considerations of doing a full-bucket [MapReduce], searching is a form of filtering, which should be done in the map phase.
 
 
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
-
 **Q: Is it possible to delete data from Riak with a JavaScript MapReduce job?**
 
 
 **A:**
   This is not currently possible. If you want to delete objects from MapReduce, use an Erlang reduce phase like the one on [contrib.basho.com].
 
-
-  - /riak/latest/developing/faq/
-  - /riak/kv/latest/developing/faq/
-  - /riakkv/latest/developing/faq/
----
 
 **Q: Why does MapReduce return a JSON object on occasion instead of an array?**
 

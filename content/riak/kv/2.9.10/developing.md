@@ -10,11 +10,6 @@ menu:
     weight: 300
     pre: lambda
 toc: true
-aliases:
-  - /riak/kv/latest/developing/
-  - /riak/latest/developing/
-  - /riak/kv/latest/developing/
-  - /riakkv/latest/developing/
 ---
 
 [getting started]: ../developing/getting-started

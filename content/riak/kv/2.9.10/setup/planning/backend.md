@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/building/planning/backends/
   - /riak/kv/2.9.10/ops/building/planning/backends/
-  - /riak/latest/setup/planning/backend/
-  - /riak/kv/latest/setup/planning/backend/
-  - /riakkv/latest/setup/planning/backend/
 ---
 
 [plan backend bitcask]: {{<baseurl>}}riak/kv/2.9.10/setup/planning/backend/bitcask

@@ -18,7 +18,6 @@ aliases:
   - /riakts/1.5.2/installing/source/erlang/
   - /riakts/1.5.2/setup/installing/source/erlang/
   - /riak/ts/1.5.2/installing/source/erlang/
-  - /riak/ts/latest/setup/installing/source/erlang/
   - /riak/ts/latest/installing/source/erlang/
 ---
 

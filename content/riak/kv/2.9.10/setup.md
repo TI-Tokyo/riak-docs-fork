@@ -10,11 +10,6 @@ menu:
     weight: 110
     pre: install
 toc: false
-aliases:
-  - /riak/kv/latest/setup/
-  - /riak/latest/setup/
-  - /riak/kv/latest/setup/
-  - /riakkv/latest/setup/
 ---
 
 [plan index]: ../setup/planning

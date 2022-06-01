@@ -11,10 +11,6 @@ menu:
     weight: 105
     parent: "managing_ref"
 toc: true
-aliases:
-  - /riak/latest/using/reference/failure-recovery/
-  - /riak/kv/latest/using/reference/failure-recovery/
-  - /riakkv/latest/using/reference/failure-recovery/
 ---
 
 ## Hanc capellae

@@ -14,7 +14,7 @@ version_history:
   in: "1.5.2+"
 aliases:
   - /riakts/1.5.2/setup/
-  - /riak/ts/latest/setup/
+
 ---
 
 [install]: {{<baseurl>}}riak/ts/1.5.2/setup/installing

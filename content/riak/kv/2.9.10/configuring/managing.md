@@ -10,10 +10,6 @@ menu:
     weight: 130
     parent: "configuring"
 toc: true
-aliases:
-  - /riak/latest/configuring/managing/
-  - /riak/kv/latest/configuring/managing/
-  - /riakkv/latest/configuring/managing/
 ---
 
 [use admin riak cli]: {{<baseurl>}}riak/kv/2.9.10/using/admin/riak-cli

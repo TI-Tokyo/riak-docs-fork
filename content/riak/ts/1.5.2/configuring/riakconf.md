@@ -16,7 +16,7 @@ version_history:
     - [">=1.5.2", "using/configuring"]
 aliases:
   - /riakts/1.5.2/configuring/riakconf
-  - /riak/ts/latest/configuring/riakconf/
+
 ---
 
 

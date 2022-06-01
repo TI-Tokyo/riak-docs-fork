@@ -15,9 +15,6 @@ commercial_offering: true
 aliases:
   - /riak/2.9.10/ops/mdc/v3/scheduling-fullsync
   - /riak/kv/2.9.10/ops/mdc/v3/scheduling-fullsync
-  - /riak/latest/using/reference/v3-multi-datacenter/scheduling-fullsync/
-  - /riak/kv/latest/using/reference/v3-multi-datacenter/scheduling-fullsync/
-  - /riakkv/latest/using/reference/v3-multi-datacenter/scheduling-fullsync/
 ---
 
 [config reference#advanced]: {{<baseurl>}}riak/kv/2.9.10/configuring/reference/#advanced-configuration

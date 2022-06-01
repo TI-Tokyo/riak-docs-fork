@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/auth-req
   - /riak/kv/2.9.10/dev/references/protocol-buffers/auth-req
-  - /riak/latest/developing/api/protocol-buffers/auth-req/
-  - /riak/kv/latest/developing/api/protocol-buffers/auth-req/
-  - /riakkv/latest/developing/api/protocol-buffers/auth-req/
 ---
 
 Sends a username (`user`) and password (`password`) to Riak as part of

@@ -663,39 +663,29 @@ and read locks in applications that use strong consistency.
 There are a few known issues that you should be aware of when using the
 latest version of strong consistency.
 
-* **Consistent reads of never-written keys create tombstones**
----
-A
+* **Consistent reads of never-written keys create tombstones** - A
   [tombstone][cluster ops obj del] will be written if you perform a read
   against a key that a majority of peers claims to not exist. This is
   necessary for certain corner cases in which offline or unreachable
   replicas containing partially written data need to be rolled back in
   the future.
-* **Consistent keys and key listing**
----
-In Riak, key listing
+* **Consistent keys and key listing** - In Riak, key listing
   operations, such as listing all the keys in a bucket, do not filter
   out tombstones. While this is rarely a problem for
   non-strongly-consistent keys, it does present an issue for strong
   consistency due to the tombstone issues mentioned above.
-* **Secondary indexes not supported**
----
-Strongly consistent
+* **Secondary indexes not supported** - Strongly consistent
   operations do not support [secondary indexes][cluster ops 2i] \(2i) at this time. Furthermore, any other metadata
   attached to objects, even if not related to 2i, will be silently
   ignored by Riak in strongly consistent buckets.
-* **Multi-Datacenter Replication not supported**
----
-At this time,
+* **Multi-Datacenter Replication not supported** - At this time,
   consistent keys are *not* replicated across clusters using Multi-
   Datacenter Replication \(MDC). This is because MDC Replication currently supports only eventually consistent replication across clusters. Mixing strongly
   consistent data within a cluster with eventually consistent data
   between clusters is difficult to reason about from the perspective of
   applications. In a future version of Riak, we will add support for
   strongly consistent replication across multiple datacenters/clusters.
-* **Client library exceptions**
----
-Basho's official [client
+* **Client library exceptions** - Basho's official [client
   libraries][dev client libraries] convert errors returned by Riak into generic exceptions,
   with a message derived from the returned server-side error message.
 

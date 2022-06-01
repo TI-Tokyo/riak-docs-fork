@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/backends/multi/
   - /riak/kv/2.9.10/ops/advanced/backends/multi/
-  - /riak/latest/setup/planning/backend/multi/
-  - /riak/kv/latest/setup/planning/backend/multi/
-  - /riakkv/latest/setup/planning/backend/multi/
 ---
 
 [concept buckets]: {{<baseurl>}}riak/kv/2.9.10/learn/concepts/buckets

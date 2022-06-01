@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/ops/advanced/configs/search/
   - /riak/kv/2.9.10/ops/advanced/configs/search/
-  - /riak/latest/configuring/search/
-  - /riak/kv/latest/configuring/search/
-  - /riakkv/latest/configuring/search/
 ---
 
 [usage search]: {{<baseurl>}}riak/kv/2.9.10/developing/usage/search

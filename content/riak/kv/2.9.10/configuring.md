@@ -10,11 +10,6 @@ menu:
     weight: 200
     pre: cog
 toc: true
-aliases:
-  - /riak/kv/latest/configuring/
-  - /riak/latest/configuring/
-  - /riak/kv/latest/configuring/
-  - /riakkv/latest/configuring/
 ---
 
 [config basic]: ../configuring/basic

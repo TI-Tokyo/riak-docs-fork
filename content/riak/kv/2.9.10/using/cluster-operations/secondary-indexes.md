@@ -11,10 +11,6 @@ project_version: 2.9.10
 #    weight: 109
 #    parent: "managing_cluster_operations"
 toc: true
-aliases:
-  - /riak/latest/using/cluster-operations/secondary-indexes/
-  - /riak/kv/latest/using/cluster-operations/secondary-indexes/
-  - /riakkv/latest/using/cluster-operations/secondary-indexes/
 ---
 
 ## Hanc capellae

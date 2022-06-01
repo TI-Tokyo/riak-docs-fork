@@ -11,10 +11,6 @@ project_version: 2.9.10
 #    weight: 104
 #    parent: "developing_app_guide"
 toc: true
-aliases:
-  - /riak/latest/developing/app-guide/reference/
-  - /riak/kv/latest/developing/app-guide/reference/
-  - /riakkv/latest/developing/app-guide/reference/
 ---
 
 **TODO: Add content**

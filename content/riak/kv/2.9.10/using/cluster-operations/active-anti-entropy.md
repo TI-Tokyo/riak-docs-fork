@@ -15,9 +15,6 @@ version_history:
 aliases:
   - /riak/kv/2.9.10/ops/advanced/aae/
   - /riak/2.9.10/ops/advanced/aae/
-  - /riak/latest/using/cluster-operations/active-anti-entropy/
-  - /riak/kv/latest/using/cluster-operations/active-anti-entropy/
-  - /riakkv/latest/using/cluster-operations/active-anti-entropy/
 ---
 [config search#throttledelay]: {{<baseurl>}}riak/kv/2.9.10/configuring/search/#search-anti-entropy-throttle-tier-delay
 [config search#throttle]: {{<baseurl>}}riak/kv/2.9.10/configuring/search/#search-anti-entropy-throttle

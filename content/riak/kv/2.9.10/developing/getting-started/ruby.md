@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/taste-of-riak/ruby
   - /riak/kv/2.9.10/dev/taste-of-riak/ruby
-  - /riak/latest/developing/getting-started/ruby/
-  - /riak/kv/latest/developing/getting-started/ruby/
-  - /riakkv/latest/developing/getting-started/ruby/
 ---
 
 

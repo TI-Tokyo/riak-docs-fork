@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/server-info
   - /riak/kv/2.9.10/dev/references/protocol-buffers/server-info
-  - /riak/latest/developing/api/protocol-buffers/server-info/
-  - /riak/kv/latest/developing/api/protocol-buffers/server-info/
-  - /riakkv/latest/developing/api/protocol-buffers/server-info/
 ---
 
 A message from Riak that contains two pieces of information about the

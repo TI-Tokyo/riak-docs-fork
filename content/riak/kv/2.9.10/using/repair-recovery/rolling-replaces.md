@@ -10,10 +10,6 @@ menu:
     weight: 106
     parent: "managing_repair_recover"
 toc: true
-aliases:
-  - /riak/latest/using/repair-recovery/rolling-replaces/
-  - /riak/kv/latest/using/repair-recovery/rolling-replaces/
-  - /riakkv/latest/using/repair-recovery/rolling-replaces/
 ---
 
 [upgrade]: {{<baseurl>}}riak/kv/2.9.10/setup/upgrading/cluster/

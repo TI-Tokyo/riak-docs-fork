@@ -13,9 +13,6 @@ toc: true
 aliases:
   - /riak/2.9.10/dev/references/protocol-buffers/get-bucket-type
   - /riak/kv/2.9.10/dev/references/protocol-buffers/get-bucket-type
-  - /riak/latest/developing/api/protocol-buffers/get-bucket-type/
-  - /riak/kv/latest/developing/api/protocol-buffers/get-bucket-type/
-  - /riakkv/latest/developing/api/protocol-buffers/get-bucket-type/
 ---
 
 Gets the bucket properties associated with a [bucket type]({{<baseurl>}}riak/kv/2.9.10/using/cluster-operations/bucket-types).
