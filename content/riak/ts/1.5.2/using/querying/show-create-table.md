@@ -14,7 +14,7 @@ version_history:
   in: "1.5.2+"
 aliases:
   - /riakts/1.5.2/using/querying/show-create-table
-  - /riak/ts/latest/using/querying/show-create-table/
+
 ---
 
 [riak shell]: {{<baseurl>}}riak/ts/1.5.2/using/riakshell

@@ -12,7 +12,7 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/ts/latest/add-ons/redis/developing-rra/
+
 ---
 
 [redis-clients]: http://redis.io/clients

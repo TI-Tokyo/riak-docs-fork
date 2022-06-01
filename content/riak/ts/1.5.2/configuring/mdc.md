@@ -18,7 +18,6 @@ version_history:
     - ["<=1.4.0",  "using/mdc"]
 aliases:
   - /riakts/1.5.2/configuring/mdc
-  - /riak/ts/latest/configuring/mdc/
   - /riak/ts/latest/using/mdc
 ---
 
