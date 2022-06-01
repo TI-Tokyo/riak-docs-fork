@@ -12,7 +12,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/developing/golang/
-  - /riak/ts/latest/developing/golang/
+
 ---
 
 

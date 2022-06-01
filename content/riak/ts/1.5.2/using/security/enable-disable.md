@@ -13,7 +13,7 @@ project_version: "1.5.2"
 toc: true
 aliases:
   - /riakts/1.5.2/using/security/enable-disable
-  - /riak/ts/latest/using/security/enable-disable/
+
 ---
 
 Riak TS security may be [checked](#checking-security-status), [enabled](#enabling-security), or [disabled](#disabling-security) through the command line, allowing an administrator to change security settings for the whole cluster without needing to go node-by-node.
