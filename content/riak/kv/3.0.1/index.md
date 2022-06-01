@@ -1,5 +1,5 @@
 ---
-title: "Riak KV"
+title: "Riak KV 3.0.1"
 description: ""
 project: "riak_kv"
 project_version: 3.0.1
@@ -29,6 +29,10 @@ aliases:
 
 
 Riak KV is a distributed NoSQL database designed to deliver maximum data availability by distributing data across multiple servers. As long as your Riak KV client can reach one Riak server, it should be able to write data.
+
+This release allows Riak to run on OTP versions 20, 21 and 22, but is not fully backwards compatible with previous releases.
+
+** It is not possible to run this release on any OTP version prior to OTP 20. Testing of node-by-node upgrades is the responsibility of Riak customers, there has been no comprehensive testing of this upgrade managed centrally. Most customer testing of upgrades has been spent on testing an uplift from 2.2.x and OTP R16 to 3.0 and OTP 20, so this is likely to be the safest transition.
 
 ## Supported Operating Systems
 
