@@ -40,17 +40,17 @@ The following backends are supported:
 Riak KV supports the use of custom storage backends as well. See the
 storage [Backend API][dev api backend] for more details.
 
-Feature or Characteristic                      |Bitcask|LevelDB|Memory|
-:----------------------------------------------|:-----:|:-----:|:----:|
-Default Riak KV backend                        |✓      |       |      |
-Persistent                                     |✓      |✓      |      |
-Keyspace in RAM                                |✓      |       |✓     |
-Keyspace can be greater than available RAM     |       |✓      |      |
-Keyspace loaded into RAM on startup<sup>1</sup>|✓      |       |      |
-Objects in RAM                                 |       |       |✓     |
-Object expiration                              |✓      |       |✓     |
-Secondary indexes                              |       |✓      |✓     |
-Tiered storage
+Feature or Characteristic                      |Leveled|Bitcask|LevelDB|Memory|
+:----------------------------------------------|:-----:|:-----:|:-----:|:----:|
+Default Riak KV backend                        |       |✓      |       |      |
+Persistent                                     |✓      |✓      |✓      |      |
+Keyspace in RAM                                |       |✓      |       |✓     |
+Keyspace can be greater than available RAM     |✓     |       |✓      |      |
+Keyspace loaded into RAM on startup<sup>1</sup>|       |✓      |       |      |
+Objects in RAM                                 |       |       |       |✓     |
+Object expiration                              |?       |✓      |       |✓     |
+Secondary indexes                              |✓      |       |✓      |✓     |
+Tiered storage                                 |?       |       |✓      |       |
 
 <sup>1</sup> Noted here since this can affect Riak start times for large
 keyspaces.
