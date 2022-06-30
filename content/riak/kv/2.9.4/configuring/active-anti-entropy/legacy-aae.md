@@ -14,33 +14,19 @@ toc: true
 aliases:
 ---
 
-## Configuration settings in `riak.conf`
+The configuration for the legacy AAE is kept in
+ the `riak.conf` configuration file. 
 
-### TicTacAAE
+## Validate Settings
 
-Turn on TicTacAAE. It works independantly of the legacy AAE system, so can be run in parallel or without the legacy system. For more settings, check the [Configuration][config reference] page.
+Once your configuration is set, you can verify its correctness by
+running the `riak` command-line tool:
 
-```
-tictacaae_active = active
-```
-
-Note that this will use up more memory and disk space as more metadata is being stored.
-
-### Storeheads
-
-Turn on TicTacAAE storeheads. This will ensure that TicTacAAE will store more information about each key, including the size, modified date, and tombstone status. Without setting this to `true`, the `aae_fold` functions on this page will not work as expected.
-
-```
-tictacaae_storeheads = enabled
+```bash
+riak chkconfig
 ```
 
-Note that this will use up more memory and disk space as more metadata is being stored.
+## riak.conf Settings
 
-### Tuning
-
-You can increase the number of simultaneous workers by changing the `af4_worker_pool_size` value in `riak.conf`. The default is `1` per node.
-
-```
-af4_worker_pool_size = 1
-```
-
+Setting | Options | Default | Description
+:-------|:--------|:--------|:-----------

@@ -134,13 +134,13 @@ These filters can only be used with the `find_keys` function:
 - Filter by sibling count - [Learn More >>][filter-by sibling-count]
 - Filter by object size - [Learn More >>][filter-by object-size]
 
-## find_keys
+## Find keys (`find_keys`)
 
 Returns a list of keys that meet the filter parameters.
 
 [Learn More >>][tictacaae find-keys]
 
-## Find Tombstones (find_tombs)
+## Find Riak tombstones (`find_tombs`)
 
 Returns tuples of bucket name, keyname, and object size of Riak tombstone objects that meet the filter parameters.
 
@@ -152,12 +152,12 @@ Returns a list of all buckets.
 
 [Learn More >>][tictacaae list-buckets]
 
-## `object_stats`
+## Get object statistics (`object_stats`)
 Returns a count of objects that meet the filter parameters.
 
 [Learn More >>][tictacaae object-stats]
 
-## `reap_tombs`
+## Reap or count tombstones (`reap_tombs`)
 
 Reaps or counts the Riak tombstone objects that meet the filter parameters.
 

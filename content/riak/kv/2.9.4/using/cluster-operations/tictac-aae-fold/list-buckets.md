@@ -41,10 +41,22 @@ See the [TicTac AAE `aae_folds`][tictacaae folds-overview] documentation for con
 
 ```erlang
 riak_client:aae_fold({
-    list_buckets
+    list_buckets,
+    assumed_nval
     }, Client).
 ```
 There are no available filters for this method.
+
+`assumed_nval` should ideally be set to your cluster's default nval, but can be safely set to `1` for this purpose.
+
+This will list all buckets:
+
+```erlang
+riak_client:aae_fold({
+    list_buckets,
+    1
+    }, Client).
+```
 
 {{% note %}}
 How to get the value for `Client` is detailed in [The Riak Client](../../tictac-aae-fold#the-riak-client).

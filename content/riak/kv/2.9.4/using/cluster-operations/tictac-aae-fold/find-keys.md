@@ -56,9 +56,11 @@ Please see the list of [available standard filters](#available-standard-filters)
 
 This filter will only cinlude keys that have more than the specified siblings.
 
+Note that a value of `5` will mean only objects with 6 or more siblings will be returned.
+
 ```erlang
 riak_client:aae_fold({
-    reap_tombs, 
+    find_keys, 
     bucket_filter, 
     key_range_filter, 
     modified_filter,
@@ -76,7 +78,7 @@ For example, the following snippet will return all keys with the filters:
 
 ```erlang
 riak_client:aae_fold({
-    reap_tombs, 
+    find_keys, 
     {<<"animals">>,<<"dogs">>}, 
     {<<"A">>,<<"N">>},
     {date,1640995200,1643673600},
@@ -114,9 +116,11 @@ sibling_count | 15 | The number of siblings of the object.
 
 This filter will include keys that have an object size of more than the specified size.
 
+Note that a value of `1000` will mean only objects with a size of 1001 bytes or more will be returned.
+
 ```erlang
 riak_client:aae_fold({
-    reap_tombs, 
+    find_keys, 
     bucket_filter, 
     key_range_filter, 
     modified_filter,
@@ -134,7 +138,7 @@ For example, the following snippet will return all keys with the filters:
 
 ```erlang
 riak_client:aae_fold({
-    reap_tombs, 
+    find_keys, 
     {<<"animals">>,<<"dogs">>}, 
     {<<"A">>,<<"N">>},
     {date,1640995200,1643673600},

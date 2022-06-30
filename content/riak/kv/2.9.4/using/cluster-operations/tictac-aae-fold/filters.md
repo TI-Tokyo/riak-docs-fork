@@ -83,23 +83,6 @@ riak_client:aae_fold({
 How to get the value for `Client` is detailed in [The Riak Client](../../tictac-aae-fold#the-riak-client).
 {{% /note %}}
 
-### All buckets
-
-To query all buckets, just use `all` for the bucket filter. This will count the number of keys in all buckets:
-
-```
-riak_client:aae_fold({
-    object_stats, 
-    all, 
-    all, 
-    all
-    }, Client).
-```
-
-{{% note %}}
-How to get the value for `Client` is detailed in [The Riak Client](../../tictac-aae-fold#the-riak-client).
-{{% /note %}}
-
 ## Filter by key range
 
 This will reduce the number of keys checked.
