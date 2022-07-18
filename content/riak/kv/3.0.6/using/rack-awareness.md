@@ -21,7 +21,14 @@ The aim of rack awareness in Riak KV is to help make the cluster more resilient 
 
 In KV 3.0.6+ a new location parameter has been introduced that can be set at runtime for each Riak node. When claiming a new ring, the list of nodes is ordered taking into consideration the location of the individual nodes, in a manner that adjacent nodes are preferably from different locations.
 By default, every node in the cluster that does not have a location parameter set will be set to the location of `undefined`. This means that they will all be treated as being in the same location.
-The diagram below shows how a cluster with 4 nodes and a 64 ring size could be configured with rack awareness.
+Figure 1 below shows how a cluster with 4 nodes and a 64 ring size could be configured with rack awareness.
+
+**<figure id="figure-1" style="text-align:center;">
+  <img src="/riak-docs/images/ring-location.png">
+  <figcaption>
+    Figure 1: Example of a rack-aware cluster.
+  </figcaption>
+</figure>**
 
 ### Lack of distinct locations
 
