@@ -11,7 +11,7 @@ menu:
     weight: 200
     parent: "configuring"
 version_history:
-  in: "2.9.1+"
+  in: "3.0.6"
 toc: true
 commercial_offering: true
 aliases:
