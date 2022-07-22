@@ -40,7 +40,6 @@ This release allows Riak to run on OTP versions 20, 21 and 22, but is not fully 
 - Amazon Linux 2 (AWS)
 - CentOS 7
 - CentOS 8
-- Debian 7.0 ("Wheezy")
 - Debian 8.0 ("Jessie")
 - Debian 9.0 ("Stretch")
 - Debian 10.0 ("Buster")
