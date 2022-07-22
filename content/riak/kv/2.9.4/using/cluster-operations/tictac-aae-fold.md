@@ -1,4 +1,5 @@
 ---
+title_supertext: "Using > Cluster Operations:"
 title: "TicTac AAE Folds"
 description: ""
 project: "riak_kv"
@@ -15,8 +16,8 @@ aliases:
 ---
 [code riak_kv_vnode]: https://github.com/basho/riak_kv/blob/develop-3.0/src/riak_kv_vnode.erl
 [riak attach]: ../../using/admin/riak-cli/#attach
-[config reference]: ../../configuring/reference/#tictac-active-anti-entropy
-[config tictacaae]: ../../configuring/active-anti-entropy/tictac-aae
+[config reference]: ../../../configuring/reference/#tictac-active-anti-entropy
+[config tictacaae]: ../../../configuring/active-anti-entropy/tictac-aae
 [tictacaae system]: ../tictac-active-anti-entropy
 [tictacaae folds-overview]: ../tictac-aae-fold
 [tictacaae client]: ../tictac-aae-fold#the-riak-client
@@ -39,13 +40,13 @@ These functions stablisied in Riak KV 2.9.4, and so are not recommended before t
 
 ## Configuration settings in `riak.conf`
 
-For a comprehensive guide to TicTac AAE's configuration settings, please see the [TicTac AAE configuration settings][config tictacaae] documentation.
+For more TicTac AAE configuration settings, please see the [TicTac AAE configuration settings][config tictacaae] documentation.
 
 ### TicTacAAE
 
-Turn on TicTacAAE. It works independantly of the legacy AAE system, so can be run in parallel or without the legacy system. For more settings, check the [Configuration][config reference] page.
+Turn on TicTacAAE. It works independantly of the legacy AAE system, so can be run in parallel or without the legacy system.
 
-```
+```riak.conf
 tictacaae_active = active
 ```
 
@@ -55,7 +56,7 @@ Note that this will use up more memory and disk space as more metadata is being 
 
 Turn on TicTacAAE storeheads. This will ensure that TicTacAAE will store more information about each key, including the size, modified date, and tombstone status. Without setting this to `true`, the `aae_fold` functions on this page will not work as expected.
 
-```
+```riak.conf
 tictacaae_storeheads = enabled
 ```
 
@@ -65,7 +66,7 @@ Note that this will use up more memory and disk space as more metadata is being 
 
 You can increase the number of simultaneous workers by changing the `af4_worker_pool_size` value in `riak.conf`. The default is `1` per node.
 
-```
+```riak.conf
 af4_worker_pool_size = 1
 ```
 
@@ -73,9 +74,28 @@ af4_worker_pool_size = 1
 
 Use [Riak attach][riak attach] to run these commands.
 
+The general format for calling `aae_fold` is:
+
+```erlang
+riak_client:aae_fold(
+    query, 
+    Client).
+```
+
+`query` is a tuple describing the function to run and the parameters to use. The first value in the tuple is always the function name. For example, if calling the `list_buckets` function the tuple would look like `{list_buckets, ...}`. The number of values in the tuple depends on the function being called.
+
+As an example, this will call `list_buckets`, which takes a single parameter:
+
+```erlang
+riak_client:aae_fold({
+    list_buckets, 
+    3
+    }, Client).
+```
+
 ### The Riak Client
 
-For these calls to work, you will need a riak client. This will create one in a reusable variable called `Client`:
+For these calls to work, you will need a Riak client. This will create one in a reusable variable called `Client`:
 
 ```erlang
 {ok, Client} = riak:local_client().

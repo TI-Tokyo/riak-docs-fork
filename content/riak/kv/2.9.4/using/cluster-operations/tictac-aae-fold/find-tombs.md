@@ -1,5 +1,6 @@
 ---
-title: "TicTac AAE Folds: find_tombs"
+title_supertext: "Using > TicTac AAE Fold:"
+title: "Find Tombstones"
 description: ""
 project: "riak_kv"
 project_version: 2.9.4
@@ -39,6 +40,8 @@ See the [TicTac AAE `aae_folds`][tictacaae folds-overview] documentation for con
 
 ## The `find_tombs` function
 
+Run this using [`riak attach`][riak attach].
+
 ```erlang
 riak_client:aae_fold({
     find_tombs, 
@@ -74,7 +77,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 The response will be an array of `{bucket_name,key_name,object_size}` tuples that will look something like this:
 
-```
+```erlang
 {ok,[{{<<"animals">>,<<"dogs">>},<<"Barkie">>,550000},
     {{<<"animals">>,<<"dogs">>},<<"Lord Snuffles III">>,820000}]}
 ```

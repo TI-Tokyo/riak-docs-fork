@@ -1,5 +1,6 @@
 ---
-title: "TicTac AAE Folds: list_buckets"
+title_supertext: "Using > TicTac AAE Fold:"
+title: "List Buckets"
 description: ""
 project: "riak_kv"
 project_version: 2.9.4
@@ -39,6 +40,8 @@ See the [TicTac AAE `aae_folds`][tictacaae folds-overview] documentation for con
 
 ## The `list_buckets` function
 
+Run this using [`riak attach`][riak attach].
+
 ```erlang
 riak_client:aae_fold({
     list_buckets,
@@ -47,14 +50,14 @@ riak_client:aae_fold({
 ```
 There are no available filters for this method.
 
-`assumed_nval` should ideally be set to your cluster's default nval, but can be safely set to `1` for this purpose.
+`assumed_nval` should ideally be set to your cluster's default nval, but can be safely set to `1` for this purpose. Do not set it to below `1` or above your highest nval.
 
 This will list all buckets:
 
 ```erlang
 riak_client:aae_fold({
     list_buckets,
-    1
+    3
     }, Client).
 ```
 
@@ -66,7 +69,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 The response will be an array of bucket names, or tuples of bucket types and bucket names, as Erlang binaries. It looks something like this:
 
-```
+```erlang
 {ok,[{<<"animals">>,<<"dogs">>},
      <<"cars">>]}
 ```

@@ -1,5 +1,6 @@
 ---
-title: "TicTac AAE Folds: reap_tombs"
+title_supertext: "Using > TicTac AAE Fold:"
+title: "Reap or Count Tombstones"
 description: ""
 project: "riak_kv"
 project_version: 2.9.4
@@ -42,6 +43,8 @@ Unreaped Riak tombstones are Riak objects that have been deleted, but have not b
 Use the `reap_tombs` call to count and remove these objects.
 
 ## The `reap_tombs` function
+
+Run this using [`riak attach`][riak attach].
 
 This function has two available operational methods that are selected via the `method` value. `method` can be `local` or `count`, and their usage is detailed in the sections below. The general format for the function is:
 
@@ -107,7 +110,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 The response will look something like this:
 
-```
+```erlang
 {ok,5}
 ```
 
@@ -154,7 +157,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 The response will look something like this:
 
-```
+```erlang
 {ok,5}
 ```
 

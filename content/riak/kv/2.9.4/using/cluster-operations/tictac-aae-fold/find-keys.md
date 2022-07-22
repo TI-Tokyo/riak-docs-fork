@@ -1,5 +1,6 @@
 ---
-title: "TicTac AAE Folds: find_keys"
+title_supertext: "Using > TicTac AAE Fold:"
+title: "Find keys"
 description: ""
 project: "riak_kv"
 project_version: 2.9.4
@@ -39,6 +40,8 @@ See the [TicTac AAE `aae_folds`][tictacaae folds-overview] documentation for con
 
 ## The `find_keys` function
 
+Run this using [`riak attach`][riak attach].
+
 This function will find all keys that meet the common filters as well as one of two function-specific filters (`function_filter`) that filter by minimum sibling count or by minimum object size (but not both at the same time).
 
 ```erlang
@@ -51,6 +54,8 @@ riak_client:aae_fold({
     }, Client).
 ```
 Please see the list of [available standard filters](#available-standard-filters) below.
+
+`function_filter` can be either the `sibling_count` filter or the `object_size` filter, detailed below.
 
 ## The `sibling_count` filter
 
@@ -94,7 +99,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 The response will be an array of `{bucket_name,key_name,sibling_count}` tuples that will look something like this:
 
-```
+```erlang
 {ok,[{{<<"animals">>,<<"dogs">>},<<"Barkie">>,15},
     {{<<"animals">>,<<"dogs">>},<<"Lord Snuffles III">>,6}]}
 ```
@@ -154,7 +159,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 The response will be an array of `{bucket_name,key_name,object_size}` tuples that will look something like this:
 
-```
+```erlang
 {ok,[{{<<"animals">>,<<"dogs">>},<<"Barkie">>,5000},
     {{<<"animals">>,<<"dogs">>},<<"Lord Snuffles III">>,10550400}]}
 ```

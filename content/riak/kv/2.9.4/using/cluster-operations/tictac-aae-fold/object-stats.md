@@ -1,5 +1,6 @@
 ---
-title: "TicTac AAE Folds: object_stats"
+title_supertext: "Using > TicTac AAE Fold:"
+title: "Get Object Statistics"
 description: ""
 project: "riak_kv"
 project_version: 2.9.4
@@ -39,6 +40,8 @@ See the [TicTac AAE `aae_folds`][tictacaae folds-overview] documentation for con
 
 ## The `object_stats` function
 
+Run this using [`riak attach`][riak attach].
+
 ```erlang
 riak_client:aae_fold({
     object_stats, 
@@ -73,7 +76,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 The response will look something like this:
 
-```
+```erlang
 {ok,[{total_count,100},
      {total_size,500000},
      {sizes,[{1,91},{2,5},{3,4}]},

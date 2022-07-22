@@ -1,5 +1,6 @@
 ---
-title: "TicTac AAE Folds: Filters"
+title_supertext: "Using > TicTac AAE Fold:"
+title: "Filters"
 description: ""
 project: "riak_kv"
 project_version: 2.9.4
@@ -41,13 +42,13 @@ This will reduce the number of keys checked.
 
 Use the name of the bucket as a binary. For example, to query bucket "cars", one would use:
 
-```
+```erlang
 {<<"cars">>}
 ```
 
 This example will count the number of keys in the bucket "cars":
 
-```
+```erlang
 riak_client:aae_fold({
     object_stats,
     {<<"cars">>}, 
@@ -64,13 +65,13 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 Use the name of the bucket type and the bucket as a tuple pair of binaries. For example, to query bucket "dogs" with bucket type "animals", one would use:
 
-```
+```erlang
 {<<"animals">>, <<"dogs">>}
 ```
 
 This example will count the number of keys in the bucket "dogs" of bucket type "animals":
 
-```
+```erlang
 riak_client:aae_fold({
     object_stats,
     {<<"animals">>, <<"dogs">>}, 
@@ -93,13 +94,13 @@ TicTacAAE stores keys in a bucket in a tree, so if you want a key starting with 
 
 Use the name of the key you want to start and end at as a tuple pair of binaries. For example, to query keys starting with `n`, you would filter by `n` to `o`:
 
-```
+```erlang
 {<<"n">>, <<"o">>}
 ```
 
 This example will count the number of keys in the bucket `cars` that start with `n`:
 
-```
+```erlang
 riak_client:aae_fold({
     object_stats, 
     {<<"cars">>}, 
@@ -121,7 +122,7 @@ As the values used for key filters are binary strings, they are case sensitive. 
 
 To query all keys, just use `all` for the key range filter. This will count all keys in the bucket `cars`:
 
-```
+```erlang
 riak_client:aae_fold({
     object_stats, 
     {<<"cars">>}, 
@@ -146,7 +147,7 @@ This filter is used when you need to locate keys modified in a certain time fram
 
 The values are passed in a tuple with 3 values:
 
-```
+```erlang
 {date,From,To}
 ```
 
@@ -154,13 +155,13 @@ The values are passed in a tuple with 3 values:
 
 For example, to get all keys modified between 1970-01-01 00:01:00 (`From` = 60) and 1970-01-01 00:02:00 (`To` = 120), one would use:
 
-```
+```erlang
 {date,60,120}
 ```
 
 This example returns all keys in the "cars" bucket that were modified between 1970-01-01 00:01:00 and 1970-01-01 00:02:00:
 
-```
+```erlang
 riak_client:aae_fold({
     object_stats, 
     {<<"cars">>}, 
@@ -176,7 +177,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 {{% note title="Working out the number of seconds" %}}
 The number of seconds can be worked out using this helper function:
 
-```
+```erlang
 Modified_Filter_Calculator = fun (StartDateTime, EndDateTime) ->
   EpochTime = calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
   LowTS = calendar:datetime_to_gregorian_seconds(StartDateTime) - EpochTime,
@@ -187,7 +188,7 @@ end.
 
 This can then be used like so to get the filter value for the range of "2022-01-01 00:00:00" to "2022-02-01 00:00:00" (i.e. all of January 2022):
 
-```
+```erlang
 Modified_Filter_Value = Modified_Filter_Calculator(
   {{2022,1,1},{0,0,0}},
   {{2022,2,1},{0,0,0}}
@@ -202,7 +203,7 @@ riak_client:aae_fold({
 
 Or in one command to make it easily re-usable:
 
-```
+```erlang
 riak_client:aae_fold({
     object_stats, 
     {<<"cars">>}, 
