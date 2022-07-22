@@ -47,9 +47,6 @@ This release is tested with OTP 20, OTP 21 and OTP 22; but optimal performance i
 - Ubuntu 16.04 ("Xenial Xerus")
 - Ubuntu 18.04 ("Bionic Beaver")
 - Ubuntu 20.04.4 ("Focal Fossa")
-- FreeBSD 10.4
-- FreeBSD 11.1
-- Mac OSX 10.11+ (development only)
 
 ## Getting Started
 
