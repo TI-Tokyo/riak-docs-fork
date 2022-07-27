@@ -17,22 +17,20 @@ aliases:
   - /riak/kv/3.0.7/introduction
 ---
 
-Released May 10, 2021.
+Released Jul 16, 2021.
 
 
 ## Overview
 
-Release 3.0.7 adds location-awareness to Riak cluster management. The broad aim is to improve data diversity across locations (e.g. racks) to reduce the probability of data-loss should a set of nodes fail concurrently within a location. The location-awareness does not provide firm guarantees of data diversity that will always be maintained across all cluster changes - but testing has indicated it will generally find a cluster arrangement which is close to optimal in terms of data protection.
+The primary change in 3.0.7 is that Riak will now run the erlang runtime system in interactive mode, not embedded mode. This returns Riak to the default behaviour prior to Riak KV 3.0, in order to resolve a number of problems which occurred post 3.0 when trying to dynamically load code.
 
-If location information is not added to the cluster, there will be no change in behaviour from previous releases.
+The mode used is controlled in a pre-start script, changing this script or overriding the referenced environment variable for the riak user should allow the runtime to be reverted to using embedded mode, should this be required.
 
-There may be some performance advantages when using the location-awareness feature in conjunction with the leveled backend when handling GET requests. With location awareness, when responding to a GET request, a cluster is more likely to be able to fetch an object from a vnode within the location that received the GET request, without having to fetch that object from another location (only HEAD request/response will commonly travel between locations).
-
-This release is tested with OTP 20 and OTP 22; but optimal performance is likely to be achieved when using OTP 22.
-
+This release also extends a prototype API to support for the use of the nextgenrepl API by external applications, for example to reconcile replication to an external non-riak database. The existing fetch api function has been extended to allow for a new response format that includes the Active Anti-Entropy Segment ID and Segment Hash for the object (e.g. to be used when recreating the Riak merkle tree in external databases).
+A new push function has been added to the api, this will push a list of object references to be queued for replication.
 ## Previous Release Notes
 
-Please see the KV 3.0.4 release notes [here]({{<baseurl>}}riak/kv/3.0.4/release-notes/).
+Please see the KV 3.0.6 release notes [here]({{<baseurl>}}riak/kv/3.0.7/release-notes/).
 
 
 
