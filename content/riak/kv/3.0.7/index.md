@@ -45,6 +45,7 @@ This release is tested with OTP 20, OTP 21 and OTP 22; but optimal performance i
 - Red Hat Enterprise Linux 7
 - Red Hat Enterprise Linux 8
 - Raspbian Buster
+- Ubuntu 14.04.6 ("Trusty Tahr")
 - Ubuntu 16.04 ("Xenial Xerus")
 - Ubuntu 18.04 ("Bionic Beaver")
 - Ubuntu 20.04.4 ("Focal Fossa")
