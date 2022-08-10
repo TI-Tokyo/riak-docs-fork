@@ -1757,6 +1757,14 @@ caused by multiple background tasks.</td>
 <td><code>on</code></td>
 </tr>
 
+<try>
+<td><code>worker_pool_size</code></td>
+<td>This is a pool of workers per-vnode, to be used for general queries, in
+%% particular secondary index queries.  This now defaults to 5 workers, prior
+%% to release 3.0.9 it was set to a default of 10.</td>
+<td><code>5</code><td>
+</try>
+
 </tbody>
 </table>
 
