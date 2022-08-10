@@ -17,34 +17,26 @@ aliases:
   - /riak/kv/3.0.9/introduction
 ---
 
-Released Oct 12, 2021.
+Released Nov 13, 2021.
 
 
 ## Overview
 
-his release contains a number of stability improvements.
+This release contains stability, monitoring and performance improvements.
 
-Fix to critical issue in leveled when using (non-default, but recommended, option): leveled_reload_recalc = enabled. If using this option, it is recommended to rebuild the ledger on each vnode at some stage after updating.
+* Fix to the riak_core coverage planner to significantly reduce the CPU time required to produce a coverage plan, especially with larger ring sizes. This improves both the mean and tail-latency of secondary index queries. As a result of this change, it is recommended that larger ring sizes should be used by default, even when running relatively small clusters - for example in standard volume tests a ring size of 512 is outperforming lower ring sizes even on small (8-node) clusters.
 
-Fix to an issue with cluster leave operations that could leave clusters unnecessarily unbalanced after Stage 1 of leave, and also cause unexpected safety violations in Stage 1 (with either a simple transfer or a rebalance). An option to force a rebalance in Stage 1 is also now supported.
+* Further monitoring stats have been added to track the performance of coverage queries, in particular secondary index queries. For each worker queue (e.g. vnode_worker_pool, af1_pool etc) the queue_time and work_time is now monitored with results available via riak stats. The result counts, and overall query time for secondary index queries are now also monitored via riak stats. See the PR for a full list of stats added in this release.
 
-The ability to set an environment variable to remove the risk of atom table exhaustion due to repeated calls to riak status (and other) command-line functions.
+* Change to some default settings to be better adapted to running with higher concentrations of vnodes per nodes. The per-vnode cache sizes in leveled are reduced, and the default size of the vnode_worker_pool has been reduced from 10 to 5 and is now configurable via riak.conf. Exceptionally heavy users of secondary index queries (i.e. > 1% of transactions), should consider monitoring the new queue_time and work_time statistics before accepting this new default.
 
-The default setting of the object_hash_version environment variable to reduce the opportunity for the riak_core_capability system to falsely request downgrading to legacy, especially when concurrently restarting many nodes.
+* Fix to an issue in the leveled backend when a key and (internal) sequence number would hash to 0. It is recommended that users of leveled uplift to this version as soon as possible to resolve this issue. The risk is mitigated in Riak as it can generally be expected that most keys will have different sequence numbers in different vnodes, and will always have different sequence numbers when re-written - so normal anti-entropy process will recover from any localised data loss.
 
-An update to the versions of recon and redbug used in Riak.
-
-The fixing of an issue with connection close handling in the Riak erlang client.
-
-This release also contains two new features:
-
-A new aae_fold operation has been added which will support the prompting of read-repair for a range of keys e.g. all the keys in a bucket after a given last modified date. This is intended to allow an operator to accelerate full recovery of data following a known node outage.
-
-The addition of the sync_on_write property for write operations. Some Riak users require flushing of writes to disk to protect against data loss in disaster scenarios, such as mass loss of power across a DC. This can have a significant impact on throughput even with hardware acceleration (e.g. flash-backed write caches). The decision to flush was previously all or nothing. It can now be set as a bucket property (and even determined on individual writes), and can be set to flush on all vnodes or just one (the coordinator), or to simply respect the backend configuration. If one is used the single flush will occur only on client-initiated writes - writes due to handoffs or replication will not be flushed.
+* More time is now given to the legacy AAE kv_index_hashtree process to shut down, to handle delays as multiple vnodes are shutdown concurrently and contend for disk and CPU resources.
 
 ## Previous Release Notes
 
-Please see the KV 3.0.7 release notes [here]({{<baseurl>}}riak/kv/3.0.7/release-notes/).
+Please see the KV 3.0.8 release notes [here]({{<baseurl>}}riak/kv/3.0.8/release-notes/).
 
 
 
