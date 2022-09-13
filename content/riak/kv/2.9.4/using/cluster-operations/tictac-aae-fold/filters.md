@@ -139,6 +139,8 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 This filter is used internally by TictacAAE and for custom replication functions. It's usage is not covered by this guide.
 
+Use `all` for this filter.
+
 ## Filter by date modified
 
 This will not reduce the number of keys checked, but will reduce the number of keys returned.
