@@ -12,6 +12,8 @@ menu:
     parent: "managing_cluster_operations"
 toc: true
 since: 2.9.4
+version_history:
+  in: "2.9.4+"
 aliases:
 ---
 [code riak_kv_vnode]: https://github.com/basho/riak_kv/blob/develop-3.0/src/riak_kv_vnode.erl

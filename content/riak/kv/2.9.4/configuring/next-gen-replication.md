@@ -10,6 +10,7 @@ menu:
     identifier: "nextgen_rep"
     weight: 200
     parent: "configuring"
+since: 2.9.1
 version_history:
   in: "2.9.1+"
 toc: true

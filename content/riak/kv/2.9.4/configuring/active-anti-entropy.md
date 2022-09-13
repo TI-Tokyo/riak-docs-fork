@@ -13,8 +13,8 @@ menu:
 toc: true
 commercial_offering: false
 version_history:
-  in: "2.9.4+"
-since: 2.9.4
+  in: "2.9.0p5+"
+since: 2.9.0p5
 aliases:
 ---
 
