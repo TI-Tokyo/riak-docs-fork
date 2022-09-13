@@ -25,6 +25,7 @@ aliases:
 [tictacaae find-tombs]: ../tictac-aae-fold/find-tombs
 [tictacaae list-buckets]: ../tictac-aae-fold/list-buckets
 [tictacaae object-stats]: ../tictac-aae-fold/object-stats
+[tictacaae count-tombs]: ../tictac-aae-fold/count-tombs
 [tictacaae reap-tombs]: ../tictac-aae-fold/reap-tombs
 [filters]: ../tictac-aae-fold/filters
 [filter-by bucket]: ../tictac-aae-fold/filters#filter-by-bucket-name
@@ -154,32 +155,51 @@ These filters can only be used with the `find_keys` function:
 - Filter by sibling count - [Learn More >>][filter-by sibling-count]
 - Filter by object size - [Learn More >>][filter-by object-size]
 
-## Find keys (`find_keys`)
+## Find keys
+
+Function: `find_keys`
 
 Returns a list of keys that meet the filter parameters.
 
 [Learn More >>][tictacaae find-keys]
 
-## Find Riak tombstones (`find_tombs`)
+## Find Riak tombstones
+
+Function: `find_tombs`
 
 Returns tuples of bucket name, keyname, and object size of Riak tombstone objects that meet the filter parameters.
 
 [Learn More >>][tictacaae find-tombs]
 
-## List Buckets (`list_buckets`)
+## List Buckets
+
+Function: `list_buckets`
 
 Returns a list of all buckets.
 
 [Learn More >>][tictacaae list-buckets]
 
-## Get object statistics (`object_stats`)
-Returns a count of objects that meet the filter parameters.
+## Count tombstones
+
+Function: `reap_tombs` with `count`
+
+Counts the Riak tombstone objects that meet the filter parameters.
+
+[Learn More >>][tictacaae count-tombs]
+
+## Get object statistics
+
+Function: `object_stats`
+
+Returns a count of Riak objects that meet the filter parameters.
 
 [Learn More >>][tictacaae object-stats]
 
-## Reap or count tombstones (`reap_tombs`)
+## Reap tombstones
 
-Reaps or counts the Riak tombstone objects that meet the filter parameters.
+Function: `reap_tombs` with `local`
+
+Reaps the Riak tombstone objects that meet the filter parameters.
 
 [Learn More >>][tictacaae reap-tombs]
 
