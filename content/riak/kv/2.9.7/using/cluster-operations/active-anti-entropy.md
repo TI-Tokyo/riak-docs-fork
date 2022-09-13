@@ -1,11 +1,11 @@
 ---
-title: "Managing Active Anti-Entropy"
+title: "Legacy Active Anti-Entropy"
 description: ""
 project: "riak_kv"
 project_version: 2.9.7
 menu:
   riak_kv-2.9.7:
-    name: "Managing Active Anti-Entropy"
+    name: "Legacy AAE"
     identifier: "cluster_operations_aae"
     weight: 111
     parent: "managing_cluster_operations"
