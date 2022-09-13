@@ -11,6 +11,9 @@ menu:
     weight: 101
     parent: "configuring-active-anti-entropy"
 toc: true
+version_history:
+  in: "2.9.0p5+"
+since: 2.9.0p5
 aliases:
 ---
 
