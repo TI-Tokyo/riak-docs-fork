@@ -12,6 +12,9 @@ menu:
     parent: "configuring"
 toc: true
 commercial_offering: false
+version_history:
+  in: "2.9.4+"
+since: 2.9.4
 aliases:
 ---
 
