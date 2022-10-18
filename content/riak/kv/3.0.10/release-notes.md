@@ -17,26 +17,37 @@ aliases:
   - /riak/kv/3.0.10/introduction
 ---
 
-Released Nov 13, 2021.
+Released May 29, 2022.
 
 
 ## Overview
 
-This release contains stability, monitoring and performance improvements.
+This release is focused on improving memory management, especially with the leveled backend, and improving the efficiency and ease of configuration of tictacaae full-sync.
 
-* Fix to the riak_core coverage planner to significantly reduce the CPU time required to produce a coverage plan, especially with larger ring sizes. This improves both the mean and tail-latency of secondary index queries. As a result of this change, it is recommended that larger ring sizes should be used by default, even when running relatively small clusters - for example in standard volume tests a ring size of 512 is outperforming lower ring sizes even on small (8-node) clusters.
+* Improved memory management of leveled SST files that contain rarely accessed data
 
-* Further monitoring stats have been added to track the performance of coverage queries, in particular secondary index queries. For each worker queue (e.g. vnode_worker_pool, af1_pool etc) the queue_time and work_time is now monitored with results available via riak stats. The result counts, and overall query time for secondary index queries are now also monitored via riak stats. See the PR for a full list of stats added in this release.
+* Fix a bug whereby leveled_sst files could spend an extended time in the delete_pending state, causing significant short-term increases in memory usage when there are work backlogs in the penciller.
 
-* Change to some default settings to be better adapted to running with higher concentrations of vnodes per nodes. The per-vnode cache sizes in leveled are reduced, and the default size of the vnode_worker_pool has been reduced from 10 to 5 and is now configurable via riak.conf. Exceptionally heavy users of secondary index queries (i.e. > 1% of transactions), should consider monitoring the new queue_time and work_time statistics before accepting this new default.
+* Change the queue for reapers and erasers so that they overflow to disk, rather than simply consuming more and more memory.
 
-* Fix to an issue in the leveled backend when a key and (internal) sequence number would hash to 0. It is recommended that users of leveled uplift to this version as soon as possible to resolve this issue. The risk is mitigated in Riak as it can generally be expected that most keys will have different sequence numbers in different vnodes, and will always have different sequence numbers when re-written - so normal anti-entropy process will recover from any localised data loss.
+* Change the replrtq (nextgenrepl) queue to use the same overflow queue mechanism as used by the reaper and erasers.
 
-* More time is now given to the legacy AAE kv_index_hashtree process to shut down, to handle delays as multiple vnodes are shutdown concurrently and contend for disk and CPU resources.
+* Change the default full-sync mechanism for tictacaae (nextgenrepl) full-sync to auto_check, which attempts to automatically learn and use information about modified date-ranges in full-sync checks. The related changes also make full-sync by default bi-directional, reducing the amount of wasted effort in full-sync queries.
 
+* Add a peer discovery feature for replrtq (nextgenrepl) so that new nodes added to the cluster can be automatically recognised without configuration changes. By default this is disabled, and should only be enabled once both clusters have been upgraded to at least 3.0.10.
+
+* Allow for underlying beam memory management and scheduler configuration to be exposed via riak.conf to allow for further performance tests on these settings. Note initial tests indicate the potential for significant improvements when using the leveled backend.
+
+* Fix a potential issue whereby corrupted objects would prevent AAE (either legacy or nextgenrepl) tree rebuilds from completing.
+
+* Improved handling of key amnesia, to prevent rebounding of objects, and also introduce a reader process (like reaper and eraser) to which read repairs can be queued with overflow to disk.
+
+* The release does not support OTP 20, only OTP 22 is supported. Updating some long out-of-date components have led to a requirement for the OTP version to be lifted.
+
+* To maintain backwards compatibility with older linux versions, the latest version of basho's leveldb is not yet supported. This is likely to change in the next release, where support for older linux versions will be dropped.
 ## Previous Release Notes
 
-Please see the KV 3.0.8 release notes [here]({{<baseurl>}}riak/kv/3.0.8/release-notes/).
+Please see the KV 3.0.9 release notes [here]({{<baseurl>}}riak/kv/3.0.9/release-notes/).
 
 
 
