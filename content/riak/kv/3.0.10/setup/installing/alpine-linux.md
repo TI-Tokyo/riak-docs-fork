@@ -18,7 +18,6 @@ aliases:
   - /riak/kv/3.0.10/installing/Alpine-Linux/
 ---
 
-[install source index]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/source/
 [security index]: {{<baseurl>}}riak/kv/3.0.10/using/security/
 [install source erlang]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/source/erlang
 [install verify]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/verify
@@ -28,7 +27,7 @@ aliases:
 To install Riak on Alpine Linux:
 
 1. Add `http://files.tiot.jp/alpine/v3.16/main` to /etc/apk/repositories and remove `/home/dev/packages/main` if it is present.
-2. <placeholder for public key>
+2. run `wget http://files-source.tiot.jp/alpine/alpine@tiot.jp.rsa.pub`
 3. Run `apk update`
 4. Run `apk add riak` for the latest Riak KV version
 
