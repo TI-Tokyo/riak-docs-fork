@@ -1,7 +1,7 @@
-﻿---
+﻿---a
 title_supertext: "Installing on"
 title: "Alpine Linux"
-description: ""
+description: "installing Riak on Alpine Linux"
 project: "riak_kv"
 project_version: 3.0.10
 menu:
@@ -12,16 +12,21 @@ menu:
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.10/ops/building/installing/Installing-on-Alpine-Linux
-  - /riak/kv/3.0.10/ops/building/installing/Installing-on-Alpine-Linux
-  - /riak/3.0.10/installing/Alpine-Linux/
-  - /riak/kv/3.0.10/installing/Alpine-Linux/
+  - /riak/3.0.10/ops/building/installing/installing-on-alpine-linux
+  - /riak/kv/3.0.10/ops/building/installing/installing-on-alpine-linux
+  - /riak/3.0.10/installing/alpine-linux/
+  - /riak/kv/3.0.10/installing/alpine-linux/
 ---
 
 [security index]: {{<baseurl>}}riak/kv/3.0.10/using/security/
 [install source erlang]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/source/erlang
 [install verify]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/verify
 
+Riak KV can be installed on Alpine Linux using a binary
+package.
+The following steps have been tested to work with Riak KV on:
+
+Alpine Linux 3.14
 
 ### Riak 64-bit Installation
 To install Riak on Alpine Linux:
