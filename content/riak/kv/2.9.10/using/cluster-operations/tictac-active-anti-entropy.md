@@ -6,8 +6,8 @@ project_version: 2.9.10
 menu:
   riak_kv-2.9.10:
     name: "TicTac Active Anti-Entropy"
-    identifier: "TicTac_aae"
-    weight: 111
+    identifier: "cluster_operations_tictac_aae"
+    weight: 108
     parent: "managing_cluster_operations"
 toc: true
 since: 2.9.0p5

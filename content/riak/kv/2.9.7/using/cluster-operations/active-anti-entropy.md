@@ -7,7 +7,7 @@ menu:
   riak_kv-2.9.7:
     name: "Legacy AAE"
     identifier: "cluster_operations_aae"
-    weight: 111
+    weight: 110
     parent: "managing_cluster_operations"
 toc: true
 version_history:

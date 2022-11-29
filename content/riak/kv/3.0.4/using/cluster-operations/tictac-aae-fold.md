@@ -8,7 +8,7 @@ menu:
   riak_kv-3.0.4:
     name: "TicTac AAE Folds"
     identifier: "cluster_operations_tictac_aae_fold"
-    weight: 108
+    weight: 109
     parent: "managing_cluster_operations"
 toc: true
 since: 2.9.4
