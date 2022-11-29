@@ -43,15 +43,7 @@ A guide covering commonly adjusted parameters for the TicTac AAE system.
 
 [Learn More >>][config tictac]
 
-#### [Configuring TicTac AAE's Next Gen Replication][config tictac-repl]
-
-A guide covering commonly adjusted parameters for TicTac AAE's enhanced FullSync replication system.
-
-[Learn More >>][config tictac-repl]
-
 #### Other documentation
-
-- [How to use `aae_fold`][using aaefold] to efficiently find, list and mangage keys.
 
 ## Legacy AAE system
 
