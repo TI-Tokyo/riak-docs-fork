@@ -3,9 +3,9 @@ title_supertext: "Configuring:"
 title: "Legacy Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: 2.9.4
+project_version: 3.0.2
 menu:
-  riak_kv-2.9.4:
+  riak_kv-3.0.2:
     name: "Legacy AAE"
     identifier: "configuring_legacy_aae"
     weight: 103
