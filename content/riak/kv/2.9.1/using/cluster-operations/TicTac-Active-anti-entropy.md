@@ -10,6 +10,8 @@ menu:
     weight: 111
     parent: "managing_cluster_operations"
 toc: true
+version_history:
+  in: "2.9.0+"
 aliases:
   - /riak/kv/2.9.1/ops/advanced/tictacaae/
   - /riak/2.9.1/ops/advanced/ticktacaae/
