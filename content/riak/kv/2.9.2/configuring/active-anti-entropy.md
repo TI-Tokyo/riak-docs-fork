@@ -49,10 +49,6 @@ A guide covering commonly adjusted parameters for TicTac AAE's enhanced FullSync
 
 [Learn More >>][config tictac-repl]
 
-#### Other documentation
-
-- [How to use `aae_fold`][using aaefold] to efficiently find, list and mangage keys.
-
 ## Legacy AAE system
 
 The legacy AAE system is still present, and works exactly as before.
