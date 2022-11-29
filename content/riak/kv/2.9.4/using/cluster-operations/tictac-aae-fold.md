@@ -17,7 +17,7 @@ version_history:
 aliases:
 ---
 [code riak_kv_vnode]: https://github.com/basho/riak_kv/blob/develop-3.0/src/riak_kv_vnode.erl
-[riak attach]: ../../using/admin/riak-cli/#attach
+[riak attach]: ../../admin/riak-cli/#attach
 [config reference]: ../../../configuring/reference/#tictac-active-anti-entropy
 [config tictacaae]: ../../../configuring/active-anti-entropy/tictac-aae
 [tictacaae system]: ../tictac-active-anti-entropy
