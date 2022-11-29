@@ -155,22 +155,28 @@ The values are passed in a tuple with 3 values:
 {date,From,To}
 ```
 
-`date` is required. `From` and `To` are seconds since `1970-01-01 00:00:00`.
+`date` is required. `From` and `To` are either a non-negative interger of seconds since `1970-01-01 00:00:00`, or two tuples containing dates in the format `{{Year,Month,Day},{Hour,Minute,Second}}`.
 
-For example, to get all keys modified between 1970-01-01 00:01:00 (`From` = 60) and 1970-01-01 00:02:00 (`To` = 120), one would use:
+For example, to get all keys modified between 1970-01-01 00:01:00 (`From` = `{1970,1,1},{0,1,0}` or `60`) and 1970-01-01 00:02:00 (`To` = `{1970,1,1},{0,2,0}` or `120`), one would use either of these:
 
 ```erlang
+% using easily readable dates
+
+{date,{{1970,1,1},{0,1,0}},{{1970,1,1},{0,2,0}}}
+
+% or using seconds since 1970-01-01 00:00:00
+
 {date,60,120}
 ```
 
-This example returns all keys in the "cars" bucket that were modified between 1970-01-01 00:01:00 and 1970-01-01 00:02:00:
+This example returns all keys in the "cars" bucket that were modified after 12-noon on 2022-05-01 (`From` = 2022-05-01 12:00:00 and `To` = 2022-05-02 00:00:00):
 
 ```erlang
 riak_client:aae_fold({
     object_stats, 
     {<<"cars">>}, 
     all, 
-    {date,60,120}
+    {date,{{2022,5,1},{12,0,0}},{{2022,5,2},{0,0,0}}}
     }, Client).
 ```
 
@@ -179,7 +185,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 {{% /note %}}
 
 {{% note title="Working out the number of seconds" %}}
-The number of seconds can be worked out using this helper function:
+It's easier to use the `{{Year,Month,Day},{Hour,Minute,Second}}` format for `From` and `To`, but if you want to use the number of seconds instead, they can be worked out using this helper function:
 
 ```erlang
 Modified_Filter_Calculator = fun (StartDateTime, EndDateTime) ->
