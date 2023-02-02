@@ -27,7 +27,7 @@ This is the primary script for controlling the processes associated with a Riak 
 ```bash
 Usage: riak «command»
 where «command» is one of the following:
-    { help | start | stop | restart | ping | console | attach
+    { help | daemon | stop | restart | ping | console | attach
       attach-direct | ertspath | chkconfig | escript | version | getpid
       top [-interval N] [-sort { reductions | memory | msg_q }] [-lines N] } |
       config { generate | effective | describe VARIABLE } [-l debug]
@@ -37,7 +37,9 @@ where «command» is one of the following:
 
 Provides a brief description of all available commands.
 
-## start
+## daemon
+
+In Riak KV 3.2.0, riak daemon replaces riak start.
 
 Starts the Riak node in the background. If the node is already started, you will receive the message `Node is already running!` If the node is not already running, no output will be given.
 
