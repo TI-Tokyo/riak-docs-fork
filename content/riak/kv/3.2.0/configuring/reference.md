@@ -1027,15 +1027,14 @@ interface will bind.</td>
 
 ## Logging
 
-Configurable parameters for [lager](https://github.com/basho/lager),
 Riak's logging system.
 
 <table class="riak-conf">
 <thead>
 <tr>
-<th>Config</th>
-<th>Description</th>
-<th>Default</th>
+<th>logger.file</th>
+<th>Filename to use for log files.</th>
+<th>$(platform_log_dir)/console.log</th>
 </tr>
 </thead>
 <tbody>
@@ -1134,49 +1133,6 @@ second</td>
 <td>Whether to redirect <code>error_logger</code> messages into
 lager</td>
 <td><code>on</code></td>
-</tr>
-
-<tr>
-<td><code>log.syslog</code></td>
-<td>When set to <code>on</code>, enables log output to syslog</td>
-<td><code>off</code></td>
-</tr>
-
-<tr>
-<td><code>log.syslog.facility</code></td>
-<td>Sets the <a
-href="http://en.wikipedia.org/wiki/Syslog#Facility_levels">facility
-level</a> of syslog output if <code>log.syslog</code> is set to
-<code>on</code>. Possible values:
-<ul><li><code>auth</code></li><li><code>authpriv</code></li>
-<li><code>clock</code></li><li><code>cron</code></li>
-<li><code>daemon</code></li><li><code>ftp</code></li>
-<li><code>kern</code></li><li><code>lpr</code></li>
-<li><code>mail</code></li><li><code>news</code></li>
-<li><code>syslog</code></li><li><code>user</code></li>
-<li><code>uucp</code></li></ul>
-In addition to these settings, you may also select <code>local0</code>
-through <code>local7</code>.</td>
-<td><code>daemon</code></td>
-</tr>
-
-<tr>
-<td><code>log.syslog.ident</code></td>
-<td>If <code>log.syslog</code> is set to <code>on</code>, this setting
-determines the prefix appended to each syslog message.</td>
-<td><code>riak</code></td>
-</tr>
-
-<tr>
-<td><code>log.syslog.level</code></td>
-<td>If <code>log.syslog</code> is set to <code>on</code>, this setting
-determines the log level of syslog output. Possible values:
-<ul><li><code>alert</code></li><li><code>critical</code></li>
-<li><code>debug</code></li><li><code>emergency</code></li>
-<li><code>error</code></li><li><code>info</code></li
-<li><code>none</code></li><li><code>notice</code></li>
-<li><code>warning</code></li></ul></td>
-<td><code>info</code></td>
 </tr>
 
 <tr>
