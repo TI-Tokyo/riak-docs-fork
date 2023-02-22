@@ -107,8 +107,6 @@ Metric | Also | Relevance | Latency (in microseconds)
 ```object_counter_merge_time_mean``` | ```_median```, ```_95```, ```_99```, ```_100```  | Data Types | Time it takes to perform an Update Counter operation
 ```object_set_merge_time_mean``` | ```_median```, ```_95```, ```_99```, ```_100```  | Data Types | Time it takes to perform an Update Set operation
 ```object_map_merge_time_mean``` | ```_median```, ```_95```, ```_99```, ```_100```  | Data Types | Time it takes to perform an Update Map operation
-```search_query_latency_median``` | ```_min```, ```_95```, ```_99```, ```_999```, ```_max``` | Search | Search query latency
-```search_index_latency_median``` | ```_min```, ```_95```, ```_99```, ```_999```, ```_max``` | Search | Time it takes Search to index a new document
 ```consistent_get_time_mean``` | ```_median```, ```_95```, ```_99```, ```_100``` | Strong Consistency | Strongly consistent read latency
 ```consistent_put_time_mean``` | ```_median```, ```_95```, ```_99```, ```_100``` | Strong Consistency | Strongly consistent write latency
 
@@ -132,7 +130,6 @@ Metric | Also | Notes
 :------|:-----|:------------------
 ```node_get_fsm_siblings_mean``` | ```_median```, ```_95```, ```_99```, ```_100``` | Number of siblings encountered during all GET operations by this node within the last minute. Watch for abnormally high sibling counts, especially max ones.
 ```node_get_fsm_objsize_mean``` | ```_median```, ```_95```, ```_99```, ```_100``` | Object size encountered by this node within the last minute. Abnormally large objects (especially paired with high sibling counts) can indicate sibling explosion.
-```riak_search_vnodeq_mean``` | ```_median```, ```_95```, ```_99```, ```_100``` | Number of unprocessed messages in the vnode message queues of the Riak Search subsystem on this node in the last minute. The queues give you an idea of how backed up Solr is getting.
 ```search_index_fail_one``` | | Number of "Failed to index document" errors Search encountered for the last minute
 ```pbc_active``` | | Number of currently active protocol buffer connections
 ```pbc_connects``` | | Number of new protocol buffer connections established during the last minute
@@ -140,18 +137,6 @@ Metric | Also | Notes
 ```list_fsm_active``` | | Number of List Keys FSMs currently active (should be 0)
 ```node_get_fsm_rejected``` | | Number of GET FSMs actively being rejected by Sidejob's overload protection
 ```node_put_fsm_rejected``` | | Number of PUT FSMs actively being rejected by Sidejob's overload protection
-
-### General Riak Search Load/Health Metrics
-
-These various stats give a picture of the general level of activity or
-load on the Riak node at any given moment.
-
-Metric | Description
-:------|:------------
-`search_index_bad_entry_count` | Number of writes to Solr that have resulted in an error due to the format of the data (e.g., non-unicode data) since the last restart of Riak.
-`search_index_bad_entry_one	` | Number of writes to Solr that have resulted in an error due to the format of the data (e.g., non-unicode data) in the past minute.
-`search_index_extract_fail_count` | Number of failures that have occurred extracting data into a format suitable to insert into Solr (e.g., badly formatted JSON) since the last start of Riak.
-`search_index_extract_fail_one` | Number of failures that have occurred extracting data into a format suitable to insert into Solr (e.g., badly formatted JSON) in the past minute.
 
 
 ## Command-line Interface

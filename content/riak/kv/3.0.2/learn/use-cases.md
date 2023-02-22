@@ -28,7 +28,6 @@ aliases:
 [plan backend bitcask]: {{<baseurl>}}riak/kv/3.0.2/setup/planning/backend/bitcask
 [replication properties]: {{<baseurl>}}riak/kv/3.0.2/developing/app-guide/replication-properties
 [usage mapreduce]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/mapreduce
-[usage search]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/search
 [usage secondary-indexes]: {{<baseurl>}}riak/kv/3.0.2/developing/usage/secondary-indexes
 
 Riak is a flexible data storage technology capable of addressing a wide variety
