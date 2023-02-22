@@ -24,7 +24,6 @@ aliases:
 [glossary read rep]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#read-repair
 [glossary vnode]: {{<baseurl>}}riak/kv/3.0.1/learn/glossary/#vnode
 [Merkle tree]: http://en.wikipedia.org/wiki/Merkle_tree
-[usage search]: {{<baseurl>}}riak/kv/3.0.1/developing/usage/search
 
 
 In a [clustered][concept clusters], [eventually consistent][concept eventual consistency] system like Riak, conflicts between object replicas stored
