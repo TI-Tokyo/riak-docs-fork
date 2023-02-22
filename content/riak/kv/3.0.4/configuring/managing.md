@@ -15,7 +15,6 @@ aliases:
 
 [use admin riak cli]: {{<baseurl>}}riak/kv/3.0.4/using/admin/riak-cli
 [use admin riak cli#chkconfig]: {{<baseurl>}}riak/kv/3.0.4/using/admin/riak-cli/#chkconfig
-[config reference#search]: {{<baseurl>}}riak/kv/3.0.4/configuring/reference/#search
 
 ## Retrieving a Configuration Listing
 

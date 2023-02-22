@@ -26,8 +26,6 @@ aliases:
 [dev data types#sets]: {{<baseurl>}}riak/kv/3.0.4/developing/data-types/#sets
 [dev data types#maps]: {{<baseurl>}}riak/kv/3.0.4/developing/data-types/#maps
 [usage create objects]: {{<baseurl>}}riak/kv/3.0.4/developing/usage/creating-objects
-[usage search]: {{<baseurl>}}riak/kv/3.0.4/developing/usage/search
-[use ref search]: {{<baseurl>}}riak/kv/3.0.4/using/reference/search
 [usage 2i]: {{<baseurl>}}riak/kv/3.0.4/developing/usage/secondary-indexes
 [dev client libraries]: {{<baseurl>}}riak/kv/3.0.4/developing/client-libraries
 [concept crdts]: {{<baseurl>}}riak/kv/3.0.4/learn/concepts/crdts
