@@ -29,7 +29,6 @@ aliases:
 [use admin riak cli]: ../../using/admin/riak-cli
 [use admin riak admin]: ../../using/admin/riak admin
 [glossary aae]: ../../learn/glossary/#active-anti-entropy-aae
-[use ref search 2i]: ../../using/reference/secondary-indexes
 [cluster ops bucket types]: ../../using/cluster-operations/bucket-types
 [usage conflict resolution]: ../../developing/usage/conflict-resolution
 [concept causal context]: ../../learn/concepts/causal-context
@@ -1858,27 +1857,6 @@ only in Riak KV Enterprise Edition 2.0 and later as well as Riak KV 2.2.6 onward
 </tbody>
 </table>
 
-#### Upgrading Riak Search with `advanced.config`
-
-If you are upgrading to Riak 2.x and wish to upgrade to the new [Riak Search][use ref search]\(codename Yokozuna), you will need to enable
-legacy Search while the upgrade is underway. You can add the following
-snippet to your `advanced.config` configuration to do so:
-
-```advancedconfig
-[
-    %% Other configs
-
-    {riak_search, [ {enabled, true} ]},
-    {merge_index, [
-        {data_root, "/var/lib/riak/merge_index"},
-        {buffer_rollover_size, 1048576},
-        {max_compact_segments, 20}
-    ]},
-
-    %% Other configs
-].
-```
-
 #### Other settings
 
 There are three non-`riak_repl` settings available in
@@ -1971,7 +1949,6 @@ Field | Default | Valid values |
 `cluster.job.riak_kv.map_reduce_js`|`enabled`|`enabled` or `disabled`
 `cluster.job.riak_kv.secondary_index`|`enabled`|`enabled` or `disabled`
 `cluster.job.riak_search.query`|`enabled`|`enabled` or `disabled`
-`cluster.job.yokozuna.query`|`enabled`|`enabled` or `disabled`
 
 
 

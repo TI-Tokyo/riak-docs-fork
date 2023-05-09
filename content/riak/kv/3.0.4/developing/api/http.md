@@ -76,15 +76,6 @@ Method | URL | Doc
 `GET` | `/stats` | [HTTP Status]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/status)
 `GET` | `/` | [HTTP List Resources]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/list-resources)
 
-## Search-related Operations
-
-Method | URL | Doc
-:------|:----|:---
-`GET` | `/search/query/<index_name>` | [HTTP Search Query]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/search-query)
-`GET` | `/search/index` | [HTTP Search Index Info]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/search-index-info)
-`GET` | `/search/index/<index_name>` | [HTTP Fetch Search Index]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/fetch-search-index)
-`PUT` | `/search/index/<index_name>` | [HTTP Store Search Index]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/store-search-index)
-`DELETE` | `/search/index/<index_name>` | [HTTP Delete Search Index]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/delete-search-index)
 
 
 

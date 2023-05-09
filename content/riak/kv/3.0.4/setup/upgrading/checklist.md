@@ -172,7 +172,6 @@ one of the following:
 * `ring_membership`
 * `ring_preflists`
 * `ring_size`
-* `search`
 * `sysctl`
 
 Running `riak admin diag` with no additional arguments will run all

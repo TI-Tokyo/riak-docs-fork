@@ -137,7 +137,7 @@ encounters an invalid input:
 
 {{% note title="Note on inputs" %}}
 Inputs must be a binary bucket, a tuple of bucket and key-filters, a list of
-target tuples, a search index, or modfun tuple: `INPUT`.
+target tuples or modfun tuple: `INPUT`.
 {{% /note %}}
 
 For the remaining common error codes, they are often marked by Erlang
@@ -291,7 +291,7 @@ should not run across these.
 Error | Message | Description | Resolution
 :-----|:--------|:------------|:----------
 `bad_mapper_props_no_keys` | | At least one property should be found by default. *Unused in Riak 1.3+* | Set mapper properties, or don't use it
-`bad_mapred_inputs` | | A bad value sent to MapReduce. *Unused in Riak 1.3+* | When using the Erlang client interface, ensure all MapReduce and search are correctly binary
+`bad_mapred_inputs` | | A bad value sent to MapReduce. *Unused in Riak 1.3+* | When using the Erlang client interface, ensure all MapReduce queries are correctly binary
 `bad_fetch` | | An expected local query was not retrievable.  *Unused in Riak 1.3+* | Placing javascript MapReduce query code as a riak value must first be stored before execution
 `{bad_filter, <Filter>}` | | An invalid keyfilter was used | Ensure your MapReduce keyfilter is correct
 `{dead_mapper, <Stacktrace>, <MapperData>}` | | Getting a reply from a mapper for a job that has already exited.  *Unused in Riak 1.3+* | Check for a stuck Erlang process, or if using legacy MR ensure `map_cache_size` is set (Both issues may require a node restart)

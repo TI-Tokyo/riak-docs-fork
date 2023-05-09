@@ -168,10 +168,6 @@ Once all of the clusters have been upgraded to version 2.2.0 or greater, this ov
 
 6\. Restart Riak KV:
 
-{{% note %}}
-You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 3.0.4 if you wish to use Riak search. If you do not have it installed, please install it now.
-{{% /note %}}
-
 
 
 ```bash

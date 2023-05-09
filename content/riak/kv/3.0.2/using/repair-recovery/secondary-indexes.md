@@ -51,11 +51,11 @@ riak-admin repair-2i kill
 
 ### Running a Repair
 
-If a replica loss has occurred, you need to run the repair command. This command repairs objects from a node's adjacent partitions on the ring, consequently fixing the search index.
+If a replica loss has occurred, you need to run the repair command. This command repairs objects from a node's adjacent partitions on the ring.
 
 This is done as efficiently as possible by generating a hash range for all the buckets and thus avoiding a preflist calculation for each key. Only a hash of each key is done, its range determined from a bucket&rarr;range map, and then the hash is checked against the range.
 
-This code will force all keys in each partition on a node to be reread, thus rebuilding the search index properly.
+This code will force all keys in each partition on a node to be reread.
 
 1. From a cluster node with Riak installed, attach to the Riak console:
 

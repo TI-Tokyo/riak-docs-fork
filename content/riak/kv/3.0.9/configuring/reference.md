@@ -1858,26 +1858,6 @@ only in Riak KV Enterprise Edition 2.0 and later as well as Riak KV 2.2.6 onward
 </tbody>
 </table>
 
-#### Upgrading Riak Search with `advanced.config`
-
-If you are upgrading to Riak 2.x and wish to upgrade to the new [Riak Search][use ref search]\(codename Yokozuna), you will need to enable
-legacy Search while the upgrade is underway. You can add the following
-snippet to your `advanced.config` configuration to do so:
-
-```advancedconfig
-[
-    %% Other configs
-
-    {riak_search, [ {enabled, true} ]},
-    {merge_index, [
-        {data_root, "/var/lib/riak/merge_index"},
-        {buffer_rollover_size, 1048576},
-        {max_compact_segments, 20}
-    ]},
-
-    %% Other configs
-].
-```
 
 #### Other settings
 

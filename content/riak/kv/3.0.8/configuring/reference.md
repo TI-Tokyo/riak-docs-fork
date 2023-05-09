@@ -1953,7 +1953,6 @@ Field | Default | Valid values |
 `cluster.job.riak_kv.map_reduce_js`|`enabled`|`enabled` or `disabled`
 `cluster.job.riak_kv.secondary_index`|`enabled`|`enabled` or `disabled`
 `cluster.job.riak_search.query`|`enabled`|`enabled` or `disabled`
-`cluster.job.yokozuna.query`|`enabled`|`enabled` or `disabled`
 
 
 

@@ -44,10 +44,6 @@ when turning on Riak security. Missing one of these steps will almost
 certainly break your application, so make sure that you have done each
 of the following **before** enabling security:
 
-1. Make certain that the original Riak Search (version 1) and link
-   walking are not required. Enabling security will break this
-   functionality. If you wish to use security and Search together, you
-   will need to use the [new Search feature]({{<baseurl>}}riak/kv/3.0.3/developing/usage/search/).
 1. Because Riak security requires a secure SSL connection, you will need
    to generate appropriate SSL certs, [enable SSL](#enabling-ssl) and establish a [certificate configuration](#certificate-configuration) on each node. **If you
    enable security without having established a functioning SSL

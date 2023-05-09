@@ -155,7 +155,6 @@ message RpbErrorResp {
 
 * [PBC MapReduce]({{<baseurl>}}riak/kv/3.0.3/developing/api/protocol-buffers/mapreduce)
 * [PBC Secondary Indexes]({{<baseurl>}}riak/kv/3.0.3/developing/api/protocol-buffers/secondary-indexes)
-* [PBC Search]({{<baseurl>}}riak/kv/3.0.3/developing/api/protocol-buffers/search)
 
 ## Server Operations
 

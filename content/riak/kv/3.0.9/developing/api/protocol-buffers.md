@@ -175,14 +175,6 @@ message RpbErrorResp {
 * [PBC Data Type Set Store]({{<baseurl>}}riak/kv/3.0.9/developing/api/protocol-buffers/dt-set-store)
 * [PBC Data Type Map Store]({{<baseurl>}}riak/kv/3.0.9/developing/api/protocol-buffers/dt-map-store)
 
-## Yokozuna Operations
-
-* [PBC Yokozuna Index Get]({{<baseurl>}}riak/kv/3.0.9/developing/api/protocol-buffers/yz-index-get)
-* [PBC Yokozuna Index Put]({{<baseurl>}}riak/kv/3.0.9/developing/api/protocol-buffers/yz-index-put)
-* [PBC Yokozuna Index Delete]({{<baseurl>}}riak/kv/3.0.9/developing/api/protocol-buffers/yz-index-delete)
-* [PBC Yokozuna Schema Get]({{<baseurl>}}riak/kv/3.0.9/developing/api/protocol-buffers/yz-schema-get)
-* [PBC Yokozuna Schema Put]({{<baseurl>}}riak/kv/3.0.9/developing/api/protocol-buffers/yz-schema-put)
-
 
 
 

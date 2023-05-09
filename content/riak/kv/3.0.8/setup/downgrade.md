@@ -95,24 +95,14 @@ riak start
   
 ### Monitor the reindex of the data
 
-9\. Monitor the build and exchange progress using the `riak-admin aae-status` command.
+7\. Monitor the build and exchange progress using the `riak-admin aae-status` command.
 
 The **All** column shows how long it has been since a partition exchanged with all of its sibling replicas.  Consult the [`riak-admin aae-status` documentation][aae status] for more information about the AAE status output. 
 
 Once riak-admin aae-status shows a value in the **All** column, the node will have successfully rebuilt all of the indexed data.
 
-### Finalize process and restart Yokozuna
- 
 
-10\. If you raised the concurrency AAE currency settings in riak.conf during **Step 5**, stop the node and remove the increased AAE thresholds.
- 
-11\. If you chose not to increase the AAE concurrency via configuration and want to start Yokozuna without restarting the node, run `riak attach` and enter the following snippet:
-
-```erlang
-riak_core_node_watcher:service_up(yokozuna,whereis(yz_solr_proc)).
-```
-    
-12\. Exit the attach session by pressing **Ctrl-G** then **q**.
+8\. If you raised the concurrency AAE currency settings in riak.conf during **Step 5**, stop the node and remove the increased AAE thresholds.
 
 13\. Verify that transfers have completed:
 

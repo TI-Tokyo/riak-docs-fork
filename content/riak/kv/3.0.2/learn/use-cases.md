@@ -41,7 +41,7 @@ How you structure your application to run on Riak should take into account the
 unique needs of your use case, including access patterns such as read/write
 distribution, latency differences between various operations, use of Riak
 features including [Data Types][dev data types], [MapReduce][usage mapreduce],
-[Search][usage search], [secondary indexes (2i)][usage secondary-indexes], and
+[secondary indexes (2i)][usage secondary-indexes], and
 more. This guide is intended to be illustrative only.
 
 ## High Read/Write, Simple Applications
@@ -160,7 +160,7 @@ For storing log data from different systems, you could use unique buckets for
 each system (e.g. `system1_log_data`, `system2_log_data`, etc.) and write
 associated logs to the corresponding buckets. To analyze that data, you could
 use Riak's MapReduce system for aggregation tasks, such as summing the counts of
-records for a date or Riak Search for a more robust, text-based queries.
+records for a date.
 
 ### Log Data Complex Case
 
