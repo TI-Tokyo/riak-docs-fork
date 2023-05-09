@@ -30,7 +30,6 @@ aliases:
 [use admin riak cli]: ../../using/admin/riak-cli
 [use admin riak admin]: ../../using/admin/riak admin
 [glossary aae]: ../../learn/glossary/#active-anti-entropy-aae
-[use ref search 2i]: ../../using/reference/secondary-indexes
 [cluster ops bucket types]: ../../using/cluster-operations/bucket-types
 [usage conflict resolution]: ../../developing/usage/conflict-resolution
 [concept causal context]: ../../learn/concepts/causal-context
@@ -252,27 +251,6 @@ Or you can use the value of `platform_data_dir`:
 ```riakconf
 anti_entropy.data_dir = $(platform_data_dir)/anti_entropy
 ```
-
-## search 2i
-
-Configuration parameters for [use ref search 2i]. For a more detailed description of these parameters, check out [Search Settings].
-
-Field | Default | Valid values |
-:-----|:--------|:-------------|
-`search` | `off` |  `on` or `off`
-`search.anti_entropy.data_dir` | `./data/yz_anti_entropy` | Directory
-`search.anti_entropy.throttle.$tier.delay` | No default | Non-negative integer
-`search.anti_entropy.throttle.$tier.solrq_queue_length` | No default | Non-negative integer
-`search.dist_query` | `on` | `on` or `off`
-`search.index.error_threshold.failure_count` | `3` | Integer
-`search.index.error_threshold.failure_interval` | `5000` | Milliseconds
-`search.index.error_threshold.reset_interval` | `30000` | Milliseconds
-`search.queue.batch.flush_interval` | `1000` | `ms`, `s`, `m`, `h`
-`search.queue.batch.maximum`| `100` | Integer
-`search.queue.batch.minimum` | `1` | Integer
-`search.queue.high_watermark` | `10000` | Integer
-`search.queue.high_watermark.purge_strategy` | `purge_one` | `purge_one`, `purge_index`, or `off`
-`search.root_dir` | `./data/yz` | Directory
 
 
 ## Riak Control
@@ -1978,7 +1956,5 @@ Field | Default | Valid values |
 `cluster.job.riak_kv.map_reduce_js`|`enabled`|`enabled` or `disabled`
 `cluster.job.riak_kv.secondary_index`|`enabled`|`enabled` or `disabled`
 `cluster.job.riak_search.query`|`enabled`|`enabled` or `disabled`
-`cluster.job.yokozuna.query`|`enabled`|`enabled` or `disabled`
-
 
 

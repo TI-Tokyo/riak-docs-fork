@@ -98,11 +98,11 @@ riak start
   
 ### Monitor the reindex of the data
 
-5\. Monitor the build and exchange progress using the `riak admin aae-status` and `riak admin search aae-status` commands.
+5\. Monitor the build and exchange progress using the `riak admin aae-status` command.
 
 The **All** column shows how long it has been since a partition exchanged with all of its sibling replicas.  Consult the [`riak admin aae-status` documentation][aae status] for more information about the AAE status output. 
 
-Once both riak admin aae-status and riak admin search aae-status show values in the **All** column, the node will have successfully rebuilt all of the indexed data.
+Once `riak admin aae-status` shows values in the **All** column, the node will have successfully rebuilt all of the indexed data.
 
 ### Finalize process
 

@@ -39,8 +39,7 @@ objects are either
 
 Riak KV offers two means of resolving object conflicts: read repair and
 active anti-entropy (AAE). Both of these conflict resolution mechanisms
-apply both to normal key/value data in Riak as well as to
-[search indexes][usage search]
+apply both to normal key/value data in Riak.
 
 
 ## Read Repair vs. Active Anti-Entropy
