@@ -100,7 +100,7 @@ The **All** column shows how long it has been since a partition exchanged with a
 
 Once the `riak admin aae-status` shows values in the **All** column, the node will have successfully rebuilt all of the indexed data.
 
-### Finalize process and restart Yokozuna
+### Finalize process
  
 
 6\. If you raised the concurrency AAE currency settings in riak.conf during **Step 5**, stop the node and remove the increased AAE thresholds.

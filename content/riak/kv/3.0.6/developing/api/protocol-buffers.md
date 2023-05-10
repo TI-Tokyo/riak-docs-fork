@@ -91,13 +91,6 @@ Code | Message |
 51 | `RpbCounterUpdateResp` |
 52 | `RpbCounterGetReq` |
 53 | `RpbCounterGetResp` |
-54 | `RpbYokozunaIndexGetReq` |
-55 | `RpbYokozunaIndexGetResp` |
-56 | `RpbYokozunaIndexPutReq` |
-57 | `RpbYokozunaIndexPutResp` |
-58 | `RpbYokozunaSchemaGetReq` |
-59 | `RpbYokozunaSchemaGetResp` |
-60 | `RpbYokozunaSchemaPutReq` |
 80 | `DtFetchReq` |
 81 | `DtFetchResp` |
 82 | `DtUpdateReq` |

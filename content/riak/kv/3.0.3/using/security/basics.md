@@ -478,22 +478,6 @@ Permission | Operation
 `riak_core.get_bucket_type` | Retrieve the set of `props` associated with a bucket type
 `riak_core.set_bucket_type` | Modify the set of `props` associated with a bucket type
 
-### Search Query Permission (Riak Search version 1)
-
-Security is incompatible with the original (and now deprecated) Riak
-Search. Riak Search version 1 will stop working if security is enabled.
-
-### Search Query Permissions (Riak Search version 2, aka Yokozuna)
-
-If you are using the new Riak Search, i.e. the Solr-compatible search
-capabilities included with Riak versions 2.0 and greater, the following
-search-related permissions can be granted/revoked:
-
-Permission | Operation
-:----------|:---------
-`search.admin` | The ability to perform search admin-related tasks, such as creating and deleting indexes and adding and modifying search schemas
-`search.query` | The ability to query an index
-
 > **Note on Search Permissions**
 >
 > Search must be enabled in order to successfully grant/revoke Search
