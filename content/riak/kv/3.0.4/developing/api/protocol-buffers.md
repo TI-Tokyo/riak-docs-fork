@@ -79,8 +79,6 @@ Code | Message |
 24 | `RpbMapRedResp` |
 25 | `RpbIndexReq` |
 26 | `RpbIndexResp` |
-27 | `RpbSearchQueryReq` |
-28 | `RbpSearchQueryResp` |
 29 | `RpbResetBucketReq` |
 30 | `RpbResetBucketResp` |
 31 | `RpbGetBucketTypeReq` |
