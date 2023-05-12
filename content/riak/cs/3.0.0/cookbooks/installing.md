@@ -16,7 +16,7 @@ aliases:
 ---
 
 Riak CS is supported on a variety of operating systems, including
-Ubuntu, CentOS, Fedora, Solaris, SmartOS, FreeBSD, and OS X. Riak CS is
+Alpine, Amazon Linux, Ubuntu, Debian, CentOS, Oracle, SUSE, FreeBSD, and OS X. Riak CS is
 *not* supported on Microsoft Windows.
 
 You can install Riak CS on a single node (for development purposes) or
@@ -43,9 +43,9 @@ or from source.
 
   * [Debian and Ubuntu]({{<baseurl>}}riak/kv/3.0.9/setup/installing/debian-ubuntu)
   * [RHEL and CentOS]({{<baseurl>}}riak/kv/3.0.9/setup/installing/rhel-centos)
- <!-- * [Mac OS X]({{<baseurl>}}riak/kv/3.0.9/setup/installing/mac-osx) -->
+  * [Mac OS X]({{<baseurl>}}riak/kv/3.0.9/setup/installing/mac-osx)
   * [FreeBSD]({{<baseurl>}}riak/kv/3.0.9/setup/installing/freebsd)
-<!--  * [SUSE]({{<baseurl>}}riak/kv/3.0.9/setup/installing/suse) -->
+  * [SUSE]({{<baseurl>}}riak/kv/3.0.9/setup/installing/suse)
   * [From Source]({{<baseurl>}}riak/kv/3.0.9/setup/installing/source)
 
 Riak is also officially supported on the following public cloud
@@ -76,14 +76,13 @@ it should not be operated in a manner that exposes it directly to the
 public internet**. Instead, consider a load-balancing solution
 such as a dedicated device [HAProxy](http://haproxy.1wt.eu) or [Nginx](http://wiki.nginx.org/Main) between Riak CS and the outside world.
 
-<!--
 ### Installing Riak CS on Mac OS X
 
 To install Riak CS on OS X, first download the appropriate package from
 the [downloads]({{<baseurl>}}riak/cs/3.0.0/downloads) page:
 
 ```bash
-curl -O https://files.tiot.jp/riak/cs/3.0/3.0.0/osx/10.8/riak-cs-3.0.0-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/cs/3.0/3.0.0/osx/10.11/riak-cs-3.0.0-OSX-x86_64.tar.gz
 ```
 
 Then, unpack the downloaded tarball:
@@ -119,18 +118,39 @@ Now install the `riak-cs` package:
 sudo dpkg -i riak-cs_3.0.0-OTP22_amd64.deb
 ```
 
-### Installing Riak CS on RHEL or CentOS
+### Installing Riak CS on Amazon Linux, Oracle Linux, RHEL, CentOS or openSUSE
 
+
+On Amazon Linux, Riak CS packages are hosted on
+[files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/amazon/). 
+
+Platform-specific pages are linked below:
+
+* [amzn2](https://files.tiot.jp/riak/cs/3.0/3.0.0/amazon/2/riak-cs-3.0.0.OTP22-1.amzn2.x86_64.rpm)
+
+On Oracle Linux, Riak CS packages are hosted on
+[files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/oracle/). 
+
+Platform-specific pages are linked below:
+
+* [el8](https://files.tiot.jp/riak/cs/3.0/3.0.0/oracle/8/riak-cs-3.0.0.OTP22-1.el8.x86_64.rpm)
 
 On RHEL or CentOS, Riak CS packages are hosted on
-[files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/). 
+[files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel). 
 
 Platform-specific pages are linked below:
 
 * [el7](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel/7/riak-cs-3.0.0.OTP22-1.el7.x86_64.rpm)
 * [el8](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel/8/riak-cs-3.0.0.OTP22-1.el8.x86_64.rpm)
 
-#### yum Installation
+On openSUSE, Riak CS packages are hosted on
+[files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/sles). 
+
+Platform-specific pages are linked below:
+
+* [SLES15](https://files.tiot.jp/riak/cs/3.0/3.0.0/sles/15/riak-cs-3.0.0.OTP22-1.SLES15.x86_64.rpm)
+
+#### yum Installation (Amazon Linux, Oracle Linux, RHEL or CentOS)
 
 For the simplest installation process on LTS (Long-Term Support)
 releases, use `yum` after downloading the appropriate package for your OS.
@@ -177,6 +197,15 @@ list. -->
 sudo yum localinstall -y riak-cs-3.0.0.OTP22-1*
 ```
 
+#### zypper Installation (open SUSE)
+
+For the simplest installation process on LTS (Long-Term Support)
+releases, use `zypper` after downloading the appropriate package for your OS.
+
+```bash
+sudo zypper localinstall -y riak-cs-3.0.0.OTP22-1*
+```
+
 ## Installing Stanchion on a Node
 
 Stanchion is an application that manages globally unique entities within
@@ -201,18 +230,19 @@ configured to send all requests to a single Stanchion node, failing over
 to a secondary Stanchion node if the primary is unavailable. More
 details can be found in [Specifying the Stanchion Node]({{<baseurl>}}riak/cs/3.0.0/cookbooks/configuration/#specifying-the-stanchion-node).
 
-<!--### Installing Stanchion on Mac OS X
+### Installing Stanchion on Mac OS X
 
 First, download the appropriate package from the [downloads]({{<baseurl>}}riak/cs/3.0.0/downloads/#stanchion-1-4-3) page.
 
 ```bash
-curl -O http://s3.amazonaws.com/downloads.basho.com/stanchion/1.4/1.4.3/osx/10.8/stanchion-2.0.0-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/focal64/riak-cs_3.0.0-OTP22.tar.gz
+
 ```
 
 Then, unpack the downloaded tarball:
 
 ```bash
-stanchion-2.0.0-OSX-x86_64.tar.gz
+tar -xvf stanchion-3.0.0-OTP22.tar.gz
 ```
 
 At this point, you can move on to [configuring Riak CS]({{<baseurl>}}riak/cs/3.0.0/cookbooks/configuration/riak-cs).
@@ -273,23 +303,53 @@ sudo dpkg -i stanchion_3.0.0-OTP22_amd64.deb
 
 At this point, you can move on to [configuring Riak CS]({{<baseurl>}}riak/cs/3.0.0/cookbooks/configuration/riak-cs).
 
-### Installing Stanchion on RHEL or CentOS
+### Installing Stanchion on Amazon Linux, Oracle Linux, RHEL, CentOS or open SUSE
+
+On Amazon Linux, Stanchion packages are hosted on
+[files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/amazon/).
+
+Platform-specific pages are linked below:
+
+* [amzn2](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/amazon/2/stanchion-3.0.0.OTP22-1.amzn2.x86_64.rpm)
+
+On Oracle Linux, Stanchion packages are hosted on
+[files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/oracle/).
+
+Platform-specific pages are linked below:
+
+* [el8](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/oracle/8/stanchion-3.0.0.OTP22-1.el8.x86_64.rpm)
 
 On RHEL or CentOS, Stanchion packages are hosted on
-[files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel/).
+[files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel).
 
 Platform-specific pages are linked below:
 
 * [el7](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel/7/stanchion-3.0.0.OTP22-1.el7.x86_64.rpm)
 * [el8](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel/8/stanchion-3.0.0.OTP22-1.el8.x86_64.rpm)
 
-#### yum Installation
+On openSUSE, Stanchion packages are hosted on
+[files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/sles).
+
+Platform-specific pages are linked below:
+
+* [SLES15](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/sles/15/stanchion-3.0.0.OTP22-1.SLES15.x86_64.rpm)
+
+#### yum Installation (Amazon Linux, Oracle Linux, RHEL or CentOS)
 
 For the simplest installation process on LTS (Long-Term Support)
 releases, use `yum` after downloading the appropriate package for your OS.
 
 ```bash
 sudo yum -localinstall -y stanchion-3.0.0*
+```
+
+#### zypper Installation (open SUSE)
+
+For the simplest installation process on LTS (Long-Term Support)
+releases, use `zypper` after downloading the appropriate package for your OS.
+
+```bash
+sudo zypper localinstall -y riak-cs-3.0.0.OTP22-1*
 ```
 
 At this point, you can move on to [configuring Riak CS]({{<baseurl>}}riak/cs/3.0.0/cookbooks/configuration/riak-cs).
