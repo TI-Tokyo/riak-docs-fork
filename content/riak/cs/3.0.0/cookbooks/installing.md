@@ -78,6 +78,7 @@ it should not be operated in a manner that exposes it directly to the
 public internet**. Instead, consider a load-balancing solution
 such as a dedicated device [HAProxy](http://haproxy.1wt.eu) or [Nginx](http://wiki.nginx.org/Main) between Riak CS and the outside world.
 
+<!--
 ### Installing Riak CS on Mac OS X
 
 To install Riak CS on OS X, first download the appropriate package from
@@ -199,7 +200,6 @@ list. -->
 ```bash
 sudo yum localinstall -y riak-cs-3.0.0.OTP22-1*
 ```
-
 #### zypper Installation (openSUSE)
 
 For the simplest installation process on LTS (Long-Term Support)
@@ -266,7 +266,7 @@ configured to send all requests to a single Stanchion node, failing over
 to a secondary Stanchion node if the primary is unavailable. More
 details can be found in [Specifying the Stanchion Node]({{<baseurl>}}riak/cs/3.0.0/cookbooks/configuration/#specifying-the-stanchion-node).
 
-### Installing Stanchion on Mac OS X
+<!--### Installing Stanchion on Mac OS X
 
 First, download the appropriate package from the [downloads]({{<baseurl>}}riak/cs/3.0.0/downloads/#stanchion-1-4-3) page.
 
