@@ -8,11 +8,10 @@ aliases:
   - "/riakkv/latest/developing/api/protocol-buffers/dt-store/"
 ---
 
-Redirects `someroot/latest/somepath` to `someroot/{latest}/somepath` 
+Redirects `someroot/latest/somepath` to `someroot/{latest}/somepath`
 where `{latest}` is the `project_descriptions.{project}.latest` value
 and `{project}` is the metadata value of `project` above.
 
 This page exists solely to redirect from the generated URL to the latest version of
 that url.
-
 

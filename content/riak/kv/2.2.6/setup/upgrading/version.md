@@ -18,7 +18,6 @@ aliases:
 
 ---
 
-
 [production checklist]: {{<baseurl>}}riak/kv/2.2.6/setup/upgrading/checklist
 [use admin riak control]: {{<baseurl>}}riak/kv/2.2.6/using/admin/riak-control
 [use admin commands]: {{<baseurl>}}riak/kv/2.2.6/using/admin/commands
@@ -32,14 +31,12 @@ aliases:
 [snmp]: {{<baseurl>}}riak/kv/2.2.6/using/reference/snmp
 [Release Notes]: {{<baseurl>}}riak/kv/2.2.6/release-notes
 
-
 ## Overview
 
 You can upgrade one node or your whole cluster to Riak KV 2.2.6 by following the instructions below.
 
 {{% note title="Tip" %}} KV nodes negotiate with each other to determine supported operating modes. This allows clusters containing mixed-versions of Riak KV to interoperate without special configuration, and simplifies rolling upgrades.
 {{% /note %}}
-
 
 ### General Process
 
@@ -60,7 +57,6 @@ For every node in the cluster:
 
 Before starting the rolling upgrade process on your cluster, check out the [Upgrading Riak KV: Production Checklist][production checklist], which covers details and questions to consider before upgrading.
 
-
 ## Data File Format Changes
 
 [Riak KV 2.2][release notes] introduces on-disk data file format changes that can impact the upgrade/downgrade process:
@@ -71,7 +67,6 @@ Before starting the rolling upgrade process on your cluster, check out the [Upgr
 {{% note %}}
 You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 2.2.6 only if you plan to use Riak search.
 {{% /note %}}
-
 
 ### Components That Complicate Downgrades
 
@@ -88,7 +83,6 @@ We do our best to make all features that change data formats on disk opt-in; how
 | LZ4 compression in LevelDB | | | ✔ |
 | Global expiration in LevelDB | | | ✔ |
 | HyperLogLog data type | | |✔| On downgrade data written in HLL format is unreadable.|
- 
 
 ### When Downgrading is No Longer an Option
 
@@ -98,7 +92,6 @@ If you decide to upgrade to version 2.2, you can still downgrade your cluster to
 * Enable Global Expiration in LevelDB
 
 If you use other new features, such as the HyperLogLog data type, you can still downgrade your cluster, but you will no longer be able to use those features or access data in new formats after the downgrade.
-
 
 ## Upgrading process
 
@@ -134,8 +127,6 @@ sudo rm -rf /usr/lib/riak/lib/basho-patches*
 If you are upgrading from Riak KV EE to Riak KV OSS, you must uninstall your Riak KV EE package right now, before you can install the OSS version.
 {{% /note %}}
 
-
-
 ```RHEL/CentOS
 sudo rpm -Uvh »riak_package_name«.rpm
 ```
@@ -160,7 +151,7 @@ sudo dpkg -i »riak_package_name«.deb
    leveldb.compression.algorithm=snappy
    ```
 
-5.c\. (**OSS Only**)If you are upgrading from Riak KV OSS =< 2.2.3, you must perform the following steps before moving on: 
+5.c\. (**OSS Only**)If you are upgrading from Riak KV OSS =< 2.2.3, you must perform the following steps before moving on:
 
 * A standard package uninstall should not have removed your data directories, but if it did, move your backup to where the data directory should be.
 * Then copy any customizations from your backed-up vm.args/riak.conf to the newly installed vm.args/riak.conf file (these files may be identical).
@@ -187,8 +178,6 @@ Once all of the clusters have been upgraded to version 2.2.0 or greater, this ov
 {{% note %}}
 You must have [Java version 7 or higher](http://www.oracle.com/technetwork/java/javase/downloads/index.html) in order to upgrade to Riak KV 2.2.6 if you wish to use Riak search. If you do not have it installed, please install it now.
 {{% /note %}}
-
-
 
 ```bash
 riak start
@@ -219,10 +208,9 @@ riak-admin transfers
 
 10\. Repeat the process for the remaining nodes in the cluster.
 
-
 ### Basho Patches
 
-After upgrading, you should ensure that any custom patches contained in the `basho-patches` directory are examined to determine their application to the upgraded version. You can find this information in the [Release Notes]. 
+After upgrading, you should ensure that any custom patches contained in the `basho-patches` directory are examined to determine their application to the upgraded version. You can find this information in the [Release Notes].
 
 If you find that patches no longer apply to the upgraded version, you should remove them from the `basho-patches` directory prior to operating the node in production.
 

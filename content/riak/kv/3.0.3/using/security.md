@@ -177,6 +177,3 @@ seamlessly encrypt the message traffic.
 
 See also: [Multi Data Center Replication: SSL][config v3 ssl]
 
-
-
-

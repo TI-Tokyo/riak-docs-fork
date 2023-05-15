@@ -19,7 +19,6 @@ Riak CS and Swift---the object storage component of OpenStack---are both cloud s
 
 If you feel that this comparison is unfair to either of these technologies, please [submit an issue on GitHub](https://github.com/basho/basho_docs/issues/new) or send an email to **docs@basho.com**.
 
-
 ## Feature/Capability Comparison
 
 The table below gives a high-level comparison of Riak CS and Swift features and capabilities.  For low-level details, please refer to the Riak CS and [Swift docs](http://docs.openstack.org/developer/swift/).
@@ -72,8 +71,8 @@ The table below gives a high-level comparison of Riak CS and Swift features and 
     </tr>
     <tr>
         <td>Governance</td>
-    <td>Riak CS is open source and is managed by Basho. It is available under the Apache 2 License.</td>      
+    <td>Riak CS is open source and is managed by Basho. It is available under the Apache 2 License.</td>    
         <td>Swift is entirely open source and is managed by the OpenStack Foundation. No license is required in any way and no single company can either block or cause any changes to it on their own.</td>
     </tr>
-    
+  
 </table>

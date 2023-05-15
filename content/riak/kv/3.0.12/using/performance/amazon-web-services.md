@@ -242,6 +242,3 @@ For more information on EC2 storage options, please see their
 * [Failure and Recovery](../../repair-recovery)
 * [Basho Client Services Help Desk](https://help.basho.com)
 
-
-
-

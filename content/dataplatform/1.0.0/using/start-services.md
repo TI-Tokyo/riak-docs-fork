@@ -20,8 +20,7 @@ aliases:
 [bdp install]: {{<baseurl>}}dataplatform/1.0.0/installing/
 [bdp reference]: {{<baseurl>}}dataplatform/1.0.0/learn/service-manager/
 
-
-You've [installed][bdp install] Basho Data Platform (BDP), [configured][bdp configure] your cluster, and [added services][bdp configure add services] to your nodes. The setup of your BDP cluster is complete! Now you can begin using your BDP cluster. 
+You've [installed][bdp install] Basho Data Platform (BDP), [configured][bdp configure] your cluster, and [added services][bdp configure add services] to your nodes. The setup of your BDP cluster is complete! Now you can begin using your BDP cluster.
 
 ## Start Services
 
@@ -83,7 +82,7 @@ sudo data-platform-admin start-service »NODENAME«@»IPADDRESS« my-redis-group
 
 ### Cache Proxy Service
 
-To start the cache proxy service, run: 
+To start the cache proxy service, run:
 
 ```bash
 sudo data-platform-admin start-service »NODENAME«@»IPADDRESS« my-cache-proxy-group my-cache-proxy

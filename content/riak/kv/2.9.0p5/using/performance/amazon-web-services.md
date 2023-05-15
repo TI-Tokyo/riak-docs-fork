@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p4/using/performance/amazon-web-services/
 ---
 
-
 This guide introduces best practices for tuning Riak cluster performance
 in the Amazon Web Services (AWS) Elastic Compute Cloud (EC2) environment.
 

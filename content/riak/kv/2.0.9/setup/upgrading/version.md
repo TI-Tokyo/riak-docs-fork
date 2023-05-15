@@ -18,7 +18,6 @@ aliases:
 
 ---
 
-
 [production checklist]: {{<baseurl>}}riak/kv/2.0.9/setup/upgrading/checklist
 [use admin riak control]: {{<baseurl>}}riak/kv/2.0.9/using/admin/riak-control
 [use admin commands]: {{<baseurl>}}riak/kv/2.0.9/using/admin/commands
@@ -32,14 +31,12 @@ aliases:
 [snmp]: {{<baseurl>}}riak/kv/2.0.9/using/reference/snmp
 [Release Notes]: {{<baseurl>}}riak/kv/2.0.9/release-notes
 
-
 ## Overview
 
 You can upgrade one node or your whole cluster to Riak KV 2.0.9 by following the instructions below.
 
 {{% note title="Tip" %}} KV nodes negotiate with each other to determine supported operating modes. This allows clusters containing mixed-versions of Riak KV to interoperate without special configuration, and simplifies rolling upgrades.
 {{% /note %}}
-
 
 ### General Process
 
@@ -59,13 +56,11 @@ For every node in the cluster:
 
 Before starting the rolling upgrade process on your cluster, check out the [Upgrading Riak KV: Production Checklist][production checklist], which covers details and questions to consider before upgrading.
 
-
 ## Data File Format Changes
 
 [Riak KV 2.0.9][release notes] introduces on-disk data file format changes that can impact the upgrade/downgrade process:
 
 * Changes to active anti-entropy related to inconsistent hashing.
-
 
 ### Components That Complicate Downgrades
 
@@ -78,7 +73,6 @@ We do our best to make all features that change data formats on disk opt-in; how
 | Feature | Automatic | Required | One Way | Notes |
 |:---|:---:|:---:|:---:|:--- |
 | Active anti-entropy file format changes | ✔ |  | | Can opt-out using a capability.
-
 
 ## Upgrading process
 
@@ -114,8 +108,6 @@ sudo rm -rf /usr/lib/riak/lib/basho-patches*
 If you are upgrading from Riak KV OSS to Riak KV EE, you must uninstall your Riak KV package right now, before you can install the EE version.
 {{% /note %}}
 
-
-
 ```RHEL/CentOS
 sudo rpm -Uvh »riak_package_name«.rpm
 ```
@@ -133,8 +125,8 @@ sudo dpkg -i »riak_package_name«.deb
      ]}
    ]}
    ```
-   
-5.5\. (**EE Only**)If you are upgrading from Riak KV OSS to Riak KV EE, you must perform the following steps before moving on: 
+ 
+5.5\. (**EE Only**)If you are upgrading from Riak KV OSS to Riak KV EE, you must perform the following steps before moving on:
 
 * A standard package uninstall should not have removed your data directories, but if it did, move your backup to where the data directory should be.
 * Then copy any customizations from your backed-up vm.args to the `riak_ee` installed vm.args file (these files may be identical).
@@ -145,7 +137,6 @@ sudo dpkg -i »riak_package_name«.deb
   * `snmp` --- See [SNMP][snmp] for more information.
 
 6\. Restart Riak KV:
-
 
 ```bash
 riak start
@@ -176,10 +167,9 @@ riak-admin transfers
 
 10\. Repeat the process for the remaining nodes in the cluster.
 
-
 ### Basho Patches
 
-After upgrading, you should ensure that any custom patches contained in the `basho-patches` directory are examined to determine their application to the upgraded version. You can find this information in the [Release Notes]. 
+After upgrading, you should ensure that any custom patches contained in the `basho-patches` directory are examined to determine their application to the upgraded version. You can find this information in the [Release Notes].
 
 If you find that patches no longer apply to the upgraded version, you should remove them from the `basho-patches` directory prior to operating the node in production.
 

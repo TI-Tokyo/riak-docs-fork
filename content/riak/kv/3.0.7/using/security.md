@@ -19,7 +19,6 @@ aliases:
 [security basics]: {{<baseurl>}}riak/kv/3.0.7/using/security/basics
 [security managing]: {{<baseurl>}}riak/kv/3.0.7/using/security/managing-sources/
 
-
 > **Internal security**
 >
 > This document covers network-level security. For documentation on the
@@ -176,7 +175,4 @@ Replication, you can configure Riak 1.2+ to communicate over SSL, to
 seamlessly encrypt the message traffic.
 
 See also: [Multi Data Center Replication: SSL][config v3 ssl]
-
-
-
 

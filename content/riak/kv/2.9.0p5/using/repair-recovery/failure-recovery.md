@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p4/using/repair-recovery/failure-recovery/
 ---
 
-
 Riak was built to withstand---or at the very least reduce the severity
 of---many types of system failure. Nonetheless, bugs are a reality,
 hardware does break, and occasionally Riak itself will fail. Here, we'll
@@ -120,7 +119,6 @@ of secondary indexes. Heavily loaded clusters may experience more MapReduce
 timeouts simply because many other requests are being serviced as well. Adding
 nodes to the cluster can reduce MapReduce failure in the long term by
 spreading load and increasing available CPU and IOPS.
-
 
 ## Cluster Recovery From Backups
 

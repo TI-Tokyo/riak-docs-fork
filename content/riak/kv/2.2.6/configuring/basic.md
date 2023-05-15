@@ -118,7 +118,7 @@ setting it to the desired value, for example 64:
     ```
 
 2.  Stop all nodes
-3.  Remove the ring data file on each node (see [Backing up Riak][cluster ops backup] for the location of this file) 
+3.  Remove the ring data file on each node (see [Backing up Riak][cluster ops backup] for the location of this file)
 4.  Start all nodes
 5.  Re-add each node to the cluster (see [Adding and Removing Nodes][cluster ops add remove node]) or finish reviewing this document and proceed to [Basic Cluster Setup][use running cluster]
 

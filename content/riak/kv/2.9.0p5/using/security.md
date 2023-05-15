@@ -22,7 +22,6 @@ aliases:
   - /riak/kv/2.9.0p4/using/security/
 ---
 
-
 [config reference search]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/reference/#search
 [config search enabling]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/search/#enabling-riak-search
 [config v3 ssl]: {{<baseurl>}}riak/kv/2.9.0p5/configuring/v3-multi-datacenter/ssl

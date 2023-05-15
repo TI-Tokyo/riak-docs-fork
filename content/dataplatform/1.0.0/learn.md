@@ -15,7 +15,6 @@ aliases:
   - /dataplatform/latest/learn/
 ---
 
-
 [using bdp index]: {{<baseurl>}}dataplatform/1.0.0/using/
 [cache proxy features]: {{<baseurl>}}dataplatform/1.0.0/learn/cache-proxy/
 [service manager features]: {{<baseurl>}}dataplatform/1.0.0/learn/service-manager/

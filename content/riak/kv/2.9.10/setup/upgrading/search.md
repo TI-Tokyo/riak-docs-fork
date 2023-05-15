@@ -277,6 +277,3 @@ search property is set to false.
 
 For any questions reach out to the [Riak community]({{<baseurl>}}community). Preferably, ask your questions up front rather than during the middle of a migration.
 
-
-
-

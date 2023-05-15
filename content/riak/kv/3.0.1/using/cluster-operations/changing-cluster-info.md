@@ -113,7 +113,6 @@ To rename a single-node development cluster:
 
 5. Start Riak on the node with `riak start`.
 
-
 ## Rename Multi-Node Clusters
 
 For multi-node clusters, a rename is a slightly more complex procedure; however, it is very similar to the process for renaming a single node.
@@ -146,7 +145,6 @@ This process can be accomplished in three phases. The details and steps required
 2. [Reconfigure node to use new address](#reconfigure)
 3. [Repeat previous steps on each node](#repeat)
 
-
 <a id="down"></a>
 #### Down the Node
 
@@ -165,7 +163,7 @@ This process can be accomplished in three phases. The details and steps required
 
 2. From the `node2.localdomain` node, mark `riak@10.1.42.11` down:
 
-    ```bash 
+    ```bash
     riak admin down riak@10.1.42.11
     ```
 
@@ -185,16 +183,16 @@ Reconfigure `node1.localdomain` to listen on the new private IP address *192.168
 
 1. Change the node's `nodename` parameter in `riak.conf`, or `-name` parameter in `vm.args`, to reflect the new node name. For example:
 
-    `riak.conf`: `nodename = riak@192.168.17.11`  
+    `riak.conf`: `nodename = riak@192.168.17.11`
     `vm.args` : `-name riak@192.168.17.11`
 
 2. Change any IP addresses to *192.168.17.11* in `riak.conf` or `app.config` as previously described in step 3 of [Single Node Clusters](#single-node-clusters).
 
-3. Rename the node's `ring` directory, the location of which is described in step 4 of [Single Node Clusters](#single-node-clusters).  You may rename it to whatever you like, as it will only be used as a backup during the node renaming process. 
+3. Rename the node's `ring` directory, the location of which is described in step 4 of [Single Node Clusters](#single-node-clusters).  You may rename it to whatever you like, as it will only be used as a backup during the node renaming process.
 
 4. Start Riak on `node1.localdomain`.
-    
-    ```bash    
+  
+    ```bash  
     riak start
     ```
 
@@ -453,6 +451,4 @@ Once all nodes are marked as down and our first node is listed as the claimant, 
     Valid:5 / Leaving:0 / Exiting:0 / Joining:0 / Down:0
 
     ```
-
-
 

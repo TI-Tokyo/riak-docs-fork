@@ -113,7 +113,6 @@ timeouts simply because many other requests are being serviced as well. Adding
 nodes to the cluster can reduce MapReduce failure in the long term by
 spreading load and increasing available CPU and IOPS.
 
-
 ## Cluster Recovery From Backups
 
 See [Changing Cluster Information]({{<baseurl>}}riak/kv/3.0.12/using/cluster-operations/changing-cluster-info/#clusters-from-backups) for instructions on cluster recovery.
@@ -123,7 +122,4 @@ If you are a TI Tokyo Riak supprt customer and require assistance or
 further advice with a cluster recovery, please file a ticket with the
 <a href="https://support.tiot.jp">TI Tokyo Helpdesk</a>.
 {{% /note %}}
-
-
-
 

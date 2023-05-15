@@ -272,6 +272,7 @@ Or via email at **info@basho.com**.
 ## Riak 2.0.3 Release Notes
 
 ## Merged PRs
+
 * riak/621: [Introduce exometer metrics into 2.0](https://github.com/basho/riak/pull/621)
 * riak/623: [Remove afunix from EXOMETER_PACKAGES.](https://github.com/basho/riak/pull/623)
 * riak/647: [remove afunix from reltool.config](https://github.com/basho/riak/pull/647)

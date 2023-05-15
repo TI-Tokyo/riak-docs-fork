@@ -8,7 +8,7 @@ aliases:
   - "/riakkv/latest/using/cluster-operations/tictac-aae-folds/repair-keys-range/"
 ---
 
-Redirects `someroot/latest/somepath` to `someroot/{latest}/somepath` 
+Redirects `someroot/latest/somepath` to `someroot/{latest}/somepath`
 where `{latest}` is the `project_descriptions.{project}.latest` value
 and `{project}` is the metadata value of `project` above.
 

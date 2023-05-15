@@ -23,7 +23,6 @@ versions, with the general procedure being similar to that of a
 We test downgrading for two feature release versions. However, all versions below KV 2.0 are End Of Life (EOL) and unsupported. Please be aware of that if you choose to downgrade.
 {{% /note %}}
 
-
 You should perform the following actions on each node:
 
 1.  Stop Riak

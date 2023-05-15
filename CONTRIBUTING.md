@@ -15,7 +15,6 @@ yet, though, and we're not sure when that might happen. For now, please be
 careful when writing new pages or modifying the front matter/location of
 existing ones.
 
-
 #### Primary Content Pages
 
 This is the default layout for pages. Anything that is not the splash page
@@ -230,7 +229,6 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
     We primarily leverage aliases to redirect from archived content to more
     current pages.
 
-
 #### Downloads Pages
 
 For Downloads pages -- those that present automatically generated links to
@@ -269,7 +267,6 @@ listed_projects:            # 2
         This does not need to match any other data, and as such should be
         descriptive, rather than technical.
 
-
 #### Community Pages
 
 Pages in the Community section of content are not versioned in the same way as
@@ -307,15 +304,15 @@ canonical_link: "https://docs.basho.com/. . ." # 2 -- OPTIONAL
     simpler than primary content pages; `community/${project_relative_path}`.
     Again, this element is entirely optional.
 
-
 ## Problematic Markdown (and Workarounds)
 
 #### Markdown Tables
+
 <!--
 Added 2016/05/10 after Hipchat conversation between LR and CV - This workaround will ideally
 be removed if/when the Hugo MD renderer addresses this precedence issue.  -cv
 -->
-**Problem**: Inserting an element with a `|` character can cause a table to render incorrectly.  
-**Solution**: Replace the `|` with the HTML entity `&#124;`.  
+**Problem**: Inserting an element with a `|` character can cause a table to render incorrectly.
+**Solution**: Replace the `|` with the HTML entity `&#124;`.
 **Note**: This workaround will not work when the `|` is inside of backticks. In
 that case, use the Divides character ("∣"—U+2223) in place of those instances of the pipe character.

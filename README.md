@@ -8,23 +8,27 @@
 This repository contains all the bits and pieces, large and small required to
 render and deploy Basho's documentation.
 
-### https://docs.riak.com/
+$1
 
+$2
 This is updated for each new version of Riak once reviewed.
 
 This is a Work In Progress!
 Please let us know if you'd like to help out!
 
-### https://www.tiot.jp/riak-docs/
+$1
 
+$2
 This is updated for each new version of Riak as soon as written, and gets regular small updates.
 
-### https://www.tiot.jp/riak-docs-beta/
+$1
 
+$2
 This is updated for each new version of Riak as each doc section is updated, and often will be a WIP.
 
-## Building The HTML Locally
+$1
 
+$2
 We moved to a Docker image to build the docs to avoid the issues with getting the various versions of things to work together.
 
 1. Install [Docker](https://docs.docker.com/engine/install/)
@@ -42,7 +46,7 @@ We moved to a Docker image to build the docs to avoid the issues with getting th
     git clone https://github.com/basho/basho_docs.git
     cd basho_docs
     ```
-   
+ 
 1. Build the Docker image:
 
     ```
@@ -57,9 +61,9 @@ We moved to a Docker image to build the docs to avoid the issues with getting th
 
 1. Play by visiting <http://localhost:1314/riak-docs/>.
 
+$1
 
-### No Really, _Go_ Play
-
+$2
 <sub>See what we did there?</sub>
 
 At this point, any changes you make to the markdown files in the `content/`
@@ -76,8 +80,9 @@ in `layouts/_default/` and the [partial templates][hugo partial templates] in
 [hugo partial templates]: https://gohugo.io/templates/partials/
 [hugo shortcodes]: https://gohugo.io/extras/shortcodes/
 
-## Modifying the `.js` and `.css` Files
+$1
 
+$2
 >**Note:** Generally, unless you're helping us out with a specific task or project that you've discussed with us, you should not be altering the .js or .css files in this repo.
 
 If you want to mess with the scripts and CSS that this site uses, it's not
@@ -98,9 +103,9 @@ of source files for generation explicitly listed in `diagrams.lst`.
 
 To convert the Coffee and Sass into `.js` and `.css` files, you'll need to:
 
-1. **Install [RVM][rvm]** or equivalent.  
+1. **Install [RVM][rvm]** or equivalent.
     You might need to restart your shell to get the `rvm` command to be recognized.
-1. **Install Ruby.**  
+1. **Install Ruby.**
     Use the following command: ``rvm install `cat .ruby-version` `` or manually
     install the current version specified in our .ruby-version and Gemfile files.
 1. **Install [Bundler]** with `gem install bundler`.
@@ -121,8 +126,9 @@ To convert the Coffee and Sass into `.js` and `.css` files, you'll need to:
 [bundler]: http://bundler.io/
 [rake]: http://docs.seattlerb.org/rake/
 
-## Would You Like to Contribute?
+$1
 
+$2
 Awesome! <sub>(We're assuming you said yes. Because you're reading this. And you're _awesome_.)</sub>
 
 This repository operates just like any other open source repo, and only thrives

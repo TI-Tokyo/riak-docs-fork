@@ -21,7 +21,6 @@ aliases:
 [security managing]: {{<baseurl>}}riak/kv/3.0.11/using/security/managing-sources/
 [Solr]: http://lucene.apache.org/solr/
 
-
 > **Internal security**
 >
 > This document covers network-level security. For documentation on the
@@ -104,7 +103,6 @@ Protocol | Port
 <a href="../../developing/api/http">HTTP</a> | TCP port 8098
 <a href="../../developing/api/protocol-buffers">Protocol Buffers</a> | TCP port 8087
 
-
 # Riak Security Community
 
 ## Riak
@@ -179,7 +177,4 @@ Replication, you can configure Riak 1.2+ to communicate over SSL, to
 seamlessly encrypt the message traffic.
 
 See also: [Multi Data Center Replication: SSL][config v3 ssl]
-
-
-
 

@@ -17,7 +17,6 @@ toc: true
 [cluster ops log]: {{<baseurl>}}riak/kv/2.1.3/using/cluster-operations/logging
 [Riak 2.0.5 or later]: {{<baseurl>}}riak/latest/downloads/
 
-
 Info | Value
 :----|:-----
 Date issued | January 21, 2015
