@@ -46,7 +46,7 @@ We moved to a Docker image to build the docs to avoid the issues with getting th
     git clone https://github.com/basho/basho_docs.git
     cd basho_docs
     ```
- 
+
 1. Build the Docker image:
 
     ```

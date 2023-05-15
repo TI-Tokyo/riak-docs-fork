@@ -208,7 +208,7 @@ application:set_env(eleveldb, data_root, "").
 
 ```erlang
 Options = [
-  {tiered_slow_level, »leveldb.tiered value«},  
+  {tiered_slow_level, »leveldb.tiered value«},
   {tiered_fast_prefix, "»leveldb.tiered.path.fast value«"},
   {tiered_slow_prefix, "»leveldb.tiered.path.slow value«"}
 ].

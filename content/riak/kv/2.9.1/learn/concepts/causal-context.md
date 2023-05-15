@@ -60,9 +60,9 @@ updates** have been completed, and Riak is unable to determine which
 value "wins." In this scenario, one of three things can happen:
 
     a. The object is a CRDT, so Riak is able to resolve conflicting values by type-specific rules
-  
+
     b. Riak creates sibling values, aka **siblings**, for the object
-      
+
     c. Riak resolves the values on the basis of timestamps
 
 In the case of outcome 1 above, Riak uses **causal context** metadata to

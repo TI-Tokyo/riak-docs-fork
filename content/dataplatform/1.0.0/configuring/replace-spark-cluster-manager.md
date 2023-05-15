@@ -84,7 +84,7 @@ ps -ef | grep [s]park-master
 ```
 
 A successful start of the spark-master service should cause an output like the following (with the IP address and port number of the spark-master you specified): `master.Master --ip 172.28.128.3 --port 7077 --webui-port 8080`.
- 
+
 > Note: If you see a hostname rather than an IP address OR if this is your first time starting the manager service, you must:
 >
 > 1. Stop the service: `sudo data-platform-admin stop-service riak@»PUBLICIPOFMASTERNODE« my-spark-group my-spark-master`

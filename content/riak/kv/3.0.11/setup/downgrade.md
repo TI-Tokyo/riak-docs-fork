@@ -67,17 +67,17 @@ This is benign and similar to the `not_built` and `already_locked` errors which 
 riak stop
 ```
 2\. Back up your Riak KV /etc and /data directories:
-  
+
 ```bash
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak
 ```
-  
+
 3\. Downgrade Riak KV:
 
 ```RHEL/CentOS
 sudo rpm -Uvh »riak_package_name«.rpm
 ```
-  
+
 ```Ubuntu
 sudo dpkg -i »riak_package_name«.deb
 ```
@@ -97,7 +97,7 @@ anti_entropy.tree.build_limit.per_timespan = 5m
 ```bash
 riak start
 ```
-  
+
 ### Monitor the reindex of the data
 
 5\. Monitor the build and exchange progress using the `riak admin aae-status` command.

@@ -70,8 +70,8 @@ The table below gives a high-level comparison of Riak CS and Swift features and 
     </tr>
     <tr>
         <td>Governance</td>
-    <td>Riak CS is open source and is managed by Basho. It is available under the Apache 2 License.</td>    
+    <td>Riak CS is open source and is managed by Basho. It is available under the Apache 2 License.</td>
         <td>Swift is entirely open source and is managed by the OpenStack Foundation. No license is required in any way and no single company can either block or cause any changes to it on their own.</td>
     </tr>
-  
+
 </table>

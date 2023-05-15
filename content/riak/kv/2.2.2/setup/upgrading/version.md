@@ -144,7 +144,7 @@ sudo dpkg -i »riak_package_name«.deb
      ]}
    ]}
    ```
- 
+
 5.b\. (**EE Only**)If you are upgrading from Riak KV OSS to Riak KV EE, you must perform the following steps before moving on:
 
 * A standard package uninstall should not have removed your data directories, but if it did, move your backup to where the data directory should be.

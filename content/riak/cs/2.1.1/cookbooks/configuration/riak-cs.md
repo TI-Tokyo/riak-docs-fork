@@ -56,7 +56,7 @@ please review the [Rolling Upgrades]({{<baseurl>}}riak/cs/2.1.1/cookbooks/rollin
 > For a comprehensive listing of available parameters and a full list of `app.config` parameters, see the [Full Configuration Reference]({{<baseurl>}}riak/cs/2.1.1/cookbooks/configuration/reference).
 
 The sections below walk you through some of the main configuration categories
-that you will likely encounter while operating Riak CS. 
+that you will likely encounter while operating Riak CS.
 
 ## Host and Port
 

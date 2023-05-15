@@ -51,7 +51,7 @@ RiakClient client = RiakClient.newClient(10017, "myriakdb.host");
 List<Row> rows = Arrays.asList(
     new Row(new Cell("family1"), new Cell("series1"),
             Cell.newTimestamp(1234567), new Cell("hot"), new Cell(23.5)),
-  
+
     new Row(new Cell("family2"), new Cell("series99"),
             Cell.newTimestamp(1234567), new Cell("windy"), new Cell(19.8)));
 

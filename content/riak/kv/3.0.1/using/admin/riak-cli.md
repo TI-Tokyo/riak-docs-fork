@@ -169,7 +169,7 @@ riak config { generate | effective | describe VARIABLE } [-l debug]
     ```
 
 * `effective` prints the effective configuration in the following syntax:
-  
+
     ```
     parameter1 = value1
     parameter2 = value2
@@ -185,7 +185,7 @@ riak config { generate | effective | describe VARIABLE } [-l debug]
     ```
 
 * `describe VARIABLE` prints the setting specified by `VARIABLE`, along with documentation and other useful information, such as the affected location in the configuration file, the data type of the value, the default value, and the effective value. For example, running `riak config describe storage_backend` will return the following:
-  
+
     ```
     Documentation for storage_backend
     Specifies the storage engine used for Riak's key-value data

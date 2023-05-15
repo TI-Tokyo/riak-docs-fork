@@ -56,74 +56,74 @@ To mitigate the issue, follow these steps:
     $ riak config describe leveldb.data_root
     Documentation for leveldb.data_root
     Where LevelDB will store its data.
-  
+
        Valid Values:
          - the path to a directory
        Default Value : $(platform_data_dir)/leveldb
        Set Value     : leveldb
        Internal key  : eleveldb.data_root
     ```
-    
+
     If the `Set Value` includes a parameter like $(platform_data_dir), as shown in the below example, you will need to look it up with another riak config describe. If the value is 'Value not set' then you will need to use the default value of `$(platform_data_dir)/leveldb` and do the `platform_data_dir` lookup:
-  
+
 	```
     $ riak config describe leveldb.data_root
     Documentation for leveldb.data_root
     Where LevelDB will store its data.
-  
+
        Valid Values:
          - the path to a directory
        Default Value : $(platform_data_dir)/leveldb
        Set Value     : $(platform_data_dir)/leveldb
        Internal key  : eleveldb.data_root
     ```
-  
+
     You would look up the value of `platform_data_dir like this:
-  
+
     ```
     $ riak config describe platform_data_dir
     Documentation for platform_data_dir
     Platform-specific installation paths (substituted by rebar)
-  
+
        Valid Values:
          - the path to a directory
        Default Value : /var/lib/riak
        Set Value     : /var/lib/riak
        Internal key  : riak_core.platform_data_dir
     ```
-  
+
     You would then combine the two paths, from the two examples immediately above, giving you a path of /var/lib/riak/leveldb.
-  
+
     If the path is relative (as shown in the very first example), then it will be relative to the working directory Riak starts in. The working directory Riak starts in is identified by the `RUNNER_BASE_DIR` value found in your env.sh file, located in your Riak library directory. You may grep for its value:
-  
+
 	```
     $ grep ^RUNNER_BASE_DIR /usr/lib64/riak/lib/env.sh
     RUNNER_BASE_DIR=/usr/lib64/riak
     ```
-  
+
     This combined with the relative path in the very first example would provide an example path of /usr/lib64/riak/leveldb.
-  
+
     Once located, verify the directory only contains .log files. If it contains anything other than .log files, please recheck the steps above. If the result is the same, contact the riak-users mailing list.
-  
+
     You can quickly check whether any files, other than .log files, exist using the following:
-  
+
     ```
     # As root or sudo
     LOGDIR=/path/you/worked/out/in/step1 find ${LOGDIR} -type f  # List of log files
     find ${LOGDIR} -type f | grep -v '\.log$'  # should be - empty output
     ```
-  
+
     In the very unlikely case the leveldb.tiered.path.slow is set to "." (dot - the self-link to a directory) and the leveldb.data_root path is a relative path, then you are not able to use this workaround.
 
 2.  Move the existing log directory to one side:
-  
+
     ```
     # As root or sudo
     mv ${LOGDIR} ${LOGDIR}.bak
     ```
-  
+
 3.  Identify the fast tier path. First we need to identify the fastdir path. To do so, look at the `Set Value`:
-  
+
     ```
     $ riak config describe leveldb.tiered.path.fast
     Documentation for leveldb.tiered.path.fast
@@ -138,29 +138,29 @@ To mitigate the issue, follow these steps:
     data across mounts. If you change this setting without manually
     moving the level files to the correct mounts, leveldb will act in
     an unexpected state.
-  
+
        Valid Values:
          - the path to a directory
        No default set
        Set Value     : /ssd/riak
        Internal key  : eleveldb.tiered_fast_prefix
     ```
-  
+
     Append the leveldb.data_root path (identified in the first example in Step 1) to the fast path to find the location of the LevelDB files. For example, if leveldb.data_root is the relative path 'leveldb', we would append that to the `Set Value` of /ssd/riak returned in the above example, for a full path of: /ssd/riak/leveldb.
-  
+
     Check that LevelDB MANIFEST files are present to make sure it is the correct directory:
-  
+
 	```
     FASTDIR=/path/to/fast/dir/and/leveldb/basedir   # e.g. /ssd/riak/leveldb from above
     find $FASTDIR -name 'MANIFEST*'
     # Check there are multiple files returned
       ```
-    
+
 4.  Finally, we will create a symbolic link from the fast tier path (identified in step 3) to the log directory (identified in step 1).
-  
+
     ```
     # As root or sudo
     ln -s ${FASTDIR} ${LOGDIR}
     ```
-  
+
     Make sure the Riak user has read/write permissions to that directory.

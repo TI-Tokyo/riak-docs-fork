@@ -139,11 +139,11 @@ In order to function, riak shell must know about each node in the cluster.
     sudo riak-shell
     ```
 
-    You should see a riak shell prompt:  
+    You should see a riak shell prompt:
     ```bash
     [ec2-user ~]$ sudo riak-shell
     Erlang R16B02_basho10 (erts-5.10.3) [source] [64-bit] [smp:2:2] [async-threads:10] [hipe] [kernel-poll:false] [frame-pointer]
-  
+
     version "riak_shell 0.9/sql 1.3", use 'quit;' or 'q;' to exit or 'help;' for helpConnected...
     riak-shell(1)>
     ```

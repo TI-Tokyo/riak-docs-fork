@@ -54,7 +54,7 @@ return a list of Riak objects to be replicated immediately *before* the
 current object. This is useful when you have an object that refers to
 other objects, e.g. a chunked file, and want to ensure that all of the
 dependency objects are replicated before the dependent object.
- 
+
 ### send/2
 
 ```erlang
@@ -171,18 +171,18 @@ Ubuntu, compiling is as simple as:
 This will create a `riak_replication_hook_sample.beam` file in the same
 directory as the corresponding `.erl` file. Copy this `.beam` file into
 the subdirectory where you want to store the custom hook:
- 
+
 ```bash
 cp riak_replication_hook_sample.beam /path/to/replication/hook
 ```
- 
+
 Add a `-pa` argument to your `vm.args` file to specify the path where
 your compiled `.beam` file lives:
 
 ```bash
 -pa /path/to/replication/hook
 ```
- 
+
 Finally, add a `-run` argument to your `vm.args` file to register the
 hook:
 

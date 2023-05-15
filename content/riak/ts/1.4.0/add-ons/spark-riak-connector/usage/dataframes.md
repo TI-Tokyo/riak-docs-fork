@@ -33,7 +33,7 @@ ts_table_name = "test_table"
 To read data from the existing TS table `test-table` standard `SQLContext` means can be used by providing a `org.apache.spark.sql.riak` data format and using a Riak TS range query:
 
 ```scala
-val df = sqlContext.read 
+val df = sqlContext.read
   .option("spark.riak.connection.hosts","riak_host_ip:10017")
     .format("org.apache.spark.sql.riak")
     .load(ts_table_name)

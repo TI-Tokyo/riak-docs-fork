@@ -69,17 +69,17 @@ This is benign and similar to the `not_built` and `already_locked` errors which 
 riak stop
 ```
 2\. Back up your Riak KV /etc and /data directories:
-  
+
 ```bash
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak
 ```
-  
+
 3\. Downgrade Riak KV:
 
 ```RHEL/CentOS
 sudo rpm -Uvh »riak_package_name«.rpm
 ```
-  
+
 ```Ubuntu
 sudo dpkg -i »riak_package_name«.deb
 ```
@@ -120,7 +120,7 @@ Search results will be inconsistent until **Step 8.1** is complete.
 ```bash
 riak start
 ```
-  
+
 7\. Wait for Riak search to start by running the following command:
 
 ```bash
@@ -134,13 +134,13 @@ riak-admin wait-for-service yokozuna
     ```
     riak_core_node_watcher:service_down(yokozuna).
     ```
-  
+
   2.  Expire the Yokozuna AAE Trees:
-    
+
     ```
     yz_entropy_mgr:expire_trees().
     ```
-  
+
   3. Exit the attach session by pressing **Ctrl-G** then **q**.
 
 ### Monitor the reindex of the data
@@ -160,7 +160,7 @@ Once both riak-admin aae-status and riak-admin search aae-status show values in 
 ```erlang
 riak_core_node_watcher:service_up(yokozuna,whereis(yz_solr_proc)).
 ```
-  
+
 12\. Exit the attach session by pressing **Ctrl-G** then **q**.
 
 13\. Verify that transfers have completed:

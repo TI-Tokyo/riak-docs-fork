@@ -191,8 +191,8 @@ Reconfigure `node1.localdomain` to listen on the new private IP address *192.168
 3. Rename the node's `ring` directory, the location of which is described in step 4 of [Single Node Clusters](#single-node-clusters).  You may rename it to whatever you like, as it will only be used as a backup during the node renaming process.
 
 4. Start Riak on `node1.localdomain`.
-  
-    ```bash  
+
+    ```bash
     riak start
     ```
 

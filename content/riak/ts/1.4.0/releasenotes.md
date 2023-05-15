@@ -51,7 +51,7 @@ If you freshly installed TS 1.4.0 and did NOT upgrade from 1.3.1, and then you c
 ## Additions
 
 * New configuration settings for Riak TS have been added to riak.conf. You can read more about TS's configuration options [here]({{<baseurl>}}riak/ts/1.4.0/using/configuring/). Additionally, the old configuration settings have been exposed and are being deprecated.
-  
+
     >If you were using the old configuration settings, please update riak.conf to use the new settings. The older settings are scheduled to be deprecated.
 
 ## Changes

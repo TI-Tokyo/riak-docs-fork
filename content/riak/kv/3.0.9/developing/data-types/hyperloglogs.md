@@ -339,7 +339,7 @@ HllUpdate hllUpdate = new HllUpdate()
                         .addAll(Arrays.asList("Better", "Explained", "Jokes"));
 
 hllUpdate.getElementAdds();
-// Returns the set of ["Jokes", "Are", "Better", "Explained"]                   
+// Returns the set of ["Jokes", "Are", "Better", "Explained"]
 ```
 
 ```python

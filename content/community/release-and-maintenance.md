@@ -43,6 +43,6 @@ Basho will promote at least one (1) Feature Release per calendar year to LTS sta
 
 ## Software Support Services
 
-Customers under current licenses and/or current Support and Maintenance Agreements are expected to use the most current release of the Software.    For a period of ninety (90) days following the expiration of a Support Window, as set out above, Basho will continue to respond to Customer trouble tickets for the previous release.  However, Basho will no longer provide Patch Releases or Software Patches (including critical bug fixes) for that release.  
+Customers under current licenses and/or current Support and Maintenance Agreements are expected to use the most current release of the Software.    For a period of ninety (90) days following the expiration of a Support Window, as set out above, Basho will continue to respond to Customer trouble tickets for the previous release.  However, Basho will no longer provide Patch Releases or Software Patches (including critical bug fixes) for that release.
 
 Software Support Services, including submission of trouble tickets and Response Time SLAs, if any, may be further defined in the applicable license/support agreement.

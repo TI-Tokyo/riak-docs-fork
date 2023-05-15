@@ -81,7 +81,7 @@ aliases:
 
   For this example, I am using simple small integers instead of the actual 160-bit partition index values for the sake of simplicity. The partitions are assigned to the nodes as follows:
 
-```  
+```
 A: 0-5-10-15
 B: 1-6-11
 C: 2-7-12

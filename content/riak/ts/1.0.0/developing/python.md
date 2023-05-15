@@ -113,7 +113,7 @@ explicitly. Consuming the entire iterator will also close the
 stream. If it does not, the associated connection might
 not be returned to the pool. Example::
 
-  
+
 ```python
 from contextlib import closing
 # Using contextlib.closing
