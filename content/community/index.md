@@ -98,7 +98,7 @@ We're re-energizing meetups throughout the world. The most active are:
 
 The list of all related meetups are visible [here](http://www.meetup.com/pro/basho). If you're looking for assistance getting a meetup or user group started
 in your area, or want to tell the community about one that you're
-starting, email *community@basho.com*.
+starting, *[email us]({{<communityemail>}})*.
 
 ### RICON
 

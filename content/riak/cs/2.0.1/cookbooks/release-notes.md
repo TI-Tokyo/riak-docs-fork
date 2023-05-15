@@ -538,7 +538,7 @@ venues:
   list](http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com)
 * [The official Basho docs](https://github.com/basho/basho_docs)
 * [Riak CS on GitHub](https://github.com/basho/riak_cs)
-* Via email at **info@basho.com**
+* Via **[email]({{<contactusemail>}})**
 
 ## Riak CS 1.5.2
 
@@ -584,7 +584,7 @@ venues:
   list](http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com)
 * [The official Basho docs](https://github.com/basho/basho_docs)
 * [Riak CS on GitHub](https://github.com/basho/riak_cs)
-* Via email at **info@basho.com**
+* Via **[email]({{<contactusemail>}})**
 
 ## Riak CS 1.5.1
 
@@ -656,7 +656,7 @@ We would love to hear from you. You can reach us at any of the following links:
 * https://github.com/basho/basho_docs
 * https://github.com/basho/riak_cs
 
-Or via email at **info@basho.com**.
+Or Via **[email]({{<contactusemail>}})**.
 
 ## Riak CS 1.5.0
 

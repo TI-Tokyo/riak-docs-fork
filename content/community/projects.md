@@ -20,7 +20,7 @@ aliases:
   - /riak/2.0.0/dev/advanced/community-projects/
 ---
 
-Here are all projects that have come about out of community contribution. [Let us know](mailto:community@basho.com) if you choose to maintain one of them!
+Here are all projects that have come about out of community contribution. [Let us know]({{<communityemail>}}) if you choose to maintain one of them!
 
 ## Install and Configure
 
@@ -85,7 +85,7 @@ Here are some known **most active** contributions from the community.
 
 ## Other Tools and Projects
 
-Some projects have lost its maintainer with time. Here are all projects that haven't seen commits in quite a while and may be helpful as reference. [Let us know](mailto:community@basho.com) if you choose to maintain one of them!
+Some projects have lost its maintainer with time. Here are all projects that haven't seen commits in quite a while and may be helpful as reference. [Let us know]({{<communityemail>}}) if you choose to maintain one of them!
 
 * [Brackup](http://code.google.com/p/brackup/) --- A modern net-based backup system that supports de-duplication, intelligent chunking, and [GPG](http://en.wikipedia.org/wiki/GNU_Privacy_Guard)-based-encryption
 * [riak_mapreduce_utils](http://github.com/whitenode/riak_mapreduce_utils) --- A library of mapreduce utility functions developed in Erlang

@@ -267,7 +267,7 @@ links:
 * https://github.com/basho/basho_docs
 * https://github.com/basho/riak
 
-Or via email at **info@basho.com**.
+Or Via **[email]({{<contactusemail>}})**.
 
 ## Riak 2.0.3 Release Notes
 

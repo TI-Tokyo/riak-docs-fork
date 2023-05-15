@@ -16,7 +16,7 @@ aliases:
 
 Riak CS and Swift---the object storage component of OpenStack---are both cloud storage systems that hold many design and implementation details in common. The purpose of this document is not to serve as an introduction to Riak CS and Swift or to their commonalities, but rather to enumerate important differences between the two systems. This document is intended for those who already have a basic understanding of both systems.
 
-If you feel that this comparison is unfair to either of these technologies, please [submit an issue on GitHub](https://github.com/basho/basho_docs/issues/new) or send an email to **docs@basho.com**.
+If you feel that this comparison is unfair to either of these technologies, please [submit an issue on GitHub](https://github.com/basho/basho_docs/issues/new) or send us an **[email]({{<docscontactusemail>}})**.
 
 ## Feature/Capability Comparison
 
