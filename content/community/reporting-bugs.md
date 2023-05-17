@@ -66,4 +66,3 @@ reach out to the [Riak Mailing
 List](http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com).
 
 And thank you for being part of the community! We love you for it.
-
