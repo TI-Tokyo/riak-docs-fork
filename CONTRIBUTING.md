@@ -1,4 +1,4 @@
-## Front Matter
+# Front Matter
 
 The front matter that starts off every content file is incredibly important. The
 metadata described by front matter sections is used by Hugo at build time and
@@ -15,7 +15,7 @@ yet, though, and we're not sure when that might happen. For now, please be
 careful when writing new pages or modifying the front matter/location of
 existing ones.
 
-#### Primary Content Pages
+## Primary Content Pages
 
 This is the default layout for pages. Anything that is not the splash page
 (which already uses a special layout), a downloads page (which requires an
@@ -26,7 +26,7 @@ a primary content page.
 <!-- TODO: Link to a description of the directory layout, which should talk
            about how Hugo layouts are selected. -->
 
-```
+```yaml
 # We're using YAML for the front matter, so we need to indicate to Hugo the
 # start and end with `---`
 ---
@@ -80,24 +80,24 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
 5. "Hugo has a simple yet powerful menu system that permits content to be
     placed in menus with a good degree of control without a lot of work."
 
-    https://gohugo.io/extras/menus
+    <https://gohugo.io/extras/menus>
 
     Our implementation of Hugo menus requires adherence to a few additional
     conventions detailed below. For general information, please see the
     documentation linked above
 
-    1.  The name of the menu for the page.
+    1. The name of the menu for the page.
 
         This name __must be__ `"${project}-${project_version}"`. The content
         navigation generation logic assumes this to be true and will not be able
         to correctly render our side bar if this is not the case.
 
-    2.  Abbreviated name of the page.
+    2. Abbreviated name of the page.
 
         This text will be rendered as the page title in the content navigation
         menu, and so length should be considered.
 
-    3.  Unique page identifier.
+    3. Unique page identifier.
 
         Hugo menus use these `identifier`s internally, and will assume that each
         `identifier` is unique _to the menu_. Every version of the `riak_ts`
@@ -107,7 +107,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
         If duplicate entries are present in a menu, errors will be thrown at
         Hugo build time.
 
-    4.  The ordering weight of the page, relative to pages sharing a `parent`.
+    4. The ordering weight of the page, relative to pages sharing a `parent`.
 
         Order is ascending, which means the lowest (lightest) weight will be at
         the top, and the highest (heaviest) will sink to the bottom. In case of
@@ -118,12 +118,12 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
         improved, please reach out to the Docs team by opening an issue (not a
         PR, please) in this repository.
 
-    5.  The `identifier` of the the parent the page (if one exits).
+    5. The `identifier` of the the parent the page (if one exits).
 
         If the page is a top-level element, the `parent` field should be
         excluded, and a `pre` should be defined instead.
 
-    6.  The name of the font-icon that should be rendered as part of the menu
+    6. The name of the font-icon that should be rendered as part of the menu
         item's title
 
         If the page is not a top-level element -- if it has a `parent` set --
@@ -143,7 +143,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
     pages that do not exist, or do not exist in the same location, in every
     version of a given project.
 
-    1.  The `version_history.in` Version Range should be included for pages that
+    1. The `version_history.in` Version Range should be included for pages that
         do not exist in every version.
 
         For pages that were added after the first published version of a
@@ -153,7 +153,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
         to `<=`) could be used. An explicit range can be used for pages that
         were added late, and then removed, ex;
 
-        ```
+        ```yaml
         version_history:
           in: "1.2.0-2.99.99"
         ```
@@ -161,7 +161,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
         > For more information regarding Version Ranges, please see the
         > `ParseRange` function in js/tools/sem_ver.coffee.
 
-    2.  If a page is moved on disk between versions, the
+    2. If a page is moved on disk between versions, the
         `version_history.locations` element should be used.
 
         The `locations` element should be a list of tuples (list with length
@@ -185,7 +185,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
         > being moved in version 1.4.0 to `querying/arithmetic-operations`. The
         > older version of the page should be,
         >
-        > ```
+        > ```yaml
         > version_history
         >   locations:
         >     - [">=1.4.0", "querying/arithmetic-operations"]
@@ -193,7 +193,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
         >
         > and the newer version of the page should be,
         >
-        > ```
+        > ```yaml
         > version_history
         >   locations:
         >     - ["<1.4.0", "using/arithmetic-operations"]
@@ -201,7 +201,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
         >
         > Alternatively, both versions could be,
         >
-        > ```
+        > ```yaml
         > version_history
         >   locations:
         >     - [">=1.4.0", "querying/arithmetic-operations"]
@@ -220,7 +220,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
 
 10. "Redirects can be handled easily with aliases in Hugo."
 
-    https://gohugo.io/extras/aliases/
+    <https://gohugo.io/extras/aliases/>
 
     For every alias given, Hugo will automatically generate an HTML document
     whose primary task is to trigger a &lt;meta http-equiv="refresh"> to
@@ -229,13 +229,13 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
     We primarily leverage aliases to redirect from archived content to more
     current pages.
 
-#### Downloads Pages
+## Downloads Pages
 
 For Downloads pages -- those that present automatically generated links to
 product packages -- there are a few front matter elements that must be included
 **in addition** to the elements detailed above.
 
-```
+```yaml
 ---
 . . .
 layout: downloads           # 1
@@ -249,25 +249,25 @@ listed_projects:            # 2
 ---
 ```
 
-11. Triggers the use of the `layout/_default/downloads.html` layout, rather than
-    the default `layout/_default/single.html` template.
+1. Triggers the use of the `layout/_default/downloads.html` layout, rather than
+   the default `layout/_default/single.html` template.
 
-12. The `listed_projects` element is a list of maps that define the packages
-    that will be displayed, and how they will be presented. We can't assume from
-    the project path and version what to present because of e.g. Riak CS's
-    associations with specific Stanchion and Riak-CS-Control versions that match
-    neither the project path nor version of the page doing the displaying.
+2. The `listed_projects` element is a list of maps that define the packages
+   that will be displayed, and how they will be presented. We can't assume from
+   the project path and version what to present because of e.g. Riak CS's
+   associations with specific Stanchion and Riak-CS-Control versions that match
+   neither the project path nor version of the page doing the displaying.
 
-    1.  The Project Designation of the packages to present.
+   1. The Project Designation of the packages to present.
 
-    2.  The version of the given project to present.
+   2. The version of the given project to present.
 
-    3.  The rendered title of the given project.
+   3. The rendered title of the given project.
 
-        This does not need to match any other data, and as such should be
-        descriptive, rather than technical.
+      This does not need to match any other data, and as such should be
+      descriptive, rather than technical.
 
-#### Community Pages
+## Community Pages
 
 Pages in the Community section of content are not versioned in the same way as
 primary content pages, and thus must include a reduced set of front matter
@@ -275,7 +275,7 @@ elements.
 
 Please see the above sections for descriptions of un-annotated elements.
 
-```
+```yaml
 ---
 title_supertext: "Super-text title"
 title: "Page Title"
@@ -306,7 +306,7 @@ canonical_link: "https://docs.basho.com/. . ." # 2 -- OPTIONAL
 
 ## Problematic Markdown (and Workarounds)
 
-#### Markdown Tables
+### Markdown Tables
 
 <!--
 Added 2016/05/10 after Hipchat conversation between LR and CV - This workaround will ideally
