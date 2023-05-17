@@ -102,15 +102,15 @@ More information on garbage collection can be found in the [documentation]({{< b
 * A MapReduce optimisation in fetching Riak objects was introduced in Riak 2.1. Now, Riak CS 2.1 introduces an option to use that optimisation in storage calculation. It is off by default, but it can be used by setting `use_2i_for_storage_calc` as `true` in advanced.config. This reduced 50% of I/O in LevelDB. [[PR 1089](https://github.com/basho/riak_cs/pull/1089)]
 * Erlang/OTP 17 support is now included. [[PR 1245](https://github.com/basho/riak_cs/pull/1245) and [PR 1040](https://github.com/basho/stanchion/pull/1040)]
 * A module-level hook point for limiting user access and quota usage is now available with very preliminary, simple, node-wide limiting example modules. Operators can make, plug in, or combine different modules as quota-limiting, rate-limiting or bandwidth-limiting depending on their unique requirements. [[PR 1118](https://github.com/basho/riak_cs/pull/1118)]
-*  An orphaned block scanner is now available. [[PR 1133](https://github.com/basho/riak_cs/pull/1133)]
+* An orphaned block scanner is now available. [[PR 1133](https://github.com/basho/riak_cs/pull/1133)]
 * `riak-cs-admin audit-bucket-ownership` is a new tool to check integrity between users and buckets added. For example, it can be used in cases where a bucket is visible when listing buckets but not accessible, or a bucket is visible and exists but could not be deleted. [[PR 1202](https://github.com/basho/riak_cs/pull/1202)]
 * The following log rotation items have been added to cuttlefish:
-    * log.console.size
-    * log.console.rotation
-    * log.console.rotation.keep
-    * log.error.rotation
-    * log.error.rotation.keep
-    * log.error.size
+  * log.console.size
+  * log.console.rotation
+  * log.console.rotation.keep
+  * log.error.rotation
+  * log.error.rotation.keep
+  * log.error.size
 
 [[PR 1164](https://github.com/basho/riak_cs/pull/1164) and [PR 97](https://github.com/basho/stanchion/pull/97)]
 
@@ -156,7 +156,7 @@ More information on garbage collection can be found in the [documentation]({{< b
 * [[PR 1237](https://github.com/basho/riak_cs/pull/1237)]  The `riak-cs-admin` status command exit code was non-zero, even in successful execution. It will now return zero.
 * [[Issue 1097](https://github.com/basho/riak_cs/issues/1097)/[PR 1212](https://github.com/basho/riak_cs/pull/1212) and [PR 4](https://github.com/basho/s3-tests/pull/4)] Riak S2 did not copy the metadata of an original resource when the `x-amz-metadata-directive=COPY` command was used, nor when `x-amz-metadata-directive` was specified. Handling of the `x-amz-metadata-directive` command in PUT Object Copy API has been added.
 * [[Issue 1097](https://github.com/basho/riak_cs/issues/1097)/[PR 1212](https://github.com/basho/riak_cs/pull/1212) and [PR 4](https://github.com/basho/s3-tests/pull/4)] Riak CS did not store `Content-Type` in COPY requests when the `x-amz-metadata-directive=REPLACE` command was used. Handling of the `x-amz-metadata-directive` command in PUT Object Copy API has been added.
-*  [[Issue 1097](https://github.com/basho/riak_cs/issues/1097)/[PR 1212](https://github.com/basho/riak_cs/pull/1212) and [PR 4](https://github.com/basho/s3-tests/pull/4)] Fixed the handling of uploaded parts that should be deleted after Multipart Complete Request.
+* [[Issue 1097](https://github.com/basho/riak_cs/issues/1097)/[PR 1212](https://github.com/basho/riak_cs/pull/1212) and [PR 4](https://github.com/basho/s3-tests/pull/4)] Fixed the handling of uploaded parts that should be deleted after Multipart Complete Request.
 * [[Issue 1214](https://github.com/basho/riak_cs/issues/1244)/[PR 1246](https://github.com/basho/riak_cs/pull/1246)] Prior to Riak S2 2.1.0, a PUT Copy API command with identical source and destination changed user metadata (`x-amz-meta-*` headers) but failed to update Content-Type. Content-Type is now correctly updated by the API call.
 * [[Issue PR 1261](https://github.com/basho/riak_cs/pull/1261), [[PR 1263](https://github.com/basho/riak_cs/pull/1263)] Fix `riak-cs-debug` to include `app.config` when no generated files are found when `riak-cs.conf` is not used.
 

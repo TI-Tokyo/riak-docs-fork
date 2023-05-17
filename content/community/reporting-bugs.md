@@ -31,12 +31,12 @@ filing, please attempt do the following:
 * Project Issues are all managed under their respective [Basho GitHub
   repos](https://github.com/basho/). The following are good repos to pay
   particular attention to:
-    * [Riak issues](https://github.com/basho/riak/issues)
-    * [Riak Core issues](https://github.com/basho/riak_core/issues)
-    * [Riak KV issues](https://github.com/basho/riak_kv/issues)
-    * [Riak Search issues](https://github.com/basho/riak_search/issues)
-    * [Bitcask issues](https://github.com/basho/bitcask/issues)
-    * [eLevelDB issues](https://github.com/basho/eleveldb/issues)
+  * [Riak issues](https://github.com/basho/riak/issues)
+  * [Riak Core issues](https://github.com/basho/riak_core/issues)
+  * [Riak KV issues](https://github.com/basho/riak_kv/issues)
+  * [Riak Search issues](https://github.com/basho/riak_search/issues)
+  * [Bitcask issues](https://github.com/basho/bitcask/issues)
+  * [eLevelDB issues](https://github.com/basho/eleveldb/issues)
 * Search the [Riak Mailing List Archives](http://riak.markmail.org/) for
   similar issues and possible resolution paths. The [Mailman
   archives](http://lists.basho.com/pipermail/riak-users_lists.basho.com/)

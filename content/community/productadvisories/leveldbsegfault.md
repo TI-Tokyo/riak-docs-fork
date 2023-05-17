@@ -93,27 +93,26 @@ By default, this directory is in the following locations per OS:
 
 #### To install this patch, on each node in the cluster you must:
 
-1.   Stop the node: `riak stop`.
-2.   Change to the eleveldb priv directory (similar to `/usr/lib64/riak/lib/eleveldb-2.1.10-0-g0537ca9/priv/`)
-3.   Rename the original leveldb library ( `eleveldb.so`) to `eleveldb.so.orig`.
-4.   Copy the provided `eleveldb.so` to the directory and verify correct permissions.
-5.   If possible, verify that the md5 sum of the `eleveldb.so` located in the eleveldb priv directory is correct.
-6.   Start the node: `riak start`.
+1. Stop the node: `riak stop`.
+2. Change to the eleveldb priv directory (similar to `/usr/lib64/riak/lib/eleveldb-2.1.10-0-g0537ca9/priv/`)
+3. Rename the original leveldb library ( `eleveldb.so`) to `eleveldb.so.orig`.
+4. Copy the provided `eleveldb.so` to the directory and verify correct permissions.
+5. If possible, verify that the md5 sum of the `eleveldb.so` located in the eleveldb priv directory is correct.
+6. Start the node: `riak start`.
 
 #### To back out of this patch, on each node in the cluster you must:
 
-1.   Stop the node: `riak stop`.
-2.   Remove the patched `eleveldb.so` file from the eleveldb priv directory.
-3.   Rename `eleveldb.so.orig` to `eleveldb.so`.
-4.   Start the node: `riak start`.
+1. Stop the node: `riak stop`.
+2. Remove the patched `eleveldb.so` file from the eleveldb priv directory.
+3. Rename `eleveldb.so.orig` to `eleveldb.so`.
+4. Start the node: `riak start`.
 
 ### Verifying the Patch Installation
 
 When the patch is installed, the LevelDB LOG files will report that version 2.0.15 is installed. The LOG files for each running vnode will have a log line similar to the following:
 
-```
-<pre>2016/03/17-18:42:50.544293 7ffaaf3b1700             Version: 2.0.15
-</pre>
+```plaintext
+2016/03/17-18:42:50.544293 7ffaaf3b1700             Version: 2.0.15
 ```
 
 ## Disable AAE

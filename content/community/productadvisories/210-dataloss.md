@@ -39,7 +39,7 @@ Further investigation has shown that fallback transfers (hinted handoffs) are af
 All users of 2.1.0 using riak.conf to configure their clusters are potentially impacted. Users that are using app.config and vm.args to configure their clusters are unaffected but should upgrade to 2.1.1 upon release.
 To verify whether you are affected, the below command must be run on each node in your cluster:
 
-```
+```bash
 riak config effective | grep handoff.ip
 ```
 

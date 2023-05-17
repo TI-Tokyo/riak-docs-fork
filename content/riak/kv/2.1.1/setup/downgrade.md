@@ -32,11 +32,11 @@ We test and support downgrading for two feature release versions. However, two f
 
 For every node in your Riak cluster:
 
-1.  Stop Riak KV.
-2.  Back up Riak's `etc` and `data` directories.
-3.  Downgrade Riak KV.
-4.  Start Riak KV.
-5.  Finalize the process.
+1. Stop Riak KV.
+2. Back up Riak's `etc` and `data` directories.
+3. Downgrade Riak KV.
+4. Start Riak KV.
+5. Finalize the process.
 
 {{% note title="A Note About the Following Instructions" %}}
 The below instructions describe the procedures required for a single feature release version downgrade (for instance from 2.1.1 to 2.0.7). In a downgrade between two feature release versions (say 2.1.1 to 1.4.12), the steps for the in-between version must also be performed. For example, a downgrade from 2.1.1 to 1.4.12 requires that the downgrade steps for both 2.1.1 and 2.0.7 are performed.

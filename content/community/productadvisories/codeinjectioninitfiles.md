@@ -48,7 +48,7 @@ Change the ownership of the Riak init file from Riak user to root user.
 
 After you have installed Riak KV or TS, change the ownership of the Riak init file by running the following:
 
-`chown root:root /etc/init.d/riak `
+`chown root:root /etc/init.d/riak`
 
 ### Riak CS
 

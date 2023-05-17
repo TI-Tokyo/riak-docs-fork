@@ -35,7 +35,7 @@ All open source users of TS 1.3.0 using riak.conf to configure their clusters ar
 
 To verify whether you are affected, the below command must be run on each node in your cluster:
 
-```
+```bash
 riak config effective | grep handoff.ip
 ```
 

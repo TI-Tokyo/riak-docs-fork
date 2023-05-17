@@ -85,7 +85,7 @@ This command tells the election service to add a client named `»client_name«` 
 
 Both the client name and the group name must be ascii strings with no spaces in them. Under normal circumstances, the service should respond with:
 
-```
+```plaintext
 LEADER »current_leader«
 ```
 
@@ -93,13 +93,13 @@ The connection must remain open as long as the client wishes to remain a part of
 
 If the service becomes unavailable (for example, an outage involving a majority of Riak nodes) and a client attempts to join an election group, the server may respond with an error message reading:
 
-```
+```plaintext
 JOIN_FAILED SERVICE_UNAVAILABLE
 ```
 
 If a client attempts to execute any additional joins (to the same or other group names) on the same connection after the initial join is performed, the server will respond with:
 
-```
+```plaintext
 ALREADY_JOINED »group_name« »client_name«
 ```
 

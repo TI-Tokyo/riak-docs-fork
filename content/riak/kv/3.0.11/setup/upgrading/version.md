@@ -42,18 +42,18 @@ You can upgrade one node or your whole cluster to Riak KV 3.0.11 by following th
 
 For every node in the cluster:
 
-1.  Stop Riak KV.
-1.  Back up the Riak /etc, /data, and /basho-patches directories.
-1.  Remove your /basho-patches directory.
-1.  Upgrade Riak KV.
+1. Stop Riak KV.
+1. Back up the Riak /etc, /data, and /basho-patches directories.
+1. Remove your /basho-patches directory.
+1. Upgrade Riak KV.
     * If you are upgrading from EE to OSS, uninstall your EE KV package before upgrading.
 1. (Optional) If you would like to potentially downgrade at some point, update your advanced.config file to opt-out of the AAE updates.
-1.  If you're upgrading from EE to OSS, apply your customized settings to vm.args/riak.conf and app.config/advanced.config
-1.  If you're using MDC replication to clusters with versions less than 2.2.0, update your advanced.config file to over-ride the default bucket properties for compatibility.
-1.  Start Riak KV.
-1.  Verify Riak KV is running the upgraded version.
-1.  Wait for the `riak_kv` service to start.
-1.  Wait for any hinted handoffs to complete.
+1. If you're upgrading from EE to OSS, apply your customized settings to vm.args/riak.conf and app.config/advanced.config
+1. If you're using MDC replication to clusters with versions less than 2.2.0, update your advanced.config file to over-ride the default bucket properties for compatibility.
+1. Start Riak KV.
+1. Verify Riak KV is running the upgraded version.
+1. Wait for the `riak_kv` service to start.
+1. Wait for any hinted handoffs to complete.
 
 Before starting the rolling upgrade process on your cluster, check out the [Upgrading Riak KV: Production Checklist][production checklist], which covers details and questions to consider before upgrading.
 

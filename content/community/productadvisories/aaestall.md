@@ -133,6 +133,6 @@ When the patch is installed, the LevelDB LOG files will report that version 2.0.
 
 The LOG files for each running vnode will have a log line similar to the following:
 
-```
+```plaintext
 2016/03/17-18:42:50.544293 7ffaaf3b1700             Version: 2.0.31
 ```

@@ -50,7 +50,7 @@ To mitigate the issue, follow these steps:
 
 ### Step-by-Step Instructions
 
-1.  Locate where the first LevelDB log files are being written to. To do so, look at the `Set Value`:
+1. Locate where the first LevelDB log files are being written to. To do so, look at the `Set Value`:
 
     ```
     $ riak config describe leveldb.data_root
@@ -115,14 +115,14 @@ To mitigate the issue, follow these steps:
 
     In the very unlikely case the leveldb.tiered.path.slow is set to "." (dot - the self-link to a directory) and the leveldb.data_root path is a relative path, then you are not able to use this workaround.
 
-2.  Move the existing log directory to one side:
+2. Move the existing log directory to one side:
 
     ```
     # As root or sudo
     mv ${LOGDIR} ${LOGDIR}.bak
     ```
 
-3.  Identify the fast tier path. First we need to identify the fastdir path. To do so, look at the `Set Value`:
+3. Identify the fast tier path. First we need to identify the fastdir path. To do so, look at the `Set Value`:
 
     ```
     $ riak config describe leveldb.tiered.path.fast
@@ -156,7 +156,7 @@ To mitigate the issue, follow these steps:
     # Check there are multiple files returned
       ```
 
-4.  Finally, we will create a symbolic link from the fast tier path (identified in step 3) to the log directory (identified in step 1).
+4. Finally, we will create a symbolic link from the fast tier path (identified in step 3) to the log directory (identified in step 1).
 
     ```
     # As root or sudo
