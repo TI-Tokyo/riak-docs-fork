@@ -8,62 +8,62 @@
 This repository contains all the bits and pieces, large and small required to
 render and deploy Basho's documentation.
 
-$1
+This is a Work In Progress! Please let us know if you'd like to help out!
 
-$2
-This is updated for each new version of Riak once reviewed.
+### The Proper Live Site
 
-This is a Work In Progress!
-Please let us know if you'd like to help out!
+[https://docs.riak.com/](https://docs.riak.com/)
 
-$1
+This is updated for each new version of Riak once reviewed. It is often a few versions behind.
 
-$2
+### The Updater's Live Site
+
+[https://www.tiot.jp/riak-docs/](https://www.tiot.jp/riak-docs/)
+
 This is updated for each new version of Riak as soon as written, and gets regular small updates.
 
-$1
+### The Updater's Test Site
 
-$2
+[https://www.tiot.jp/riak-docs-beta/](https://www.tiot.jp/riak-docs-beta/)
+
 This is updated for each new version of Riak as each doc section is updated, and often will be a WIP.
 
-$1
+## Building The HTML Locally
 
-$2
 We moved to a Docker image to build the docs to avoid the issues with getting the various versions of things to work together.
 
 1. Install [Docker](https://docs.docker.com/engine/install/)
 
 1. Clone the repository with:
 
-    ```
+    ```bash
     git clone https://github.com/ti-tokyo/riak-docs-fork.git
     cd riak-docs-fork
     ```
 
     Or:
 
-    ```
+    ```bash
     git clone https://github.com/basho/basho_docs.git
     cd basho_docs
     ```
 
 1. Build the Docker image:
 
-    ```
+    ```bash
     ./docker/docker-build-image.titokyo.sh
     ```
 
 1. Run the docker image as a local server to test it all works:
 
-    ```
+    ```bash
     docker-compose -f ./docker/docker-compose.localhost-preview.yaml up riakdocs
     ```
 
 1. Play by visiting <http://localhost:1314/riak-docs/>.
 
-$1
+### No Really, _Go_ Play
 
-$2
 <sub>See what we did there?</sub>
 
 At this point, any changes you make to the markdown files in the `content/`
@@ -80,9 +80,6 @@ in `layouts/_default/` and the [partial templates][hugo partial templates] in
 [hugo partial templates]: https://gohugo.io/templates/partials/
 [hugo shortcodes]: https://gohugo.io/extras/shortcodes/
 
-$1
-
-$2
 >**Note:** Generally, unless you're helping us out with a specific task or project that you've discussed with us, you should not be altering the .js or .css files in this repo.
 
 If you want to mess with the scripts and CSS that this site uses, it's not
@@ -126,9 +123,8 @@ To convert the Coffee and Sass into `.js` and `.css` files, you'll need to:
 [bundler]: http://bundler.io/
 [rake]: http://docs.seattlerb.org/rake/
 
-$1
+## Would You Like to Contribute?
 
-$2
 Awesome! <sub>(We're assuming you said yes. Because you're reading this. And you're _awesome_.)</sub>
 
 This repository operates just like any other open source repo, and only thrives
@@ -149,8 +145,8 @@ Don't forget to check out our [Contributing Guidelines][contributing] so you
 can read up on all our weird little quirks, like how we
 [don't want you to use `<h1>` headers][contributing_headers].
 
-[new issue]: https://github.com/basho/basho_docs/issues/new
-[find the file]: https://github.com/basho/basho_docs/find/master
-[fork]: https://github.com/basho/basho_docs/#fork-destination-box
-[contributing]: CONTRIBUTING.md
-[contributing_headers]: CONTRIBUTING.md
+[new issue]: ./issues/new
+[find the file]: ./find/master
+[fork]: ./#fork-destination-box
+[contributing]: ./CONTRIBUTING.md
+[contributing_headers]: ./CONTRIBUTING.md
