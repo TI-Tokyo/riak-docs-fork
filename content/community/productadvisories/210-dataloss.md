@@ -45,7 +45,7 @@ riak config effective | grep handoff.ip
 
 Affected nodes will have a handoff ip of 127.0.0.1
 
-```
+```plaintext
 handoff.ip = 127.0.0.1
 ```
 

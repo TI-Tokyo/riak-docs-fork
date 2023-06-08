@@ -123,7 +123,7 @@ You can disable it in a running cluster by running `riak attach`.
 
 From within `riak attach` run the following snippet:
 
-```
+```riakattach
 riak_core_util:rpc_every_member_ann(riak_kv_entropy_manager, disable, [], 5000).
 riak_core_util:rpc_every_member_ann(riak_core_entropy_manager, cancel_exchanges,[],5000).
 ```

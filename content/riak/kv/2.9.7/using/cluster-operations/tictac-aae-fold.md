@@ -124,6 +124,7 @@ After experiencing a timeout, the current number of commands waiting to execute 
 io:format("af4_pool has ~b workers\n", [length(MM)]),
 f().
 ```
+
 {{% note title="Warning: existing variables cleared" %}}
 `f()` will unbind any existing variables, which may not be your intention. If you remove `f()` then please remember that `MM` will remain bound to the first value. For re-use, you should change the variable name or restart the `riak attach` session.
 {{% /note %}}

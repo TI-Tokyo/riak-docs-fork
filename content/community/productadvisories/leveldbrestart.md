@@ -52,7 +52,7 @@ To mitigate the issue, follow these steps:
 
 1. Locate where the first LevelDB log files are being written to. To do so, look at the `Set Value`:
 
-    ```
+    ```bash
     $ riak config describe leveldb.data_root
     Documentation for leveldb.data_root
     Where LevelDB will store its data.
@@ -66,7 +66,7 @@ To mitigate the issue, follow these steps:
 
     If the `Set Value` includes a parameter like $(platform_data_dir), as shown in the below example, you will need to look it up with another riak config describe. If the value is 'Value not set' then you will need to use the default value of `$(platform_data_dir)/leveldb` and do the `platform_data_dir` lookup:
 
-	```
+    ```bash
     $ riak config describe leveldb.data_root
     Documentation for leveldb.data_root
     Where LevelDB will store its data.
@@ -80,7 +80,7 @@ To mitigate the issue, follow these steps:
 
     You would look up the value of `platform_data_dir like this:
 
-    ```
+    ```bash
     $ riak config describe platform_data_dir
     Documentation for platform_data_dir
     Platform-specific installation paths (substituted by rebar)
@@ -96,7 +96,7 @@ To mitigate the issue, follow these steps:
 
     If the path is relative (as shown in the very first example), then it will be relative to the working directory Riak starts in. The working directory Riak starts in is identified by the `RUNNER_BASE_DIR` value found in your env.sh file, located in your Riak library directory. You may grep for its value:
 
-	```
+    ```bash
     $ grep ^RUNNER_BASE_DIR /usr/lib64/riak/lib/env.sh
     RUNNER_BASE_DIR=/usr/lib64/riak
     ```
@@ -107,7 +107,7 @@ To mitigate the issue, follow these steps:
 
     You can quickly check whether any files, other than .log files, exist using the following:
 
-    ```
+    ```bash
     # As root or sudo
     LOGDIR=/path/you/worked/out/in/step1 find ${LOGDIR} -type f  # List of log files
     find ${LOGDIR} -type f | grep -v '\.log$'  # should be - empty output
@@ -117,14 +117,14 @@ To mitigate the issue, follow these steps:
 
 2. Move the existing log directory to one side:
 
-    ```
+    ```bash
     # As root or sudo
     mv ${LOGDIR} ${LOGDIR}.bak
     ```
 
 3. Identify the fast tier path. First we need to identify the fastdir path. To do so, look at the `Set Value`:
 
-    ```
+    ```bash
     $ riak config describe leveldb.tiered.path.fast
     Documentation for leveldb.tiered.path.fast
     leveldb can be configured to use different mounts for
@@ -150,7 +150,7 @@ To mitigate the issue, follow these steps:
 
     Check that LevelDB MANIFEST files are present to make sure it is the correct directory:
 
-	```
+    ```bash
     FASTDIR=/path/to/fast/dir/and/leveldb/basedir   # e.g. /ssd/riak/leveldb from above
     find $FASTDIR -name 'MANIFEST*'
     # Check there are multiple files returned
@@ -158,7 +158,7 @@ To mitigate the issue, follow these steps:
 
 4. Finally, we will create a symbolic link from the fast tier path (identified in step 3) to the log directory (identified in step 1).
 
-    ```
+    ```bash
     # As root or sudo
     ln -s ${FASTDIR} ${LOGDIR}
     ```
