@@ -232,7 +232,7 @@ generateVersionLists = () ->
 
         version_selector_list_html += '<ul class="selector-list">\n'
         version_selector_list_html +=
-          '<li class="'+class_list.join("\n")+'"><button class="other__btn" type="button">other</button></li>'
+          '<li class="'+class_list.join("\n")+'"><button class="other__btn" type="button">older</button></li>'
 
         version_selector_list_html += '</ul></div></div>'
 
