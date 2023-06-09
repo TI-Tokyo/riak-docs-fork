@@ -3,9 +3,9 @@ draft: true
 title: "Backend"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 #menu:
-#  riak_kv-3.0.12:
+#  riak_kv-3.0.13:
 #    name: "Backend"
 #    identifier: "cluster_operations_backend"
 #    weight: 112

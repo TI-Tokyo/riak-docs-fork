@@ -2,17 +2,17 @@
 title: "HTTP List Resources"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "List Resources"
     identifier: "http_list_resources"
     weight: 112
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/references/http/list-resources
-  - /riak/kv/3.0.12/dev/references/http/list-resources
+  - /riak/3.0.13/dev/references/http/list-resources
+  - /riak/kv/3.0.13/dev/references/http/list-resources
 ---
 
 List available HTTP resources for the Riak node. This can be used by clients to
@@ -20,14 +20,14 @@ automatically recognize the location of the resources for specific operations.
 
 The standard resources are:
 
-* `riak_kv_wm_buckets` - [Bucket Operations]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/#bucket-operations)
-* `riak_kv_wm_index` - [HTTP Secondary Indexes]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/secondary-indexes)
-* `riak_kv_wm_link_walker` - [HTTP Link Walking]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/link-walking)
-* `riak_kv_wm_mapred` - [HTTP MapReduce]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/mapreduce)
-* `riak_kv_wm_object`- [Object/Key Operations]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/#object-key-operations)
-* `riak_kv_wm_ping` - [HTTP Ping]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/ping)
-* `riak_kv_wm_props` - [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/set-bucket-props)
-* `riak_kv_wm_stats` - [HTTP Status]({{<baseurl>}}riak/kv/3.0.12/developing/api/http/status)
+* `riak_kv_wm_buckets` - [Bucket Operations]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/#bucket-operations)
+* `riak_kv_wm_index` - [HTTP Secondary Indexes]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/secondary-indexes)
+* `riak_kv_wm_link_walker` - [HTTP Link Walking]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/link-walking)
+* `riak_kv_wm_mapred` - [HTTP MapReduce]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/mapreduce)
+* `riak_kv_wm_object`- [Object/Key Operations]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/#object-key-operations)
+* `riak_kv_wm_ping` - [HTTP Ping]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/ping)
+* `riak_kv_wm_props` - [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/set-bucket-props)
+* `riak_kv_wm_stats` - [HTTP Status]({{<baseurl>}}riak/kv/3.0.13/developing/api/http/status)
 
 ## Request
 

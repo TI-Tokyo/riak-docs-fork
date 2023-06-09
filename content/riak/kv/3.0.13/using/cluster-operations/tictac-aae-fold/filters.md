@@ -3,9 +3,9 @@ title_supertext: "Using > TicTac AAE Fold:"
 title: "Filters"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Filters"
     identifier: "cluster_operations_tictac_aae_fold_filters"
     weight: 101

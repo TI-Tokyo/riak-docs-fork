@@ -3,25 +3,25 @@ title_supertext: "Installing on"
 title: "Debian and Ubuntu"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Debian & Ubuntu"
     identifier: "installing_debian_ubuntu"
     weight: 302
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/building/installing/Installing-on-Debian-and-Ubuntu
-  - /riak/kv/3.0.12/ops/building/installing/Installing-on-Debian-and-Ubuntu
-  - /riak/3.0.12/installing/debian-ubuntu/
-  - /riak/kv/3.0.12/installing/debian-ubuntu/
+  - /riak/3.0.13/ops/building/installing/Installing-on-Debian-and-Ubuntu
+  - /riak/kv/3.0.13/ops/building/installing/Installing-on-Debian-and-Ubuntu
+  - /riak/3.0.13/installing/debian-ubuntu/
+  - /riak/kv/3.0.13/installing/debian-ubuntu/
 ---
 
-[install source index]: {{<baseurl>}}riak/kv/3.0.12/setup/installing/source/
-[security index]: {{<baseurl>}}riak/kv/3.0.12/using/security/
-[install source erlang]: {{<baseurl>}}riak/kv/3.0.12/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.0.12/setup/installing/verify
+[install source index]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/source/
+[security index]: {{<baseurl>}}riak/kv/3.0.13/using/security/
+[install source erlang]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/verify
 
 Riak KV can be installed on Debian or Ubuntu-based systems using a binary
 package or by compiling from source code.
@@ -86,56 +86,56 @@ sudo apt-get install libpam0g-dev
 #### Ubuntu Bionic Beaver (18.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/ubuntu/bionic64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/ubuntu/bionic64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Ubuntu Xenial Xerus (16.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/ubuntu/xenial64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/ubuntu/xenial64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Ubuntu Trusty Tahr (14.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/ubuntu/trusty64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/ubuntu/trusty64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Ubuntu Precise Pangolin (12.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/ubuntu/precise64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/ubuntu/precise64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Debian Stretch (9.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/debian/9/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/debian/9/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Debian Jessie (8.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/debian/8/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/debian/8/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Debian Wheezy (7.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/debian/7/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/debian/7/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Raspbian Buster
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/raspbian/buster/riak_3.0.11-1_armhf.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/raspbian/buster/riak_3.0.11-1_armhf.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
@@ -151,9 +151,9 @@ Riak requires an [Erlang](http://www.erlang.org/) installation.
 Instructions can be found in [Installing Erlang][install source erlang].
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/riak-3.0.12.tar.gz
-tar zxvf riak-3.0.12.tar.gz
-cd riak-3.0.12
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/riak-3.0.13.tar.gz
+tar zxvf riak-3.0.13.tar.gz
+cd riak-3.0.13
 make rel
 ```
 

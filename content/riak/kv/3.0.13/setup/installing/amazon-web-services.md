@@ -3,19 +3,19 @@ title_supertext: "Installing on"
 title: "Amazon Web Services"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Amazon Web Services"
     identifier: "installing_amazon_web_services"
     weight: 301
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/building/installing/Installing-on-AWS-Marketplace
-  - /riak/kv/3.0.12/ops/building/installing/Installing-on-AWS-Marketplace
-  - /riak/3.0.12/installing/amazon-web-services/
-  - /riak/kv/3.0.12/installing/amazon-web-services/
+  - /riak/3.0.13/ops/building/installing/Installing-on-AWS-Marketplace
+  - /riak/kv/3.0.13/ops/building/installing/Installing-on-AWS-Marketplace
+  - /riak/3.0.13/installing/amazon-web-services/
+  - /riak/kv/3.0.13/installing/amazon-web-services/
 ---
 
 ## Launching Riak VMs via the AWS Marketplace
@@ -58,7 +58,7 @@ Once the virtual machine is created, you should verify that your selected EC2 se
 
     ![EC2 Security Group Settings]({{<baseurl>}}images/aws-marketplace-security-group.png)
 
-We also recommend that you read more about Riak's [Security and Firewalls]({{<baseurl>}}riak/kv/3.0.12/using/security/).
+We also recommend that you read more about Riak's [Security and Firewalls]({{<baseurl>}}riak/kv/3.0.13/using/security/).
 
 ## Clustering Riak on AWS
 
@@ -114,14 +114,14 @@ You now have a Riak cluster running on AWS.
 You can install on AWS 2 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/amazon/2/riak-3.0.12-1.amzn2x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/amazon/2/riak-3.0.13-1.amzn2x86_64.rpm
 sudo yum localinstall -y riak_3.0.11-1.amzn2x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/amazon/2/riak-3.0.12-1.amzn2x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/amazon/2/riak-3.0.13-1.amzn2x86_64.rpm
 sudo rpm -i riak_3.0.11-1.amzn2x86_64.rpm
 ```
 
@@ -130,14 +130,14 @@ sudo rpm -i riak_3.0.11-1.amzn2x86_64.rpm
 You can install on AWS 2016.09 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/amazon/2016.09/riak-3.0.12-1.amzn1x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/amazon/2016.09/riak-3.0.13-1.amzn1x86_64.rpm
 sudo yum localinstall -y riak_3.0.11-1.amzn1x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.12/amazon/2016.09/riak-3.0.12-1.amzn1x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.0/3.0.13/amazon/2016.09/riak-3.0.13-1.amzn1x86_64.rpm
 sudo rpm -i riak_3.0.11-1.amzn1x86_64.rpm
 ```
 ## Next Steps

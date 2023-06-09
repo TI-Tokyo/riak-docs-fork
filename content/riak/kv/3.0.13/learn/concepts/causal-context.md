@@ -2,31 +2,31 @@
 title: "Causal Context"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Causal Context"
     identifier: "learn_concepts_causal_context"
     weight: 103
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/3.0.12/theory/concepts/context
-  - /riak/kv/3.0.12/theory/concepts/context
+  - /riak/3.0.13/theory/concepts/context
+  - /riak/kv/3.0.13/theory/concepts/context
 ---
 
-[concept aae]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/active-anti-entropy
-[concept clusters]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/clusters
-[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/eventual-consistency
+[concept aae]: {{<baseurl>}}riak/kv/3.0.13/learn/concepts/active-anti-entropy
+[concept clusters]: {{<baseurl>}}riak/kv/3.0.13/learn/concepts/clusters
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.13/learn/concepts/eventual-consistency
 [CRM]: http://en.wikipedia.org/wiki/Customer_relationship_management
-[dev api http]: {{<baseurl>}}riak/kv/3.0.12/developing/api/http
-[dev key value]: {{<baseurl>}}riak/kv/3.0.12/developing/key-value-modeling
-[glossary read rep]: {{<baseurl>}}riak/kv/3.0.12/learn/glossary/#read-repair
-[perf latency reduc]: {{<baseurl>}}riak/kv/3.0.12/using/performance/latency-reduction
-[usage bucket types]: {{<baseurl>}}riak/kv/3.0.12/developing/usage/bucket-types
-[usage conflict resolution]: {{<baseurl>}}riak/kv/3.0.12/developing/usage/conflict-resolution
-[usage protocol buffers]: {{<baseurl>}}riak/kv/3.0.12/developing/api/protocol-buffers
-[usage updating objects]: {{<baseurl>}}riak/kv/3.0.12/developing/usage/updating-objects
+[dev api http]: {{<baseurl>}}riak/kv/3.0.13/developing/api/http
+[dev key value]: {{<baseurl>}}riak/kv/3.0.13/developing/key-value-modeling
+[glossary read rep]: {{<baseurl>}}riak/kv/3.0.13/learn/glossary/#read-repair
+[perf latency reduc]: {{<baseurl>}}riak/kv/3.0.13/using/performance/latency-reduction
+[usage bucket types]: {{<baseurl>}}riak/kv/3.0.13/developing/usage/bucket-types
+[usage conflict resolution]: {{<baseurl>}}riak/kv/3.0.13/developing/usage/conflict-resolution
+[usage protocol buffers]: {{<baseurl>}}riak/kv/3.0.13/developing/api/protocol-buffers
+[usage updating objects]: {{<baseurl>}}riak/kv/3.0.13/developing/usage/updating-objects
 [Vector Clocks on Wikipedia]: http://en.wikipedia.org/wiki/Vector_clock
 [Why Vector Clocks are Easy]: http://basho.com/posts/technical/why-vector-clocks-are-easy/
 [Why Vector Clocks are Hard]: http://basho.com/posts/technical/why-vector-clocks-are-hard/
@@ -71,7 +71,7 @@ Causal context comes in two forms in Riak: **vector clocks** and
 **dotted version vectors**. More information in both can be found in the
 sections below.
 
-In the case of outcome 2, the choice between **a**, **b** and **c** is determined by settings. If you set the `allow_mult` parameter to `true` for a [bucket type]({{<baseurl>}}riak/kv/3.0.12/developing/usage/bucket-types), all non-CRDT writes to that bucket type will create siblings in the case of concurrent writes (and occasionally under other
+In the case of outcome 2, the choice between **a**, **b** and **c** is determined by settings. If you set the `allow_mult` parameter to `true` for a [bucket type]({{<baseurl>}}riak/kv/3.0.13/developing/usage/bucket-types), all non-CRDT writes to that bucket type will create siblings in the case of concurrent writes (and occasionally under other
 scenarios, e.g. healed network partitions).
 
 If, however, `allow_mult` is set to `false`, then Riak will not generate

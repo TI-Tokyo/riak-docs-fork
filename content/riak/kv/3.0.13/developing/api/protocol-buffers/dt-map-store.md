@@ -2,17 +2,17 @@
 title: "PBC Data Type Map Store"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Data Type Map Store"
     identifier: "pbc_dt_map_store"
     weight: 119
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/references/protocol-buffers/dt-map-store
-  - /riak/kv/3.0.12/dev/references/protocol-buffers/dt-map-store
+  - /riak/3.0.13/dev/references/protocol-buffers/dt-map-store
+  - /riak/kv/3.0.13/dev/references/protocol-buffers/dt-map-store
 ---
 
 An operation to be applied to a value stored in a map (the contents of an update operation). The operation field that is present depends on the type of the field to which it is applied. All operations apply to individual fields nested in the map, i.e. counter-specific operations apply to specified counters in the map, set-specific operations to sets, etc.
@@ -66,7 +66,7 @@ message MapUpdate {
 }
 ```
 
-The `MapField` parameter is explained above. The operations used to update fields depend on the Data Type in that field, i.e. `CounterOp` messages to update counters, `SetOp` messages to update sets, etc. Updating counters is covered in [PBC Data Type Counter Store]({{<baseurl>}}riak/kv/3.0.12/developing/api/protocol-buffers/dt-counter-store) while updating sets is covered in [PBC Data Type Set Store]({{<baseurl>}}riak/kv/3.0.12/developing/api/protocol-buffers/dt-set-store).
+The `MapField` parameter is explained above. The operations used to update fields depend on the Data Type in that field, i.e. `CounterOp` messages to update counters, `SetOp` messages to update sets, etc. Updating counters is covered in [PBC Data Type Counter Store]({{<baseurl>}}riak/kv/3.0.13/developing/api/protocol-buffers/dt-counter-store) while updating sets is covered in [PBC Data Type Set Store]({{<baseurl>}}riak/kv/3.0.13/developing/api/protocol-buffers/dt-set-store).
 
 If you are updating a flag, you do so by including a `FlagOp` message. As shown in the `MapUpdate` message above, this operation takes one of two values: `ENABLE` and `DISABLE` (`1` and `2`, respectively).
 

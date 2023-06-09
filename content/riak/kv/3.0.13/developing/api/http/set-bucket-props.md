@@ -2,17 +2,17 @@
 title: "HTTP Set Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Set Bucket Properties"
     identifier: "http_set_bucket_props"
     weight: 101
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/references/http/set-bucket-props
-  - /riak/kv/3.0.12/dev/references/http/set-bucket-props
+  - /riak/3.0.13/dev/references/http/set-bucket-props
+  - /riak/kv/3.0.13/dev/references/http/set-bucket-props
 ---
 
 Sets bucket properties like "n_val" and "allow_mult".
@@ -37,8 +37,8 @@ Available properties:
 (concurrent updates)
 * `last_write_wins` (true or false) - whether to ignore object history (vector
 clock) when writing
-* `precommit` - [precommit hooks]({{<baseurl>}}riak/kv/3.0.12/developing/usage/commit-hooks)
-* `postcommit` - [postcommit hooks]({{<baseurl>}}riak/kv/3.0.12/developing/usage/commit-hooks)
+* `precommit` - [precommit hooks]({{<baseurl>}}riak/kv/3.0.13/developing/usage/commit-hooks)
+* `postcommit` - [postcommit hooks]({{<baseurl>}}riak/kv/3.0.13/developing/usage/commit-hooks)
 * `r, w, dw, rw` - default quorum values for operations on keys in the bucket.
 Valid values are:
   * `"all"` - all nodes must respond
@@ -73,7 +73,7 @@ Once all options are satisfied, the response is returned, post commit hooks are 
 
 {{% note title="sync_on_write" %}}
 
-For Riak prior to release 3.0.12, being specific about persistence required synchronisation to be enabled on the backend (i.e. leveled, bitcask or eleveldb). The Riak put process supports the dw value, which nominally denotes how many nodes on which the write has been made durable - however the meaning of durability in this case is "with the backend", it offers no information as to whether physical persistence has actually been forced. The dw parameter will mean with the backend and flushed to disk, if and only if synchronisation of each and every write is enabled at the backend.
+For Riak prior to release 3.0.13, being specific about persistence required synchronisation to be enabled on the backend (i.e. leveled, bitcask or eleveldb). The Riak put process supports the dw value, which nominally denotes how many nodes on which the write has been made durable - however the meaning of durability in this case is "with the backend", it offers no information as to whether physical persistence has actually been forced. The dw parameter will mean with the backend and flushed to disk, if and only if synchronisation of each and every write is enabled at the backend.
 
 Forcing each and every write to be flushed to disk at the backend, in order to be sure that at least dw writes have been persisted, is expensive. With two clusters, and an n-val of 3 it requires 6 flushes for every write. This volume of disk sync actions can result in significant direct I/O charges in cloud environments. In other hosted environments, the costs can be mitigated by employing specialist hardware such as flash-backed write caches, but these devices can have a notable negative impact on node reliability.
 

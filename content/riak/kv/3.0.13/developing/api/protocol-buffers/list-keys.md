@@ -2,17 +2,17 @@
 title: "PBC List Keys"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "List Keys"
     identifier: "pbc_list_keys"
     weight: 101
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/references/protocol-buffers/list-keys
-  - /riak/kv/3.0.12/dev/references/protocol-buffers/list-keys
+  - /riak/3.0.13/dev/references/protocol-buffers/list-keys
+  - /riak/kv/3.0.13/dev/references/protocol-buffers/list-keys
 ---
 
 List all of the keys in a bucket. This is a streaming call, with

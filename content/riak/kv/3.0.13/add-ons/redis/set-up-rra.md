@@ -2,9 +2,9 @@
 title: "Setting Up Riak Redis Add-on"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Set Up Redis Add-on"
     identifier: "add-ons_redis_setup"
     weight: 201
@@ -17,8 +17,8 @@ aliases:
 [addon redis develop]: ../developing-rra/
 [addon redis use]: ../using-rra
 [ee]: https://www.tiot.jp/en/about-us/contact-us/
-[install index]: {{<baseurl>}}riak/kv/3.0.12/setup/installing
-[perf open files]: {{<baseurl>}}riak/kv/3.0.12/using/performance/open-files-limit/#changing-the-limit
+[install index]: {{<baseurl>}}riak/kv/3.0.13/setup/installing
+[perf open files]: {{<baseurl>}}riak/kv/3.0.13/using/performance/open-files-limit/#changing-the-limit
 [lab ansible]: https://github.com/paegun/ansible-cache-proxy
 
 This page will walk you through the process of installing Riak Redis Add-on (RRA) and configuring it to run in your environment. Check the [prerequisites](#prerequisites) before you get started to make sure you have everything you need in order to successfully install and use RRA.

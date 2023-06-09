@@ -3,9 +3,9 @@ title_supertext: "Using > TicTac AAE Fold:"
 title: "Get Object Statistics"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Object Statistics"
     identifier: "cluster_operations_tictac_aae_fold_object_stats"
     weight: 105

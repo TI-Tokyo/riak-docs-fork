@@ -2,20 +2,20 @@
 title: "Getting Started with Java"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.13
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.13:
     name: "Java"
     identifier: "getting_started_java"
     weight: 100
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/taste-of-riak/java
-  - /riak/kv/3.0.12/dev/taste-of-riak/java
+  - /riak/3.0.13/dev/taste-of-riak/java
+  - /riak/kv/3.0.13/dev/taste-of-riak/java
 ---
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.0.12/using/running-a-cluster) first.
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.0.13/using/running-a-cluster) first.
 
 To try this flavor of Riak, a working installation of Java is required.
 
@@ -84,5 +84,5 @@ RiakClient client = new RiakClient(cluster);
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/3.0.12/developing/getting-started/java/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/3.0.13/developing/getting-started/java/crud-operations)
 
