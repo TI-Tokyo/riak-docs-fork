@@ -3,9 +3,9 @@ title_supertext: "Using > Cluster Operations:"
 title: "TicTac AAE Folds"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "TicTac AAE Folds"
     identifier: "cluster_operations_tictac_aae_fold"
     weight: 109

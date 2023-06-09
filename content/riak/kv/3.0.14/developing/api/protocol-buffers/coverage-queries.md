@@ -2,9 +2,9 @@
 title: "PBC Coverage Queries"
 description: ""
 project: "riak_kv"
-project_version: "3.0.12"
+project_version: "3.0.14"
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Coverage Queries"
     identifier: "pbc_coverage_queries"
     weight: 108
@@ -13,8 +13,8 @@ version_history:
   in: "2.1.4+"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/references/protocol-buffers/coverage-queries
-  - /riak/kv/3.0.12/dev/references/protocol-buffers/coverage-queries
+  - /riak/3.0.14/dev/references/protocol-buffers/coverage-queries
+  - /riak/kv/3.0.14/dev/references/protocol-buffers/coverage-queries
 ---
 
 Prepare for parallelizable

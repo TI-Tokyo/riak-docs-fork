@@ -2,26 +2,26 @@
 title: "Using Secondary Indexes (2i)"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Using Secondary Indexes"
     identifier: "usage_2i"
     weight: 107
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/using/2i
-  - /riak/kv/3.0.12/dev/using/2i
+  - /riak/3.0.14/dev/using/2i
+  - /riak/kv/3.0.14/dev/using/2i
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/leveldb
-[plan backend memory]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/memory
-[use ref strong consistency]: {{<baseurl>}}riak/kv/3.0.12/using/reference/strong-consistency
+[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/leveldb
+[plan backend memory]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/memory
+[use ref strong consistency]: {{<baseurl>}}riak/kv/3.0.14/using/reference/strong-consistency
 
 Secondary indexes (2i) in Riak enable you to tag objects stored in Riak,
 at write time, with one or more queryable values. Those values can then
-be used to find multiple objects in Riak. If you're storing [user data]({{<baseurl>}}riak/kv/3.0.12/developing/data-modeling/#user-accounts), for example, you could tag each object
+be used to find multiple objects in Riak. If you're storing [user data]({{<baseurl>}}riak/kv/3.0.14/developing/data-modeling/#user-accounts), for example, you could tag each object
 associated with that user with a username or other unique marker. Once
 tagged, you could find all objects in a Riak bucket sharing that tag.
 Secondary indexes can be either a binary or string, such as
@@ -38,13 +38,13 @@ backends.
 * Allows querying by exact match or range on one index
 * Allows pagination of results
 * Allows streaming of results
-* Query results can be used as input to a [MapReduce]({{<baseurl>}}riak/kv/3.0.12/developing/usage/mapreduce/)
+* Query results can be used as input to a [MapReduce]({{<baseurl>}}riak/kv/3.0.14/developing/usage/mapreduce/)
   query
 
 > **Note on 2i and strong consistency**
 Secondary indexes do not currently work with the [strong consistency][use ref strong consistency]
 feature introduced in Riak version 2.0. If you store objects in
-[strongly consistent buckets]({{<baseurl>}}riak/kv/3.0.12/developing/app-guide/strong-consistency/#creating-a-strongly-consistent-bucket-type) and attach
+[strongly consistent buckets]({{<baseurl>}}riak/kv/3.0.14/developing/app-guide/strong-consistency/#creating-a-strongly-consistent-bucket-type) and attach
 secondary index metadata to those objects, you can still perform
 strongly consistent operations on those objects but the secondary
 indexes will be ignored.
@@ -79,7 +79,7 @@ piggybacks off of read-repair.
   supports.  A query like
   `last_name=zezeski AND state=MD` would have to be split into two
   queries and the results merged (or it would need to involve
-  [MapReduce]({{<baseurl>}}riak/kv/3.0.12/developing/usage/mapreduce/)).
+  [MapReduce]({{<baseurl>}}riak/kv/3.0.14/developing/usage/mapreduce/)).
 
 ## Query Interfaces and Examples
 
@@ -245,8 +245,8 @@ curl -XPOST localhost:8098/types/default/buckets/users/keys/john_smith \
 
 > **Getting started with Riak clients**
 >
-> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/3.0.12/developing/client-libraries), you can find more information about getting started with
-your client in the [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/3.0.12/developing/getting-started) section.
+> If you are connecting to Riak using one of Basho's official [client libraries]({{<baseurl>}}riak/kv/3.0.14/developing/client-libraries), you can find more information about getting started with
+your client in the [Developing with Riak KV: Getting Started]({{<baseurl>}}riak/kv/3.0.14/developing/getting-started) section.
 
 This has accomplished the following:
 
@@ -1130,8 +1130,8 @@ Could not parse field 'field2_int', value 'bar'.
 
 > **Note on 2i queries and the R parameter**
 >
-> For all 2i queries, the [R]({{<baseurl>}}riak/kv/3.0.12/developing/app-guide/replication-properties#r-value-and-read-failure-tolerance) parameter is set to 1,
-which means that queries that are run while [handoffs]({{<baseurl>}}riak/kv/3.0.12/learn/glossary/#hinted-handoff) and related operations are underway may not
+> For all 2i queries, the [R]({{<baseurl>}}riak/kv/3.0.14/developing/app-guide/replication-properties#r-value-and-read-failure-tolerance) parameter is set to 1,
+which means that queries that are run while [handoffs]({{<baseurl>}}riak/kv/3.0.14/learn/glossary/#hinted-handoff) and related operations are underway may not
 return all keys as expected.
 >
 > To avoid issues such as the above, a new option has been added to the `riak.conf` file to allow you to disable or enable node participation in 2i queries. `participate_in_coverage=disabled` will prevent the node in question from participating. Recommended usage of this feature is to prevent newly added nodes to the cluster that have yet to receive all of their data from participating in 2i queries and generating non-consistent results. Changing the `participate_in_coverage` setting requires Riak to be restarted on that node for the change to take effect. The default setting is `enabled`.

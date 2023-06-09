@@ -2,17 +2,17 @@
 title: "Multi-Datacenter Replication Reference: Monitoring"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Monitoring"
     identifier: "managing_ref_mdc_monitor"
     weight: 102
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/mdc/monitoring
-  - /riak/kv/3.0.12/ops/mdc/monitoring
+  - /riak/3.0.14/ops/mdc/monitoring
+  - /riak/kv/3.0.14/ops/mdc/monitoring
 ---
 
 Monitoring Riak's realtime replication allows you to identify trends and

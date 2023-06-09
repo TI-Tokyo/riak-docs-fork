@@ -2,9 +2,9 @@
 title: "Getting Started Overview"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Getting Started"
     identifier: "developing_getting_started"
     weight: 100
@@ -13,8 +13,8 @@ toc: true
 aliases:
 ---
 
-[install index]: {{<baseurl>}}riak/kv/3.0.12/setup/installing
-[dev client libraries]: {{<baseurl>}}riak/kv/3.0.12/developing/client-libraries
+[install index]: {{<baseurl>}}riak/kv/3.0.14/setup/installing
+[dev client libraries]: {{<baseurl>}}riak/kv/3.0.14/developing/client-libraries
 
 Welcome, new Riak developer! This guide will get you started developing
 against Riak KV with minimal fuss.

@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: Maps"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Maps"
     identifier: "data_types_maps"
     weight: 102
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/using/data-types/maps
-  - /riak/kv/3.0.12/dev/using/data-types/maps
-  - /riak/3.0.12/dev/data-modeling/data-types/maps
-  - /riak/kv/3.0.12/dev/data-modeling/data-types/maps
+  - /riak/3.0.14/dev/using/data-types/maps
+  - /riak/kv/3.0.14/dev/using/data-types/maps
+  - /riak/3.0.14/dev/data-modeling/data-types/maps
+  - /riak/kv/3.0.14/dev/data-modeling/data-types/maps
 ---
 
 Maps are the most versatile of the Riak data types because all other data types can be embedded within them, _including maps themselves_. This enables the creation of complex, custom data types from a few basic building blocks.

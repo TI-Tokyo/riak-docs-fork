@@ -3,19 +3,19 @@ title_supertext: "Installing on"
 title: "Windows Azure"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Windows Azure"
     identifier: "installing_windows_azure"
     weight: 308
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/building/installing/Installing-on-Windows-Azure
-  - /riak/kv/3.0.12/ops/building/installing/Installing-on-Windows-Azure
-  - /riak/3.0.12/installing/windows-azure/
-  - /riak/kv/3.0.12/installing/windows-azure/
+  - /riak/3.0.14/ops/building/installing/Installing-on-Windows-Azure
+  - /riak/kv/3.0.14/ops/building/installing/Installing-on-Windows-Azure
+  - /riak/3.0.14/installing/windows-azure/
+  - /riak/kv/3.0.14/installing/windows-azure/
 ---
 
 ## Creating CentOS VMs

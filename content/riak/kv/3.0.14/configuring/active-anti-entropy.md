@@ -3,9 +3,9 @@ title_supertext: "Configuring:"
 title: "Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Active Anti-Entropy (AAE)"
     identifier: "configuring-active-anti-entropy"
     weight: 210

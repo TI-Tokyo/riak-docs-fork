@@ -3,9 +3,9 @@ tile_supertext: "Configuring:"
 title: "Next Gen Replication"
 description: ""
 project: "riak_kv"
-project_version: "3.0.12"
+project_version: "3.0.14"
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Next Gen Replication"
     identifier: "nextgen_rep"
     weight: 200

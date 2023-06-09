@@ -2,20 +2,20 @@
 title: "Getting Started with PHP"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "PHP"
     identifier: "getting_started_php"
     weight: 107
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/taste-of-riak/php
-  - /riak/kv/3.0.12/dev/taste-of-riak/php
+  - /riak/3.0.14/dev/taste-of-riak/php
+  - /riak/kv/3.0.14/dev/taste-of-riak/php
 ---
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.0.12/using/running-a-cluster) first.
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.0.14/using/running-a-cluster) first.
 
 To try this flavor of Riak, a working installation of PHP is required, and [Composer](https://getcomposer.org/) is required to be installed to fetch the client library package.
 
@@ -74,5 +74,5 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/3.0.12/developing/getting-started/php/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/3.0.14/developing/getting-started/php/crud-operations)
 

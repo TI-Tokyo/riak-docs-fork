@@ -3,17 +3,17 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with Ruby"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Object Modeling"
     identifier: "getting_started_ruby_object"
     weight: 102
     parent: "getting_started_ruby"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/taste-of-riak/object-modeling-ruby
-  - /riak/kv/3.0.12/dev/taste-of-riak/object-modeling-ruby
+  - /riak/3.0.14/dev/taste-of-riak/object-modeling-ruby
+  - /riak/kv/3.0.14/dev/taste-of-riak/object-modeling-ruby
 ---
 
 To get started, let's create the models that we'll be using. Since the

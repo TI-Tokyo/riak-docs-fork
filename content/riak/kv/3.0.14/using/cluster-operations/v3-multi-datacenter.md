@@ -3,9 +3,9 @@ title_supertext: "V3 Multi-Datacenter"
 title: "Replication Operations"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "V3 Multi-Datacenter"
     identifier: "cluster_operations_v3"
     weight: 114
@@ -13,15 +13,15 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.0.12/ops/mdc/v3/operations
-  - /riak/kv/3.0.12/ops/mdc/v3/operations
+  - /riak/3.0.14/ops/mdc/v3/operations
+  - /riak/kv/3.0.14/ops/mdc/v3/operations
 ---
 
-[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.12/configuring/v3-multi-datacenter
-[config v3 nat]: {{<baseurl>}}riak/kv/3.0.12/configuring/v3-multi-datacenter/nat
-[config v3 quickstart]: {{<baseurl>}}riak/kv/3.0.12/configuring/v3-multi-datacenter/quick-start
-[config v3 ssl]: {{<baseurl>}}riak/kv/3.0.12/configuring/v3-multi-datacenter/ssl
-[ref v3 stats]: {{<baseurl>}}riak/kv/3.0.12/using/reference/multi-datacenter/statistics
+[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.14/configuring/v3-multi-datacenter
+[config v3 nat]: {{<baseurl>}}riak/kv/3.0.14/configuring/v3-multi-datacenter/nat
+[config v3 quickstart]: {{<baseurl>}}riak/kv/3.0.14/configuring/v3-multi-datacenter/quick-start
+[config v3 ssl]: {{<baseurl>}}riak/kv/3.0.14/configuring/v3-multi-datacenter/ssl
+[ref v3 stats]: {{<baseurl>}}riak/kv/3.0.14/using/reference/multi-datacenter/statistics
 
 This document explains how to manage replication with the `riak-repl`
 command. Some of these commands can be set or behavior altered by

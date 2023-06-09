@@ -2,9 +2,9 @@
 title: "Upgrading a Cluster"
 description: ""
 project: "riak_kv"
-project_version: "3.0.12"
+project_version: "3.0.14"
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Upgrading a Cluster"
     identifier: "upgrading_cluster"
     weight: 102
@@ -13,21 +13,21 @@ toc: true
 version_history:
   in: "2.0.0-2.99.999"
 aliases:
-  - /riak/3.0.12/ops/upgrading/rolling-upgrades/
-  - /riak/kv/3.0.12/ops/upgrading/rolling-upgrades/
+  - /riak/3.0.14/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.0.14/ops/upgrading/rolling-upgrades/
 ---
 
-[production checklist]: {{<baseurl>}}riak/kv/3.0.12/setup/upgrading/checklist
-[use admin riak control]: {{<baseurl>}}riak/kv/3.0.12/using/admin/riak-control
-[use admin commands]: {{<baseurl>}}riak/kv/3.0.12/using/admin/commands
-[use admin riak admin]: {{<baseurl>}}riak/kv/3.0.12/using/admin/riak admin
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.0.12/developing/usage/secondary-indexes
+[production checklist]: {{<baseurl>}}riak/kv/3.0.14/setup/upgrading/checklist
+[use admin riak control]: {{<baseurl>}}riak/kv/3.0.14/using/admin/riak-control
+[use admin commands]: {{<baseurl>}}riak/kv/3.0.14/using/admin/commands
+[use admin riak admin]: {{<baseurl>}}riak/kv/3.0.14/using/admin/riak admin
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.0.14/developing/usage/secondary-indexes
 [release notes]: https://github.com/basho/riak/blob/master/RELEASE-NOTES.md
 [riak enterprise]: http://basho.com/products/riak-kv/
-[cluster ops mdc]: {{<baseurl>}}riak/kv/3.0.12/using/cluster-operations/v3-multi-datacenter
-[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.12/configuring/v3-multi-datacenter
-[jmx monitor]: {{<baseurl>}}riak/kv/3.0.12/using/reference/jmx
-[snmp]: {{<baseurl>}}riak/kv/3.0.12/using/reference/snmp
+[cluster ops mdc]: {{<baseurl>}}riak/kv/3.0.14/using/cluster-operations/v3-multi-datacenter
+[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.14/configuring/v3-multi-datacenter
+[jmx monitor]: {{<baseurl>}}riak/kv/3.0.14/using/reference/jmx
+[snmp]: {{<baseurl>}}riak/kv/3.0.14/using/reference/snmp
 
 {{% note title="Note on upgrading Riak KV from older versions" %}}
 Riak KV upgrades are tested and supported for two feature release versions.
@@ -38,7 +38,7 @@ recommend first upgrading to an intermediate version. For example, in an
 upgrade from 1.1.x to 1.4.x, we recommend upgrading from 1.1.x to 1.3.x
 before upgrading to 1.4.x.
 
-If you run [Riak Control]({{<baseurl>}}riak/kv/3.0.12/using/admin/riak-control), you should disable it during the rolling upgrade process.
+If you run [Riak Control]({{<baseurl>}}riak/kv/3.0.14/using/admin/riak-control), you should disable it during the rolling upgrade process.
 {{% /note %}}
 
 Riak KV nodes negotiate with each other to determine supported

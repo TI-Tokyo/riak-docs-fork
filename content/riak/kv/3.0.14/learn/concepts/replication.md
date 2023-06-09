@@ -2,29 +2,29 @@
 title: "Replication"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Replication"
     identifier: "learn_concepts_replication"
     weight: 108
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/3.0.12/theory/concepts/Replication
-  - /riak/kv/3.0.12/theory/concepts/Replication
-  - /riak/3.0.12/theory/concepts/replication
-  - /riak/kv/3.0.12/theory/concepts/replication
+  - /riak/3.0.14/theory/concepts/Replication
+  - /riak/kv/3.0.14/theory/concepts/Replication
+  - /riak/3.0.14/theory/concepts/replication
+  - /riak/kv/3.0.14/theory/concepts/replication
 ---
 
-[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.0.12/using/cluster-operations/v3-multi-datacenter
-[concept aae]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/active-anti-entropy
-[concept causal context vc]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/causal-context/#vector-clocks
-[concept clusters]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/clusters
-[concept vnodes]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/vnodes
-[glossary node]: {{<baseurl>}}riak/kv/3.0.12/learn/glossary/#node
-[glossary ring]: {{<baseurl>}}riak/kv/3.0.12/learn/glossary/#ring
-[usage replication]: {{<baseurl>}}riak/kv/3.0.12/developing/usage/replication
+[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.0.14/using/cluster-operations/v3-multi-datacenter
+[concept aae]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/active-anti-entropy
+[concept causal context vc]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/causal-context/#vector-clocks
+[concept clusters]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/clusters
+[concept vnodes]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/vnodes
+[glossary node]: {{<baseurl>}}riak/kv/3.0.14/learn/glossary/#node
+[glossary ring]: {{<baseurl>}}riak/kv/3.0.14/learn/glossary/#ring
+[usage replication]: {{<baseurl>}}riak/kv/3.0.14/developing/usage/replication
 
 Data replication is a core feature of Riak's basic architecture. Riak
 was designed to operate as a [clustered][concept clusters] system containing
@@ -35,13 +35,13 @@ Replication is fundamental and automatic in Riak, providing security
 that your data will still be there if a node in your Riak cluster goes
 down. All data stored in Riak will be replicated to a number of nodes in
 the cluster according to the N value (`n_val`) property set in a
-bucket's [bucket type]({{<baseurl>}}riak/kv/3.0.12/developing/usage/bucket-types).
+bucket's [bucket type]({{<baseurl>}}riak/kv/3.0.14/developing/usage/bucket-types).
 
 >**Note: Replication across clusters**
 >
 >If you're interested in replication not just within a cluster but across
 multiple clusters, we recommend checking out our documentation on Riak's
-[Multi-Datacenter Replications]({{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/multi) capabilities.
+[Multi-Datacenter Replications]({{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/multi) capabilities.
 
 ## Selecting an N value (`n_val`)
 
@@ -68,7 +68,7 @@ nodes with the data will cause the read to fail.
 ## Setting the N value (`n_val`)
 
 To change the N value for a bucket, you need to create a [bucket
-type]({{<baseurl>}}riak/kv/3.0.12/developing/usage/bucket-types) with `n_val` set to your desired value and
+type]({{<baseurl>}}riak/kv/3.0.14/developing/usage/bucket-types) with `n_val` set to your desired value and
 then make sure that the bucket bears that type.
 
 In this example, we'll set N to 2. First, we'll create the bucket type
@@ -99,8 +99,8 @@ objects' preflists, i.e. lists of [vnodes][concept vnodes] responsible for the o
 can end up
 
 Unreachable data is a problem because it can negatively impact coverage
-queries, e.g. [secondary index]({{<baseurl>}}riak/kv/3.0.12/developing/usage/secondary-indexes/) and
-[MapReduce]({{<baseurl>}}riak/kv/3.0.12/developing/usage/mapreduce/) queries. Lowering an object or bucket's
+queries, e.g. [secondary index]({{<baseurl>}}riak/kv/3.0.14/developing/usage/secondary-indexes/) and
+[MapReduce]({{<baseurl>}}riak/kv/3.0.14/developing/usage/mapreduce/) queries. Lowering an object or bucket's
 `n_val` will likely mean that objects that you would expect to
 be returned from those queries will no longer be returned.
 

@@ -2,17 +2,17 @@
 title: "PBC Ping"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Ping"
     identifier: "pbc_ping"
     weight: 110
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/references/protocol-buffers/ping
-  - /riak/kv/3.0.12/dev/references/protocol-buffers/ping
+  - /riak/3.0.14/dev/references/protocol-buffers/ping
+  - /riak/kv/3.0.14/dev/references/protocol-buffers/ping
 ---
 
 Check if the server is alive

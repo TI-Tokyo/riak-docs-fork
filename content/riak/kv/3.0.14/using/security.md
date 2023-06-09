@@ -2,23 +2,23 @@
 title: "Security & Firewalls"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Security"
     identifier: "managing_security"
     weight: 205
     parent: "managing"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/advanced/security
-  - /riak/kv/3.0.12/ops/advanced/security
+  - /riak/3.0.14/ops/advanced/security
+  - /riak/kv/3.0.14/ops/advanced/security
 ---
 
-[config v3 ssl]: {{<baseurl>}}riak/kv/3.0.12/configuring/v3-multi-datacenter/ssl
+[config v3 ssl]: {{<baseurl>}}riak/kv/3.0.14/configuring/v3-multi-datacenter/ssl
 [JMX]: http://www.oracle.com/technetwork/java/javase/tech/javamanagement-140525.html
-[security basics]: {{<baseurl>}}riak/kv/3.0.12/using/security/basics
-[security managing]: {{<baseurl>}}riak/kv/3.0.12/using/security/managing-sources/
+[security basics]: {{<baseurl>}}riak/kv/3.0.14/using/security/basics
+[security managing]: {{<baseurl>}}riak/kv/3.0.14/using/security/managing-sources/
 [Solr]: http://lucene.apache.org/solr/
 
 > **Internal security**

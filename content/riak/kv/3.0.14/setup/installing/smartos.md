@@ -3,23 +3,23 @@ title_supertext: "Installing on"
 title: "SmartOS"
 description: ""
 project: "riak_kv"
-project_version: "3.0.12"
+project_version: "3.0.14"
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "SmartOS"
     identifier: "installing_smartos"
     weight: 305
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/building/installing/Installing-on-SmartOS
-  - /riak/kv/3.0.12/ops/building/installing/Installing-on-SmartOS
-  - /riak/3.0.12/installing/smartos/
-  - /riak/kv/3.0.12/installing/smartos/
-  - /riak/kv/3.0.12/installing/smartos/
+  - /riak/3.0.14/ops/building/installing/Installing-on-SmartOS
+  - /riak/kv/3.0.14/ops/building/installing/Installing-on-SmartOS
+  - /riak/3.0.14/installing/smartos/
+  - /riak/kv/3.0.14/installing/smartos/
+  - /riak/kv/3.0.14/installing/smartos/
 ---
 
-[install verify]: {{<baseurl>}}riak/kv/3.0.12/setup/installing/verify
+[install verify]: {{<baseurl>}}riak/kv/3.0.14/setup/installing/verify
 
 {{% note title="SmartOS End of Life (EOL) for Riak KV 2.0.0" %}}
 SmartOS is no longer supported in Riak KV 2.0.0+. If you are interested in using Riak KV on SmartOS, you can still [build from source](../source). The steps below have been left here for reference only and are no longer maintained.

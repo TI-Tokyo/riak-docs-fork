@@ -2,9 +2,9 @@
 title: "Riak Redis Add-on Deployment Models"
 description: "Explore the various models for deploying Riak Redis Add-on"
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Redis Add-on Deployment Models"
     identifier: "add-ons_redis_deployment"
     weight: 201

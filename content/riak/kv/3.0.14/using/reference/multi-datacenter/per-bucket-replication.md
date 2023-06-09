@@ -2,17 +2,17 @@
 title: "Multi-Datacenter Replication Reference: Per Bucket"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Per Bucket"
     identifier: "managing_ref_mdc_per_bucket"
     weight: 101
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/mdc/per-bucket
-  - /riak/kv/3.0.12/ops/mdc/per-bucket
+  - /riak/3.0.14/ops/mdc/per-bucket
+  - /riak/kv/3.0.14/ops/mdc/per-bucket
 ---
 
 To enable or disable replication per bucket, you can use the `repl`

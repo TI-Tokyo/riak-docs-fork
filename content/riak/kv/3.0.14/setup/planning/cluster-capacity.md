@@ -2,26 +2,26 @@
 title: "Cluster Capacity Planning"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Cluster Capacity"
     identifier: "planning_cluster_capacity"
     weight: 103
     parent: "planning"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/building/planning/cluster
-  - /riak/kv/3.0.12/ops/building/planning/cluster
+  - /riak/3.0.14/ops/building/planning/cluster
+  - /riak/kv/3.0.14/ops/building/planning/cluster
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/leveldb
-[plan bitcask capacity]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/bitcask-capacity-calc
-[plan index]: {{<baseurl>}}riak/kv/3.0.12/setup/planning
-[concept replication]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/replication
-[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/3.0.12/using/admin/riak admin/#cluster
-[config reference]: {{<baseurl>}}riak/kv/3.0.12/configuring/reference
-[perf benchmark]: {{<baseurl>}}riak/kv/3.0.12/using/performance/benchmarking
+[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/leveldb
+[plan bitcask capacity]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/bitcask-capacity-calc
+[plan index]: {{<baseurl>}}riak/kv/3.0.14/setup/planning
+[concept replication]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/replication
+[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/3.0.14/using/admin/riak admin/#cluster
+[config reference]: {{<baseurl>}}riak/kv/3.0.14/configuring/reference
+[perf benchmark]: {{<baseurl>}}riak/kv/3.0.14/using/performance/benchmarking
 [LVM]: http://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)
 
 This document outlines the various elements and variables to keep in mind when planning your Riak cluster. Your use case and environment variables will be specific to what you're building, but this document should set you on the right path when planning and launching a Riak cluster.

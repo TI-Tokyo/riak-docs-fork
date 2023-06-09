@@ -2,9 +2,9 @@
 title: "Backend Configuration"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Backend Configuration"
     identifier: "configuring_backend"
     weight: 110
@@ -13,11 +13,11 @@ toc: true
 aliases:
 ---
 
-[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/leveldb
-[plan backend leveled]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/leveled
-[plan backend bitcask]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/bitcask
-[plan backend memory]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/memory
-[plan backend multi]: {{<baseurl>}}riak/kv/3.0.12/setup/planning/backend/multi
+[plan backend leveldb]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/leveldb
+[plan backend leveled]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/leveled
+[plan backend bitcask]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/bitcask
+[plan backend memory]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/memory
+[plan backend multi]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/backend/multi
 
 ## LevelDB
 

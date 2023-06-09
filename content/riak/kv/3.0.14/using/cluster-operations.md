@@ -2,9 +2,9 @@
 title: "Cluster Operations"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Cluster Operations"
     identifier: "managing_cluster_operations"
     weight: 203

@@ -2,9 +2,9 @@
 title: "Concepts"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.14
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.14:
     name: "Concepts"
     identifier: "learn_concepts"
     weight: 104
@@ -13,20 +13,20 @@ toc: true
 aliases:
 ---
 
-[concept aae]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/active-anti-entropy
-[concept buckets]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/buckets
-[concept cap neg]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/capability-negotiation
-[concept causal context]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/causal-context
-[concept clusters]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/clusters
-[concept crdts]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/crdts
-[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/eventual-consistency
-[concept keys objects]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/keys-and-objects
-[concept replication]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/replication
-[concept strong consistency]: {{<baseurl>}}riak/kv/3.0.12/using/reference/strong-consistency
-[concept vnodes]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/vnodes
-[config index]: {{<baseurl>}}riak/kv/3.0.12/configuring
-[plan index]: {{<baseurl>}}riak/kv/3.0.12/setup/planning
-[use index]: {{<baseurl>}}riak/kv/3.0.12/using/
+[concept aae]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/active-anti-entropy
+[concept buckets]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/buckets
+[concept cap neg]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/capability-negotiation
+[concept causal context]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/causal-context
+[concept clusters]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/clusters
+[concept crdts]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/crdts
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/eventual-consistency
+[concept keys objects]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/keys-and-objects
+[concept replication]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/replication
+[concept strong consistency]: {{<baseurl>}}riak/kv/3.0.14/using/reference/strong-consistency
+[concept vnodes]: {{<baseurl>}}riak/kv/3.0.14/learn/concepts/vnodes
+[config index]: {{<baseurl>}}riak/kv/3.0.14/configuring
+[plan index]: {{<baseurl>}}riak/kv/3.0.14/setup/planning
+[use index]: {{<baseurl>}}riak/kv/3.0.14/using/
 
 Riak KV has many great features, functions, and guiding principles that inform how the product works. This section provides definitions for, insight into, and high level information about the various parts of Riak KV you will encounter as you [plan][plan index], [configure][config index], and [use][use index] Riak.
 
