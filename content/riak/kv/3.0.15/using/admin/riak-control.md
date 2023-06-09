@@ -2,20 +2,20 @@
 title: "Riak Control"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "Riak Control"
     identifier: "cluster_admin_riak_control"
     weight: 103
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/advanced/riak-control
-  - /riak/kv/3.0.12/ops/advanced/riak-control
+  - /riak/3.0.15/ops/advanced/riak-control
+  - /riak/kv/3.0.15/ops/advanced/riak-control
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/3.0.12/configuring/reference
+[config reference]: {{<baseurl>}}riak/kv/3.0.15/configuring/reference
 
 Riak Control is a web-based administrative console for inspecting and
 manipulating Riak clusters.
@@ -111,7 +111,7 @@ and configured SSL and HTTPS.
 ## Enabling SSL and HTTPS
 
 In order to use SSL in conjunction with Riak Control, SSL must be
-enabled on each Riak node. For more information, see our [security documentation]({{<baseurl>}}riak/kv/3.0.12/using/security/basics#enabling-ssl). Once SSL is enabled, you can proceed to setting up [authentication](#authentication) for Riak Control.
+enabled on each Riak node. For more information, see our [security documentation]({{<baseurl>}}riak/kv/3.0.15/using/security/basics#enabling-ssl). Once SSL is enabled, you can proceed to setting up [authentication](#authentication) for Riak Control.
 
 Please note that Riak Control will not work if you have enabled
 authentication but SSL is not set up properly.
@@ -226,7 +226,7 @@ nodes in the cluster.
 ### Ring View
 
 One level deeper than the cluster view is the ring view. This is where you can
-see the health of each [vnode]({{<baseurl>}}riak/kv/3.0.12/learn/glossary/#vnode).
+see the health of each [vnode]({{<baseurl>}}riak/kv/3.0.15/learn/glossary/#vnode).
 
 [ ![Ring View]({{<baseurl>}}images/control_current_ring.png) ] ({{<baseurl>}}images/control_current_ring.png)
 

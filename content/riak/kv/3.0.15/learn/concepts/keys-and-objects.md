@@ -2,21 +2,21 @@
 title: "Keys and Objects"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "Keys and Objects"
     identifier: "learn_concepts_keys_objects"
     weight: 106
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/3.0.12/theory/concepts/keys-and-values
-  - /riak/kv/3.0.12/theory/concepts/keys-and-values
+  - /riak/3.0.15/theory/concepts/keys-and-values
+  - /riak/kv/3.0.15/theory/concepts/keys-and-values
 ---
 
-[concept buckets]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/buckets
-[concept causal context vc]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/causal-context/#vector-clocks
+[concept buckets]: {{<baseurl>}}riak/kv/3.0.15/learn/concepts/buckets
+[concept causal context vc]: {{<baseurl>}}riak/kv/3.0.15/learn/concepts/causal-context/#vector-clocks
 
 In an RDBMS, data is organized by tables that are individually
 identifiable entities. Within those tables exist rows of a data

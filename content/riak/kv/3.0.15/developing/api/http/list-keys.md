@@ -2,17 +2,17 @@
 title: "HTTP List Keys"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "List Keys"
     identifier: "http_list_keys"
     weight: 104
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.0.12/dev/references/http/list-keys
-  - /riak/kv/3.0.12/dev/references/http/list-keys
+  - /riak/3.0.15/dev/references/http/list-keys
+  - /riak/kv/3.0.15/dev/references/http/list-keys
 ---
 
 Lists keys in a bucket.

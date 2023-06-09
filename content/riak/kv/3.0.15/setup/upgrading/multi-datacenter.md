@@ -3,9 +3,9 @@ draft: true
 title: "Upgrading Multi-Datacenter"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 #menu:
-#  riak_kv-3.0.12:
+#  riak_kv-3.0.15:
 #    name: "Upgrading Multi-Datacenter"
 #    identifier: "upgrading_multi_datacenter"
 #    weight: 103

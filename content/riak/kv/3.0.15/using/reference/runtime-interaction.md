@@ -2,21 +2,21 @@
 title: "Runtime Interaction Reference"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "Runtime Interaction"
     identifier: "managing_ref_runtime_interaction"
     weight: 104
     parent: "managing_ref"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/advanced/runtime
-  - /riak/kv/3.0.12/ops/advanced/runtime
+  - /riak/3.0.15/ops/advanced/runtime
+  - /riak/kv/3.0.15/ops/advanced/runtime
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/3.0.12/configuring/reference
-[concept clusters]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/clusters
+[config reference]: {{<baseurl>}}riak/kv/3.0.15/configuring/reference
+[concept clusters]: {{<baseurl>}}riak/kv/3.0.15/learn/concepts/clusters
 
 Riak's [configuration files][config reference] provide a variety of parameters that
 enable you to fine-tune how Riak interacts with two important elements

@@ -3,22 +3,22 @@ title_supertext: "Installing on"
 title: "Solaris"
 description: ""
 project: "riak_kv"
-project_version: "3.0.12"
+project_version: "3.0.15"
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "Solaris"
     identifier: "installing_solaris"
     weight: 306
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/building/installing/Installing-on-Solaris
-  - /riak/kv/3.0.12/ops/building/installing/Installing-on-Solaris
-  - /riak/3.0.12/installing/solaris/
-  - /riak/kv/3.0.12/installing/solaris/
+  - /riak/3.0.15/ops/building/installing/Installing-on-Solaris
+  - /riak/kv/3.0.15/ops/building/installing/Installing-on-Solaris
+  - /riak/3.0.15/installing/solaris/
+  - /riak/kv/3.0.15/installing/solaris/
 ---
 
-[install verify]: {{<baseurl>}}riak/kv/3.0.12/setup/installing/verify
+[install verify]: {{<baseurl>}}riak/kv/3.0.15/setup/installing/verify
 
 {{% note title="Solaris End of Life (EOL) for Riak KV 2.2.0" %}}
 Solaris is no longer supported in Riak KV 2.2.1+. If you are interested in using Riak KV on Solaris, you can still [build from source](../source). The steps below have been left here for reference only and are no longer maintained.

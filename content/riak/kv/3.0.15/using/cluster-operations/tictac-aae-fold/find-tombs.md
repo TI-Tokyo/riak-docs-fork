@@ -3,9 +3,9 @@ title_supertext: "Using > TicTac AAE Fold:"
 title: "Find Tombstones"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "Find Tombstones"
     identifier: "cluster_operations_tictac_aae_fold_find_tombs"
     weight: 103

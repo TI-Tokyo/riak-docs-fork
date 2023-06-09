@@ -2,17 +2,17 @@
 title: "Multi-Datacenter Replication Reference: Statistics"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "Statistics"
     identifier: "managing_ref_mdc_stats"
     weight: 100
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/mdc/statistics
-  - /riak/kv/3.0.12/ops/mdc/statistics
+  - /riak/3.0.15/ops/mdc/statistics
+  - /riak/kv/3.0.15/ops/mdc/statistics
 ---
 
 The following definitions describe the output of `riak-repl status`.

@@ -3,24 +3,24 @@ title_supertext: "Installing on"
 title: "Mac OS X"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "Mac OS X"
     identifier: "installing_macosx"
     weight: 303
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.0.12/ops/building/installing/Installing-on-Mac-OS-X
-  - /riak/kv/3.0.12/ops/building/installing/Installing-on-Mac-OS-X
-  - /riak/3.0.12/installing/mac-osx/
-  - /riak/kv/3.0.12/installing/mac-osx/
+  - /riak/3.0.15/ops/building/installing/Installing-on-Mac-OS-X
+  - /riak/kv/3.0.15/ops/building/installing/Installing-on-Mac-OS-X
+  - /riak/3.0.15/installing/mac-osx/
+  - /riak/kv/3.0.15/installing/mac-osx/
 ---
 
-[perf open files]: {{<baseurl>}}riak/kv/3.0.12/using/performance/open-files-limit
-[install source erlang]: {{<baseurl>}}riak/kv/3.0.12/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.0.12/setup/installing/verify
+[perf open files]: {{<baseurl>}}riak/kv/3.0.15/using/performance/open-files-limit
+[install source erlang]: {{<baseurl>}}riak/kv/3.0.15/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.0.15/setup/installing/verify
 
 The following steps are known to work with Mac OS X 10.8 and higher. You can install from source or download a precompiled tarball.
 
@@ -38,8 +38,8 @@ appropriate platform:
 ### 64-bit
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/3.0/3.0.12/osx/10.11/riak-3.0.12-OSX-x86_64.tar.gz
-tar xzvf riak-3.0.12-osx-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/kv/3.0/3.0.15/osx/10.11/riak-3.0.15-OSX-x86_64.tar.gz
+tar xzvf riak-3.0.15-osx-x86_64.tar.gz
 ```
 
 After the release is untarred, you will be able to `cd` into the `riak`
@@ -54,13 +54,13 @@ using the latest supported code (and don't be afraid to update it if it's
 not).
 {{% /note %}}
 
-Installing Riak 3.0.12 with [Homebrew](http://brew.sh/) is easy:
+Installing Riak 3.0.15 with [Homebrew](http://brew.sh/) is easy:
 
 ```bash
 brew install --devrel riak
 ```
 
-By default, this will place a `3.0.12` folder in
+By default, this will place a `3.0.15` folder in
 `/usr/local/Cellar/riak`.
 
 Be aware that you will most likely see the following message after
@@ -98,9 +98,9 @@ If you do not have Erlang already installed, see [Installing Erlang][install sou
 Next, download and unpack the source distribution.
 
 ```bash
-curl -O https://files.tiot.jp/riak/kv/3.0/3.0.12/riak-3.0.12.tar.gz
-tar zxvf riak-3.0.12.tar.gz
-cd riak-3.0.12
+curl -O https://files.tiot.jp/riak/kv/3.0/3.0.15/riak-3.0.15.tar.gz
+tar zxvf riak-3.0.15.tar.gz
+cd riak-3.0.15
 make rel
 ```
 

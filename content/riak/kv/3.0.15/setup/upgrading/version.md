@@ -1,39 +1,39 @@
 ---
-title: "Upgrading to Riak KV 3.0.12"
+title: "Upgrading to Riak KV 3.0.15"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
-    name: "Upgrading to 3.0.12"
+  riak_kv-3.0.15:
+    name: "Upgrading to 3.0.15"
     identifier: "upgrading_version"
     weight: 101
     parent: "upgrading"
 toc: true
 aliases:
-  - /riak/3.0.12/upgrade-v20/
-  - /riak/kv/3.0.12/ops/upgrading/rolling-upgrades/
-  - /riak/kv/3.0.12/ops/upgrading/rolling-upgrades/
-  - /riak/kv/3.0.12/setup/upgrading/cluster/
+  - /riak/3.0.15/upgrade-v20/
+  - /riak/kv/3.0.15/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.0.15/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.0.15/setup/upgrading/cluster/
 
 ---
 
-[production checklist]: {{<baseurl>}}riak/kv/3.0.12/setup/upgrading/checklist
-[use admin riak control]: {{<baseurl>}}riak/kv/3.0.12/using/admin/riak-control
-[use admin commands]: {{<baseurl>}}riak/kv/3.0.12/using/admin/commands
-[use admin riak admin]: {{<baseurl>}}riak/kv/3.0.12/using/admin/riak admin
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.0.12/developing/usage/secondary-indexes
-[release notes]: {{<baseurl>}}riak/kv/3.0.12/release-notes
+[production checklist]: {{<baseurl>}}riak/kv/3.0.15/setup/upgrading/checklist
+[use admin riak control]: {{<baseurl>}}riak/kv/3.0.15/using/admin/riak-control
+[use admin commands]: {{<baseurl>}}riak/kv/3.0.15/using/admin/commands
+[use admin riak admin]: {{<baseurl>}}riak/kv/3.0.15/using/admin/riak admin
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.0.15/developing/usage/secondary-indexes
+[release notes]: {{<baseurl>}}riak/kv/3.0.15/release-notes
 [riak enterprise]: http://basho.com/products/riak-kv/
-[cluster ops mdc]: {{<baseurl>}}riak/kv/3.0.12/using/cluster-operations/v3-multi-datacenter
-[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.12/configuring/v3-multi-datacenter
-[jmx monitor]: {{<baseurl>}}riak/kv/3.0.12/using/reference/jmx
-[snmp]: {{<baseurl>}}riak/kv/3.0.12/using/reference/snmp
-[Release Notes]: {{<baseurl>}}riak/kv/3.0.12/release-notes
+[cluster ops mdc]: {{<baseurl>}}riak/kv/3.0.15/using/cluster-operations/v3-multi-datacenter
+[config v3 mdc]: {{<baseurl>}}riak/kv/3.0.15/configuring/v3-multi-datacenter
+[jmx monitor]: {{<baseurl>}}riak/kv/3.0.15/using/reference/jmx
+[snmp]: {{<baseurl>}}riak/kv/3.0.15/using/reference/snmp
+[Release Notes]: {{<baseurl>}}riak/kv/3.0.15/release-notes
 
 ## Overview
 
-You can upgrade one node or your whole cluster to Riak KV 3.0.12 by following the instructions below.
+You can upgrade one node or your whole cluster to Riak KV 3.0.15 by following the instructions below.
 
 {{% note title="Tip" %}} KV nodes negotiate with each other to determine supported operating modes. This allows clusters containing mixed-versions of Riak KV to interoperate without special configuration, and simplifies rolling upgrades.
 {{% /note %}}

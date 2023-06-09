@@ -3,9 +3,9 @@ draft: true
 title: "Reference"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 #menu:
-#  riak_kv-3.0.12:
+#  riak_kv-3.0.15:
 #    name: "Reference"
 #    identifier: "app_guide_reference"
 #    weight: 104

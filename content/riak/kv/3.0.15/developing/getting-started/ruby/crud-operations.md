@@ -3,9 +3,9 @@ title_supertext: "Getting Started:"
 title: "CRUD Operations with Ruby"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: 3.0.15
 menu:
-  riak_kv-3.0.12:
+  riak_kv-3.0.15:
     name: "CRUD Operations"
     identifier: "getting_started_ruby_crud"
     weight: 100
