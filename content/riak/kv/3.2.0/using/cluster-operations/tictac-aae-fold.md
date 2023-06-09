@@ -28,6 +28,7 @@ aliases:
 [tictacaae list-buckets]: ../tictac-aae-fold/list-buckets
 [tictacaae object-stats]: ../tictac-aae-fold/object-stats
 [tictacaae count-tombs]: ../tictac-aae-fold/count-tombs
+[tictacaae count-keys]: ../tictac-aae-fold/count-keys
 [tictacaae reap-tombs]: ../tictac-aae-fold/reap-tombs
 [tictacaae erase-keys]: ../tictac-aae-fold/erase-keys
 [tictacaae repair-keys-range]: ../tictac-aae-fold/repair-keys-range
