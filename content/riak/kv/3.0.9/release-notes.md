@@ -34,7 +34,7 @@ This release contains stability, monitoring and performance improvements.
 * More time is now given to the legacy AAE kv_index_hashtree process to shut down, to handle delays as multiple vnodes are shutdown concurrently and contend for disk and CPU resources.
 
 **Note on Graviton CPUs**
-KV 3.0.9 will be the last version in the 3.0.x series to support Amazon Graviton CPUs until version 3.2.0
+KV 3.0.9 will be the last version in the 3.0.x series to support Amazon Graviton CPUs until version 3.0.13.
 
 
 ## Previous Release Notes
