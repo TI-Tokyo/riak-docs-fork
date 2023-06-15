@@ -33,6 +33,9 @@ output of `riak-admin status` is categorized and detailed below.
 Please note, for some counters, such as `node_get_fsm_objsize`, a
 minimum of 5 transactions is required for statistics to be generated.
 
+{{% note title="Warning about `riak-admin status` usage" %}}
+The `riak-admin status` command should be not be used excessively as this can eventually cause the node to crash from atom table exhaustion.
+{{% /note %}}
 #### Performance
 
 We recommended checking stats every 90-120 seconds for best performance.
