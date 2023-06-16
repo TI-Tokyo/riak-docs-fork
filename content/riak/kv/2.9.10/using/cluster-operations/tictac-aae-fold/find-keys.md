@@ -55,6 +55,7 @@ riak_client:aae_fold({
     function_filter
     }, Client).
 ```
+
 Please see the list of [available standard filters](#available-standard-filters) below.
 
 `function_filter` can be either the `sibling_count` filter or the `object_size` filter, detailed below.
@@ -74,6 +75,7 @@ riak_client:aae_fold({
     {sibling_count, count}
     }, Client).
 ```
+
 Please see the list of [available standard filters](#available-standard-filters) below.
 
 For example, the following snippet will return all keys with the filters:
@@ -134,6 +136,7 @@ riak_client:aae_fold({
     {object_size, size}
     }, Client).
 ```
+
 Please see the list of [available standard filters](#available-standard-filters) below.
 
 For example, the following snippet will return all keys with the filters:
