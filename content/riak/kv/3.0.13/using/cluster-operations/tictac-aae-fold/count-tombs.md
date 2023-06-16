@@ -8,7 +8,7 @@ menu:
   riak_kv-3.0.13:
     name: "Count Tombs"
     identifier: "cluster_operations_tictac_aae_fold_count_tombs"
-    weight: 105
+    weight: 106
     parent: "cluster_operations_tictac_aae_fold"
 toc: true
 since: 2.9.4
