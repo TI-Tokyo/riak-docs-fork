@@ -61,7 +61,7 @@ Please see the list of [available standard filters](#available-standard-filters)
 
 ## The `sibling_count` filter
 
-This filter will only cinlude keys that have more than the specified siblings.
+This filter will only include keys that have more than the specified siblings.
 
 Note that a value of `5` will mean only objects with 6 or more siblings will be returned.
 
