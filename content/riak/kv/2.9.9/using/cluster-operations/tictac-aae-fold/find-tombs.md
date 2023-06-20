@@ -46,13 +46,14 @@ Run this using [`riak attach`][riak attach].
 
 ```riakattach
 riak_client:aae_fold({
-    find_tombs, 
-    bucket_filter, 
-    key_range_filter, 
+    find_tombs,
+    bucket_filter,
+    key_range_filter,
     segment_filter
     modified_filter
     }, Client).
 ```
+
 Please see the list of [available filters](#available-filters) below.
 
 For example, the following snippet will find all tombstones with the filters:
@@ -63,8 +64,8 @@ For example, the following snippet will find all tombstones with the filters:
 
 ```riakattach
 riak_client:aae_fold({
-    find_tombs, 
-    {<<"animals">>,<<"dogs">>}, 
+    find_tombs,
+    {<<"animals">>,<<"dogs">>},
     {<<"A">>,<<"N">>},
     all,
     {date,1640995200,1643673600}
@@ -105,5 +106,3 @@ These filters will reduce the keys to be searched:
 These filters will reduce the number of keys considered for reaping or counting:
 
 - [`modified_filter`][filter-by modified]
-
-

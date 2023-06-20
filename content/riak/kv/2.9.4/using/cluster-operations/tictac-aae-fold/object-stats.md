@@ -8,7 +8,7 @@ menu:
   riak_kv-2.9.4:
     name: "Object Statistics"
     identifier: "cluster_operations_tictac_aae_fold_object_stats"
-    weight: 105
+    weight: 107
     parent: "cluster_operations_tictac_aae_fold"
 toc: true
 since: 2.9.4
@@ -46,9 +46,9 @@ Run this using [`riak attach`][riak attach].
 
 ```riakattach
 riak_client:aae_fold({
-    object_stats, 
-    bucket_filter, 
-    key_range_filter, 
+    object_stats,
+    bucket_filter,
+    key_range_filter,
     modified_filter
     }, Client).
 ```
@@ -63,8 +63,8 @@ For example, the following snippet will count all objects with the filters:
 
 ```riakattach
 riak_client:aae_fold({
-    object_stats, 
-    {<<"animals">>,<<"dogs">>}, 
+    object_stats,
+    {<<"animals">>,<<"dogs">>},
     {<<"A">>,<<"N">>},
     {date,1640995200,1643673600}
     }, Client).

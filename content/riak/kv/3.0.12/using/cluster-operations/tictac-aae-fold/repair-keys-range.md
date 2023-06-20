@@ -8,7 +8,7 @@ menu:
   riak_kv-3.0.12:
     name: "Repair Keys"
     identifier: "cluster_operations_tictac_aae_fold_repair_keys_range"
-    weight: 108
+    weight: 110
     parent: "cluster_operations_tictac_aae_fold"
 toc: true
 since: 3.0.8
@@ -52,13 +52,14 @@ The format for the function is:
 
 ```riakattach
 riak_client:aae_fold({
-    repair_keys_range, 
-    bucket_filter, 
-    key_range_filter, 
+    repair_keys_range,
+    bucket_filter,
+    key_range_filter,
     modified_filter,
     all
     }, Client).
 ```
+
 Please see the list of [available filters](#available-filters) below.
 
 {{% note %}}
@@ -73,8 +74,8 @@ For example, the following snippet will perform a read-repair on all Riak object
 
 ```riakattach
 riak_client:aae_fold({
-    repair_keys_range, 
-    {<<"animals">>,<<"dogs">>}, 
+    repair_keys_range,
+    {<<"animals">>,<<"dogs">>},
     {<<"A">>,<<"N">>},
     {date,1640995200,1672531200},
     all
@@ -111,5 +112,3 @@ These filters will reduce the keys to be searched:
 These filters will reduce the number of keys considered for reaping or counting:
 
 - [`modified_filter`][filter-by modified]
-
-

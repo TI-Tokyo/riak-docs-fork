@@ -18,8 +18,6 @@ aliases:
   - /riak/kv/2.9.7/installing/mac-osx/
 ---
 
-
-
 [perf open files]: {{<baseurl>}}riak/kv/2.9.7/using/performance/open-files-limit
 [install source erlang]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/source/erlang
 [install verify]: {{<baseurl>}}riak/kv/2.9.7/setup/installing/verify
@@ -32,6 +30,8 @@ The following steps are known to work with Mac OS X 10.8 and higher. You can ins
 backend that uses very few file handles, it's possible to run out. See
 [Open Files Limit][perf open files] for more information about changing the limit.
 
+**Note on M1+ CPU based Macs**
+Please note that Riak KV is available only for x86_64 based Macs and M1+ macs are not currently supported.
 
 ## From Precompiled Tarballs
 
@@ -114,8 +114,4 @@ system (Snow Leopard and higher: 64bit).
 ## Next Steps
 
 Now that Riak is installed, check out [Verifying a Riak Installation][install verify].
-
-
-
-
 

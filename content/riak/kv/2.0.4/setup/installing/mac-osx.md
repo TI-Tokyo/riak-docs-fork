@@ -18,8 +18,6 @@ aliases:
   - /riak/kv/2.0.4/installing/mac-osx/
 ---
 
-
-
 [perf open files]: {{<baseurl>}}riak/kv/2.0.4/using/performance/open-files-limit
 [install source erlang]: {{<baseurl>}}riak/kv/2.0.4/setup/installing/source/erlang
 [install verify]: {{<baseurl>}}riak/kv/2.0.4/setup/installing/verify
@@ -34,6 +32,8 @@ precompiled tarball.
 backend that uses very few file handles, it's possible to run out. See
 [Open Files Limit][perf open files] for more information about changing the limit.
 
+**Note on M1+ CPU based Macs**
+Please note that Riak KV is available only for x86_64 based Macs and M1+ macs are not currently supported.
 
 ## From Precompiled Tarballs
 
