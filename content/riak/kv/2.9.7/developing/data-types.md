@@ -271,4 +271,3 @@ the search platform behind Riak Search.
 
 In our Search documentation we offer a [full tutorial](../usage/searching-data-types) as well as a variety of [examples](../usage/searching-data-types/), including code
 samples from each of our official client libraries.
-

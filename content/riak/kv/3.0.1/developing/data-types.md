@@ -263,4 +263,3 @@ $updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
 The pages listed above detail using Riak data types at the application level using Basho's [officially supported Riak KV clients](../client-libraries). For more on getting started with client libraries check out the [Developing with Riak KV: Getting Started](../getting-started) section.
 
 All the examples use the bucket type names from above (`counters`, `sets`, and `maps`). You're free to substitute your own bucket type names if you wish.
-
