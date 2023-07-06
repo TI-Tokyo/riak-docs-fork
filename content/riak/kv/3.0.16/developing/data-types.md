@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types"
 description: ""
 project: "riak_kv"
-project_version: 3.0.15
+project_version: 3.0.16
 menu:
-  riak_kv-3.0.15:
+  riak_kv-3.0.16:
     name: "Data Types"
     identifier: "developing_data_types"
     weight: 102
     parent: "developing"
 toc: true
 aliases:
-  - /riak/3.0.15/dev/using/data-types
-  - /riak/kv/3.0.15/dev/using/data-types
-  - /riak/3.0.15/dev/data-modeling/data-types
-  - /riak/kv/3.0.15/dev/data-modeling/data-types
+  - /riak/3.0.16/dev/using/data-types
+  - /riak/kv/3.0.16/dev/using/data-types
+  - /riak/3.0.16/dev/data-modeling/data-types
+  - /riak/kv/3.0.16/dev/data-modeling/data-types
 ---
 
 [wiki crdt]: https://en.wikipedia.org/wiki/Conflict-free_replicated_data_type#Others
@@ -24,12 +24,12 @@ aliases:
 
 Riak KV has Riak-specific data types based on [convergent replicated data types (CRDTs)][wiki crdt]. While Riak KV was built as a data-agnostic key/value store, Riak data types enable you to use Riak KV as a data-aware system and perform transactions on 6 CRDT-inspired data types:
 
-- [Counters](./counters)
 - [Flags](./maps#flags)
+- [Registers](./maps#registers)
+- [Counters](./counters)
+- [Sets](./sets)
 - [GSets](./gsets)
 - [Maps](./maps)
-- [Registers](./maps#registers)
-- [Sets](./sets)
 
 Riak KV also has 1 context-free data type, that has similar usage but does not require contexts.
 

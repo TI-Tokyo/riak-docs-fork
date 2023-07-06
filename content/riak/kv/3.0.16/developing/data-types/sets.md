@@ -3,19 +3,19 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: Sets"
 description: ""
 project: "riak_kv"
-project_version: 3.0.15
+project_version: 3.0.16
 menu:
-  riak_kv-3.0.15:
+  riak_kv-3.0.16:
     name: "Sets"
     identifier: "data_types_sets"
     weight: 104
     parent: "developing_data_types"
 toc: true
 aliases:
-  - /riak/3.0.15/dev/using/data-types/sets
-  - /riak/kv/3.0.15/dev/using/data-types/sets
-  - /riak/3.0.15/dev/data-modeling/data-types/sets
-  - /riak/kv/3.0.15/dev/data-modeling/data-types/sets
+  - /riak/3.0.16/dev/using/data-types/sets
+  - /riak/kv/3.0.16/dev/using/data-types/sets
+  - /riak/3.0.16/dev/data-modeling/data-types/sets
+  - /riak/kv/3.0.16/dev/data-modeling/data-types/sets
 ---
 
 Sets are a bucket-level Riak data type that can be used by themselves, associated with a bucket/key pair, or used [within a map](../maps#sets-within-maps).
