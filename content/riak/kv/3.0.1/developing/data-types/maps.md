@@ -8,7 +8,7 @@ menu:
   riak_kv-3.0.1:
     name: "Maps"
     identifier: "data_types_maps"
-    weight: 102
+    weight: 103
     parent: "developing_data_types"
 toc: true
 aliases:
@@ -1879,4 +1879,3 @@ curl -XPOST http://localhost:8098/types/maps/buckets/customers/datatypes/ahmed_i
   }
   '
 ```
-
