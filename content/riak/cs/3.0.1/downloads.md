@@ -9,7 +9,7 @@ menu:
     pre: download-alt
 project: "riak_cs"
 project_version: "3.0.1"
-toc: false
+toc: true
 layout: downloads
 listed_projects:
   - project: "riak_cs"
