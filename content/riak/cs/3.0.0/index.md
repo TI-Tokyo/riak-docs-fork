@@ -14,7 +14,7 @@ aliases:
 ---
 
 Riak CS (Cloud Storage) is easy-to-use object storage software built on top of
-[Riak KV](http://basho.com/riak/), Basho's distributed database. Riak CS is
+[Riak KV]({{<baseurl>}}riak/kv/latest/), Basho's distributed database. Riak CS is
 designed to provide simple, available, distributed cloud storage at any scale,
 and can be used to build cloud architectures---be they public or private---or
 as storage infrastructure for heavy-duty applications and services. Riak CS's
