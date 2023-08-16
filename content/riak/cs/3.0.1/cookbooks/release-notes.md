@@ -632,7 +632,7 @@ supporting Riak CS.
 In older versions of Riak, default bucket properties has been configured in the
 `app.config` as follows:
 
-```erlang
+```erlangsnippet
 {riak_core, [
    ...
    {default_bucket_props, [{allow_mult, true}]},
@@ -663,7 +663,7 @@ You will need to copy all riak_kv configuration items from `app.config` into
 `advanced.config`, and update `add_paths` to target the new Riak CS binaries
 installed by the Riak CS 2.0.0 package. In `advanced.config`, this will become:
 
-```erlang
+```erlangsnippet
 {riak_kv, [
   {add_paths, ["/usr/lib/riak-cs/lib/riak_cs-2.0.0/ebin"]}
 ]}.
