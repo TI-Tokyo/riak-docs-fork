@@ -13803,6 +13803,10 @@ functionality of Edge Faders.
     'language-log': {
       display_name: ' ',
       highlight_as: ''
+    },
+    'language-erlangsnippet': {
+      display_name: ' ',
+      highlight_as: 'language-erlang'
     }
   };
 
@@ -13812,7 +13816,7 @@ functionality of Edge Faders.
   };
 
   $('pre > code').each(function(index) {
-    var $code, $pre, $siblings, highlight_as, language, ref;
+    var $code, $pre, $siblings, display_name, highlight_as, language, ref, ref1;
     $code = $(this);
     $pre = $code.parent();
     language = getLanguage($code);
@@ -13839,7 +13843,8 @@ functionality of Edge Faders.
       return;
     }
     $siblings = $pre.nextUntil(':not(pre)');
-    if (language && $siblings.length === 0) {
+    display_name = (ref1 = language_transforms[language]) != null ? ref1.display_name.replace(/^\s+|\s+$/g, "") : void 0;
+    if (display_name && $siblings.length === 0) {
       $pre.wrap('<div class="code-block--titled">');
     }
     if ($siblings.length) {
