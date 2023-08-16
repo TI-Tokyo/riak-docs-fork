@@ -5,11 +5,11 @@ menu:
   riak_cs-3.0.1:
     name: "Download Riak CS"
     identifier: "download_riak_cs"
-    weight: 100
-    parent: "index"
+    weight: 101
+    pre: download-alt
 project: "riak_cs"
 project_version: "3.0.1"
-toc: true
+toc: false
 layout: downloads
 listed_projects:
   - project: "riak_cs"
