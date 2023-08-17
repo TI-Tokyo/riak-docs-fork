@@ -162,7 +162,7 @@ It should now read:
 ]},
 ```
 
-and so on. More details can be found at [configuring Riak CS]({{<baseurl>}}riak/cs/3.1.0/configuring/riak-cs)).
+and so on. More details can be found at [configuring Riak CS]({{<baseurl>}}riak/cs/3.1.0/configuring/riak-cs).
     {{% /note %}}
 
     {{% note title="Note on Memory Sizing" %}}
@@ -192,7 +192,6 @@ Release Notes</a> for more details.
 
     ```bash
     riak start
-    stanchion start
     riak-cs start
     ```
 
