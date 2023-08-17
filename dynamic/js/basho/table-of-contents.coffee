@@ -39,7 +39,8 @@ h2s.each ->
   # from the text of the header before using it as a local link.
   toc_items.append($("<li/>", {
         class : "table-of-contents__item",
-        html  : "<a href=#{window.location.href.split('#')[0]}##{$that.attr('id')}>#{$that.text()}</a>"
+        # html  : "<a href=#{window.location.href.split('#')[0]}##{$that.attr('id')}>#{$that.text()}</a>"
+        html  : "<a href=##{$that.attr('id')}>#{$that.text()}</a>"
       }))
 
 
