@@ -12,7 +12,6 @@ project_version: "3.0.1"
 aliases:
   - /riakcs/3.0.1/cookbooks/tutorials/fast-track/
   - /riak/cs/3.0.1/cookbooks/tutorials/fast-track/
-  - /riak/cs/latest/tutorials/fast-track/
 ---
 
 Riak CS (Cloud Storage) is simple, open source storage software built on
