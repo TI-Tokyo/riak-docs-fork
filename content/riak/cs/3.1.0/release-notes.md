@@ -5,7 +5,7 @@ menu:
   riak_cs-3.1.0:
     name: "Release Notes"
     identifier: "reference_release_notes"
-    weight: 100
+    weight: 110
     parent: "index"
 project: "riak_cs"
 project_version: "3.1.0"
