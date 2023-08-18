@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/multi-datacenter-overview/"
+  - /riak/cs/latest/references/appendices/comparisons/swift/
+  - /riakcs/latest/references/appendices/comparisons/swift/
+  - /riakcs/latest/learning/comparisons/swift/
 ---
 
 # Redirect page

@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/references/appendices/comparisons/swift/"
+  - /riak/cs/latest/theory/
+  - /riakcs/latest/theory/
+  - /riakcs/latest/learning/
 ---
 
 # Redirect page

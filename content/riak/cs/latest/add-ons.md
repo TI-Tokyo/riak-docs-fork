@@ -4,7 +4,6 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/command-line-tools/"
 ---
 
 # Redirect page

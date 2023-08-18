@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/theory/comparisons/"
+  - /riak/cs/latest/references/appendices/riak-cs-control/
+  - /riakcs/latest/references/appendices/riak-cs-control/
+  - /riakcs/latest/add-ons/riak-cs-control/
 ---
 
 # Redirect page

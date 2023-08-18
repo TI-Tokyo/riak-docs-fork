@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/monitoring-and-metrics/"
+  - /riak/cs/latest/cookbooks/rolling-upgrades/
+  - /riakcs/latest/cookbooks/rolling-upgrades/
+  - /riakcs/latest/setup/upgrading/
 ---
 
 # Redirect page

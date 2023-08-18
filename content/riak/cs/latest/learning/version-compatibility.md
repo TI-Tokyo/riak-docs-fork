@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/references/appendices/comparisons/atmos/"
+  - /riak/cs/latest/cookbooks/version-compatibility/
+  - /riakcs/latest/cookbooks/version-compatibility/
+  - /riakcs/latest/learning/version-compatibility/
 ---
 
 # Redirect page

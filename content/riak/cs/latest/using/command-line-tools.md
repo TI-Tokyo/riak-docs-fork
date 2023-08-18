@@ -4,7 +4,8 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/multipart-upload-overview/"
+  - /riak/cs/latest/cookbooks/command-line-tools/
+  - /riakcs/latest/cookbooks/command-line-tools/
 ---
 
 # Redirect page

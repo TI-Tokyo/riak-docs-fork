@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/garbage-collection/"
+  - /riak/cs/latest/references/appendices/comparisons/atmos/
+  - /riakcs/latest/references/appendices/comparisons/atmos/
+  - /riakcs/latest/learning/comparisons/atmos/
 ---
 
 # Redirect page

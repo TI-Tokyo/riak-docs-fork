@@ -4,7 +4,8 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/version-compatibility/"
+  - /riak/cs/latest/cookbooks/installing/launching-and-stopping/
+  - /riakcs/latest/cookbooks/installing/launching-and-stopping/
 ---
 
 # Redirect page

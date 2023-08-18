@@ -4,7 +4,10 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/theory/"
+  - /riakcs/latest/cookbooks/multi-datacenter-overview/
+  - /riak/cs/latest/cookbooks/mdc-overview/
+  - /riak/cs/latest/cookbooks/multi-datacenter-overview/
+  - /riakcs/latest/learning/multi-datacenter-overview/
 ---
 
 # Redirect page
