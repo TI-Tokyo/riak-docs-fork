@@ -25,7 +25,7 @@ CS cluster.
 
 As of Riak release 1.4.0, there are two different MDC replication modes
 that Riak CS can use to request data from remote clusters. Please see
-the [comparison]({{<baseurl>}}riak/kv/2.1.3/using/reference/multi-datacenter/comparison) doc for more information.
+the [comparison]({{<baseurl>}}riak/kv/3.0.9/using/reference/multi-datacenter/comparison) doc for more information.
 
 ### Replication Version 3 Configuration
 
@@ -72,9 +72,9 @@ configured **sink cluster**.
 
 See also:
 
-<!-- * [Upgrading from v2 to v3]({{<baseurl>}}riak/kv/2.1.3/setup/upgrading/multi-datacenter) -->
-* [Comparing v2 and v3]({{<baseurl>}}riak/kv/2.1.3/using/reference/multi-datacenter/comparison)
-* [Multi-Datacenter Operations]({{<baseurl>}}riak/kv/2.1.3/using/cluster-operations/v3-multi-datacenter)
+<!-- * [Upgrading from v2 to v3]({{<baseurl>}}riak/kv/3.0.9/setup/upgrading/multi-datacenter) -->
+* [Comparing v2 and v3]({{<baseurl>}}riak/kv/3.0.9/using/reference/multi-datacenter/comparison)
+* [Multi-Datacenter Operations]({{<baseurl>}}riak/kv/3.0.9/using/cluster-operations/v3-multi-datacenter)
 
 ## Riak CS Configuration
 

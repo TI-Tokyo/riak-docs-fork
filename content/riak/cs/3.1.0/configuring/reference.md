@@ -132,7 +132,7 @@ The tables below will show settings for both `riak-cs.conf` and
 <tr>
 <td><code>riak_host</code></td>
 <td>The IP address/port for the Riak CS node's corresponding Riak node (used by
-Riak's <a href="{{< baseurl >}}riak/kv/2.1.3/developing/api/protocol-buffers">Protocol Buffers</a> interface)
+Riak's <a href="{{< baseurl >}}riak/kv/3.0.9/developing/api/protocol-buffers">Protocol Buffers</a> interface)
 <td><code>127.0.0.1:8087</code></td>
 </tr>
 <tr>
@@ -159,7 +159,7 @@ the corresponding HTTP host).</td>
 <tr>
 <td><code>riak_host</code></td>
 <td>The TCP IP/port for the Riak CS node's corresponding Riak node (used by
-Riak's <a href="{{< baseurl >}}riak/kv/2.1.3/developing/api/protocol-buffers">Protocol Buffers</a> interface)
+Riak's <a href="{{< baseurl >}}riak/kv/3.0.9/developing/api/protocol-buffers">Protocol Buffers</a> interface)
 <td><code>{"127.0.0.1", 8087}</code></td>
 </tr>
 <tr>

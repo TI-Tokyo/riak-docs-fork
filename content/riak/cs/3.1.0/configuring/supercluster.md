@@ -17,7 +17,7 @@ aliases:
 ---
 
 While Riak CS enables you to distribute Riak CS objects across multiple data centers in a
-[source/sink pattern]({{<baseurl>}}riak/kv/2.1.3/using/reference/v3-multi-datacenter/architecture), all linked clusters are treated the same.
+[source/sink pattern]({{<baseurl>}}riak/kv/3.0.9/using/reference/v3-multi-datacenter/architecture), all linked clusters are treated the same.
 However, from Riak CS version 1.5.0, **supercluster** support has been added.
 
 With supercluster support, you can store object manifests and blocks in
