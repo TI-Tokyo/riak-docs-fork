@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/tutorials/fast-track/virtual-test-environment/"
+  - /riak/cs/latest/cookbooks/configuration/reference/
+  - /riakcs/latest/cookbooks/configuration/reference/
+  - /riakcs/latest/configuring/reference/
 ---
 
 # Redirect page

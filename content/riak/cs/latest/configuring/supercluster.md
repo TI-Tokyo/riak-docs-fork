@@ -4,8 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - /riakcs/latest/downloads/
-  - /riak/cs/latest/downloads/
+  - /riak/cs/latest/cookbooks/supercluster/
+  - /riakcs/latest/cookbooks/supercluster/
+  - /riakcs/latest/configuring/supercluster/
 ---
 
 # Redirect page

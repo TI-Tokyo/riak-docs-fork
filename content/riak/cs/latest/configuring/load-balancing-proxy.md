@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/installing/"
+  - /riak/cs/latest/cookbooks/configuration/load-balancing-proxy/
+  - /riakcs/latest/cookbooks/configuration/load-balancing-proxy/
+  - /riakcs/latest/configuring/load-balancing-proxy/
 ---
 
 # Redirect page

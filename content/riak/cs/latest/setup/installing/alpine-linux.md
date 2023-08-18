@@ -4,7 +4,6 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/tutorials/fast-track/what-is-riak-cs/"
 ---
 
 # Redirect page

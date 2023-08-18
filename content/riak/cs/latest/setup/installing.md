@@ -4,7 +4,10 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/cookbooks/configuration/riak-for-cs/"
+  - /riakcs/latest/cookbooks/installing/Riak-CS-Using-Chef/
+  - /riak/cs/latest/cookbooks/installing/Riak-CS-Using-Chef/
+  - /riak/cs/latest/cookbooks/installing/chef/
+  - /riakcs/latest/cookbooks/installing/chef/
 ---
 
 # Redirect page

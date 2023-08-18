@@ -4,8 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - /riakcs/latest/downloads/
-  - /riak/cs/latest/downloads/
+  - /riak/cs/latest/tutorials/quick-guide/what-is-riak-cs/
+  - /riakcs/latest/tutorials/quick-guide/what-is-riak-cs/
+  
 ---
 
 # Redirect page

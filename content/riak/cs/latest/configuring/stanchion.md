@@ -4,7 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakcs/latest/tutorials/fast-track/local-testing-environment/"
+  - /riak/cs/latest/cookbooks/configuration/stanchion/
+  - /riakcs/latest/cookbooks/configuration/stanchion/
+  - /riakcs/latest/configuring/stanchion/
 ---
 
 # Redirect page
