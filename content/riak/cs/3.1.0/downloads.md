@@ -15,6 +15,7 @@ listed_projects:
   - project: "riak_cs"
     version: "3.1.0"
     title: "Riak CS"
+    install_instructions_set: "setup/installing"
   - project: "riak_cs_control"
     version: "1.0.2"
     title: "Riak CS Control"
