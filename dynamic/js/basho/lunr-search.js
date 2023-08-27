@@ -1,38 +1,42 @@
 window.addEventListener("DOMContentLoaded", function(event)
 {
-  var searchIndices  = {};
-  var indexedItems = {};
+  var searchIndices  = null;
+  var indexedItems = null;
   var queuedTerm = null;
   var queuedProject = null;
   var queuedVersion = null;
-  var projectDescriptions = null;
+  var searchProjectDescriptions = null;
 
-  var form = document.getElementById("lunrsearch");
-  var searchTermElement = document.getElementById("lunrsearch-term");
-  var searchProjectElement = document.getElementById("lunrsearch-project");
-  var searchVersionElement = document.getElementById("lunrsearch-version");
   var metaDocsRootURL = $('meta[name=docs_root_url]').attr('content');
   
-    // ensure project descriptions are available
-  var pathProjectDescriptions = metaDocsRootURL + 'data/project_descriptions.json'
+  // ensure project descriptions are available
+  var pathProjectDescriptions = metaDocsRootURL + "data/project_descriptions.json";
   var requestProjectDescriptions = new XMLHttpRequest();
   requestProjectDescriptions.open("GET", pathProjectDescriptions);
   requestProjectDescriptions.responseType = "json";
   requestProjectDescriptions.addEventListener("load", function(event)
   {
-    projectDescriptions = requestProjectDescriptions.response;
+    searchProjectDescriptions = requestProjectDescriptions.response;
+    searchIndices  = {};
+    indexedItems = {};
 
+    var form = document.getElementById("lunrsearch");
+  
     // Enable search
     form.addEventListener("submit", function(event)
     {
         event.preventDefault();
+
+        var searchTermElement = document.getElementById("lunrsearch-term");
+        var searchProjectElement = document.getElementById("lunrsearch-project");
+        var searchVersionElement = document.getElementById("lunrsearch-version");
 
         var searchTerm = searchTermElement.value.trim();
         var searchProject = searchProjectElement.value.trim();
         var searchVersion = searchVersionElement.value.trim();
         
         if (!searchTerm)
-        return;
+          return;
 
         startSearch(searchTerm, searchProject, searchVersion);
     }, false);
@@ -75,7 +79,6 @@ window.addEventListener("DOMContentLoaded", function(event)
     queuedProject = null;
     queuedVersion = null;
 }
-
   function initIndex(searchProject, searchVersion)
   {
     if (!searchIndices[searchProject]) {
@@ -101,24 +104,24 @@ window.addEventListener("DOMContentLoaded", function(event)
     request.responseType = "json";
     request.addEventListener("load", function(event)
     {
-      searchIndices[searchProject][searchVersion] = lunr(function()
-      {
+      searchIndices[searchProject][searchVersion] = lunr(function(){
         this.ref("uri");
-
         // If you added more searchable fields to the search index, list them here.
         this.field("title");
         this.field("content");
         this.field("description");
         this.field("project");
         this.field("version");
-
-        for (var doc of request.response)
+        var response = request.response;
+        for (var i = 0; i < response.length; i++)
         {
+          var doc = response[i];
           this.add(doc);
           // store the indexed item if not already stored
           if (!indexedItems[doc.uri])
             indexedItems[doc.uri] = doc;
         }
+
       });
 
       // Search index is ready, perform the search now if still the right search index
@@ -127,8 +130,7 @@ window.addEventListener("DOMContentLoaded", function(event)
     }, false);
     request.addEventListener("error", searchDone, false);
     request.send(null);
-  }
-
+}
   function search(searchTerm, searchProject, searchVersion)
   {
     var results = searchIndices[searchProject][searchVersion].search(searchTerm);
@@ -146,7 +148,7 @@ window.addEventListener("DOMContentLoaded", function(event)
     var titleTemplate = document.getElementById("search-result-title");
     var titleElement = titleTemplate.content.cloneNode(true);
     if (searchProject) {
-        titleElement.querySelector(".title-project-name").innerHTML = projectDescriptions[searchProject].project_name_html;
+        titleElement.querySelector(".title-project-name").innerHTML = searchProjectDescriptions[searchProject].project_name_html;
         if (searchVersion) {
             titleElement.querySelector(".title-project-version").textContent = searchVersion;
         }
@@ -154,12 +156,12 @@ window.addEventListener("DOMContentLoaded", function(event)
 
     var titleText = "";
 
-    if (results.length == 0)
-        titleText = `No results found for “${searchTerm}”`;
+    if (results.length === 0)
+        titleText = '`No results found for “${searchTerm}”';
     else if (results.length == 1)
-        titleText = `Found one result for “${searchTerm}”`;
+        titleText = 'Found one result for “${searchTerm}”';
     else
-        titleText = `Found ${results.length} results for “${searchTerm}”`;
+        titleText = 'Found ${results.length} results for “${searchTerm}”';
 
     titleElement.querySelector(".title-text").textContent = titleText;
 
@@ -167,8 +169,9 @@ window.addEventListener("DOMContentLoaded", function(event)
     document.title = titleText;
 
     var resultItemTemplate = document.getElementById("search-result-item");
-    for (var result of results)
+    for (var i = 0; i < results.length; i++)
     {
+      var result = results[i];
       var doc = indexedItems[result.ref];
 
       // Fill out search result template, adjust as needed.
@@ -176,7 +179,7 @@ window.addEventListener("DOMContentLoaded", function(event)
       element.querySelector(".result-title-link").href = element.querySelector(".result-read-more-link").href = doc.uri;
       element.querySelector(".result-title-link").textContent = doc.title;
       if (doc.project) {
-        element.querySelector(".result-project-name").innerHTML = projectDescriptions[doc.project].project_name_html;
+        element.querySelector(".result-project-name").innerHTML = searchProjectDescriptions[doc.project].project_name_html;
         if (doc.version) {
             element.querySelector(".result-project-version").textContent = doc.version;
         }
@@ -187,7 +190,7 @@ window.addEventListener("DOMContentLoaded", function(event)
     titleElement.scrollIntoView(true);
 
     searchDone();
-  }
+}
 
   // This matches Hugo's own summary logic:
   // https://github.com/gohugoio/hugo/blob/b5f39d23b8/helpers/content.go#L543
