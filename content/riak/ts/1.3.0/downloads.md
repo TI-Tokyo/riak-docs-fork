@@ -18,4 +18,4 @@ listed_projects:
       install_instructions_set: "installing"
 aliases:
     - /riakts/1.3.0/downloads/
-
+---
