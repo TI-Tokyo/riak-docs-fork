@@ -7,6 +7,7 @@ window.addEventListener("DOMContentLoaded", function(event)
   var queuedVersion = null;
   var searchProjectDescriptions = null;
 
+  var form = document.getElementById("lunrsearch");
   var metaDocsRootURL = $('meta[name=docs_root_url]').attr('content');
   
   // ensure project descriptions are available
@@ -20,28 +21,36 @@ window.addEventListener("DOMContentLoaded", function(event)
     searchIndices  = {};
     indexedItems = {};
 
-    var form = document.getElementById("lunrsearch");
   
     // Enable search
-    form.addEventListener("submit", function(event)
+    addSearchSubmitEventListener(form);
+  }, false);
+  requestProjectDescriptions.send(null);
+
+  function addSearchSubmitEventListener(formElement) {
+    // Enable search
+    formElement.addEventListener("submit", function(event)
     {
         event.preventDefault();
 
-        var searchTermElement = document.getElementById("lunrsearch-term");
-        var searchProjectElement = document.getElementById("lunrsearch-project");
-        var searchVersionElement = document.getElementById("lunrsearch-version");
+        var searchTermElement = formElement.querySelector(".lunrsearch-term");
+        var searchProjectElement = formElement.querySelector(".lunrsearch-project");
+        var searchVersionElement = formElement.querySelector(".lunrsearch-version");
 
         var searchTerm = searchTermElement.value.trim();
         var searchProject = searchProjectElement.value.trim();
         var searchVersion = searchVersionElement.value.trim();
-        
+
+        console.log("Search term: " + searchTerm);
+        console.log("Search project: " + searchProject);
+        console.log("Search version: " + searchVersion);
+
         if (!searchTerm)
           return;
 
         startSearch(searchTerm, searchProject, searchVersion);
-    }, false);
-  }, false);
-  requestProjectDescriptions.send(null);
+    }, false);    
+  }
 
   function startSearch(searchTerm, searchProject, searchVersion)
   {
@@ -157,13 +166,20 @@ window.addEventListener("DOMContentLoaded", function(event)
     var titleText = "";
 
     if (results.length === 0)
-        titleText = '`No results found for “${searchTerm}”';
+        titleText = 'No results found for “' + searchTerm + '”';
     else if (results.length == 1)
-        titleText = 'Found one result for “${searchTerm}”';
+        titleText = 'Found only one result for “' + searchTerm + '”';
     else
-        titleText = 'Found ${results.length} results for “${searchTerm}”';
+        titleText = 'Found ' + results.length + ' results for “' + searchTerm + '”';
 
     titleElement.querySelector(".title-text").textContent = titleText;
+    // also update the search term in the nav menu
+    titleElement.querySelector(".lunrsearch-term").value = form.querySelector(".lunrsearch-term").value = searchTerm;
+    // do not update the verison or project search in the nav menu
+    titleElement.querySelector(".lunrsearch-project").value = searchProject;
+    titleElement.querySelector(".lunrsearch-version").value = searchVersion;
+    
+    addSearchSubmitEventListener(titleElement.querySelector(".search-redo-form"));
 
     titleContainer.appendChild(titleElement);
     document.title = titleText;
@@ -177,7 +193,11 @@ window.addEventListener("DOMContentLoaded", function(event)
       // Fill out search result template, adjust as needed.
       var element = resultItemTemplate.content.cloneNode(true);
       element.querySelector(".result-title-link").href = element.querySelector(".result-read-more-link").href = doc.uri;
-      element.querySelector(".result-title-link").textContent = doc.title;
+      if (doc.title_supertext) {
+        element.querySelector(".result-title-link").textContent = doc.title_supertext + " " + doc.title;
+      } else {
+        element.querySelector(".result-title-link").textContent = doc.title;
+      }
       if (doc.project) {
         element.querySelector(".result-project-name").innerHTML = searchProjectDescriptions[doc.project].project_name_html;
         if (doc.version) {
@@ -187,7 +207,8 @@ window.addEventListener("DOMContentLoaded", function(event)
       element.querySelector(".result-summary").textContent = truncate(doc.content, 30);
       resultsContainer.appendChild(element);
     }
-    titleElement.scrollIntoView(true);
+    //titleContainer.querySelector(".front-matter__title--supertext").scrollIntoView({ behavior: "smooth" });
+    window.scrollTo(0,0);
 
     searchDone();
 }
