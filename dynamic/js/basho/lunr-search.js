@@ -54,6 +54,10 @@ window.addEventListener("DOMContentLoaded", function(event)
         if (!searchTerm)
           return;
 
+        // if the nav is open then close it
+        if (document.querySelector(".content-nav.content-nav--fullscreen")) {
+          document.querySelector(".menu-bars").click();
+        }
         startSearch(searchTerm, searchProject, searchVersion);
     }, false);    
   }
