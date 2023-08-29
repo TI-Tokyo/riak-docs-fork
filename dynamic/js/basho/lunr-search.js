@@ -10,22 +10,26 @@ window.addEventListener("DOMContentLoaded", function(event)
   var form = document.getElementById("lunrsearch");
   var metaDocsRootURL = $('meta[name=docs_root_url]').attr('content');
   
-  // ensure project descriptions are available
-  var pathProjectDescriptions = metaDocsRootURL + "data/project_descriptions.json";
-  var requestProjectDescriptions = new XMLHttpRequest();
-  requestProjectDescriptions.open("GET", pathProjectDescriptions);
-  requestProjectDescriptions.responseType = "json";
-  requestProjectDescriptions.addEventListener("load", function(event)
+  // if a search form is defined, then set it up
+  if (form)
   {
-    searchProjectDescriptions = requestProjectDescriptions.response;
-    searchIndices  = {};
-    indexedItems = {};
+    // ensure project descriptions are available
+    var pathProjectDescriptions = metaDocsRootURL + "data/project_descriptions.json";
+    var requestProjectDescriptions = new XMLHttpRequest();
+    requestProjectDescriptions.open("GET", pathProjectDescriptions);
+    requestProjectDescriptions.responseType = "json";
+    requestProjectDescriptions.addEventListener("load", function(event)
+    {
+      searchProjectDescriptions = requestProjectDescriptions.response;
+      searchIndices  = {};
+      indexedItems = {};
 
-  
-    // Enable search
-    addSearchSubmitEventListener(form);
-  }, false);
-  requestProjectDescriptions.send(null);
+    
+      // Enable search
+      addSearchSubmitEventListener(form);
+    }, false);
+    requestProjectDescriptions.send(null);
+  }
 
   function addSearchSubmitEventListener(formElement) {
     // Enable search
@@ -41,9 +45,11 @@ window.addEventListener("DOMContentLoaded", function(event)
         var searchProject = searchProjectElement.value.trim();
         var searchVersion = searchVersionElement.value.trim();
 
+        /*
         console.log("Search term: " + searchTerm);
         console.log("Search project: " + searchProject);
         console.log("Search version: " + searchVersion);
+        */
 
         if (!searchTerm)
           return;
@@ -116,16 +122,22 @@ window.addEventListener("DOMContentLoaded", function(event)
       searchIndices[searchProject][searchVersion] = lunr(function(){
         this.ref("uri");
         // If you added more searchable fields to the search index, list them here.
-        this.field("title");
+        this.field("title", { boost: 5 });
+        this.field("title_supertext");
         this.field("content");
-        this.field("description");
+        this.field("description", { boost: 2 });
         this.field("project");
         this.field("version");
+        this.field("keywords", { boost: 20 });
         var response = request.response;
         for (var i = 0; i < response.length; i++)
         {
           var doc = response[i];
-          this.add(doc);
+          if (doc.search_boost) {
+            this.add(doc, { boost: doc.search_boost });
+          } else {
+            this.add(doc);
+          }
           // store the indexed item if not already stored
           if (!indexedItems[doc.uri])
             indexedItems[doc.uri] = doc;
