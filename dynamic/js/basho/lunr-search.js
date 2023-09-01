@@ -221,6 +221,7 @@ window.addEventListener("DOMContentLoaded", function(event)
         }
       }
       element.querySelector(".result-summary").textContent = truncate(doc.content, 30);
+      element.querySelector(".result-score").textContent = "(score:" + result.score + ")"
       resultsContainer.appendChild(element);
     }
     //titleContainer.querySelector(".front-matter__title--supertext").scrollIntoView({ behavior: "smooth" });
