@@ -11,9 +11,9 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.1.0/cookbooks/configuration/Load-Balancing-and-Proxy-Configuration/
-  - /riak/cs/3.1.0/cookbooks/configuration/Load-Balancing-and-Proxy-Configuration/
-  - /riak/cs/latest/cookbooks/configuration/load-balancing-proxy/
+  - /riakcs/3.1.0/configuring/Load-Balancing-and-Proxy-Configuration/
+  - /riak/cs/3.1.0/configuring/Load-Balancing-and-Proxy-Configuration/
+  - /riak/cs/latest/configuring/load-balancing-proxy/
 ---
 
 If you plan on using Riak CS in production, we highly recommend that you

@@ -29,7 +29,7 @@ aliases:
 [riak_cs_1.5_release_notes_incomplete_mutipart]: https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#incomplete-multipart-uploads
 [riak_cs_1.5_release_notes_leeway_and_disk]: https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#leeway-seconds-and-disk-space
 [upgrading_to_2.0]: {{<baseurl>}}riak/2.0.5/upgrade-v20/
-[proper_backend]: {{<baseurl>}}riak/cs/2.0.0/cookbooks/configuration/Configuring-Riak/#Setting-up-the-Proper-Riak-Backend
+[proper_backend]: {{<baseurl>}}riak/cs/2.0.0/configuring/Configuring-Riak/#Setting-up-the-Proper-Riak-Backend
 [configuring_elvevedb]: {{<baseurl>}}riak/latest/ops/advanced/backends/leveldb/#Configuring-eLevelDB
 [bitcask_capactiy_planning]: {{<baseurl>}}riak/2.0.5/ops/building/planning/bitcask/
 [upgrading_your_configuration]: {{<baseurl>}}riak/2.0.5/upgrade-v20/#Upgrading-Your-Configuration-System

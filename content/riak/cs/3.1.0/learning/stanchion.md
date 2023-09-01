@@ -54,7 +54,7 @@ rejected.
 The uniqueness of these entities is enforced by serializing any creation
 or modification requests that involve them. This process is handled by
 Stanchion. What happens under the hood is essentially that Stanchion
-mandates that all [vnodes]({{<baseurl>}}riak/kv/2.1.3/learn/glossary#vnode) in the underlying Riak cluster that are responsible for the user or bucket being created must be available at creation time.
+mandates that all [vnodes]({{<baseurl>}}riak/kv/latest/learn/glossary#vnode) in the underlying Riak cluster that are responsible for the user or bucket being created must be available at creation time.
 
 One result of this enforcement is that user creation requests and bucket
 creation or modification, i.e. deletion, requests are not highly

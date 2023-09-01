@@ -18,7 +18,7 @@ aliases:
 [amazon]: http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html
 [s3 api]: {{< baseurl >}}riak/cs/latest/references/apis/storage/s3/
 
-Riak S2 (CS) includes metrics and operational statistics to help you monitor your system in more detail and diagnose system issues more easily. There are three major categories of metrics:
+Riak CS includes metrics and operational statistics to help you monitor your system in more detail and diagnose system issues more easily. There are three major categories of metrics:
 
 1. Frontend API performance
 2. Backend Riak performance (Stanchion)
@@ -33,11 +33,11 @@ analysis of the running system with
 
 >**Note: Older Versions of Riak S2**
 >
->All statistics available in versions of Riak S2 below 2.0.x have either been renamed or removed entirely.
+>All statistics available in versions of Riak CS below 2.0.x have either been renamed or removed entirely.
 
 ## Using Metrics
 
-Riak S2 exposes statistics on critical operations that
+Riak CS exposes statistics on critical operations that
 are commonly used for monitoring, alerting, and trend analysis. These
 statistics can be accessed through the command line:
 

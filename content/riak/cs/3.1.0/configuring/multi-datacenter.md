@@ -11,9 +11,9 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.1.0/cookbooks/configuration/Configuring-MDC/
-  - /riak/cs/3.1.0/cookbooks/configuration/Configuring-MDC/
-  - /riak/cs/latest/cookbooks/configuration/multi-datacenter/
+  - /riakcs/3.1.0/configuring/Configuring-MDC/
+  - /riak/cs/3.1.0/configuring/Configuring-MDC/
+  - /riak/cs/latest/configuring/multi-datacenter/
 ---
 
 Configuring Multi-Datacenter Replication in Riak CS requires the
