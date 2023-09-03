@@ -11,9 +11,10 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
+  - /riak/cs/3.1.0/cookbooks/configuration/stanchion/
+  - /riakcs/3.1.0/cookbooks/configuration/stanchion/
   - /riakcs/3.1.0/configuring/Configuring-Stanchion/
   - /riak/cs/3.1.0/configuring/Configuring-Stanchion/
-  - /riak/cs/latest/configuring/stanchion/
 ---
 
 In your cluster, you must include one -- and only one -- Stanchion node. All the

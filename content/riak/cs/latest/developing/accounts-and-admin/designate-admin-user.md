@@ -4,6 +4,8 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
+  - "/riakcs/latest/developing/accounts-and-admin/designate-admin-user/"
+  - "/riak/cs/latest/cookbooks/designate-admin-user/"
   - "/riakcs/latest/cookbooks/designate-admin-user/"
 ---
 
