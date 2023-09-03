@@ -12,6 +12,7 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
+since: 3.1.0
 ---
 
 Create, Retrieve, and Delete Buckets, and Manage their ACLs and Policies.

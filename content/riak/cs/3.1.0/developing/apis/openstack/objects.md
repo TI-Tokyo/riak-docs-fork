@@ -13,6 +13,7 @@ project_version: "3.1.0"
 aliases:
   - /riakcs/3.0.1/cookbooks/Using-Riak-CS-With-Keystone/
   - /riak/cs/latest/cookbooks/using-with-keystone/
+since: 3.1.0
 ---
 
 Create and manage OpenStack Objects.
