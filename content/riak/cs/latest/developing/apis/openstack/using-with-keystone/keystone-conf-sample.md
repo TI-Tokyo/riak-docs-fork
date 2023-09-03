@@ -4,13 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - /riakcs/latest/operating/
-  - /riak/cs/latest/operating/
-  - /riakcs/latest/using/
-  - /riak/cs/latest/operating/advanced/
-  - /riakcs/latest/operating/advanced/
-  - /riak/cs/latest/operating/running/
-  - /riakcs/latest/operating/running/
+  - /riakcs/latest/developing/apis/openstack/using-with-keystone/keystone-conf-sample/
+  - /riak/cs/latest/cookbooks/keystone-conf-sample/
+  - /riakcs/latest/cookbooks/keystone-conf-sample/
 ---
 
 # Redirect page

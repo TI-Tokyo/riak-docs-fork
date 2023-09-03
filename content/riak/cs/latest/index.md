@@ -7,6 +7,8 @@ aliases:
   - "/riakcs/"
   - "/riak/cs/"
   - "/riakcs/latest/"
+  - "/riak/cs/latest/cookbooks/system-features/"
+  - "/riakcs/latest/cookbooks/system-features/"
 ---
 
 # Redirect page

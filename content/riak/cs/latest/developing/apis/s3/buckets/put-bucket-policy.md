@@ -4,13 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - /riakcs/latest/operating/
-  - /riak/cs/latest/operating/
-  - /riakcs/latest/using/
-  - /riak/cs/latest/operating/advanced/
-  - /riakcs/latest/operating/advanced/
-  - /riak/cs/latest/operating/running/
-  - /riakcs/latest/operating/running/
+  - "/riakcs/latest/developing/apis/s3/buckets/put-bucket-policy/"
+  - "/riak/cs/latest/references/apis/storage/s3/put-bucket-policy/"
+  - "/riakcs/latest/references/apis/storage/s3/put-bucket-policy/"
 ---
 
 # Redirect page

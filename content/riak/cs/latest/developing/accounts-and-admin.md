@@ -4,13 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - /riakcs/latest/operating/
-  - /riak/cs/latest/operating/
-  - /riakcs/latest/using/
-  - /riak/cs/latest/operating/advanced/
-  - /riakcs/latest/operating/advanced/
-  - /riak/cs/latest/operating/running/
-  - /riakcs/latest/operating/running/
+  - "/riakcs/latest/developing/accounts-and-admin/"
+  - "/riak/cs/latest/references/appendices/http-admin/"
+  - "/riakcs/latest/references/appendices/http-admin/"
 ---
 
 # Redirect page

@@ -4,13 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - /riakcs/latest/operating/
-  - /riak/cs/latest/operating/
-  - /riakcs/latest/using/
-  - /riak/cs/latest/operating/advanced/
-  - /riakcs/latest/operating/advanced/
-  - /riak/cs/latest/operating/running/
-  - /riakcs/latest/operating/running/
+  - "/riakcs/latest/developing/apis/s3/mapping-from-s3-api-to-riak-cs-internal-api/"
+  - "/riak/cs/latest/references/apis/storage/s3/mapping-from-s3-api-to-riak-cs-internal-api/"
+  - "/riakcs/latest/references/apis/storage/s3/mapping-from-s3-api-to-riak-cs-internal-api/"
 ---
 
 # Redirect page

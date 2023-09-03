@@ -4,13 +4,9 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - /riakcs/latest/operating/
-  - /riak/cs/latest/operating/
-  - /riakcs/latest/using/
-  - /riak/cs/latest/operating/advanced/
-  - /riakcs/latest/operating/advanced/
-  - /riak/cs/latest/operating/running/
-  - /riakcs/latest/operating/running/
+  - "/riakcs/latest/developing/apis/s3/other-clients/transmit/"
+  - "/riak/cs/latest/cookbooks/configuration/transmit/"
+  - "/riakcs/latest/cookbooks/configuration/transmit/"
 ---
 
 # Redirect page

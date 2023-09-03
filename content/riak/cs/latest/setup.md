@@ -6,6 +6,8 @@ latest_text: "{latest}"
 aliases:
   - "/riak/cs/latest/cookbooks/installing/"
   - "/riakcs/latest/cookbooks/installing/"
+  - "/riak/cs/latest/cookbooks/installing/chef/"
+  - "/riakcs/latest/cookbooks/installing/chef/"
 ---
 
 # Redirect page
