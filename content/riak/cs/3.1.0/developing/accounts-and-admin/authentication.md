@@ -4,9 +4,9 @@ description: ""
 menu:
   riak_cs-3.1.0:
     name: "Authentication"
-    identifier: "admin_authentication"
+    identifier: "develop_accounts_admin_authentication"
     weight: 300
-    parent: "develop-accounts-admin"
+    parent: "develop_accounts_admin"
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:

@@ -4,9 +4,9 @@ description: ""
 menu:
   riak_cs-3.1.0:
     name: "Account Management"
-    identifier: "admin_account_management"
+    identifier: "develop_accounts_admin_account_management"
     weight: 100
-    parent: "develop-accounts-admin"
+    parent: "develop_accounts_admin"
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:

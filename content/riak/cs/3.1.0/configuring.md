@@ -5,7 +5,7 @@ menu:
   riak_cs-3.1.0:
     name: "Configuring"
     identifier: "config"
-    weight: 400
+    weight: 500
     pre: cog
 project: "riak_cs"
 project_version: "3.1.0"

@@ -4,9 +4,9 @@ description: ""
 menu:
   riak_cs-3.1.0:
     name: "Access Control Lists"
-    identifier: "admin_access_control"
+    identifier: "develop_accounts_admin_acl"
     weight: 400
-    parent: "develop-accounts-admin"
+    parent: "develop_accounts_admin"
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:

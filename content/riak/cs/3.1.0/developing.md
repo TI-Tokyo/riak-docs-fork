@@ -5,7 +5,7 @@ menu:
   riak_cs-3.1.0:
     name: "Developing"
     identifier: "develop"
-    weight: 600
+    weight: 700
     pre: lambda
 project: "riak_cs"
 project_version: "3.1.0"

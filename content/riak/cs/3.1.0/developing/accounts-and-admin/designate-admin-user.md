@@ -4,9 +4,9 @@ description: ""
 menu:
   riak_cs-3.1.0:
     name: "Designating an Admin User"
-    identifier: "develop_accounts-admin_designate_admin_user"
+    identifier: "develop_accounts_admin_designate_admin_user"
     weight: 200
-    parent: "develop-accounts-admin"
+    parent: "develop_accounts_admin"
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:

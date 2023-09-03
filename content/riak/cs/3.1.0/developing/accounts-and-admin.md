@@ -2,13 +2,13 @@
 title: "Accounts & Admin"
 description: ""
 menu:
-  riak_cs-3.0.1:
+  riak_cs-3.1.0:
     name: "Accounts & Admin"
-    identifier: "develop-accounts-admin"
+    identifier: "develop_accounts_admin"
     weight: 100
     parent: "develop"
 project: "riak_cs"
-project_version: "3.0.1"
+project_version: "3.1.0"
 aliases:
   - /riakcs/3.0.1/references/appendices/Http-Administration/
   - /riak/cs/3.0.1/references/appendices/Http-Administration/
@@ -21,9 +21,11 @@ above and beyond those associated with Riak KV itself:
 Task | CS URI | Further reading
 :----|:-------|:---------------
 User management        | `/riak-cs/user`  | [Account Management](./account-management)
-User access statistics | `/riak-cs/usage` | [Querying Access Statistics](../monitoring/access-statistics)
-Storage statistics     | `/riak-cs/usage` | [Querying Storage Statistics](../monitoring/storage-statistics)
-Global statistics      | `/riak-cs/stats` | [Monitoring and Metrics](../monitoring/monitoring-and-metrics)
+User access statistics | `/riak-cs/usage` | [Querying Access Statistics](../usage-and-billing-data/access-statistics)
+Storage statistics     | `/riak-cs/usage` | [Querying Storage Statistics](../usage-and-billing-data/storage-statistics)
+Global statistics      | `/riak-cs/stats` | [Monitoring and Metrics](../../using/monitoring-and-metrics/#riak-cs-stats)
+
+For monitoring and metrics capabilities, please read [Monitoring and Metrics](../usage-and-billing-data)
 
 By default, these are accessible over the same IP/port as the rest of
 the CS API, but they can be configured to run elsewhere, with or without
@@ -53,13 +55,13 @@ details.
 
 ## Related Resources
 
-* [configuring Riak CS]({{<baseurl>}}riak/cs/3.0.1/configuring/riak-cs)
-* [Querying Access Statistics]({{<baseurl>}}riak/cs/3.0.1/cookbooks/querying-access-statistics)
-    * [Usage and Billing Data]({{<baseurl>}}riak/cs/3.0.1/cookbooks/usage-and-billing-data)
-    * [Github wiki](https://github.com/basho/riak_cs/wiki/Querying-Access-Stats)
+* [configuring Riak CS](../../configuring/riak-cs)
+* [Querying Access Statistics](../usage-and-billing-data/access-statistics)
+  * [Usage and Billing Data]({{<baseurl>}}riak/cs/3.0.1/cookbooks/usage-and-billing-data)
+  * [Github wiki](https://github.com/basho/riak_cs/wiki/Querying-Access-Stats)
 * [Querying Storage Statistics]({{<baseurl>}}riak/cs/3.0.1/cookbooks/querying-storage-statistics)
-    * [Enabling storage statistics](https://github.com/basho/riak_cs/wiki/Logging-Storage-Stats)
-    * [Github wiki](https://github.com/basho/riak_cs/wiki/Logging-Storage-Stats)
+  * [Enabling storage statistics](https://github.com/basho/riak_cs/wiki/Logging-Storage-Stats)
+  * [Github wiki](https://github.com/basho/riak_cs/wiki/Logging-Storage-Stats)
 * [Account Management]({{<baseurl>}}riak/cs/3.0.1/cookbooks/account-management)
-    * [Github wiki](https://github.com/basho/riak_cs/wiki/User-Management)
+  * [Github wiki](https://github.com/basho/riak_cs/wiki/User-Management)
 * [Monitoring and Metrics]({{<baseurl>}}riak/cs/3.0.1/cookbooks/monitoring-and-metrics)

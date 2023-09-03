@@ -6,7 +6,7 @@ menu:
   riak_cs-3.1.0:
     name: "Using"
     identifier: "using"
-    weight: 500
+    weight: 600
     pre: database
 project: "riak_cs"
 project_version: "3.1.0"

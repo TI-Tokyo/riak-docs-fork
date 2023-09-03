@@ -1,13 +1,9 @@
 ---
 title: "List Tests"
 description: ""
-menu:
-  riak_cs-3.1.0:
-    name: "List Tests"
-    identifier: "list-tests"
-    weight: 999
 project: "riak_cs"
 project_version: "3.1.0"
+draft: true
 aliases:
 ---
 
