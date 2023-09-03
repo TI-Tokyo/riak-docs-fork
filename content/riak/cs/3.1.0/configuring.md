@@ -10,8 +10,9 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riak/cs/3.1.0/configuring/
   - /riakcs/3.1.0/configuring/
+  - /riakcs/3.1.0/configuration/
+  - /riak/cs/3.1.0/configuration/
 ---
 
 In a Riak CS storage system, three components work in conjunction with one another, which means that you must configure each component to work with the others:
@@ -28,14 +29,14 @@ If your system consists of several nodes, configuration primarily represents set
 
 ## Configuration of System Components
 
-* [Configuring Riak KV for Riak CS]({{<baseurl>}}riak/cs/3.1.0/configuring/riak-kv-for-cs)
-* [Configuring Riak CS]({{<baseurl>}}riak/cs/3.1.0/configuring/riak-cs)
-* [Configuring Stanchion]({{<baseurl>}}riak/cs/3.1.0/configuring/stanchion)
+* [Configuring Riak KV for Riak CS](./riak-kv-for-cs)
+* [Configuring Riak CS](./riak-cs)
+* [Configuring Stanchion](./stanchion)
 
 ## Configuration of Features
 
-* [Configuring Load Balancing & Proxies]({{<baseurl>}}riak/cs/3.1.0/configuring/load-balancing-and-proxies)
-* [Configuring Multi-Data Centre Replication]({{<baseurl>}}riak/cs/3.1.0/configuring/mdc)
+* [Configuring Load Balancing & Proxies](./load-balancing-proxy)
+* [Configuring Multi-Data Centre Replication]({{<baseurl>}}riak/cs/3.1.0/configuring/multi-datacenter)
 * [Configuring Superclusters]({{<baseurl>}}riak/cs/3.1.0/configuring/superclusters)
 
 ## References
@@ -44,4 +45,7 @@ If your system consists of several nodes, configuration primarily represents set
 
 ## Configuration of Clients
 
-* [Configuring an S3 client]({{<baseurl>}}riak/cs/3.1.0/developing/apis/s3/s3-client-config)
+* [Configuring the AWS S3 client]({{<baseurl>}}riak/cs/3.1.0/developing/apis/s3/s3-client/)
+* [Configuring DragonDisk]({{<baseurl>}}riak/cs/3.1.0/developing/apis/s3/other-clients/dragondisk/)
+* [Configuring Fog]({{<baseurl>}}riak/cs/3.1.0/developing/apis/s3/other-clients/fog/)
+* [Configuring Transmit]({{<baseurl>}}riak/cs/3.1.0/developing/apis/s3/other-clients/transmit/)

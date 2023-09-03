@@ -2,7 +2,7 @@
 layout: redirect
 target: "riak/cs/3.0.1/cookbooks/rolling-upgrades/"
 aliases:
-- /riak/cs/3.0.1/setup/updating
+- /riak/cs/3.0.1/setup/upgrading
 ---
 
 # Redirect

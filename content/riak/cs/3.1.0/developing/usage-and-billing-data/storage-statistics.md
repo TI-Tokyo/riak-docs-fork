@@ -10,7 +10,10 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/cookbooks/Querying-Storage-Statistics/
+  - /riak/cs/3.1.0/cookbooks/querying-storage-statistics/
+  - /riakcs/3.1.0/cookbooks/querying-storage-statistics/
+  - /riak/cs/3.1.0/cookbooks/Querying-Storage-Statistics/
+  - /riakcs/3.1.0/cookbooks/Querying-Storage-Statistics/
 ---
 
 Storage statistics are tracked on a per-user basis, as rollups for

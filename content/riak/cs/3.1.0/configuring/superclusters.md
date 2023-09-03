@@ -5,15 +5,14 @@ description: ""
 menu:
   riak_cs-3.1.0:
     name: "Superclusters"
-    identifier: "config_supercluster"
+    identifier: "config_superclusters"
     weight: 160
     parent: "config"
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
+  - /riak/cs/3.1.0/cookbooks/supercluster/
   - /riakcs/3.1.0/cookbooks/supercluster/
-  - /riak/cs/latest/cookbooks/supercluster/
-  - /riak/cs/latest/cookbooks/multibag/
 ---
 
 While Riak CS enables you to distribute Riak CS objects across multiple data centers in a

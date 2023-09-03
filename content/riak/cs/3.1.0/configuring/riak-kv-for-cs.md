@@ -11,6 +11,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
+  - /riakcs/3.1.0/cookbooks/configuration/riak-for-cs/
+  - /riak/cs/3.1.0/cookbooks/configuration/riak-for-cs/
   - /riakcs/3.1.0/configuring/riak-for-cs/
   - /riak/cs/3.1.0/configuring/riak-for-cs/
   - /riakcs/3.1.0/configuring/Configuring-Riak/

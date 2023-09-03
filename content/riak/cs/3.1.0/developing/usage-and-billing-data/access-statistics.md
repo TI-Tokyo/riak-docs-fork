@@ -10,8 +10,10 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/cookbooks/Querying-Access-Statistics/
-  - /riak/cs/latest/cookbooks/querying-access-statistics/
+  - /riak/cs/3.1.0/cookbooks/Querying-Access-Statistics/
+  - /riakcs/3.1.0/cookbooks/Querying-Access-Statistics/
+  - /riak/cs/3.1.0/cookbooks/querying-access-statistics/
+  - /riakcs/3.1.0/cookbooks/querying-access-statistics/
 ---
 
 Access statistics are tracked on a per-user basis as rollups for slices

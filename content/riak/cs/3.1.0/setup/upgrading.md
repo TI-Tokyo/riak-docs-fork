@@ -10,6 +10,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
+  - /riak/cs/3.1.0/cookbooks/rolling-upgrades/
+  - /riakcs/3.1.0/cookbooks/rolling-upgrades/
   - /riakcs/3.1.0/cookbooks/Rolling-Upgrades-For-Riak-CS/
   - /riak/cs/3.1.0/cookbooks/Rolling-Upgrades-For-Riak-CS/
   - /riak/cs/latest/cookbooks/rolling-upgrades/
@@ -168,7 +170,7 @@ and so on. More details can be found at [configuring Riak CS]({{<baseurl>}}riak/
     {{% note title="Note on Memory Sizing" %}}
 Some changes have been made to both Riak and Riak CS that may warrant
 some performance tuning. Please consult the
-<a href="https://github.com/basho/riak_cs/blob/develop/RELEASE-NOTES.md#redesign-of-memory-sizing">
+<a href="https://github.com/basho/riak_cs/blob/develop/RELEASE-NOTES.md#upgrading-riak---step-3-review-memory-size">
 Release Notes</a> for more details.
     {{% /note %}}
 

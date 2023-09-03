@@ -30,7 +30,7 @@ This release is tested with OTP 22, 24 and 25. Best performance will be achieved
 
 ### Amazon S3-API Compatibility
 
-Riak CS has a built-in S3 interface with S3 Access Control List ([ACL](http://docs.aws.amazon.com/AmazonS3/latest/dev/ACLOverview.html)) support, which means that you can both use existing S3 tools and frameworks to manage your data and also import and extract data from Amazon directly. The HTTP REST API supports service, bucket, and object-level operations to easily store and retrieve data. There is also support for the [OpenStack Swift API]({{<baseurl>}}riak/cs/3.1.0./learning/comparisons/swift/)
+Riak CS has a built-in S3 interface with S3 Access Control List ([ACL](http://docs.aws.amazon.com/AmazonS3/latest/dev/ACLOverview.html)) support, which means that you can both use existing S3 tools and frameworks to manage your data and also import and extract data from Amazon directly. The HTTP REST API supports service, bucket, and object-level operations to easily store and retrieve data. There is also support for the [OpenStack Swift API]({{<baseurl>}}riak/cs/3.1.0/learning/comparisons/swift/)
 
 ### Per-Tenant Visibility
 

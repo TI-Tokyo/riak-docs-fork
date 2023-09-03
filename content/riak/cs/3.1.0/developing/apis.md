@@ -10,7 +10,9 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riak/cs/latest/references/apis/
+  - /riakcs/3.1.0/developing/apis/
+  - /riak/cs/3.1.0/references/apis/
+  - /riakcs/3.1.0/references/apis/
 ---
 
 ### In This Section

@@ -10,9 +10,10 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/references/appendices/Http-Administration/
-  - /riak/cs/3.0.1/references/appendices/Http-Administration/
-  - /riak/cs/latest/references/appendices/http-admin/
+  - /riakcs/3.1.0/references/appendices/Http-Administration/
+  - /riak/cs/3.1.0/references/appendices/Http-Administration/
+  - /riak/cs/3.1.0/references/appendices/http-admin/
+  - /riakcs/3.1.0/references/appendices/http-admin/
 ---
 
 Riak CS exposes the following accounts & admin capabilities over HTTP

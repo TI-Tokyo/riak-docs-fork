@@ -11,6 +11,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
+  - /riak/cs/3.1.0/operating/
+  - /riakcs/3.1.0/operating/
   - /riak/cs/3.1.0/operating/running/
   - /riakcs/3.1.0/operating/running/
   - /riak/cs/3.1.0/operating/advanced/

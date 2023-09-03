@@ -17,7 +17,9 @@ aliases:
 ---
 
 This page introduces the architecture behind Riak CS. If you already
-know this, you can skip it and progress to [Building a Local Test Environment](../local-testing-environment) or [Building a Virtual Testing Environment](../virtual-test-environment).
+know this, you can skip it and progress to
+[Building a Local Test Environment](../local-testing-environment) or
+[Building a Virtual Testing Environment](../virtual-test-environment).
 
 ## Architecture
 
@@ -37,7 +39,9 @@ automatically take over the responsibility of failed or
 non-communicative nodes, data remains available even in the event of
 node failure or network partition.
 
-When an object is uploaded via the [storage API]({{<baseurl>}}riak/cs/3.1.0/developing/apis/storage), Riak CS breaks the object into smaller chunks that are streamed,
+When an object is uploaded via the one of the provided
+[APIs]({{<baseurl>}}riak/cs/3.1.0/developing/apis/),
+Riak CS breaks the object into smaller chunks that are streamed,
 written, and replicated in Riak. Each chunk is associated with metadata
 for later retrieval. The diagram below provides a visualization.
 

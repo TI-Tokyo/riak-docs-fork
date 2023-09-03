@@ -10,6 +10,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
+  - /riak/cs/3.1.0/cookbooks/installing/
+  - /riakcs/3.1.0/cookbooks/installing/
   - /riak/cs/3.1.0/setup/installing/chef/
   - /riak/cs/3.1.0/cookbooks/installing/Riak-CS-Using-Chef/
   - /riak/cs/3.1.0/cookbooks/installing/chef/
@@ -73,10 +75,6 @@ in one of the supported environments:
 - [FreeBSD][install freebsd]
 - [Orcale][install oracle]
 - [RHEL & CentOS][install rhel & centos]
-
-### Building from Source
-
-If your platform isn't listed above, you may be able to build Riak from source. See [Installing Riak from Source][install source index] for instructions.
 
 ## Upgrading
 

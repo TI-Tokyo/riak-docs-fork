@@ -4,6 +4,8 @@ project: riak_cs
 replace_text: latest
 latest_text: "{latest}"
 aliases:
+  - "/riakcs/latest/developing/accounts-and-admin/access-control-lists/"
+  - "/riak/cs/latest/cookbooks/access-control-lists/"
   - "/riakcs/latest/cookbooks/access-control-lists/"
 ---
 

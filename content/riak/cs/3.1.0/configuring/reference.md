@@ -11,9 +11,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.1.0/configuring/configuration-reference
-  - /riak/cs/3.1.0/configuring/configuration-reference
-  - /riak/cs/latest/configuring/reference/
+  - /riakcs/3.1.0/cookbooks/configuration/reference
+  - /riak/cs/3.1.0/cookbooks/configuration/reference
 ---
 
 {{% note title="Note on Legacy Configuration Usage" %}}
@@ -328,7 +327,7 @@ this setting unless you implement a custom authentication scheme.</td>
 <tr>
 <td><code>rewrite_module</code></td>
 <td>A rewrite module contains a set of rules for translating requests made using
-a particular API to requests in the the native <a href="{{< baseurl >}}riak/cs/3.1.0/developing/apis/storage">Riak CS storage API</a>. We do
+a particular API to requests in the the native <a href="{{< baseurl >}}riak/cs/3.1.0/developing/apis/cs-storage">Riak CS storage API</a>. We do
 not recommend changing this setting unless you implement a custom module.</td>
 <td><code>riak_cs_s3_rewrite</code></td>
 </tr>
@@ -389,7 +388,7 @@ actions, including bucket deletion.</td>
 <tr>
 <td><code>rewrite_module</code></td>
 <td>A rewrite module contains a set of rules for translating requests
-made using a particular API to requests in the the native <a href="{{< baseurl >}}riak/cs/3.1.0/developing/apis/storage">Riak CS storage API</a>. We do not recommend changing this setting unless you
+made using a particular API to requests in the the native <a href="{{< baseurl >}}riak/cs/3.1.0/developing/apis/cs-storage">Riak CS storage API</a>. We do not recommend changing this setting unless you
 implement a custom module.</td>
 <td><code>riak_cs_s3_rewrite</code></td>
 </tr>
@@ -398,7 +397,7 @@ implement a custom module.</td>
 
 ## Usage Recording
 
-These settings relate to Riak CS's [access logs]({{<baseurl>}}riak/cs/3.1.0/developing/accounts-and-admin/usage-and-billing-data).
+These settings relate to Riak CS's [access logs]({{<baseurl>}}riak/cs/3.1.0/developing/usage-and-billing-data).
 
 ### `riak-cs.conf`
 
@@ -930,7 +929,7 @@ lager.</td>
 <tr>
 <td><code>sasl_error_lager</code></td>
 <td>Whether to enable <a
-href="http://www.erlang.org/doc/man/sasl_app.html">, Erlang's built-in
+href="http://www.erlang.org/doc/man/sasl_app.html">SASL</a>, Erlang's built-in
 error logger.</td>
 <td><code>false</code></td>
 </tr>

@@ -2,7 +2,7 @@
 layout: redirect
 target: "riak/cs/3.0.1/cookbooks/supercluster/"
 aliases:
-  - /riak/cs/3.0.1/configuring/supercluster/
+  - /riak/cs/3.0.1/configuring/superclusters/
 ---
 
 # Redirect

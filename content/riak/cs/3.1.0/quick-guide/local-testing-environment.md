@@ -54,7 +54,7 @@ riak soft nofile 65536
 riak hard nofile 65536
 ```
 
-For Mac OS X, consult the [open files limit]({{<baseurl>}}riak/kv/latest/using/performance/open-files-limit/#mac-os-x) documentation.
+For Mac OS X, consult the [open files limit]({{<baseurl>}}riak/kv/latest/using/performance/open-files-limit/) documentation for Mac OS X specific details.
 
 ### Step 2: Download and install packages
 

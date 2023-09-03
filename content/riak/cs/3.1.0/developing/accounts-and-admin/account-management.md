@@ -10,8 +10,10 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/cookbooks/Account-Management/
-  - /riak/cs/latest/cookbooks/account-management/
+  - /riak/cs/3.1.0/cookbooks/Account-Management/
+  - /riakcs/3.1.0/cookbooks/Account-Management/
+  - /riakcs/3.1.0/cookbooks/account-management/
+  - /riak/cs/3.1.0/cookbooks/account-management/
 ---
 
 ## Creating a User Account
