@@ -13,6 +13,8 @@ project_version: "3.1.0"
 aliases:
   - /riakcs/3.1.0/references/apis/storage/openstack/RiakCS-OpenStack-Delete-Object
   - /riak/cs/3.1.0/references/apis/storage/openstack/RiakCS-OpenStack-Delete-Object
+  - /riakcs/3.1.0/references/apis/storage/openstack/delete-object
+  - /riak/cs/3.1.0/references/apis/storage/openstack/delete-object
 ---
 
 Removes the specified object, if it exists.

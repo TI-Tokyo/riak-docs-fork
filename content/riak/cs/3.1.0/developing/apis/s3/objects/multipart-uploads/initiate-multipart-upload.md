@@ -14,6 +14,8 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-Initiate-Multipart-Upload/
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-Initiate-Multipart-Upload/
+  - /riakcs/3.1.0/references/apis/storage/s3/initiate-multipart-upload/
+  - /riak/cs/3.1.0/references/apis/storage/s3/initiate-multipart-upload/
 ---
 
 Initiates a multipart upload and returns an upload ID. The upload ID is used to associate all the parts in the specific multipart upload.

@@ -14,6 +14,8 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-Complete-Multipart-Upload
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-Complete-Multipart-Upload
+  - /riakcs/3.1.0/references/apis/storage/s3/complete-multipart-upload
+  - /riak/cs/3.1.0/references/apis/storage/s3/complete-multipart-upload
 ---
 
 Completes a multipart upload by assembling previously uploaded parts. Upon

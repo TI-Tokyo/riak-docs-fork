@@ -14,6 +14,8 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-DELETE-Object
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-DELETE-Object
+  - /riakcs/3.1.0/references/apis/storage/s3/delete-object
+  - /riak/cs/3.1.0/references/apis/storage/s3/delete-object
 ---
 
 The `DELETE Object` operation removes an object, if one exists.

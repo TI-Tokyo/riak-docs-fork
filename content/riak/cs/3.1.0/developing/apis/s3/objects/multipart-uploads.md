@@ -14,6 +14,10 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Object/
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Object/
+  - /riakcs/3.1.0/references/apis/storage/s3/multipart-uploads/
+  - /riak/cs/3.1.0/references/apis/storage/s3/multipart-uploads/
+  - /riakcs/3.1.0/cookbooks/multipart-upload-overview/
+  - /riak/cs/3.1.0/cookbooks/multipart-upload-overview/
 ---
 
 When an Object is too large to upload in a single part, use the Multi-Part Upload

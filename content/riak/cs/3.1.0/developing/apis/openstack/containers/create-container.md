@@ -13,6 +13,8 @@ project_version: "3.1.0"
 aliases:
   - /riakcs/3.1.0/references/apis/storage/openstack/RiakCS-OpenStack-Create-Container
   - /riak/cs/3.1.0/references/apis/storage/openstack/RiakCS-OpenStack-Create-Container
+  - /riakcs/3.1.0/references/apis/storage/openstack/create-container
+  - /riak/cs/3.1.0/references/apis/storage/openstack/create-container
 ---
 
 Creates a new container. The account of the user who makes the request to create the container becomes the container owner. Anonymous requests cannot create containers.

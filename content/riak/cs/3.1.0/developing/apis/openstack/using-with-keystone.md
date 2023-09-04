@@ -11,7 +11,10 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
+  - /riak/cs/3.1.0/cookbooks/Using-Riak-CS-With-Keystone/
   - /riakcs/3.1.0/cookbooks/Using-Riak-CS-With-Keystone/
+  - /riak/cs/3.1.0/cookbooks/using-with-keystone/
+  - /riakcs/3.1.0/cookbooks/using-with-keystone/
 ---
 
 This document shows you how to configure Riak CS to work with the

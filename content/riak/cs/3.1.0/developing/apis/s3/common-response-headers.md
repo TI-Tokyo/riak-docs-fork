@@ -13,6 +13,8 @@ project_version: "3.1.0"
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/Common-RiakCS-Response-Headers
   - /riak/cs/3.1.0/references/apis/storage/s3/Common-RiakCS-Response-Headers
+  - /riakcs/3.1.0/references/apis/storage/s3/common-response-headers/
+  - /riak/cs/3.1.0/references/apis/storage/s3/common-response-headers/
 ---
 
 These are the headers that are common to all Riak CS REST responses.

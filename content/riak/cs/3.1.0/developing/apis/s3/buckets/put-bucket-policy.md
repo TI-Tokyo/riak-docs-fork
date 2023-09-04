@@ -14,6 +14,8 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket-policy/
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket-policy/
+  - /riakcs/3.1.0/references/apis/storage/s3/put-bucket-policy/
+  - /riak/cs/3.1.0/references/apis/storage/s3/put-bucket-policy/
 ---
 
 The `PUT Bucket policy` operation uses the `policy` subresource to add or replace the policy on an existing bucket. If the bucket already has a policy, the one in this request completely replaces it. To perform this operation, you must be the bucket owner.

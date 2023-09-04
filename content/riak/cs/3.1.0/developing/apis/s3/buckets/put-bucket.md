@@ -1,10 +1,10 @@
 ---
 title_supertext: "APIs > S3 > Buckets"
-title: "Create a Bucket"
+title: "Create or Update a Bucket"
 description: ""
 menu:
   riak_cs-3.1.0:
-    name: "Create"
+    name: "Create or Update"
     identifier: "develop_apis_s3_buckets_create"
     weight: 101
     parent: "develop_apis_s3_buckets"
@@ -14,6 +14,8 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket/
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket/
+  - /riakcs/3.1.0/references/apis/storage/s3/put-bucket/
+  - /riak/cs/3.1.0/references/apis/storage/s3/put-bucket/
 ---
 
 The `PUT Bucket` operation creates a new bucket. The user who sends the request to create the bucket becomes the bucket owner. Anonymous requests can't create buckets.

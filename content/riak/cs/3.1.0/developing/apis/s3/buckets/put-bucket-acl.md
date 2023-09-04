@@ -4,7 +4,7 @@ title: "Create or Update a Bucket ACL"
 description: ""
 menu:
   riak_cs-3.1.0:
-    name: "Create or Update"
+    name: "Create or Update ACL"
     identifier: "develop_apis_s3_buckets_create_acl"
     weight: 102
     parent: "develop_apis_s3_buckets"
@@ -14,6 +14,8 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket-ACL/
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket-ACL/
+  - /riakcs/3.1.0/references/apis/storage/s3/put-bucket-acl/
+  - /riak/cs/3.1.0/references/apis/storage/s3/put-bucket-acl/
 ---
 
 The `PUT Bucket acl` operation uses the `acl` subresource to set the permissions on an existing bucket using an access control list (ACL).

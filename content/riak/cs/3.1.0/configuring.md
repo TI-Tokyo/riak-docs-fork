@@ -13,6 +13,8 @@ aliases:
   - /riakcs/3.1.0/configuring/
   - /riakcs/3.1.0/configuration/
   - /riak/cs/3.1.0/configuration/
+  - /riak/cs/3.1.0/cookbooks/configuration/
+  - /riakcs/3.1.0/cookbooks/configuration/
 ---
 
 In a Riak CS storage system, three components work in conjunction with one another, which means that you must configure each component to work with the others:

@@ -14,6 +14,8 @@ toc: true
 aliases:
   - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-List-Parts/
   - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-List-Parts/
+  - /riakcs/3.1.0/references/apis/storage/s3/list-parts/
+  - /riak/cs/3.1.0/references/apis/storage/s3/list-parts/
 ---
 
 Lists the parts that have been uploaded for a specific multipart upload.
