@@ -12,9 +12,8 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/RiakCS-Complete-Multipart-Upload
-  - /riak/cs/3.0.1/references/apis/storage/s3/RiakCS-Complete-Multipart-Upload
-  - /riak/cs/latest/references/apis/storage/s3/complete-multipart-upload/
+  - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-Complete-Multipart-Upload
+  - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-Complete-Multipart-Upload
 ---
 
 Completes a multipart upload by assembling previously uploaded parts. Upon

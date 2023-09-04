@@ -18,5 +18,5 @@ aliases:
 ### In This Section
 
 - [Riak CS Storage API](./cs-storage)
-- [Riak CS S3 Storage API](./s3)
-- [Riak CS OpenStack Storage API](./openstack)
+- [S3 Storage API](./s3)
+- [OpenStack Storage API](./openstack)

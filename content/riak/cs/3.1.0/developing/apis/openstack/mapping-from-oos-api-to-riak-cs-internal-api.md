@@ -4,9 +4,8 @@ description: ""
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/openstack/Mapping-From-OOS-API-to-Riak-CS-internal-API
-  - /riak/cs/3.0.1/references/apis/storage/openstack/Mapping-From-OOS-API-to-Riak-CS-internal-API
-  - /riak/cs/latest/references/apis/storage/openstack/mapping-from-oos-api-to-riak-cs-internal-api/
+  - /riakcs/3.1.0/references/apis/storage/openstack/Mapping-From-OOS-API-to-Riak-CS-internal-API
+  - /riak/cs/3.1.0/references/apis/storage/openstack/Mapping-From-OOS-API-to-Riak-CS-internal-API
 ---
 
 ## Overview

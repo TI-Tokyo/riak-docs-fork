@@ -11,9 +11,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/openstack/RiakCS-OpenStack-List-Objects
-  - /riak/cs/3.0.1/references/apis/storage/openstack/RiakCS-OpenStack-List-Objects
-  - /riak/cs/latest/references/apis/storage/openstack/list-objects/
+  - /riakcs/3.1.0/references/apis/storage/openstack/RiakCS-OpenStack-List-Objects
+  - /riak/cs/3.1.0/references/apis/storage/openstack/RiakCS-OpenStack-List-Objects
 ---
 
 Returns a list of objects (all or up to 1,000) in a container.

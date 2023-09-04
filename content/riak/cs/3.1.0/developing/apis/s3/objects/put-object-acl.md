@@ -12,9 +12,8 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/RiakCS-PUT-Object-ACL/
-  - /riak/cs/3.0.1/references/apis/storage/s3/RiakCS-PUT-Object-ACL/
-  - /riak/cs/latest/references/apis/storage/s3/put-object-acl/
+  - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Object-ACL/
+  - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Object-ACL/
 ---
 
 The `PUT Object acl` operation uses the `acl` subresource to set the access control list (ACL) permissions for an existing object in a bucket.

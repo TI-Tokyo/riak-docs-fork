@@ -12,9 +12,8 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/RiakCS-PUT-Object/
-  - /riak/cs/3.0.1/references/apis/storage/s3/RiakCS-PUT-Object/
-  - /riak/cs/latest/references/apis/storage/s3/put-object/
+  - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Object/
+  - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Object/
 ---
 
 When an Object is too large to upload in a single part, use the Multi-Part Upload

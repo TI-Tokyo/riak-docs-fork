@@ -12,9 +12,8 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/RiakCS-PUT-Bucket/
-  - /riak/cs/3.0.1/references/apis/storage/s3/RiakCS-PUT-Bucket/
-  - /riak/cs/latest/references/apis/storage/s3/put-bucket/
+  - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket/
+  - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-PUT-Bucket/
 ---
 
 The `PUT Bucket` operation creates a new bucket. The user who sends the request to create the bucket becomes the bucket owner. Anonymous requests can't create buckets.

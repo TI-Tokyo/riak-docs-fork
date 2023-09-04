@@ -11,9 +11,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/Common-RiakCS-Request-Headers
-  - /riak/cs/3.0.1/references/apis/storage/s3/Common-RiakCS-Request-Headers
-  - /riak/cs/latest/references/apis/storage/s3/common-request-headers/
+  - /riakcs/3.1.0/references/apis/storage/s3/Common-RiakCS-Request-Headers
+  - /riak/cs/3.1.0/references/apis/storage/s3/Common-RiakCS-Request-Headers
 ---
 
 These are the headers that are common to all Riak CS REST requests.

@@ -10,8 +10,8 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riak/cs/3.0.1/cookbooks/Authentication/
-  - /riakcs/3.0.1/cookbooks/Authentication/
+  - /riak/cs/3.1.0/cookbooks/Authentication/
+  - /riakcs/3.1.0/cookbooks/Authentication/
   - /riakcs/3.1.0/cookbooks/authentication/
   - /riak/cs/3.1.0/cookbooks/authentication/
 ---

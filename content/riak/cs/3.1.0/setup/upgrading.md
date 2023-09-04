@@ -14,7 +14,6 @@ aliases:
   - /riakcs/3.1.0/cookbooks/rolling-upgrades/
   - /riakcs/3.1.0/cookbooks/Rolling-Upgrades-For-Riak-CS/
   - /riak/cs/3.1.0/cookbooks/Rolling-Upgrades-For-Riak-CS/
-  - /riak/cs/latest/cookbooks/rolling-upgrades/
 ---
 
 [version compat]: {{<baseurl>}}riak/cs/3.1.0/learning/version-compatibility

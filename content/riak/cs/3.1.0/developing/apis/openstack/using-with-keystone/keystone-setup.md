@@ -11,8 +11,7 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/cookbooks/Keystone-Setup/
-  - /riak/cs/latest/cookbooks/keystone-setup/
+  - /riakcs/3.1.0/cookbooks/Keystone-Setup/
 ---
 
 Keystone is a Python application that requires a number of dependencies

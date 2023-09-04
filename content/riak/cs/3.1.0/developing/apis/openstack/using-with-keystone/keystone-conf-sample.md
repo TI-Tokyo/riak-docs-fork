@@ -11,8 +11,7 @@ menu:
 project: "riak_cs"
 project_version: "3.1.0"
 aliases:
-  - /riakcs/3.0.1/cookbooks/Keystone-Conf-Sample/
-  - /riak/cs/latest/cookbooks/keystone-conf-sample/
+  - /riakcs/3.1.0/cookbooks/Keystone-Conf-Sample/
 ---
 
 The following displays the contents of a sample `keystone.conf` file

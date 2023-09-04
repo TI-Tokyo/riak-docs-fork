@@ -12,9 +12,10 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/RiakCS-DELETE-Multi
-  - /riak/cs/3.0.1/references/apis/storage/s3/RiakCS-DELETE-Multi
-  - /riak/cs/latest/references/apis/storage/s3/delete-multi/
+  - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-DELETE-Multi
+  - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-DELETE-Multi
+  - /riakcs/3.1.0/references/apis/storage/s3/delete-multi
+  - /riak/cs/3.1.0/references/apis/storage/s3/delete-multi
 ---
 
 Multi-object `DELETE` enables you to delete multiple objects from a

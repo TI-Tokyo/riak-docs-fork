@@ -12,9 +12,8 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/RiakCS-HEAD-Object
-  - /riak/cs/3.0.1/references/apis/storage/s3/RiakCS-HEAD-Object
-  - /riak/cs/latest/references/apis/storage/s3/head-object/
+  - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-HEAD-Object
+  - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-HEAD-Object
 ---
 
 The `HEAD Object` operation retrieves metadata from an object without returning the object.

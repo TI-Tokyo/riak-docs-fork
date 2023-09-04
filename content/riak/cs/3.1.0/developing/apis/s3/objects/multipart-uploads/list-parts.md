@@ -12,9 +12,8 @@ project: "riak_cs"
 project_version: "3.1.0"
 toc: true
 aliases:
-  - /riakcs/3.0.1/references/apis/storage/s3/RiakCS-List-Parts/
-  - /riak/cs/3.0.1/references/apis/storage/s3/RiakCS-List-Parts/
-  - /riak/cs/latest/references/apis/storage/s3/list-parts/
+  - /riakcs/3.1.0/references/apis/storage/s3/RiakCS-List-Parts/
+  - /riak/cs/3.1.0/references/apis/storage/s3/RiakCS-List-Parts/
 ---
 
 Lists the parts that have been uploaded for a specific multipart upload.
