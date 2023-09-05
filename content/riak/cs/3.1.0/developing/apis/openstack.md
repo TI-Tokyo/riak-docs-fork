@@ -1,6 +1,6 @@
 ---
-title_supertext: "APIs"
-title: "Riak CS OpenStack Storage API"
+title_supertext: "Developing > APIs:"
+title: "OpenStack Storage API"
 description: ""
 menu:
   riak_cs-3.1.0:

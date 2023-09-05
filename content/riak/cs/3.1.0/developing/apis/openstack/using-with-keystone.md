@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > OpenStack"
+title_supertext: "APIs > OpenStack:"
 title: "Using With Keystone"
 description: "Configure Riak CS to work with OpenStack Keystone"
 menu:
