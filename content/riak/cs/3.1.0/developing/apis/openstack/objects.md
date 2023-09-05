@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > OpenStack"
+title_supertext: "APIs > OpenStack:"
 title: "Managing Objects"
 description: "Create and manage OpenStack Objects"
 menu:

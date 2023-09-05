@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > S3 > Objects"
+title_supertext: "APIs > S3 > Objects:"
 title: "Get the ACL of an Object"
 description: ""
 menu:

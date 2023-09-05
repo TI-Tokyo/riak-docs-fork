@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > OpenStack > Objects"
+title_supertext: "APIs > OpenStack > Objects:"
 title: "Get an Object"
 description: ""
 menu:

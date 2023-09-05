@@ -1,4 +1,5 @@
 ---
+title_supertext: "Setup > Installing:"
 title: "Alpine Linux"
 title_supertext: "Installing on"
 menu:

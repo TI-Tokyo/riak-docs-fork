@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > S3 > Objects"
+title_supertext: "APIs > S3 > Objects:"
 title: "Delete multiple Objects"
 description: ""
 menu:

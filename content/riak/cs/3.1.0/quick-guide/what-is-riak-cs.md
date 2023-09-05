@@ -1,4 +1,5 @@
 ---
+title_supertext: "Quick Guide:"
 title: "What Is Riak CS?"
 description: ""
 menu:

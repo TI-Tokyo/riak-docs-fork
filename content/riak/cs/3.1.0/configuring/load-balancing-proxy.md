@@ -1,5 +1,5 @@
 ---
-title_supertext: "Configuring Riak CS"
+title_supertext: "Configuring:"
 title: "Load Balancing and Proxies"
 description: ""
 menu:

@@ -1,4 +1,5 @@
 ---
+title_supertext: "Quick Guide:"
 title: "Testing the Riak CS Installation"
 description: ""
 menu:
@@ -144,5 +145,5 @@ section (click "Reference" on the nav on the left side of this page). A
 few items that may be of particular interest:
 
 - [Details about API operations]({{<baseurl>}}riak/cs/3.1.0/developing/apis/)
-- [Information about the Ruby Fog client]({{<baseurl>}}riak/cs/3.1.0/developing/apis/s3/fog)
+- [Information about the Ruby Fog client]({{<baseurl>}}riak/cs/3.1.0/developing/apis/s3/other-clients/fog)
 - [Release Notes]({{<baseurl>}}riak/cs/3.1.0/release-notes)

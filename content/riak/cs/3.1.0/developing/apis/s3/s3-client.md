@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > S3"
+title_supertext: "APIs > S3:"
 title: "Configuring an S3 Client"
 description: ""
 menu:

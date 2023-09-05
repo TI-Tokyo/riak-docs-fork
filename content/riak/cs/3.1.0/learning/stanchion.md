@@ -1,5 +1,5 @@
 ---
-title_supertext: "Learn about"
+title_supertext: "Learning:"
 title: "Stanchion"
 description: ""
 menu:

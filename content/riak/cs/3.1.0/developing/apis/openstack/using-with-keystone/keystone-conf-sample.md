@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > OpenStack > KeyStone"
+title_supertext: "APIs > OpenStack > KeyStone:"
 title: "Example Keystone Configuration"
 description: ""
 menu:

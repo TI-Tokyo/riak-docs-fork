@@ -1,5 +1,5 @@
 ---
-title_supertext: "Add-ons"
+title_supertext: "Add-ons:"
 title: "Riak CS Control"
 description: ""
 menu:

@@ -1,4 +1,5 @@
 ---
+title_supertext: "Setup:"
 title: "Upgrading Riak CS"
 description: ""
 menu:

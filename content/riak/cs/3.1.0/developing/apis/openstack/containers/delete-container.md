@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > OpenStack > Containers"
+title_supertext: "APIs > OpenStack > Containers:"
 title: "Delete a Container"
 description: ""
 menu:

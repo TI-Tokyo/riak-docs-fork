@@ -1,6 +1,6 @@
 ---
+title_supertext: "Setup > Installing:"
 title: "Debian & Ubuntu"
-title_supertext: "Installing on"
 menu:
   riak_cs-3.1.0:
     name: "Debian & Ubuntu"

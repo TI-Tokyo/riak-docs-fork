@@ -1,5 +1,5 @@
 ---
-title_supertext: "Using Riak CS"
+title_supertext: "Using:"
 title: "Logging"
 description: ""
 menu:

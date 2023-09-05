@@ -1,6 +1,6 @@
 ---
+title_supertext: "Setup > Installing:"
 title: "Oracle Linux"
-title_supertext: "Installing on"
 menu:
   riak_cs-3.1.0:
     name: "Oracle Linux"

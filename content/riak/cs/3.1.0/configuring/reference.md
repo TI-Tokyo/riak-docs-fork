@@ -1,5 +1,5 @@
 ---
-title_supertext: "Configuring Riak CS"
+title_supertext: "Configuring:"
 title: "Configuration Reference"
 description: ""
 menu:

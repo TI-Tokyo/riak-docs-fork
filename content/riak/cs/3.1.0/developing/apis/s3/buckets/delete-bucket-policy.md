@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > S3 > Buckets"
+title_supertext: "APIs > S3 > Buckets:"
 title: "Delete a Bucket policy"
 description: ""
 menu:

@@ -1,5 +1,5 @@
 ---
-title_supertext: "Configuring"
+title_supertext: "Configuring:"
 title: "Riak CS"
 description: ""
 menu:

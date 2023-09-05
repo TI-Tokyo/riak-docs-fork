@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > S3 > Buckets"
+title_supertext: "APIs > S3 > Buckets:"
 title: "Get a Bucket"
 description: ""
 menu:

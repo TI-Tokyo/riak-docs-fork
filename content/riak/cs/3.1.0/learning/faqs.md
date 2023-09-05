@@ -1,5 +1,5 @@
 ---
-title_supertext: "Learn about"
+title_supertext: "Learning:"
 title: "Frequently Asked Questions"
 description: ""
 menu:
@@ -13,6 +13,7 @@ project_version: "3.1.0"
 aliases:
   - /riakcs/3.1.0/cookbooks/faqs/riak-cs/
   - /riak/cs/3.1.0/cookbooks/faqs/riak-cs/
+keywords: "faq faqs"
 ---
 
 Q: What is Riak CS?

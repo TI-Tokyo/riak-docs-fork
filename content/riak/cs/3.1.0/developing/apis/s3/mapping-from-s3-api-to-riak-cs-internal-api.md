@@ -1,5 +1,5 @@
 ---
-title_supertext: "APIs > S3"
+title_supertext: "APIs > S3:"
 title: "Mapping From S3 API to Riak CS internal API"
 description: ""
 project: "riak_cs"
