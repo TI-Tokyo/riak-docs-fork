@@ -288,36 +288,51 @@ Presuming that you copied `./rel/riak` into `./rel/riak1`, `./rel/riak2`,
 node. For example:
 
     ```riakconf
-    # For Protocol Buffers:
-    listener.protobuf.internal = 127.0.0.1:8187
+    # For Protocol Buffers change from:
+    # listener.protobuf.internal = 127.0.0.1:8187
+    # To something like this:
+    listener.protobuf.internal = 127.0.0.1:10007
 
-    # For HTTP:
-    listener.http.internal = 127.0.0.1:8198
+    # For HTTP change from:
+    # listener.http.internal = 127.0.0.1:8198
+    # To something like this:
+    listener.http.internal = 127.0.0.1:10008
 
-    # For either interface:
-    handoff.port = 8199
+    # For either interface change from:
+    # handoff.port = 8199
+    # To something like this:
+    handoff.port = 10009
     ```
 
     ```appconfig
     %% In the pb section of riak_core:
-    {"127.0.0.1", 8187 }
+    {"127.0.0.1", 10007 }
 
     %% In the http section of riak_core:
-    {"127.0.0.1", 8198}
+    {"127.0.0.1", 10008}
     ```
 
-2. Change the name of each node to a unique name. Now, start the nodes,
+2. Change the name of each node to a unique name.
+
+    ```riakconf
+    # Change from this:
+    # nodename = riak@127.0.0.1
+    # To something like this:
+    nodename = riak1@127.0.0.1
+    ```
+
+3. Now, start the nodes,
 changing path names and nodes as appropriate:
 
-```bash
-./rel/riak1/bin/riak start
-./rel/riak2/bin/riak start
-./rel/riak3/bin/riak start
+    ```bash
+    ./rel/riak1/bin/riak start
+    ./rel/riak2/bin/riak start
+    ./rel/riak3/bin/riak start
+    
+    # etc
+    ```
 
-# etc
-```
-
-Next, join the nodes into a cluster:
+4. Next, join the nodes into a cluster:
 
 ```bash
 ./rel/riak2/bin/riak admin cluster join riak1@127.0.0.1
