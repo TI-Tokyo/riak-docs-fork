@@ -15,10 +15,10 @@ version_history:
   in: "3.0.9+"
 toc: true
 aliases:
-  - /riak/3.0.10/ops/building/installing/installing-on-alpine-linux
-  - /riak/kv/3.0.10/ops/building/installing/installing-on-alpine-linux
-  - /riak/3.0.10/installing/alpine-linux/
-  - /riak/kv/3.0.10/installing/alpine-linux/
+  - /riak/3.0.11/ops/building/installing/installing-on-alpine-linux
+  - /riak/kv/3.0.11/ops/building/installing/installing-on-alpine-linux
+  - /riak/3.0.11/installing/alpine-linux/
+  - /riak/kv/3.0.11/installing/alpine-linux/
 ---
 
 [security index]: {{<baseurl>}}riak/kv/3.0.10/using/security/
