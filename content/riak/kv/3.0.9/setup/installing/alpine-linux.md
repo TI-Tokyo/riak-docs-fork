@@ -30,7 +30,7 @@ package from the Riak repository.
 
 The following steps have been tested to work with Riak KV on:
 
-* Alpine Linux 3.14
+* Alpine Linux 3.16
 
 ## Riak 64-bit Installation
 
