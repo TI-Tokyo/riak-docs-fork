@@ -21,9 +21,9 @@ aliases:
   - /riak/kv/3.0.11/installing/alpine-linux/
 ---
 
-[security index]: {{<baseurl>}}riak/kv/3.0.10/using/security/
-[install source erlang]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/verify
+[security index]: {{<baseurl>}}riak/kv/3.0.11/using/security/
+[install source erlang]: {{<baseurl>}}riak/kv/3.0.11/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.0.11/setup/installing/verify
 
 Riak KV can be installed on Alpine Linux using a binary
 package from the Riak repository.
