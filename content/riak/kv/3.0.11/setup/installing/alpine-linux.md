@@ -30,7 +30,7 @@ package from the Riak repository.
 
 The following steps have been tested to work with Riak KV on:
 
-* Alpine Linux 3.14
+* Alpine Linux 3.16
 
 ## Riak 64-bit Installation
 
@@ -44,7 +44,7 @@ To install Riak on Alpine Linux:
    * Run `apk update`
 4. Install Riak:
    * For the latest version, run `apk add riak`
-   * For a specific version, run `apk add riak=3.0.11.0-r0`
+   * For a specific version, run `apk add riak=3.0.11.0-r1`
 
 ## Next Steps
 
