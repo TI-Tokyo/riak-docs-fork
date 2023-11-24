@@ -12,7 +12,6 @@ project_version: "3.0.1"
 aliases:
   - /riakcs/3.0.1/cookbooks/Riak-CS-Release-Notes/
   - /riak/cs/3.0.1/cookbooks/Riak-CS-Release-Notes/
-  - /riak/cs/latest/cookbooks/release-notes/
 ---
 
 [riak_cs_multibag_support]: {{<baseurl>}}riak/cs/3.0.1/cookbooks/supercluster

@@ -1,0 +1,19 @@
+---
+layout: latest_redirect
+project: riak_cs
+replace_text: latest
+latest_text: "{latest}"
+aliases:
+  - /riakcs/latest/developing/apis/openstack/using-with-keystone/keystone-conf-sample/
+  - /riak/cs/latest/cookbooks/keystone-conf-sample/
+  - /riakcs/latest/cookbooks/keystone-conf-sample/
+---
+
+# Redirect page
+
+Redirects `someroot/latest/somepath` to `someroot/{latest}/somepath`
+where `{latest}` is the `project_descriptions.{project}.latest` value
+and `{project}` is the metadata value of `project` above.
+
+This page exists solely to redirect from the generated URL to the latest version of
+that url.

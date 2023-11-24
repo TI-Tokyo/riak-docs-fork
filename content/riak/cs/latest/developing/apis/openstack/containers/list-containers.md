@@ -1,0 +1,19 @@
+---
+layout: latest_redirect
+project: riak_cs
+replace_text: latest
+latest_text: "{latest}"
+aliases:
+  - /riakcs/latest/developing/apis/openstack/objects/list-containers/
+  - /riak/cs/latest/references/apis/storage/openstack/list-containers/
+  - /riakcs/latest/references/apis/storage/openstack/list-containers/
+---
+
+# Redirect page
+
+Redirects `someroot/latest/somepath` to `someroot/{latest}/somepath`
+where `{latest}` is the `project_descriptions.{project}.latest` value
+and `{project}` is the metadata value of `project` above.
+
+This page exists solely to redirect from the generated URL to the latest version of
+that url.

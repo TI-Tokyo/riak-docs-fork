@@ -4,7 +4,9 @@ project: riak_ts
 replace_text: latest
 latest_text: "{latest}"
 aliases:
-  - "/riakts/latest/index/"
+  - "/riakts/"
+  - "/riak/ts/"
+  - "/riakts/latest/"
 ---
 
 # Redirect page

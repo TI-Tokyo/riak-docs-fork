@@ -1,5 +1,5 @@
 ---
-title: "What Is Riak CS"
+title: "What Is Riak CS?"
 description: ""
 menu:
   riak_cs-3.0.1:
@@ -12,7 +12,6 @@ project_version: "3.0.1"
 aliases:
   - /riakcs/3.0.1/cookbooks/tutorials/fast-track/What-is-Riak-CS/
   - /riak/cs/3.0.1/cookbooks/tutorials/fast-track/What-is-Riak-CS/
-  - /riak/cs/latest/tutorials/fast-track/what-is-riak-cs/
 ---
 
 This page introduces the architecture behind Riak CS. If you already

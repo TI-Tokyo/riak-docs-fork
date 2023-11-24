@@ -4,6 +4,7 @@ project: riak_kv
 replace_text: latest
 latest_text: "{latest}"
 aliases:
+  - "/riak/kv/latest/"
   - "/riak/latest/"
   - "/riakkv/latest/"
 ---

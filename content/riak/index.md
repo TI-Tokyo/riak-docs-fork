@@ -2,6 +2,8 @@
 layout: redirect
 target: "riak/kv/latest/"
 aliases:
+  - "/riak/kv/"
+  - "/riakkv/"
   - "/riak/latest/"
 ---
 
