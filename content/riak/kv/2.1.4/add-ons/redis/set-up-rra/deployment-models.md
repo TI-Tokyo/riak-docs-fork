@@ -10,6 +10,8 @@ menu:
     weight: 201
     parent: "add-ons_redis_setup"
 toc: true
+version_history:
+  in: "2.1.4+"
 commercial_offering: true
 ---
 
