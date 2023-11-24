@@ -10,6 +10,8 @@ menu:
 project: "riak_kv"
 project_version: "2.0.9"
 toc: true
+version_history:
+  in: "2.0.9+"
 ---
 
 [ttl]: https://en.wikipedia.org/wiki/Time_to_live
