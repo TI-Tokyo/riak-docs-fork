@@ -158,7 +158,7 @@ canonical_link: "https://docs.basho.com/. . ." # 10    -- Conditional
           in: "1.2.0-2.99.99"
         ```
 
-        For pages that apply to none-contiguous versions, specify `in` as an array:
+        For pages that apply to non-contiguous versions, specify `in` as an array:
 
         ```
         version_history:
