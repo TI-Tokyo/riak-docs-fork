@@ -1,6 +1,8 @@
 ---
 layout: latest_redirect
 project: riak_kv
+sitemap:
+  priority: 0
 replace_text: latest
 latest_text: "{latest}"
 aliases:
