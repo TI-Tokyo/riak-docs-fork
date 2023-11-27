@@ -11,6 +11,8 @@ menu:
 project: "riak_ts"
 project_version: "1.4.0"
 toc: true
+version_history:
+  in: "1.4.0+"
 aliases:
     - /riakts/1.4.0/using/security/user-management
 ---

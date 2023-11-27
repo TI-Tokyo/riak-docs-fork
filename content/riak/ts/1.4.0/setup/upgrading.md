@@ -11,7 +11,7 @@ project: "riak_ts"
 project_version: "1.4.0"
 toc: true
 version_history:
-  present_from: "1.4.0+"
+  in: "1.4.0+"
 aliases:
     - /riakts/1.4.0/setup/upgrading/
     - /riakts/1.4.0/upgrading/

@@ -10,6 +10,8 @@ menu:
     parent: "security"
 project: "riak_ts"
 project_version: "1.4.0"
+version_history:
+  in: "1.4.0+"
 toc: true
 aliases:
     - /riakts/1.4.0/using/security/notify-basho
