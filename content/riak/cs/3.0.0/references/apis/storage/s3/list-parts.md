@@ -3,7 +3,9 @@ title: "Riak CS List Parts"
 description: ""
 project: "riak_cs"
 project_version: "3.0.0"
-toc: true
+lastmod: 2022-05-30T00:00:00-00:00
+sitemap:
+  priority: 0.2toc: true
 aliases:
   - /riakcs/3.0.0/references/apis/storage/s3/RiakCS-List-Parts/
   - /riak/cs/3.0.0/references/apis/storage/s3/RiakCS-List-Parts/
