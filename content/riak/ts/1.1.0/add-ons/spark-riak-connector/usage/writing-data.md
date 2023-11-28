@@ -1,5 +1,7 @@
 ---
 layout: redirect
+sitemap:
+  priority: 0
 target: "riak/ts/1.1.0/"
 ---
 

@@ -1,5 +1,7 @@
 ---
 layout: redirect
+sitemap:
+  priority: 0
 target: "riak/kv/3.0.13/learn/use-cases/"
 aliases:
 ---

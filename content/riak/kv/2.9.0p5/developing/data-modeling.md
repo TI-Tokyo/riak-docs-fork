@@ -1,5 +1,7 @@
 ---
 layout: redirect
+sitemap:
+  priority: 0
 target: "riak/kv/2.9.0p5/learn/use-cases/"
 aliases:
   - /riak/2.9.0p5/developing/data-modeling/
