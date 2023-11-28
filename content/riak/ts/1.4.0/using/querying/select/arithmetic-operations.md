@@ -11,6 +11,9 @@ project: "riak_ts"
 project_version: "1.4.0"
 toc: true
 version_history:
+locations:
+    - ["1.1.0-1.3.1", "using/arithmetic-operations/"]
+    - ["1.4.0+",      "using/querying/select/arithmetic-operations/"]
   in: "1.4.0+"
 aliases:
     - /riak/ts/1.4.0/using/arithmetic-operations

@@ -11,8 +11,10 @@ project: "riak_ts"
 project_version: "1.3.1"
 toc: true
 version_history:
-version_history:
-  in: "1.3.1+"
+locations:
+    - ["1.3.0-1.3.1", "installing/source/erlang"]
+    - ["1.4.0+",      "setup/installing/source/erlang"]
+  in: "1.3.0+"
 ---
 
 [autoconf]: http://www.gnu.org/software/autoconf/autoconf.html
