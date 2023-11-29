@@ -1,5 +1,6 @@
 ---
 layout: redirect
+sitemap_exclude: true
 sitemap:
   priority: 0
 target: "riak/kv/2.9.0p5/learn/use-cases/"

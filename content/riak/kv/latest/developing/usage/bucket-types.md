@@ -1,5 +1,6 @@
 ---
 layout: latest_redirect
+sitemap_exclude: true
 project: riak_kv
 sitemap:
   priority: 0
