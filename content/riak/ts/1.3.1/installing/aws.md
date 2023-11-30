@@ -15,8 +15,8 @@ sitemap:
 toc: true
 version_history:
   locations:
-      - ["1.3.0-1.3.1", "installing/aws"]
-   	  - ["1.4.0+",      "setup/installing/aws"]
+    - ["1.3.0-1.3.1", "installing/aws"]
+    - ["1.4.0+",      "setup/installing/aws"]
   in: "1.3.0+"
 aliases:
     - /riakts/1.3.1/installing/aws
