@@ -3,12 +3,12 @@ title_supertext: "Installing on"
 title: "Oracle Linux"
 description: ""
 project: "riak_kv"
-project_version: "3.0.14"
+project_version: "3.0.15"
 lastmod: 2023-12-08T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.0.14:
+  riak_kv-3.0.15:
     name: "Oracle Linux"
     identifier: "installing_oraclelinux"
     weight: 304
@@ -17,15 +17,15 @@ toc: true
 version_history:
   in: "3.0.3+"
 aliases:
-  - /riak/3.0.14/ops/building/installing/Installing-on-Oracle-Linux
-  - /riak/kv/3.0.14/ops/building/installing/Installing-on-Oracle-Linux
-  - /riak/3.0.14/installing/Oracle-Linux/
-  - /riak/kv/3.0.14/installing/Oracle-Linux/
+  - /riak/3.0.15/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/kv/3.0.15/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/3.0.15/installing/Oracle-Linux/
+  - /riak/kv/3.0.15/installing/Oracle-Linux/
 ---
 
-[install source index]: {{<baseurl>}}riak/kv/3.0.14/setup/installing/source
-[install source erlang]: {{<baseurl>}}riak/kv/3.0.14/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.0.14/setup/installing/verify
+[install source index]: {{<baseurl>}}riak/kv/3.0.15/setup/installing/source
+[install source erlang]: {{<baseurl>}}riak/kv/3.0.15/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.0.15/setup/installing/verify
 
 ## Installing From Package
 
@@ -46,8 +46,8 @@ sudo yum install -y epel-release
 Once the EPEL has been installed, you can install Riak on Oracle Linux 8 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.14/oracle/8/riak-3.0.14.OTP22.3-1.el8.x86_64.rpm
-sudo yum install -y riak-3.0.14.OTP22.3-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/oracle/8/riak-3.0.15.OTP22.3-1.el8.x86_64.rpm
+sudo yum install -y riak-3.0.15.OTP22.3-1.el8.x86_64.rpm
 ```
 
 ## Next Steps

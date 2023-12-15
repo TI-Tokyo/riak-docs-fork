@@ -14,6 +14,8 @@ menu:
     weight: 304
     parent: "installing"
 toc: true
+version_history:
+  in: "3.0.3+"
 aliases:
   - /riak/3.0.10/ops/building/installing/Installing-on-Oracle-Linux
   - /riak/kv/3.0.10/ops/building/installing/Installing-on-Oracle-Linux
