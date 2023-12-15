@@ -11,7 +11,7 @@ menu:
   riak_kv-3.0.11:
     name: "Oracle Linux"
     identifier: "installing_oraclelinux"
-    weight: 304
+    weight: 306
     parent: "installing"
 toc: true
 version_history:
