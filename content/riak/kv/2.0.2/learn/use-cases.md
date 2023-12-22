@@ -181,7 +181,7 @@ higher performance and yield more predictable latency.
   <tr>
     <td>
       <a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank" title="Riak at OpenX">
-        <img src="/images/simon-analyzing-logs.png"/>
+        <img src="{{<baseurl>}}images/simon-analyzing-logs.png"/>
       </a>
     </td>
     <td>
@@ -381,7 +381,7 @@ or other pieces of information useful for later retrieval.
   <tr>
     <td>
       <a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" class="vid_img" link target="_blank">
-        <img src="/images/linkfluence-case-study.png" title="Milking Performance">
+        <img src="{{<baseurl>}}images/linkfluence-case-study.png" title="Milking Performance">
       </a>
     </td>
     <td>
@@ -391,7 +391,7 @@ or other pieces of information useful for later retrieval.
   <tr>
     <td>
       <a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" class="vid_img" link target="_blank">
-        <img src="/images/ideeli-case-study.png" title="Milking Performance">
+        <img src="{{<baseurl>}}images/ideeli-case-study.png" title="Milking Performance">
       </a>
     </td>
     <td>
