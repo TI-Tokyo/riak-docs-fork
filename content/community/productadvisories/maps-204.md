@@ -1,7 +1,7 @@
 ---
 title: "Map Data Type Disk Incompatibility"
 description: ""
-project_version: "community"
+project: community
 lastmod: 2016-04-10T00:00:00-00:00
 sitemap:
   priority: 0.5

@@ -1,6 +1,7 @@
 ---
 title: "Community Projects"
 description: ""
+project: community
 project_version: "community"
 lastmod: 2016-08-10T00:00:00-00:00
 sitemap:

@@ -1,6 +1,7 @@
 ---
 title: "Incompatibility between Dotted Version Vectors and Last-Write Wins"
 description: ""
+project: community
 project_version: "community"
 lastmod: 2016-04-21T00:00:00-00:00
 sitemap:

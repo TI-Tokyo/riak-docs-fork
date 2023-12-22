@@ -1,6 +1,7 @@
 ---
 title: "Possibility of Code Injection on Riak Init File"
 description: ""
+project: community
 project_version: "community"
 lastmod: 2016-04-14T00:00:00-00:00
 sitemap:
