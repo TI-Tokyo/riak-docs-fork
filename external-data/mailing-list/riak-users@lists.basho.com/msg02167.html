@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak Cluster Setup on EC2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02167" id="c">
+<link rel="index" href="maillist.html#02167" id="i">
+<link rel="prev" href="msg02163.html" id="p">
+<link rel="next" href="msg02168.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02167.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+Cluster+Setup+on+EC2%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak Cluster Setup on EC2</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Abhishek+Kona%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Abhishek Kona</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110202" rel="nofollow">Wed, 02 Feb 2011 06:54:07 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi folks
+
+I am trying to set up a Riak cluster on EC2.
+Each time I issue a command :</pre><pre>
+
+$ sudo riak-admin join riak@10.130.149.253
+
+It fails :
+
+Attempting to restart script through sudo -u riak
+
+Node riak@10.130.149.253 is not reachable!
+
+
+Netstat on both the machines says the ports are running fine.
+
+netstat -na | egrep '(8087|8098|8099)'
+
+tcp        0      0 0.0.0.0:8098            0.0.0.0:*               LISTEN
+
+tcp        0      0 0.0.0.0:8099            0.0.0.0:*               LISTEN
+
+tcp        0      0 0.0.0.0:8087            0.0.0.0:*               LISTEN
+
+
+I can telnet to all the ports from each of the machine.
+I have been pulling my hair for long but of no avail.
+Can any one look and tell me what I am doing wrong.
+Are there any debug logs where I can look at what is going wrong?
+Is there any EC2 specific trick (like using public hostnames).
+
+I am attaching my app.cfg file for reference.
+
+Thanks
+-Abhishek Kona
+
+</pre><pre>%% -*- tab-width: 4;erlang-indent-level: 4;indent-tabs-mode: nil -*-
+%% ex: ts=4 sw=4 et
+[
+%% Riak Core config
+{riak_core, [
+    %% Default location of ringstate
+    {ring_state_dir, &quot;/var/lib/riak/ring&quot;},
+
+        %% http is a list of IP addresses and TCP ports that the Riak
+            %% HTTP interface will bind.
+            {http, [ {&quot;0.0.0.0&quot;, 8098 } ]},
+
+        %% https is a list of IP addresses and TCP ports that the Riak
+            %% HTTPS interface will bind.
+            %{https, [{ &quot;0.0.0.0&quot;, 8098 }]},
+
+        %% default cert and key locations for https can be overridden
+            %% with the ssl config variable
+            %{ssl, [
+                %       {certfile, &quot;etc/cert.pem&quot;},
+                %       {keyfile, &quot;etc/key.pem&quot;}
+                %      ]},
+
+        %% riak_handoff_port is the TCP port that Riak uses for
+            %% intra-cluster data handoff.
+            {handoff_port, 8099 }
+    ]},
+
+    %% Riak KV config
+{riak_kv, [
+    %% Storage_backend specifies the Erlang module defining the storage
+        %% mechanism that will be used on this node.
+        {storage_backend, riak_kv_bitcask_backend},
+
+    %% pb_ip is the IP address that the Riak Protocol Buffers interface
+        %% will bind to.  If this is undefined, the interface will not run.
+        {pb_ip,   &quot;0.0.0.0&quot; },
+
+    %% pb_port is the TCP port that the Riak Protocol Buffers interface
+        %% will bind to
+        {pb_port, 8087 },
+
+    %% raw_name is the first part of all URLS used by the Riak raw HTTP
+        %% interface.  See riak_web.erl and raw_http_resource.erl for
+        %% details.
+        %{raw_name, &quot;riak&quot;},
+
+    %% mapred_name is URL used to submit map/reduce requests to Riak.
+    {mapred_name, &quot;mapred&quot;},
+
+    %% directory used to store a transient queue for pending
+        %% map tasks
+        {mapred_queue_dir, &quot;/var/lib/riak/mr_queue&quot; },
+
+    %% Each of the following entries control how many Javascript
+        %% virtual machines are available for executing map, reduce,
+    %% pre- and post-commit hook functions.
+    {map_js_vm_count, 8 },
+    {reduce_js_vm_count, 6 },
+    {hook_js_vm_count, 2 },
+
+    %% Number of items the mapper will fetch in one request.
+        %% Larger values can impact read/write performance for
+        %% non-MapReduce requests.
+        {mapper_batch_size, 5},
+
+    %% js_max_vm_mem is the maximum amount of memory, in megabytes,
+    %% allocated to the Javascript VMs. If unset, the default is
+        %% 8MB.
+        {js_max_vm_mem, 8},
+
+    %% js_thread_stack is the maximum amount of thread stack, in megabyes,
+    %% allocate to the Javascript VMs. If unset, the default is 16MB.
+        %% NOTE: This is not the same as the C thread stack.
+        {js_thread_stack, 16},
+
+    %% Number of objects held in the MapReduce cache. These will be
+        %% ejected when the cache runs out of room or the bucket/key
+        %% pair for that entry changes
+        {map_cache_size, 10000},
+
+    %% js_source_dir should point to a directory containing Javascript
+        %% source files which will be loaded by Riak when it initializes
+        %% Javascript VMs.
+        %{js_source_dir, &quot;/tmp/js_source&quot;},
+
+    %% riak_stat enables the use of the &quot;riak-admin status&quot; command to
+        %% retrieve information the Riak node for performance and debugging 
+needs
+        {riak_kv_stat, true}
+    ]},
+
+    %% Bitcask Config
+{bitcask, [
+    {data_root, &quot;/var/lib/riak/bitcask&quot;}
+    ]},
+
+    %% Luwak Config
+{luwak, [
+    {enabled, false}
+    ]},
+
+    %% Riak_err Config
+{riak_err, [
+    %% Info/error/warning reports larger than this will be considered
+        %% too big to be formatted safely with the user-supplied format
+        %% string.
+        {term_max_size, 65536},
+
+    %% Limit the total size of formatted info/error/warning reports.
+    {fmt_max_bytes, 65536}
+    ]},        
+
+    %% SASL config
+{sasl, [
+    {sasl_error_logger, {file, &quot;/var/log/riak/sasl-error.log&quot;}},
+    {errlog_type, error},
+    {error_logger_mf_dir, &quot;/var/log/riak/sasl&quot;},      % Log directory
+    {error_logger_mf_maxbytes, 10485760},   % 10 MB max file size
+    {error_logger_mf_maxfiles, 5}           % 5 files max
+    ]}
+    ].
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02163.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02167">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02167">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02168.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Riak Cluster Setup on EC2</span> <span class="sender italic">Abhishek Kona</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02168.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02169.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Abhishek Kona</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02170.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02171.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Abhishek Kona</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02172.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Dan Reverri</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02173.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Abhishek Kona</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02174.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02176.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Abhishek Kona</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02178.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">John D. Rowell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02211.html">Re: Riak Cluster Setup on EC2</a></span> <span class="sender italic">Abhishek Kona</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak Cluster Setup on EC2">
+<input type="hidden" name="msgid" value="4D49608B.6050803@flipkart.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02167.html">
+<input type="submit" value=" Abhishek Kona ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+Cluster+Setup+on+EC2%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02163.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02168.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4D49608B.6050803@flipkart.com</li>
+</ul>
+</div>
+</body>
+</html>

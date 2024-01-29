@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Easier to use Java Client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02777" id="c">
+<link rel="index" href="maillist.html#02777" id="i">
+<link rel="prev" href="msg02776.html" id="p">
+<link rel="next" href="msg02778.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02777.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Easier+to+use+Java+Client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Easier to use Java Client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kresten+Krab+Thorup%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kresten Krab Thorup</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110329" rel="nofollow">Tue, 29 Mar 2011 02:03:52 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>One thing, which is often missed by newcomers to Riak [I'm not saying you 
+missed it], is the importance of managing client IDs, and passing the right 
+vector clocks back to the server. </pre><pre>
+
+ { Basho'ers ... please corret me if I'm wrong }
+
+Kresten
+
+
+
+So, Rule#1 (which has two clauses), which you can always revert to:
+
+1.a / every client needs a clientID, which is distinct for that client.  Be 
+sure to always pass it along in all calls (in Java that is done by calling 
+setClientID on the RiakClient, at the HTTP-level, it is done by passing the 
+X-Riak-ClientId HTTP header).
+
+1.b / when you send an update (HTTP PUT or DELETE), always pass along the 
+X-Riak-Vectorclock from a corresponding GET.  If you don't do this, your PUT is 
+likely to go to /dev/null, because Riak thinks that it is a replay of an old 
+request.
+
+Until you're re really familiar with how Riak works, you should always do these 
+two, or you will be severely burned when you realize that it doesn't behave as 
+expected.  Believe me, I've been there.
+
+
+1.a / Choosing a good client ID
+========================
+
+If you don't choose a client ID, Riak will do it for you ... BUT .. it will 
+choose a new one for EVERY REQUEST.  This has many issues, so Riak should 
+really require YOU to come up with one in stead; perhaps it will do so at some 
+point in the future.
+
+Riak has some special optimizations if your client ID is the Base64-encoding of 
+a byte array of length 4.  So, a good, default way to choose a client id is 
+thus:
+
+        static SecureRandom rnd = new SecureRandom();
+        
+        static ThreadLocal&lt;String&gt; CLIENT_ID = new ThreadLocal&lt;String&gt;() {
+                protected String initialValue() {
+                        return randomClientID();
+                };
+        };
+        
+        public static String getClientID() {
+                return CLIENT_ID.get();
+        }
+        
+        static private String randomClientID() {
+                byte[] bytes = new byte[4];
+                rnd.nextBytes(bytes);
+                return Base64.encode(bytes);;
+        }
+
+This makes it so that each thread in your application is assigned a new random 
+ClientID, which is often useful if your client is multi-threaded.
+
+The above code is *alot* better than the default of having the server side 
+choose a new client id for every request.
+
+If you have some kind of logical unique, non-concurrent client concept in your 
+system, that may be even better.  It could e.g. be the IMEI of your mobile 
+phone, if your Riak client app is running on a Phone; or it could be a userid, 
+if you are sure that only one user is accessing the system at a time.
+
+
+1.b / Passing the VectorClock
+=======================
+
+Secondly, you need to make sure that you pass the vector clock. 
+
+You should think of the vector clock as an opaque &quot;optimistic concurrency 
+token&quot;, that you receive when you do a GET, and have to pass in when you do a 
+PUT ... and then you get a new &quot;optimistic concurrency token&quot;, that you have to 
+use henceforth.
+
+Depending on the configuration of your buckets, using an old vector clock will 
+simply cause the PUT request to be ignored (if allow_mult=false), or cause 
+siblings to be created (if allow_mult=true).  This is where Riak is often &quot;not 
+what you expect&quot;, but there is a good reason for this behavior.
+
+IT IS ABSOLUTELY PARAMOUNT TO UNDERSTAND THIS.
+
+
+
+The above two things (1.a and 1.b) are so difficult to understand for 
+newcomers, and a bit tricky to get right, so IMHO a new Java client should 
+provide some way to avoid doing these mistakes as the default behavior.
+
+- So, it should choose a good client ID fo you if you don't.
+- And it should make it so that you can't do UPDATE/PUT without having first 
+GOT'en the riak object.  
+
+The last part is especially tricky.  Perhaps we should have the API look like 
+this to help that ....
+
+  interface RiakObject {
+     ...
+  }
+
+  interface UpdateableRiakObject extends RiakObject { ... }
+  interface CreateableRiakObject extends RiakObject { ... }
+
+  RiakClient {
+      UpdateableRiakObject update(UpdateableRiakObject o) throws NotModified
+      { ... send PUT ... }
+
+      UpdateableRiakObject create(CreateableRiakObject o) throws AlreadyThere
+      { ... send PUT ... }
+
+      UpdateableRiakObject get(bucket, key);
+
+      CreateableRiakObject fresh(bucket, key);
+  }
+
+I.e. NOT EXPOSE constructors for the implementors of RiakObject.  The only way 
+to get an UpdateableRiakObject is to call RiakClient.get, or as the result of 
+calling update/create; you can't just allocate one.  Also calling update/create 
+should &quot;invalidate&quot; the original object so that it cannot accidentally be used 
+again.  
+
+I really think we need to have a way to enforce the linear nature of these 
+things.  Otherwise people get fooled.
+
+
+
+Kresten
+
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02776.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02777">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02777">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02778.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02772.html">Easier to use Java Client</a></span> <span class="sender italic">Rexxe</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02775.html">Re: Easier to use Java Client</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02776.html">Re: Easier to use Java Client</a></span> <span class="sender italic">Rexxe</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Easier to use Java Client</span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02778.html">Re: Easier to use Java Client</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02783.html">Re: Easier to use Java Client</a></span> <span class="sender italic">Rexxe</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02779.html">Re: Easier to use Java Client</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02782.html">Re: Easier to use Java Client</a></span> <span class="sender italic">Rexxe</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Easier to use Java Client">
+<input type="hidden" name="msgid" value="D52F9C05-6C58-41AE-A946-28DCBF9B1518@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02777.html">
+<input type="submit" value=" Kresten Krab Thorup ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Easier+to+use+Java+Client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02776.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02778.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D52F9C05-6C58-41AE-A946-28DCBF9B1518@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

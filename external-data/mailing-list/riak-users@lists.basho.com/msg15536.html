@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: RiakCS poor s3 upload speeds 2MB/s</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd3.html#15536" id="c">
+<link rel="index" href="maillist.html#15536" id="i">
+<link rel="prev" href="msg15535.html" id="p">
+<link rel="next" href="msg15537.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15536.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RiakCS+poor+s3+upload+speeds+2MB%5C%2Fs%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: RiakCS poor s3 upload speeds 2MB/s</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Toby+Corkindale%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Toby Corkindale</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150120" rel="nofollow">Tue, 20 Jan 2015 17:08:34 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Kota,
+I had a bit of an off-list chat about this a while ago, plus continued
+to investigate locally, and eventually achieved some faster speeds,
+around 15MByte/sec writes.
+Things that were changed:
+ * Adjusted Riak CS GC to be spread out over the cluster much more.
+ * Tweaked up the put buffers and concurrency further
+ * Moved most of the files out of CS and into Amazon S3+Glacier
+ * Switched from nginx to haproxy
+ * simplified firewalling for internal clients</pre><pre>
+
+Each one of those changes made a small to modest improvement, but
+overall combined to make a quite noticeable improvement.
+
+I did notice something odd though -- despite moving most of the data
+out of the cluster, the disk-space-in-use by Riak is still very large
+compared to the amount stored. I mean, we moved more than 90% of the
+data out of the cluster, yet the actual disk space used only halved.
+For every gigabyte of file stored in CS, dozens of gigabytes are
+actually on disk!
+
+Either the garbage collection algorithm is very, very lazy, or somehow
+something has gone a bit wrong in the past, which might have explained
+part of the performance problems.
+
+We're going to look at redeploying a new, fresh cluster based on Riak
+2 in the not too distant future, once Riak CS looks like it's approved
+for use there, and maybe that'll clear all of this up.
+
+Toby
+
+On 21 January 2015 at 11:07, Kota Uenishi &lt;k...@basho.com&gt; wrote:
+&gt; Toby and David,
+&gt;
+&gt; Thank you for working on Riak CS and I apologize for being late responder.
+&gt;
+&gt; I believe the reason of being slow down is different between Toby's
+&gt; and David's cluster.
+&gt;
+&gt; Toby's reason looks like that's just because of the data increasing.
+&gt; How much data per vnode do you have in your cluster, Toby? Do you have
+&gt; deletion in your workload?
+&gt; Riak CS's garbage collection, deleting block keys in Riak and merging
+&gt; Bitcask files make some load more than the exact amount of data
+&gt; visible via CS (even taking the replication factor into account).
+&gt; Also, if you turn on AAE, building AAE trees scans all the data stored
+&gt; in Riak to fix unexpected bit rot or partial replication. I'd like you
+&gt; to check the background load to underlying storage. If the performance
+&gt; decrease is *not* due to such background load, maybe there's the same
+&gt; dragon lurking under the water as David's cluster.
+&gt;
+&gt; One thing I can suggest from David's app.config, SSL is turned on -
+&gt; Riak CS uses Erlang's built-in SSL library for https scheme which is
+&gt; said to have not so good performance. I wonder those benchmarks were
+&gt; done over https or just http.
+&gt;
+&gt; As far as I test Riak CS, local or cluster-wide, I haven't met such
+&gt; bad performance less than 10MB/s in such a fresh state cluster. There
+&gt; should be something wrong, either the setup or the software. Would you
+&gt; mind sending us the result riak-debug and riak-cs-debug commands, if
+&gt; you still can reproduce such situation. Those packs up the environment
+&gt; info as much as it can.
+&gt;
+&gt; Thanks,
+&gt; Kota
+&gt;
+&gt; On Thu, Nov 27, 2014 at 10:36 AM, Toby Corkindale &lt;t...@dryft.net&gt; wrote:
+&gt;&gt; Thanks, that's interesting to hear.
+&gt;&gt; How have you been finding the stability and reliability to be with
+&gt;&gt; leofs, over time?
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I still wish I could just get our Riak CS cluster performing better;
+&gt;&gt; it just seems so unreasonably slow at the moment, that I suspect
+&gt;&gt; there's *something* holding it back. I can build a test cluster on my
+&gt;&gt; desktop, and even with five virtual riak nodes on the one machine, I
+&gt;&gt; still see 20-40x the performance, so it seems bizarre that dedicated
+&gt;&gt; bare-metal servers would be so slow. (Although obviously there's much
+&gt;&gt; more network latency between real machines, than a virtual cluster on
+&gt;&gt; one desktop; and they have a lot more data in their bitcask databases)
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; However I've tried fiddling with all the Riak and Riak CS options..
+&gt;&gt; ethtool offloads.. mount options.. sysctls.. MTU sizes.. even dropping
+&gt;&gt; single nodes out of the cluster one at a time in case they were
+&gt;&gt; somehow at fault..  seems like the only performance changes I can make
+&gt;&gt; are negative.
+&gt;&gt;
+&gt;&gt; We're still double the speed of the original poster in this thread,
+&gt;&gt; but.. that isn't saying much.
+&gt;&gt;
+&gt;&gt; Toby
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On 26 November 2014 at 06:44, Heinz Nikolaus Gies &lt;he...@licenser.net&gt; wrote:
+&gt;&gt;&gt; If you’re evaluating RiakCS vs. Ceph you might want to toss LeoFS[1] in the
+&gt;&gt;&gt; mix and give it a run. Just as RiakCS it is a dynamo inspired system build
+&gt;&gt;&gt; in Erlang and comes with the same advantages and disadvantages. But unlike
+&gt;&gt;&gt; RiakCS it is pretty much exclusive a Object Store so can take a few
+&gt;&gt;&gt; different optimizations for this kind of work that might not be possible in
+&gt;&gt;&gt; a general purpose database as Riak (this is my personal guess not a research
+&gt;&gt;&gt; founded conclusion).  The team is (much) smaller then bash (obviously) but
+&gt;&gt;&gt; they’re a very nice and responsive bunch. I ended up using it as a s3
+&gt;&gt;&gt; backend for Project-FiFo due to it’s performance characteristics. With
+&gt;&gt;&gt; current releases I manage to get a sigle file upload speed of ~1.2GB/s using
+&gt;&gt;&gt; gof3r[2] (this might be a client limitation but I haven’t had time to
+&gt;&gt;&gt; investigate the details).
+&gt;&gt;&gt;
+&gt;&gt;&gt; [1] <a  rel="nofollow" href="http://leo-project.net/leofs/">http://leo-project.net/leofs/</a>
+&gt;&gt;&gt; [2] <a  rel="nofollow" href="https://github.com/rlmcpherson/s3gof3r/tree/master/gof3r">https://github.com/rlmcpherson/s3gof3r/tree/master/gof3r</a>
+&gt;&gt;&gt; ---
+&gt;&gt;&gt; Cheers,
+&gt;&gt;&gt; Heinz Nikolaus Gies
+&gt;&gt;&gt; he...@licenser.net
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Nov 25, 2014, at 6:08, Toby Corkindale &lt;t...@dryft.net&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Hi,
+&gt;&gt;&gt; I wondered if you managed to significantly improve your Riak CS
+&gt;&gt;&gt; performance, or not?
+&gt;&gt;&gt;
+&gt;&gt;&gt; I just ask as we've been getting not-dissimilar performance out of
+&gt;&gt;&gt; Riak CS too (4-5 mbyte/sec max per client, on bare metal hardware),
+&gt;&gt;&gt; for quite a long time. (I swear it was faster originally, when there
+&gt;&gt;&gt; was a lot less data in the whole system.)
+&gt;&gt;&gt; This is after applying all the tweaks available -- networking stack,
+&gt;&gt;&gt; filesystem mount options, assorted Erlang vm.args, and increased put
+&gt;&gt;&gt; concurrency/buffer options.
+&gt;&gt;&gt;
+&gt;&gt;&gt; We put up with it because it's been just-about sufficient enough for
+&gt;&gt;&gt; our needs and Riak CS has been reliable and easy to administer -- but
+&gt;&gt;&gt; it's becoming more of an issue, and so I'm curious to know if other
+&gt;&gt;&gt; people *do* manage to achieve *good* per-client speeds out of Riak CS
+&gt;&gt;&gt; or if this is just how things always are?
+&gt;&gt;&gt; And we're way off the mark, maybe we can find out why..
+&gt;&gt;&gt;
+&gt;&gt;&gt; Details of our setup:
+&gt;&gt;&gt; 6 node cluster. RIng size of 64.
+&gt;&gt;&gt; Riak 1.4.10
+&gt;&gt;&gt; Riak CS 1.5.2
+&gt;&gt;&gt; (installed from official Basho repos)
+&gt;&gt;&gt;
+&gt;&gt;&gt; Tests conducted using both multi-part and non-multi-part upload mode;
+&gt;&gt;&gt; performance is similar with both. Tested against cluster when very
+&gt;&gt;&gt; lightly loaded.
+&gt;&gt;&gt; For the sake of testing, a 100M file is being used, that contains
+&gt;&gt;&gt; random (hard to compress) data.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Cheers,
+&gt;&gt;&gt; Toby
+&gt;&gt;&gt;
+&gt;&gt;&gt; On 8 November 2014 at 01:41, David Meekin &lt;david.mee...@autotrader.co.uk&gt;
+&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Hi,
+&gt;&gt;&gt; I’ve setup a test 4 node RiakCS cluster on HP BL460c hardware and I can’t
+&gt;&gt;&gt; seem to get S3 upload speeds above 2MB/s
+&gt;&gt;&gt; I’m connecting direct to RiackCS on one of the nodes so there is no load
+&gt;&gt;&gt; balancing software in place.
+&gt;&gt;&gt; I have also installed s3cmd locally onto one of the nodes and the speeds
+&gt;&gt;&gt; locally are the same.
+&gt;&gt;&gt; These 4 nodes also run a test CEPH cluster with RadosGW and s3 uploads to
+&gt;&gt;&gt; CEPH achieve 125MB/s
+&gt;&gt;&gt; Any help would be appreciated as I’m currently evaluating both CEPH and
+&gt;&gt;&gt; RiakCS.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; Turning and turning in the widening gyre
+&gt;&gt; The falcon cannot hear the falconer
+&gt;&gt; Things fall apart; the center cannot hold
+&gt;&gt; Mere anarchy is loosed upon the world
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Kota UENISHI / @kuenishi
+&gt; Basho Japan KK
+
+
+
+-- 
+Turning and turning in the widening gyre
+The falcon cannot hear the falconer
+Things fall apart; the center cannot hold
+Mere anarchy is loosed upon the world
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15535.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd3.html#15536">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15536">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15537.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15130.html">RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">David Meekin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15131.html">Re: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15135.html">RE: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">David Meekin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15136.html">Re: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">Luke Bakken</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg15139.html">Re: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li class="icons-email"><span class="subject"><a href="msg15230.html">Re: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15252.html">Re: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">Heinz Nikolaus Gies</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15255.html">Re: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15256.html">Re: RiakCS poor s3 upload speeds 2MB/...</a></span> <span class="sender italic">Heinz Nikolaus Gies</span></li>
+<li class="icons-email"><span class="subject"><a href="msg15535.html">Re: RiakCS poor s3 upload speeds 2MB/...</a></span> <span class="sender italic">Kota Uenishi</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: RiakCS poor s3 upload speeds...</span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15537.html">Re: RiakCS poor s3 upload sp...</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15551.html">Re: RiakCS poor s3 uploa...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li class="icons-email"><span class="subject"><a href="msg15559.html">Re: RiakCS poor s3 uploa...</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li class="icons-email"><span class="subject"><a href="msg15608.html">Re: RiakCS poor s3 uploa...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg15566.html">Re: RiakCS poor s3 upload sp...</a></span> <span class="sender italic">Kota Uenishi</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg15140.html">Re: RiakCS poor s3 upload speeds 2MB/s</a></span> <span class="sender italic">Toby Corkindale</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: RiakCS poor s3 upload speeds 2MB/s">
+<input type="hidden" name="msgid" value="CABEgq96PDO=JNbhwM3Wdf997TprCk++U6jemgPsSjgaOXXH12Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15536.html">
+<input type="submit" value=" Toby Corkindale ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RiakCS+poor+s3+upload+speeds+2MB%5C%2Fs%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15535.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15537.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABEgq96PDO=JNbhwM3Wdf997TprCk++U6jemgPsSjgaOXXH12Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

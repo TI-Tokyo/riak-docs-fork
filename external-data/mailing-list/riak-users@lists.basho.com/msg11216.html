@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Help with a complex Map Reduce query</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd15.html#11216" id="c">
+<link rel="index" href="mail15.html#11216" id="i">
+<link rel="prev" href="msg11200.html" id="p">
+<link rel="next" href="msg11201.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11216.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Help+with+a+complex+Map+Reduce+query%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Help with a complex Map Reduce query</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Fink%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Fink</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130604" rel="nofollow">Tue, 04 Jun 2013 11:22:02 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi, Julien.
+
+On Sat, Jun 1, 2013 at 5:27 PM, Julien Genestoux
+&lt;julien.genest...@gmail.com&gt; wrote:
+&gt; Yet, due to a bug in our implementation, we have 'lost' some entries. In
+&gt; other words, some feedKey-entryKey elements are not in any feed object.
+…
+&gt; Our initial solution was to list all the feed keys, and then, for each,</pre><pre>
+
+Is it possible that there are feedKey-entryKey objects for which there
+is no feed object? The problem as you described it made it sound like
+the feed object always exists, but may just be missing an entry. I ask
+if the feed object might be missing entirely, because if it is then
+the initial solution you describe (listing all feed keys) won't work,
+regardless of speed, because it won't find some of the entry key
+prefixes. If this is the case, you have no choice but to list all
+entry keys.
+
+&gt; We're now thinking there may be a better way? Maybe with a single mapReduce
+&gt; job which would iterate over all the entry keys and then only keep track
+&gt; of the feedKey that have more than 10 elements? This would probably cut down
+&gt; very significantly the number of map reduce as we would run them only
+&gt; on the few (maybe 1%?) feedKey for which there are 'lost' entries?
+&gt;
+&gt; Maybe there would be a better way? Any idea?
+
+I might suggest removing MapReduce from the equation entirely, and
+listing keys straight to the client for processing. Trying to find
+anything with &quot;more than X instances&quot; in a Riak MapReduce is a
+difficult task, because you will have to build the entire result set
+on one node. There is no way to trim it down as work progresses,
+because you can't know whether or not you have seen all entries for a
+feed until you have seen all entries, period. Thus, ignoring feeds
+with 10 or less elements can't be done until the end of processing. If
+the total number of feed objects is small, this may be possible, but
+if not, then managing the large result set will be tricky at best (due
+to timeout/retry/etc.), and impossible with a JS reduce phase at least
+(because of the time required to transfer the encoded data out to
+spidermonkey and back).
+
+Streaming all keys to a client is also expensive, but managing retries
+after timeout, or bugs in sorting/filtering logic will be much simpler
+since you won't have to worry about hammering the Riak cluster. You
+can sort and resort that list locally, check the idea for feedKeys
+with more than 10 elements, and compare it to other plans before
+committing to additional cluster time.
+
+In addition, if you're using the eleveldb backend, then the next
+release of Riak will bring the ability to paginate 2i results. So, you
+could make streaming all keys to a client less punishing by requesting
+just a few keys at a time from the '$bucket' index. This capability is
+committed on our master branches, linked from
+<a  rel="nofollow" href="https://github.com/basho/riak_kv/pull/540">https://github.com/basho/riak_kv/pull/540</a>
+
+HTH,
+Bryan
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11200.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd15.html#11216">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail15.html#11216">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11201.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11200.html">Help with a complex Map Reduce query</a></span> <span class="sender italic">Julien Genestoux</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Help with a complex Map Reduce query</span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Help with a complex Map Reduce query">
+<input type="hidden" name="msgid" value="CAOLR_oahQfiUE6oKEgsxkDnbwiJhb4FdgMMeCJuQfdMGpKifwA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11216.html">
+<input type="submit" value=" Bryan Fink ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Help+with+a+complex+Map+Reduce+query%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11200.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11201.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOLR_oahQfiUE6oKEgsxkDnbwiJhb4FdgMMeCJuQfdMGpKifwA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Javascript MapReduce fails Erlang succeeds</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd11.html#12098" id="c">
+<link rel="index" href="mail11.html#12098" id="i">
+<link rel="prev" href="msg12096.html" id="p">
+<link rel="next" href="msg12099.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12098.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Javascript+MapReduce+fails+Erlang+succeeds%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Javascript MapReduce fails Erlang succeeds</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Chris+Meiklejohn%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Chris Meiklejohn</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130820" rel="nofollow">Tue, 20 Aug 2013 11:30:12 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Doug,
+
+While this is certainly possible, the JSON that's being used as the
+function argument does decode both with Spidermonkey (calling into the JSON
+decode function with that object directly), and with mochijson2.  It's a
+combination of the function application with that object as the functions
+argument.</pre><pre>
+
+- Chris
+
+
+On Mon, Aug 19, 2013 at 11:23 PM, Doug Read &lt;doug.r...@qnary.com&gt; wrote:
+
+&gt; I noticed the value in some of the json fields have the single quotes and
+&gt; double quotes, is it possible they aren't being correctly escaped when
+&gt; being passed to spidermonkey?
+&gt;
+&gt;
+&gt; On Mon, Aug 19, 2013 at 5:33 PM, Chris Meiklejohn 
+&gt; &lt;cmeiklej...@basho.com&gt;wrote:
+&gt;
+&gt;&gt; Hello Doug,
+&gt;&gt;
+&gt;&gt; I've verified that the problem is not related to that particular parsing
+&gt;&gt; function, as the following JavaScript MapReduce code will trigger the
+&gt;&gt; exception:
+&gt;&gt;
+&gt;&gt; { &quot;map&quot;: {&quot;language&quot;: &quot;javascript&quot;, &quot;source&quot;: &quot;function(value, keyData,
+&gt;&gt; arg) { return [value]; }&quot; }
+&gt;&gt;
+&gt;&gt; Specifically, what's happening inside of the erlang_js module is this
+&gt;&gt; function is being turned into an anonymous immediately invoking function
+&gt;&gt; expression like such:
+&gt;&gt;
+&gt;&gt; (function(value, keyData, arg) { return [value]; })(RIAK_OBJECT_HERE)
+&gt;&gt;
+&gt;&gt; This string is then marshalled and called through the Erlang port driver
+&gt;&gt; to Spidermonkey.  The response returned is the following:
+&gt;&gt;
+&gt;&gt; {ok, &lt;&lt;&gt;&gt;}
+&gt;&gt;
+&gt;&gt; This then causes the js_mochijson2 decode to fail, because it's not
+&gt;&gt; defined over empty binary objects.
+&gt;&gt;
+&gt;&gt; I've verified that this is only the behavior with the object you
+&gt;&gt; provided, which leads me to believe that something inside of Spidermonkey
+&gt;&gt; is blowing up, which is triggering the empty binary response.
+&gt;&gt;
+&gt;&gt; I'm going to continue tracking it down, however, I'd advise moving
+&gt;&gt; forward to switch to Erlang-based MapReduce jobs, which perform much
+&gt;&gt; better, as they don't introduce overhead for serialization/deserialization
+&gt;&gt; and don't require the use of the JavaScript virtual machine.
+&gt;&gt;
+&gt;&gt; - Chris
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Mon, Aug 19, 2013 at 4:14 PM, Chris Meiklejohn 
+&gt;&gt; &lt;cmeiklej...@basho.com&gt;wrote:
+&gt;&gt;
+&gt;&gt;&gt; Hi Doug,
+&gt;&gt;&gt;
+&gt;&gt;&gt; Can you shoot over the multi get job you are using?
+&gt;&gt;&gt;
+&gt;&gt;&gt; - Chris
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Mon, Aug 19, 2013 at 4:11 PM, Doug Read &lt;doug.r...@qnary.com&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Hi Chris,
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I appreciate the help.  Please let me know if I can help in anyway.
+&gt;&gt;&gt;&gt;  For now I just switched to a &quot;multi&quot; get.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; thanks
+&gt;&gt;&gt;&gt; doug
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; On Mon, Aug 19, 2013 at 4:09 PM, Chris Meiklejohn &lt;
+&gt;&gt;&gt;&gt; cmeiklej...@basho.com&gt; wrote:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Hi Doug,
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; After loading your backup, I can trigger the crash through the
+&gt;&gt;&gt;&gt;&gt; JavaScript map/reduce job.  However, if I do the following:
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; {ok, Client} = riak:local_client().
+&gt;&gt;&gt;&gt;&gt; {ok, O} = Client:get(&lt;&lt;&quot;BUCKET&quot;&gt;&gt;, &lt;&lt;&quot;KEY&quot;&gt;&gt;).
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; both of these calls succeed:
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; js_mochijson2:decode(riak_object:get_values(O)).
+&gt;&gt;&gt;&gt;&gt; mochijson2:decode(riak_object:get_values(O)).
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; I'm continuing to track down where the crash is occurring, but it
+&gt;&gt;&gt;&gt;&gt; appears to be something related to erlang_js.
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; - Chris
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; On Fri, Aug 16, 2013 at 10:45 AM, Doug Read &lt;doug.r...@qnary.com&gt;wrote:
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; So you are right about the characters in the json, I remove most of
+&gt;&gt;&gt;&gt;&gt;&gt; the key, just leaving some valid json with the special characters, it
+&gt;&gt;&gt;&gt;&gt;&gt; produces the same error.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; A simple node program which reads the json from file and does
+&gt;&gt;&gt;&gt;&gt;&gt; JSON.parse; this succeeds.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; var fs = require(&quot;fs&quot;);
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; fs.readFile(&quot;/tmp/bucket_export/s/e/a/searches_bad.json&quot;,
+&gt;&gt;&gt;&gt;&gt;&gt; function(err, data) {
+&gt;&gt;&gt;&gt;&gt;&gt;   console.log(data);
+&gt;&gt;&gt;&gt;&gt;&gt;   var json = JSON.parse(data);
+&gt;&gt;&gt;&gt;&gt;&gt;   console.log(json);
+&gt;&gt;&gt;&gt;&gt;&gt; });
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; So the javascript VM or something before/after it is having trouble
+&gt;&gt;&gt;&gt;&gt;&gt; parsing it but i am not sure how to debug from here.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; On Fri, Aug 16, 2013 at 1:58 AM, Christopher Meiklejohn &lt;
+&gt;&gt;&gt;&gt;&gt;&gt; cmeiklej...@basho.com&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Hi Doug,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Just going through your email again; I just noticed that there is a
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; typo in the bucket name between those two commands:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; JavaScript:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; curl -XPOST <a  rel="nofollow" href="http://localhost:8098/mapred">http://localhost:8098/mapred</a> -H 'Content-Type:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; application/json' -d '{&quot;inputs&quot;:[ [ &quot;aaaaaaaa-4536-9048-87ef2e48ddda&quot;,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;key_5ad26d0d-4d28-40ca-afcb-1c9895cc5c71&quot; ] ], &quot;query&quot;:[ { &quot;map&quot;: {
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;name&quot;: &quot;Riak.mapValuesJson&quot;, &quot;language&quot;: &quot;javascript&quot; } }, { &quot;reduce&quot;: 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; {
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;name&quot;: &quot;Riak.filterNotFound&quot;, &quot;language&quot;: &quot;javascript&quot; } } ] }'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Erlang:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; curl -XPOST <a  rel="nofollow" href="http://localhost:8098/mapred">http://localhost:8098/mapred</a> -H 'Content-Type:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; application/json' -d '{&quot;inputs&quot;:[ [ 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;aaaaaaaa-50d7-4536-9048-87ef2e48ddda&quot;,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;key_5ad26d0d-4d28-40ca-afcb-1c9895cc5c71&quot; ] ],
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;query&quot;:[{&quot;map&quot;:{&quot;language&quot;:&quot;erlang&quot;,&quot;module&quot;:&quot;riak_kv_mapreduce&quot;,&quot;function&quot;:&quot;map_object_value&quot;}}
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; ] }'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Specifically, 'aaaaaaaa-4536-9048-87ef2e48ddda' in the failed
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; JavaScript command vs 'aaaaaaaa-50d7-4536-9048-87ef2e48ddda' in the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; successful Erlang command.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; I've verified this is triggering not_founds in the dump you supplied.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; - Chris
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Christopher Meiklejohn
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Software Engineer
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Basho Technologies, Inc.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; On Friday, August 16, 2013 at 1:36 AM, Doug Read wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; No problem.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; Riak 1.3.1
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; Have reproduced the error on 1.3.1 Mac osx and 1.4.1 on Ubuntu. I
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; am on my phone now I'll get the build and package versions.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; That is the erlang mapreduce, that has always worked it is the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; javascript version that fails. The one I originally posted but basically
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; any javascript mapreduce which takes that bucket key as input.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; On Friday, August 16, 2013, Christopher Meiklejohn wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; Hi Doug,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; First, my apologies. I confused two email responses I was
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; writing, and that's why my previous e-mail was a bit out of context.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; I've loaded your backup file into a locally built cluster here
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; off of the Riak 1.2 branch, but I'm still unable to reproduce the issue
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; using the following map/reduce command:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; curl -XPOST <a  rel="nofollow" href="http://localhost:8098/mapred">http://localhost:8098/mapred</a> -H 'Content-Type:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; application/json' -d '{&quot;inputs&quot;:[ [ 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;aaaaaaaa-50d7-4536-9048-87ef2e48ddda&quot;,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;key_5ad26d0d-4d28-40ca-afcb-1c9895cc5c71&quot; ] ],
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;query&quot;:[{&quot;map&quot;:{&quot;language&quot;:&quot;erlang&quot;,&quot;module&quot;:&quot;riak_kv_mapreduce&quot;,&quot;function&quot;:&quot;map_object_value&quot;}}
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; ] }'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; Can you please provide which operating system, build, and
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; package version of Riak you are running?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; - Chris
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; --
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; Christopher Meiklejohn
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; Software Engineer
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; Basho Technologies, Inc.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; On Friday, August 16, 2013 at 1:23 AM, Christopher Meiklejohn
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; Hi Doug,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; Can you provide more information as to how you build the image
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; with Vagrant so I can try to reproduce it? The configuration alone isn't
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; going to be enough as this appears to be a systems related issue.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; - Chris
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; --
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; Christopher Meiklejohn
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; Software Engineer
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; Basho Technologies, Inc.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; On Friday, August 16, 2013 at 1:20 AM, Doug Read wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; Hi Chris,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; I made a riak-admin backup of the key which reproduces the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; issue. I was wondering if you could give me some direction of how to 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; debug
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; the issue.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; thanks
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; doug
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; On Thu, Aug 15, 2013 at 3:41 PM, Chris Meiklejohn &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; cmeiklej...@basho.com (<a  rel="nofollow" href="mailto:cmeiklej...@basho.com">mailto:cmeiklej...@basho.com</a>)&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; The best guess I have at this point is probably something
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; related to character encoding, but without a reproduction case, I'm not
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; able to debug it any further.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; Good luck with the upgrade tonight!
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; - Chris
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; On Thu, Aug 15, 2013 at 3:39 PM, Doug Read &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; doug.r...@qnary.com (<a  rel="nofollow" href="mailto:doug.r...@qnary.com">mailto:doug.r...@qnary.com</a>)&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; I redirected the output of curl into a file on an ubuntu
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; box. I am upgrading the cluster to 1.4.1 tonight. To your point I PUT 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; value into the key locally (3 node cluster) and couldn't reproduce 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; either.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Also i am turning on the java vm logging.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; On Thu, Aug 15, 2013 at 3:33 PM, Chris Meiklejohn &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; cmeiklej...@basho.com (<a  rel="nofollow" href="mailto:cmeiklej...@basho.com">mailto:cmeiklej...@basho.com</a>)&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; Hi Doug,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; I've configured a Riak 1.2 cluster, and run the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; aforementioned map-reduce job in Erlang and I can't trigger the crash. 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; I'm
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; getting the expected results of the map/reduce job. How did you send me 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; object that you provided off-list?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; - Chris
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; On Thu, Aug 15, 2013 at 12:36 PM, Chris Meiklejohn &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; cmeiklej...@basho.com (<a  rel="nofollow" href="mailto:cmeiklej...@basho.com">mailto:cmeiklej...@basho.com</a>)&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; Hi Doug,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; Can you provide a sample of the JSON that you're
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; storing in these objects? It appears that mochijson2's tokenizer is
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; crashing because it thinks the JSON is not valid, where the Spidermonkey
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; parsing is succeeding.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; - Chris
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; On Wed, Aug 14, 2013 at 10:58 AM, Doug Read &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; doug.r...@qnary.com (<a  rel="nofollow" href="mailto:doug.r...@qnary.com">mailto:doug.r...@qnary.com</a>)&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; The following MapReduce job fails using javascript
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; but succeeds when using erlang.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; Riak 1.2.0 2012-0806 Debian x86_64
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; 3 nodes, n_val=3
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; Riak diag gives large list of
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; [warning] The following preflists do not satisfy
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; the n_val:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; Not really sure what this means but thought i
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; would share.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; JAVASCRIPT:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; curl -XPOST <a  rel="nofollow" href="http://localhost:8098/mapred">http://localhost:8098/mapred</a> -H
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 'Content-Type: application/json' -d '{&quot;inputs&quot;:[ [
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;aaaaaaaa-4536-9048-87ef2e48ddda&quot;,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;key_5ad26d0d-4d28-40ca-afcb-1c9895cc5c71&quot; ] ], &quot;query&quot;:[ { &quot;map&quot;: {
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &quot;name&quot;: &quot;Riak.mapValu
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12096.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd11.html#12098">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail11.html#12098">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12099.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12058.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12059.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12060.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Doug Read</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12061.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12065.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Doug Read</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12090.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Chris Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12091.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Doug Read</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12093.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Chris Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12094.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Chris Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12096.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Doug Read</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Javascript MapReduce fails Erlang succeeds</span> <span class="sender italic">Chris Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12099.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Chris Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12152.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Doug Read</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12161.html">Re: Javascript MapReduce fails Erlang succeeds</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Javascript MapReduce fails Erlang succeeds">
+<input type="hidden" name="msgid" value="CAJBra_m46Es5jMMgELMDP1dscy8rGMTR1+MiQksZ1E6CV-+bCw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12098.html">
+<input type="submit" value=" Chris Meiklejohn ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Javascript+MapReduce+fails+Erlang+succeeds%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12096.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12099.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAJBra_m46Es5jMMgELMDP1dscy8rGMTR1+MiQksZ1E6CV-+bCw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

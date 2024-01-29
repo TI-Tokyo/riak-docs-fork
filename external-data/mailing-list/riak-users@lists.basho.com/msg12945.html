@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: max_files_limit and AAE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd7.html#12945" id="c">
+<link rel="index" href="mail7.html#12945" id="i">
+<link rel="prev" href="msg12943.html" id="p">
+<link rel="next" href="msg12947.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12945.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+max_files_limit+and+AAE%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: max_files_limit and AAE</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dave+Brady%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dave Brady</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131111" rel="nofollow">Mon, 11 Nov 2013 13:01:50 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Matthew, 
+</pre><pre>
+
+I forgot to add &quot;thanks&quot; for the spreadsheet! I will go through tomorrow (it's 
+10 PM here). 
+
+
+I have turned off AAE for the time being. 
+
+
+
+-- 
+Dave Brady 
+
+----- Original Message -----
+
+From: &quot;Dave Brady&quot; &lt;dbr...@weborama.com&gt; 
+To: &quot;Matthew Von-Maszewski&quot; &lt;matth...@basho.com&gt; 
+Cc: riak-users@lists.basho.com 
+Sent: Lundi 11 Novembre 2013 21:42:32 
+Subject: Re: max_files_limit and AAE 
+
+
+Hi Matthew, 
+
+
+Yes, I *absolutely* agree that the current setting is too high. I was just 
+hoping to give the nodes way more than enough headroom than I thought they 
+needed to run. I planned to reduce the limit if I saw memory pressure. 
+
+
+I originally had AAE at the default of 20. We first got those errors a couple 
+of days ago (which was debilitating; the affected nodes went unresponsive). I 
+set it 3000, restarted, and less than one day later the same problem occurred 
+(a few hours ago.) 
+
+-- 
+Dave Brady 
+
+----- Original Message -----
+
+From: &quot;Matthew Von-Maszewski&quot; &lt;matth...@basho.com&gt; 
+To: &quot;Dave Brady&quot; &lt;dbr...@weborama.com&gt; 
+Cc: riak-users@lists.basho.com 
+Sent: Lundi 11 Novembre 2013 21:16:46 
+Subject: Re: max_files_limit and AAE 
+
+hmm … 
+
+
+128 partitions divide by 5 nodes is ~26 vnodes per server. 
+
+
+AAE creates a parallel number of vnodes, so your servers have ~52 vnodes each. 
+
+
+52 x 3,000 is 156,000 files … 156,000 &gt; 65,536 ulimit. Sooner or later 65,536 
+will be too small. But ... 
+
+
+Now, the primary account method in 1.4.2 is memory size allocated based upon 
+max_open_files. So you have allocated 4Mbytes x 3,000 x 52 or 624,000Mbytes of 
+RAM for leveldb. If you truly have a 624Gbyte machine, sweet! Otherwise, it 
+might be time to scale back the max_open_files … and put AAE back to its 
+default because it does not need a high max_open_files. 
+
+
+
+
+The tricky part to leveldb configuration is that the max_open_files parameter 
+is per vnode / partition, not for the entire server. This per vnode setting has 
+caused many to over allocate, and is mostly inconsistent with every other piece 
+of software on a Linux server. (And caused a couple of justified rants on this 
+user list.) A more sane approach is coming out in Riak 2.0. 
+
+
+But until then, here is a spreadsheet that can help planning: 
+
+
+
+
+
+
+
+
+
+Matthew 
+
+
+
+On Nov 11, 2013, at 2:56 PM, Dave Brady &lt; dbr...@weborama.com &gt; wrote: 
+
+
+
+
+Hey Everyone, 
+
+
+We have a five-node, 128 partition cluster running 1.4.2 on Debian. 
+
+
+Is there a doc somewhere that explains how to size max_open_files as it applies 
+to AAE? 
+
+
+I have max_open_files for eLevelDB set to 3000, as we have about 1500 .sst 
+files in one VNode's data directory, and the boxes have plenty of RAM. 
+
+
+I set max_open_files in the AAE section to 3000, too, on whim after we had our 
+first issue. Still got these in the logs on a couple of nodes after running for 
+less than one day: 
+
+
+
+=============== 
+2013-11-09 11:37:12.438 [info] 
+&lt;0.857.0&gt;@riak_kv_vnode:maybe_create_hashtrees:142 
+riak_kv/125597796958124469533129165311555572001681702912: unable to start 
+index_hashtree: {error,{{badmatch,{error,{db_open,&quot;IO error: 
+/var/lib/riak/anti_entropy/125597796958124469533129165311555572001681702912/LOCK:
+ Too many open 
+files&quot;}}},[{hashtree,new_segment_store,2,[{file,&quot;src/hashtree.erl&quot;},{line,499}]},{hashtree,new,2,[{file,&quot;src/hashtree.erl&quot;},{line,215}]},{riak_kv_index_hashtree,do_new_tree,2,[{file,&quot;src/riak_kv_index_hashtree.erl&quot;},{line,426}]},{lists,foldl,3,[{file,&quot;lists.erl&quot;},{line,1197}]},{riak_kv_index_hashtree,init_trees,2,[{file,&quot;src/riak_kv_index_hashtree.erl&quot;},{line,366}]},{riak_kv_index_hashtree,init,1,[{file,&quot;src/riak_kv_index_hashtree.erl&quot;},{line,226}]},{gen_server,init_it,6,[{file,&quot;gen_server.erl&quot;},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,&quot;proc_lib.erl&quot;},{line,227}]}]}}
+ 
+2013-11-09 11:37:12.441 [error] &lt;0.5209.2422&gt; gen_server &lt;0.5209.2422&gt; 
+terminated with reason: no match of right hand value {error,{db_write,&quot;IO 
+error: 
+/var/lib/riak/anti_entropy/125597796958124469533129165311555572001681702912/011260.log:
+ Too many open files&quot;}} in hashtree:flush_buffer/1 line 302 
+2013-11-09 11:37:12.441 [error] &lt;0.5209.2422&gt; CRASH REPORT Process 
+&lt;0.5209.2422&gt; with 1 neighbours exited with reason: no match of right hand 
+value {error,{db_write,&quot;IO error: 
+/var/lib/riak/anti_entropy/125597796958124469533129165311555572001681702912/011260.log:
+ Too many open files&quot;}} in hashtree:flush_buffer/1 line 302 in 
+gen_server:terminate/6 line 747 
+2013-11-09 11:37:12.441 [error] &lt;0.19959.2426&gt; CRASH REPORT Process 
+&lt;0.19959.2426&gt; with 0 neighbours exited with reason: no match of right hand 
+value {error,{db_open,&quot;IO error: 
+/var/lib/riak/anti_entropy/125597796958124469533129165311555572001681702912/LOCK:
+ Too many open files&quot;}} in hashtree:new_segment_store/2 line 499 in 
+gen_server:init_it/6 line 328 
+=============== 
+
+
+Our init script has &quot;ulimit -n 65536&quot; in it, which I *thought* that would be 
+high enough. Maybe not? 
+
+
+
+I also made the necessary tweaks to /etc/pam.d/common-session*, so that 
+/etc/security/limts.conf would be read, and that did not help. 
+
+
+Much obliged for any suggestions! 
+-- 
+Dave Brady 
+
+_______________________________________________ 
+riak-users mailing list 
+riak-users@lists.basho.com 
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+
+
+
+
+
+_______________________________________________ 
+riak-users mailing list 
+riak-users@lists.basho.com 
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12943.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd7.html#12945">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#12945">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12947.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12938.html">max_files_limit and AAE</a></span> <span class="sender italic">Dave Brady</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12939.html">Re: max_files_limit and AAE</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12942.html">Re: max_files_limit and AAE</a></span> <span class="sender italic">Dave Brady</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg12941.html">Re: max_files_limit and AAE</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12943.html">Re: max_files_limit and AAE</a></span> <span class="sender italic">Dave Brady</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: max_files_limit and AAE</span> <span class="sender italic">Dave Brady</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12947.html">Re: max_files_limit and AAE</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12948.html">Re: max_files_limit and AAE</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12953.html">Re: max_files_limit and AA...</a></span> <span class="sender italic">Dave Brady</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12954.html">Re: max_files_limit an...</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12956.html">Re: max_files_limit an...</a></span> <span class="sender italic">Dave Brady</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12955.html">Re: max_files_limit an...</a></span> <span class="sender italic">Shane McEwan</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12957.html">Re: max_files_limit an...</a></span> <span class="sender italic">Dave Brady</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: max_files_limit and AAE">
+<input type="hidden" name="msgid" value="1021244232.5503945.1384203563908.JavaMail.root@weborama.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12945.html">
+<input type="submit" value=" Dave Brady ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+max_files_limit+and+AAE%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12943.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12947.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1021244232.5503945.1384203563908.JavaMail.root@weborama.com</li>
+</ul>
+</div>
+</body>
+</html>

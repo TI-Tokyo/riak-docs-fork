@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Key expiration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08725" id="c">
+<link rel="index" href="maillist.html#08725" id="i">
+<link rel="prev" href="msg08716.html" id="p">
+<link rel="next" href="msg08715.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08725.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Key+expiration%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Key expiration</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120927" rel="nofollow">Thu, 27 Sep 2012 04:28:08 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Am 26.09.2012 23:20, schrieb Anthony Molinaro:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+On Wed, Sep 26, 2012 at 10:04:54PM +0200, Kresten Krab Thorup wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+While we're discussing merge and expiry semantic here, I'd like to explain how 
+HanoiDB does it since that may be a reason for trying it out on your problem.</pre><pre>
+
+With the HanoiDB backend, merging and expiration is &quot;incremental&quot;, which means 
+that log(N / #partitions) merge/expire operations are performed for every PUT or DELETE, 
+N being the total number og KVs stored in the backend.
+
+Nothing more, nothing less. This means that you completely avoid the issue of 
+&quot;having to schedule merging&quot; at off-peak hours or some such.  If you test it, 
+and your response times are satisfactory, then response times will continue being 
+satisfactory and predictably so.
+</pre></blockquote><pre style="margin: 0em;">
+What are the IOPS like for HanoiDB?  I like bitcask because I know there will
+only ever be one read, and as my operations are heavily weighted towards reads
+I want to minimize them (even with SSD's we've found that too many reads can
+cause poor latency).
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>We were thinking of switching to LevelDB, since the RAM requirements of 
+</tt><tt>bitcask are starting to kill us, but the missing key expiration in 
+</tt><tt>LevelDB is also a problem for us. So if HanoiDB sounds interesting. Has 
+</tt><tt>it been tested in production sufficently, or would we be guinea pigs?
+</tt><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+One &quot;downside&quot; of the current implementation is that if nothing is being 
+inserted (or deleted), then data doesn't expire (and disk usage isn't reduced), but that 
+may be a feature to add in the future.
+</pre></blockquote></blockquote><tt>Thats not a problem, at least for us. If you never insert anything, and 
+</tt><tt>your disks aren't shrinking you should be fine, right ;-)?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>While were at it, I might point out, that expiration should not be used 
+</tt><tt>to invalidate old entries from the perspective of the application layer! 
+</tt><tt>Since it is a storage backend only feature, if, for example, you loose a 
+</tt><tt>node and replace it, read repair will recreate all keys on that node as 
+</tt><tt>brand new, so they will only expire after whatever is your expiration 
+</tt><tt>time. Same goes for node membership changes. Whats worse, the other,old 
+</tt><tt>copies of a given key will expire much earlier, and if you read that key 
+</tt><tt>afterward will be restored from the new copy by read repair, at which 
+</tt><tt>point the roles of the old and new copies switch. This may go on ad 
+</tt><tt>infinitum if you read often enough.
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I've always wanted a way to control merging via riak-admin.  We've been using
+cassandra's control over compaction to schedule things for weekends off peak
+and to make sure no 2 nodes are compacting at the same time.  This sort of
+thing is currently impossible with riak as the only controls you get are
+either windows (but all nodes will have the same window unless you are
+customizing config for every node, which is hard, and changing windows
+requires restarts), or letting the merge triggers cause it to happen.
+Having a way to fire it from the command line would allow you to manage
+when it happens via cron or some other scheduling system which would
+make for a more flexible setup IMHO.
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>Changing the merge_window in a running system is easy. Just 'riak 
+</tt><tt>attach' and do the following:
+</tt><pre style="margin: 0em;">
+
+application:set_env(bitcask, merge_window, always).
+
+or
+
+application:set_env(bitcask, merge_window, never).
+
+</pre><tt>But you can just use the attached skript to switch merging on/off from 
+</tt><tt>any node ;-). Just make sure to adapt the first two lines to you 
+</tt><tt>setting, especially you erlang cookie.
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+It would be interesting to hear back from some of you if you try it out, or if 
+you need help doing so.
+</pre></blockquote><pre style="margin: 0em;">
+If we have a chance we'll try it out, but as it's probably not a supported
+backend for Riak EDS, we may not be able to.  Any sense on if it will
+make it into riak proper at some point?
+
+-Anthony
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+--
+Senior Backend Developer
+________________________________________________
+</pre><tt> 
+</tt><tt>ADITION technologies AG
+</tt><pre style="margin: 0em;">
+Schwarzwaldstrasse 78b
+79117 Freiburg
+</pre><tt> 
+</tt><tt><a  rel="nofollow" href="http://www.adition.com">http://www.adition.com</a>
+</tt><tt> 
+</tt><tt>T +49 / (0)761 / 88147 - 30
+</tt><pre style="margin: 0em;">
+F +49 / (0)761 / 88147 - 77
+SUPPORT +49  / (0)1805 - ADITION
+</pre><tt> 
+</tt><tt>(Festnetzpreis 14 ct/min; Mobilfunkpreise maximal 42 ct/min)
+</tt><tt> 
+</tt><tt>Eingetragen beim Amtsgericht Düsseldorf unter HRB 54076
+</tt><pre style="margin: 0em;">
+Vorstände: Andreas Kleiser, Jörg Klekamp, Tihomir Perkovic, Marcus Schlüter
+Aufsichtsratsvorsitzender: Rechtsanwalt Daniel Raimer
+UStIDNr.: DE 218 858 434
+
+</pre><pre>#!/usr/lib/riak/erts-5.8.5/bin/escript
+%%! -name merge_switcher -setcookie COOKIE_GOES_HERE
+
+main([NodeString, Command]) -&gt;
+  NewSettingsValue =
+    case Command of
+      &quot;enable&quot; -&gt;  always;
+      &quot;disable&quot; -&gt; never;
+      _ -&gt; main([])
+    end,
+
+  Node = erlang:list_to_atom(NodeString),
+  {ok, State} = rpc:call(Node, application, get_env, [bitcask, merge_window]),
+  io:format(&quot;current state: ~p~n&quot;, [State]),
+
+  ok = rpc:call(Node, application, set_env, [bitcask, merge_window, 
+NewSettingsValue]),
+    
+  io:format(&quot;switched to state: ~p~n&quot;, [NewSettingsValue]);
+
+main(_) -&gt;
+  io:format(&quot;~nUsage: riak_switch_merging nodename enable/disable~n&quot;),
+  halt(1).
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08716.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08725">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08725">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08715.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08613.html">Key expiration</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08616.html">Re: Key expiration</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08702.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08712.html">Re: Key expiration</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08713.html">Re: Key expiration</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08716.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Key expiration</span> <span class="sender italic">Nico Meyer</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08715.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08724.html">Re: Key expiration</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08747.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Key expiration">
+<input type="hidden" name="msgid" value="5064383C.70807@adition.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08725.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Key+expiration%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08716.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08715.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5064383C.70807@adition.com</li>
+</ul>
+</div>
+</body>
+</html>

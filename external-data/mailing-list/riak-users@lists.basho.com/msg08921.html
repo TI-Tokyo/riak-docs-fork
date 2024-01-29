@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak mapreduce function map_object_value return empty result on	erlang pb client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08921" id="c">
+<link rel="index" href="maillist.html#08921" id="i">
+<link rel="prev" href="msg08920.html" id="p">
+<link rel="next" href="msg08923.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08921.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+mapreduce+function+map_object_value+return+empty+result+on%09erlang+pb+client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak mapreduce function map_object_value return empty result on	erlang pb client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mikhail+Kuznetsov%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mikhail Kuznetsov</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121015" rel="nofollow">Mon, 15 Oct 2012 09:34:25 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi 
+Thank you Brian. Today we finally find problems 
+We use index fetch before use mapreduce, like in this example:</pre><pre>
+
+{ok,List}=riakc_pb_socket:get_index(Pid, Bucket, Index, Key)
+BK=[ {B,K}||[B,K]&lt;-List],
+{ok,[{0,Result}]}=riakc_pb_socket:mapred(Pid, BK, [{map, {modfun, 
+riak_kv_mapreduce, map_object_value} ,undefined, true}]),
+[binary_to_term(E)|| E&lt;-Result]
+
+In line 1 function return list of lists (pair Bucket and Key). And after some 
+time that function start returning simply list of keys. Without announcement, 
+release notes or ticket or something else. Just one day one man think why not 
+to rewrite everything related to search. Right before it someone &quot;fixed&quot; 
+protobuff and we got tons of errors related to binary indexes. What the fuck, 
+we spend one day to check driver source for possible bugs? I think main 
+commiter at least should post some notes and not to change function interfaces 
+without some serious need. 
+
+Erlang VM in some case use it pattern matching without runtime error in line 3 
+and we got our silent bug. All we need was to change line 3 to
+BK=[ {Bucket,K} || K&lt;-List],
+
+It works fine now. But this is not ok. Because interface is broke for map 
+reduce function. We pass it empty list instead of list of {Bucket, Key} and we 
+get {ok,[]} instead of {ok, [{0,[]}]}.
+We fixed it, but I am very angry to people who don't give a fuck about 
+interface stability and release notes. Many people use it in production, they 
+pay money for support and a lot of money. They don't want to play in hide and 
+seek &quot;new features&quot; after each minor commit. If they feel pissed they just pull 
+out  they money and buy something else.
+-- 
+Sincerely yours,
+Mikhail Kuznetsov
+
+When best practices meet everyday life and lead to perfection...
+
+Oct 15, 2012, в 19:55 , Bryan Fink написал(а):
+
+&gt; On Thu, Oct 11, 2012 at 1:32 AM, Mikhail Kuznetsov
+&gt; &lt;kuznetsov.m...@gmail.com&gt; wrote:
+&gt;&gt; I use riak erlang client for my project, and update riak and client library
+&gt;&gt; today from master(client to 1.3.1 and server to 1.2.0). Everything works
+&gt;&gt; except fetching multiple entities with map-reduce return empty. Instead of
+&gt;&gt; usual result {ok, [...,{&lt;stage_number&gt;,&lt;stage result&gt;},...]} I get {ok,[]}.
+&gt;&gt; Rollback with client and everything works ok. But if I use old client with
+&gt;&gt; new riak I got a lot of errors in the server logs.
+&gt; 
+&gt; Hi, Mikhail. I'm not surprised by the old-client-with-new-riak errors.
+&gt; The definitions of some protocol buffers changed in the 1.2.0 Riak
+&gt; release, iirc.
+&gt; 
+&gt; As for the missing results, though, I've been unable to reproduce the
+&gt; issue as you reported. Using Riak 1.2.0 and riak-erlang-client 1.3.1:
+&gt; 
+&gt; 
+&gt; 1&gt; {ok, S} = riakc_pb_socket:start(&quot;127.0.0.1&quot;, 8087).
+&gt; {ok,&lt;0.33.0&gt;}
+&gt; 
+&gt; 2&gt; BK = [{&lt;&lt;&quot;mk&quot;&gt;&gt;,&lt;&lt;&quot;1&quot;&gt;&gt;},{&lt;&lt;&quot;mk&quot;&gt;&gt;,&lt;&lt;&quot;2&quot;&gt;&gt;},{&lt;&lt;&quot;mk&quot;&gt;&gt;,&lt;&lt;&quot;3&quot;&gt;&gt;}].
+&gt; [{&lt;&lt;&quot;mk&quot;&gt;&gt;,&lt;&lt;&quot;1&quot;&gt;&gt;},{&lt;&lt;&quot;mk&quot;&gt;&gt;,&lt;&lt;&quot;2&quot;&gt;&gt;},{&lt;&lt;&quot;mk&quot;&gt;&gt;,&lt;&lt;&quot;3&quot;&gt;&gt;}]
+&gt; 
+&gt; 3&gt; [ riakc_pb_socket:put(S, riakc_obj:new(B, K, K)) || {B, K} &lt;- BK ].
+&gt; [ok,ok,ok]
+&gt; 
+&gt; 4&gt; {ok, [{0,Result}]} = riakc_pb_socket:mapred(S, BK, [{map, {modfun,
+&gt; riak_kv_mapreduce, map_object_value},undefined, true}]).
+&gt; {ok,[{0,[&lt;&lt;&quot;1&quot;&gt;&gt;,&lt;&lt;&quot;2&quot;&gt;&gt;,&lt;&lt;&quot;3&quot;&gt;&gt;]}]}
+&gt; 
+&gt; Can you see where my example differs from yours?
+&gt; 
+&gt; -Bryan
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08920.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08921">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08921">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08923.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08878.html">Riak mapreduce function map_object_value return empty re...</a></span> <span class="sender italic">Mikhail Kuznetsov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08920.html">Re: Riak mapreduce function map_object_value return...</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak mapreduce function map_object_value re...</span> <span class="sender italic">Mikhail Kuznetsov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08923.html">Re: Riak mapreduce function map_object_valu...</a></span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak mapreduce function map_object_value return empty result on	erlang pb client">
+<input type="hidden" name="msgid" value="02471B92-C197-4F6A-AB94-5FB58E7C7781@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08921.html">
+<input type="submit" value=" Mikhail Kuznetsov ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+mapreduce+function+map_object_value+return+empty+result+on%09erlang+pb+client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08920.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08923.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">02471B92-C197-4F6A-AB94-5FB58E7C7781@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

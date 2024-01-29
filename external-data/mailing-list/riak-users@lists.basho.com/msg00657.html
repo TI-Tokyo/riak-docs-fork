@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak and Amazon EC2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00657" id="c">
+<link rel="index" href="maillist.html#00657" id="i">
+<link rel="prev" href="msg00655.html" id="p">
+<link rel="next" href="msg00659.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00657.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+and+Amazon+EC2%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak and Amazon EC2</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dan+Reverri%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dan Reverri</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100627" rel="nofollow">Sun, 27 Jun 2010 09:28:38 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Dmitry,
+
+Regarding map reduce query performance in a cluster, map phases are run in
+parallel so adding more machines to the cluster means more map functions can
+be run simultaneously. Reduce phases currently only run on the node that
+initiated the query so additional machines will not affect the performance
+of reduce phases. More information regarding map reduce is available on the
+wiki:
+<a  rel="nofollow" href="https://wiki.basho.com/display/RIAK/MapReduce">https://wiki.basho.com/display/RIAK/MapReduce</a></pre><pre>
+
+This portion of the wiki discusses how Riak spreads map reduce queries:
+<a  rel="nofollow" href="https://wiki.basho.com/display/RIAK/MapReduce#MapReduce-HowRiakSpreadsProcessing">https://wiki.basho.com/display/RIAK/MapReduce#MapReduce-HowRiakSpreadsProcessing</a>
+
+
+Regarding links, they are a special type of map phase. A link phase collects
+the bucket/key values defined in the &quot;Link&quot; header of an object and passes
+them to the next phase. Link phases are accessible to the Erlang clients by
+defining them in a map reduce query. For example, the following can be run
+from &quot;riak console&quot;:
+
+%% get a local client
+{ok,C} = riak:local_client().
+
+%% define a metadata dict with links
+MD = dict:store(&lt;&lt;&quot;Links&quot;&gt;&gt;,
+[{{&lt;&lt;&quot;bucket&quot;&gt;&gt;,&lt;&lt;&quot;key2&quot;&gt;&gt;},&lt;&lt;&quot;tag&quot;&gt;&gt;}],dict:new()).
+RO = riak_object:new(&lt;&lt;&quot;bucket&quot;&gt;&gt;,&lt;&lt;&quot;key1&quot;&gt;&gt;,&lt;&lt;&quot;value&quot;&gt;&gt;).
+RO1 = riak_object:update_metadata(RO, MD).
+
+%% save the object
+C:put(RO1,1).
+
+%% run a link phase in a map reduce query
+C:mapred([{&lt;&lt;&quot;bucket&quot;&gt;&gt;,&lt;&lt;&quot;key1&quot;&gt;&gt;}],[{link, &lt;&lt;&quot;bucket&quot;&gt;&gt;, '_', true}]).
+
+The map reduce query returns: {ok,[[&lt;&lt;&quot;bucket&quot;&gt;&gt;,&lt;&lt;&quot;key2&quot;&gt;&gt;,&lt;&lt;&quot;tag&quot;&gt;&gt;]]}
+
+* Note, the above query used '_' for the tag portion of the query to
+indicate that any tag is acceptable.
+
+
+Thank you,
+Dan
+
+Daniel Reverri
+Developer Advocate
+Basho Technologies, Inc.
+d...@basho.com
+
+
+On Sun, Jun 27, 2010 at 6:36 AM, Dmitry Demeshchuk &lt;demeshc...@gmail.com&gt;wrote:
+
+&gt; On Fri, Jun 25, 2010 at 8:25 PM, Ryan Tilder &lt;rtil...@basho.com&gt; wrote:
+&gt; &gt; Hi, Dmitry.  There are some gaps in the information you included here
+&gt; that
+&gt; &gt; might help clarify what's going on so I'm going to just rattle off some
+&gt; &gt; questions for clarification.
+&gt; &gt; Is your test driver only making requests of a single EC2 instance?  Or
+&gt; are
+&gt; &gt; you querying all 7 nodes directly in so sort of load distribution?   If
+&gt; you
+&gt; &gt; aren't querying all 7 nodes directly, then you will likely see
+&gt; performance
+&gt; &gt; on par with a cluster with only a single &quot;physical&quot; node.
+&gt;
+&gt; I tried both ways: querying only one node and querying all the nodes.
+&gt; The results were approximately the same. But as far as I understand,
+&gt; for map-reduce queries it's an expected result, isn't it?
+&gt;
+&gt; &gt; Are you certain that the 7 nodes are communicating with each other?  The
+&gt; &gt; output of the &quot;riak-admin status&quot; command should list the nodes in the
+&gt; &gt; &quot;ring_members&quot; field.
+&gt;
+&gt; Yes, sure.
+&gt;
+&gt; &gt; Are the &quot;documents&quot; a separate key with Riak's built in links to the
+&gt; &gt; &quot;entities&quot; or are they keys with a data blob that refer to the
+&gt; entities?[1]
+&gt; &gt;  If the latter, have you
+&gt; &gt; read <a  rel="nofollow" href="http://blog.basho.com/2010/02/24/link-walking-by-example/">http://blog.basho.com/2010/02/24/link-walking-by-example/</a> ?
+&gt;
+&gt; To simplify, document data (I mean, value in Riak database) had
+&gt; structure like this:
+&gt;
+&gt; [{entities, [123, 456, 745, 2352, 235 | ...]}].
+&gt;
+&gt; I actually used timestamps in microseconds for Ids but that doesn't
+&gt; really matter.
+&gt; And, regarding your last question, documents and entities were stored
+&gt; in different buckets.
+&gt;
+&gt; What about links? Should they give better speed in that case? Also,
+&gt; neither Erlang native API (I mean riak_client module) nor Erlang PBC
+&gt; seem to have link-walking functions like REST API.
+&gt;
+&gt;
+&gt; &gt; It's also important for me to note that EC2 instances do not necessarily
+&gt; &gt; have the same characteristics of actual physical hardware when it comes
+&gt; to
+&gt; &gt; preventing resource contention.  Since EC2 instances are virtualized, you
+&gt; &gt; have no idea what other load the physical host of a given instance may be
+&gt; &gt; under.  As a result it is possible to have a Riak instance running on the
+&gt; &gt; same hardware as another IO and CPU intensive instance without your
+&gt; &gt; knowledge, impeding each other to a certain degree.  We've had a number
+&gt; of
+&gt; &gt; users complain of performance problems with Riak clusters running on EC2
+&gt; at
+&gt; &gt; various times.  From my personal and anecdotal experience, EC2 seems to
+&gt; be
+&gt; &gt; pretty heavily oversubscribed much of the time which leads to
+&gt; intermittent
+&gt; &gt; performance issues for all kinds of applications.
+&gt; &gt; All of that is just a long winded way of saying: don't expect shared
+&gt; &gt; virtualized resources to provide the same performance as dedicated
+&gt; physical
+&gt; &gt; hardware.  But you should still see at least somewhat better performance
+&gt; &gt; that you're seeing now if your testing harness is testing properly.
+&gt;
+&gt; Sure, I understand that. But I expected at least a bit better performance.
+&gt;
+&gt; Anyway, the day before yesterday I ran some tests using basho_bench.
+&gt; These tests cheered me up a bit :)
+&gt; Here's the link to the results:
+&gt;
+&gt; <a  rel="nofollow" href="http://demmonoid.livejournal.com/4098.html">http://demmonoid.livejournal.com/4098.html</a>
+&gt;
+&gt; Please let me know if you want me to add or correct any links to your
+&gt; resources or add any more information about the tests.
+&gt;
+&gt; &gt; --Ryan
+&gt; &gt; 1. I'm not certain if you're saying that the documents are stored in a
+&gt; &gt; separate bucket from the entities in the same Riak cluster or a separate
+&gt; &gt; Riak cluster entirely.
+&gt; &gt; On Fri, Jun 25, 2010 at 12:02 AM, Dmitry Demeshchuk &lt;
+&gt; demeshc...@gmail.com&gt;
+&gt; &gt; wrote:
+&gt; &gt;&gt;
+&gt; &gt;&gt; Greetings.
+&gt; &gt;&gt;
+&gt; &gt;&gt; I tried running Riak with bitcask backend on 7 Amazon EC2 standard
+&gt; &gt;&gt; large instances (7.5 GB RAM, 4 EC2 CPU units) and performed some
+&gt; &gt;&gt; tests.
+&gt; &gt;&gt; For comparison, I built up the following Riak clusters:
+&gt; &gt;&gt;
+&gt; &gt;&gt; 7 physical nodes ring
+&gt; &gt;&gt; 1 physical node ring (on one of the 7 instances, but I ran the tests
+&gt; &gt;&gt; separately so the rings won't mess with each other)
+&gt; &gt;&gt; 1 physical node ring on an extra large instance (15 GB RAM, 8EC2 CPU
+&gt; &gt;&gt; units)
+&gt; &gt;&gt;
+&gt; &gt;&gt; and ran a couple of tests with putting and getting data using Riak
+&gt; &gt;&gt; native Erlang API (not PBC).
+&gt; &gt;&gt;
+&gt; &gt;&gt; I had 2 buckets, the first one having small (averagely about 1KB)
+&gt; &gt;&gt; values, but a lot of them (about several millions) called &quot;entities&quot;,
+&gt; &gt;&gt; and the second one having lists of keys from the first database,
+&gt; &gt;&gt; called &quot;documents&quot;. So, every document consists of a lot of entities
+&gt; &gt;&gt; (I used 100 and 1000 for my tests). So, the approximate size of every
+&gt; &gt;&gt; document was either 100KB or 1MB.
+&gt; &gt;&gt;
+&gt; &gt;&gt; So, I performed tests of putting documents and entities to database
+&gt; &gt;&gt; and then obtaining them. I tried to perform reads and writes using 10
+&gt; &gt;&gt; and 100 concurrent Erlang processes (well, 100 was generally too much
+&gt; &gt;&gt; as I ran out of CPU), first from only one machine and then from 2 and
+&gt; &gt;&gt; 3 machines at the same time (for the 7-nodes ring). Of course, the
+&gt; &gt;&gt; entities were obtained using map-reduce.
+&gt; &gt;&gt;
+&gt; &gt;&gt; The first weird thing was that even with 10 concurrent reads and
+&gt; &gt;&gt; writes the performance didn't differ for all three clusters. Okay, 1
+&gt; &gt;&gt; large and 1 extra large nodes don't differ so much but the 7 nodes
+&gt; &gt;&gt; should have given me some performance, shouldn't they?
+&gt; &gt;&gt;
+&gt; &gt;&gt; The second thing was that the average read time for one document with
+&gt; &gt;&gt; 1000 entities was about 5 seconds, and again, the number of machines
+&gt; &gt;&gt; in the cluster didn't affect the result. I guess I just stumbled upon
+&gt; &gt;&gt; the performance of the instance that sent all the map-reduce requests
+&gt; &gt;&gt; and then collected the replies because when I ran tests on the other 2
+&gt; &gt;&gt; instances, all three had the same performance.
+&gt; &gt;&gt;
+&gt; &gt;&gt; The other strange thing was that during data writes most of the time
+&gt; &gt;&gt; nodes were not io-loaded. If it was a one-stream write, it would be
+&gt; &gt;&gt; obvious. But it were 10 and then 20 and 30 simultaneous writing
+&gt; &gt;&gt; processes!
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt; Unfortunately I cannot provide the detailed results now, they are
+&gt; &gt;&gt; pretty messed up. I'm going to use basho_bench to make good graphs and
+&gt; &gt;&gt; tables of these tests.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Any advises for the future tests or any explanations for such strange
+&gt; &gt;&gt; performance?
+&gt; &gt;&gt;
+&gt; &gt;&gt; Thank you in advance and sorry for a little messed up e-mail.
+&gt; &gt;&gt;
+&gt; &gt;&gt; --
+&gt; &gt;&gt; Best regards,
+&gt; &gt;&gt; Dmitry Demeshchuk
+&gt; &gt;&gt;
+&gt; &gt;&gt; _______________________________________________
+&gt; &gt;&gt; riak-users mailing list
+&gt; &gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt; &gt;
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Best regards,
+&gt; Dmitry Demeshchuk
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00655.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00657">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00657">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00659.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00651.html">Riak and Amazon EC2</a></span> <span class="sender italic">Dmitry Demeshchuk</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00653.html">Re: Riak and Amazon EC2</a></span> <span class="sender italic">Ryan Tilder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00655.html">Re: Riak and Amazon EC2</a></span> <span class="sender italic">Dmitry Demeshchuk</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak and Amazon EC2</span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00659.html">Re: Riak and Amazon EC2</a></span> <span class="sender italic">Dmitry Demeshchuk</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak and Amazon EC2">
+<input type="hidden" name="msgid" value="AANLkTin5Ti1VQycDAAoXMxVIiVd6k-XDMbkRo_3ZwYxD@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00657.html">
+<input type="submit" value=" Dan Reverri ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+and+Amazon+EC2%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00655.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00659.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTin5Ti1VQycDAAoXMxVIiVd6k-XDMbkRo_3ZwYxD@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

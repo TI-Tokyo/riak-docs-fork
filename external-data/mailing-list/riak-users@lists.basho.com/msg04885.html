@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Performance Issues with LevelDB Backend on 1.0.0RC1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#04885" id="c">
+<link rel="index" href="mail4.html#04885" id="i">
+<link rel="prev" href="msg04884.html" id="p">
+<link rel="next" href="msg04880.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04885.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+Issues+with+LevelDB+Backend+on+1.0.0RC1%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Performance Issues with LevelDB Backend on 1.0.0RC1</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dan+Reverri%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dan Reverri</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110926" rel="nofollow">Mon, 26 Sep 2011 14:25:47 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Patrick,
+
+Did you restart Riak after changing the configuration option in app.config?
+Also, where in the config file did you add the option? Would it be possible
+to see your app.config file? How many of the file descriptors listed by lsof
+reference the &quot;data/leveldb&quot; directory?</pre><pre>
+
+Thanks,
+Dan
+
+Daniel Reverri
+Developer Advocate
+Basho Technologies, Inc.
+d...@basho.com
+
+
+On Mon, Sep 26, 2011 at 12:23 PM, Patrick Van Stee
+&lt;vans...@highgroove.com&gt;wrote:
+
+&gt; Good suggestion. Erlang only has 39 ports open. I initially tried
+&gt; increasing max_open_files to a huge number just to see what would happen,
+&gt; but there was no noticeable difference in performance. Also lsof -u riak
+&gt; shows over 12000 fds open even after limiting max_open_files back to 20 and
+&gt; the number continues to grow until it hits the system limit which then
+&gt; causes that &quot;Accept failed error&quot;. I'm ok with increasing the max_open_files
+&gt; limit but it doesn't really seem to improve performance at least in my case.
+&gt; Also even when I try to limit the amount of file descriptors with
+&gt; max_open_files, riak still opens new ones until it crashes.
+&gt;
+&gt; On Sep 26, 2011, at 2:54 PM, Jon Meredith wrote:
+&gt;
+&gt; Hi Patrick,
+&gt;
+&gt; I suggested increasing ports as you had an emfile on a socket accept call.
+&gt; Erlang uses ports for things like network sockets and file handles when
+&gt; opened by *erlang* processes.  However, the leveldb library manages it's own
+&gt; sockets as it is a C++ library dynamically loaded by the emulator and so
+&gt; doesn't count towards ports.
+&gt;
+&gt; Is it possible that Riak started getting more client load if request
+&gt; latency increased?  Changing max_open_files will keep the number of
+&gt; process-level file handles lower, but will cause more opening and closing of
+&gt; files to search them.  If you have a nice modern OS with lots of file
+&gt; handles available, you may be able to increase max_open_files for increased
+&gt; performance.
+&gt;
+&gt; If you want to check how many ports you are using you can run this from the
+&gt; riak console.
+&gt;
+&gt;   (dev1@127.0.0.1)7&gt; length(erlang:ports()).
+&gt;   39
+&gt;
+&gt; Try increasing your max_open_ports and checking how many file handles are
+&gt; in use using a tool like lsof and check the number of ports you have opened.
+&gt;
+&gt; Cheers, Jon.
+&gt;
+&gt; On Mon, Sep 26, 2011 at 12:44 PM, Patrick Van Stee &lt;vans...@highgroove.com
+&gt; &gt; wrote:
+&gt;
+&gt;&gt; Thanks for the quick response Jon. I bumped it from 4096 up to the max I
+&gt;&gt; have set in /etc/riak/defaults and writes actually slowed down a little bit
+&gt;&gt; (~10 less writes per second). Shouldn't the max_open_files setting keep the
+&gt;&gt; total amount of fd's pretty low? Maybe I'm misunderstanding what that option
+&gt;&gt; is used for.
+&gt;&gt;
+&gt;&gt; Patrick
+&gt;&gt;
+&gt;&gt; On Sep 26, 2011, at 2:34 PM, Jon Meredith wrote:
+&gt;&gt;
+&gt;&gt; Hi Patrick,
+&gt;&gt;
+&gt;&gt; You may be running out of ports which erlang uses for TCP sockets - try
+&gt;&gt; increasing ERL_MAX_PORTS in etc/vm.args
+&gt;&gt;
+&gt;&gt; Cheers, Jon
+&gt;&gt; Basho Technologies.
+&gt;&gt;
+&gt;&gt; On Mon, Sep 26, 2011 at 12:17 PM, Patrick Van Stee &lt;
+&gt;&gt; vans...@highgroove.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; We're running a small, 2 node riak cluster (on 2 m1.large boxes) using
+&gt;&gt;&gt; the LevelDB backend and have been trying to write ~250 keys a second at it.
+&gt;&gt;&gt; With a small dataset everything was running smoothly. However, after storing
+&gt;&gt;&gt; several hundred thousand keys some performance issues started to show up.
+&gt;&gt;&gt;
+&gt;&gt;&gt; * We're running out of file descriptors which is causing nodes to crash
+&gt;&gt;&gt; with the following error:
+&gt;&gt;&gt;
+&gt;&gt;&gt; 2011-09-24 00:23:52.097 [error] &lt;0.110.0&gt; CRASH REPORT Process [] with 0
+&gt;&gt;&gt; neighbours crashed with reason: {error,accept_failed}
+&gt;&gt;&gt; 2011-09-24 00:23:52.098 [error] &lt;0.121.0&gt; application: mochiweb, &quot;Accept
+&gt;&gt;&gt; failed error&quot;, &quot;{error,emfile}
+&gt;&gt;&gt;
+&gt;&gt;&gt; Setting the max_open_files limit in the app.config doesn't seem to help.
+&gt;&gt;&gt;
+&gt;&gt;&gt; * Writes have slowed down by an order of magnitude. I even set the n_val,
+&gt;&gt;&gt; w, and dw bucket properties to 1 without any noticeable difference. Also we
+&gt;&gt;&gt; switched to using protocol buffers to make sure there wasn't any extra
+&gt;&gt;&gt; overhead when using HTTP.
+&gt;&gt;&gt;
+&gt;&gt;&gt; * Running map reduce jobs that use a range query on a secondary index
+&gt;&gt;&gt; started returning an error, {&quot;error&quot;:&quot;map_reduce_error&quot;}, once our dataset
+&gt;&gt;&gt; increased in size. Feeding a list of keys works fine, but querying the index
+&gt;&gt;&gt; for keys seems to be timing out:
+&gt;&gt;&gt;
+&gt;&gt;&gt; 2011-09-26 16:37:57.192 [error] &lt;0.136.0&gt; Supervisor
+&gt;&gt;&gt; riak_pipe_fitting_sup had child undefined started with
+&gt;&gt;&gt; {riak_pipe_fitting,start_link,undefined} at &lt;0.3497.0&gt; exit with reason
+&gt;&gt;&gt; {timeout,{gen_server,call,[{riak_pipe_vnode_master,'riak@10.206.105.52
+&gt;&gt;&gt; '},{return_vnode,{'riak_vnode_req_v1',502391187832497878132516661246222288006726811648,{raw,#Ref&lt;0.0.1.88700&gt;,&lt;0.3500.0&gt;},{cmd_enqueue,{fitting,&lt;0.3499.0&gt;,#Ref&lt;0.0.1.88700&gt;,#Fun&lt;riak_kv_mrc_pipe.0.133305895&gt;,#Fun&lt;riak_kv_mrc_pipe.1.125635227&gt;},{&lt;&lt;&quot;ip_queries&quot;&gt;&gt;,&lt;&lt;&quot;uaukXZn5rZQ0LrSED3pi-fE-JjU&quot;&gt;&gt;},infinity,[{502391187832497878132516661246222288006726811648,'
+&gt;&gt;&gt; riak@10.206.105.52'}]}}}]}} in context child_terminated
+&gt;&gt;&gt;
+&gt;&gt;&gt; Is anyone familiar with these problems or is there anything else I can
+&gt;&gt;&gt; try to increase the performance when using LevelDB?
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04884.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#04885">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#04885">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04880.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04878.html">Performance Issues with LevelDB Backend on 1.0.0RC1</a></span> <span class="sender italic">Patrick Van Stee</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04879.html">Re: Performance Issues with LevelDB Backend on 1.0.0...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04883.html">Re: Performance Issues with LevelDB Backend on 1...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04884.html">Re: Performance Issues with LevelDB Backend ...</a></span> <span class="sender italic">Patrick Van Stee</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Performance Issues with LevelDB Back...</span> <span class="sender italic">Dan Reverri</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04880.html">Performance Issues with LevelDB Backend on 1.0.0RC1</a></span> <span class="sender italic">JB Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04882.html">Re: Performance Issues with LevelDB Backend on 1...</a></span> <span class="sender italic">Jon Meredith</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04881.html">Performance Issues with LevelDB Backend on 1.0.0RC1</a></span> <span class="sender italic">JB Smith</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Performance Issues with LevelDB Backend on 1.0.0RC1">
+<input type="hidden" name="msgid" value="CAAJ=B5+ON5+j9fdvO7MKUBdTmXZqgv4hGDLKhUFhQdAx-Scwtw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04885.html">
+<input type="submit" value=" Dan Reverri ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+Issues+with+LevelDB+Backend+on+1.0.0RC1%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04884.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04880.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAJ=B5+ON5+j9fdvO7MKUBdTmXZqgv4hGDLKhUFhQdAx-Scwtw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08933" id="c">
+<link rel="index" href="maillist.html#08933" id="i">
+<link rel="prev" href="msg08907.html" id="p">
+<link rel="next" href="msg08934.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08933.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Search%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Search</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121016" rel="nofollow">Tue, 16 Oct 2012 05:44:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Sun, Oct 14, 2012 at 12:33 AM, Pavel Kogan &lt;pavel.ko...@cortica.com&gt;wrote:
+&gt;
+&gt;
+&gt; 1) Is search enabling has any impact on read latency/throughput?
+&gt;</pre><pre>
+
+If you are reading and searching at the same time there is a good chance it
+will.  It will cause more disk seeks.
+
+
+&gt; 2) Is search enabling has any impact on RAM usage?
+&gt;
+
+Yes, the index engine behind Riak Search makes heavy usage of Erlang ETS
+tables.  Each partition has an in-memory buffer as well as an in-memory
+offset table for every segment.  It also uses a temporary ETS table for
+every write to store posting data.  The ETS system limit can even become an
+issue in overload scenarios.
+
+
+&gt; 3) In production we have no search enabled. What is the best way to
+&gt;     enable search without stop production? I thought about something like:
+&gt;     1) Enable search node after node.
+&gt;
+
+You could change the app env dynamically but that's only half the problem.
+ The other half is then starting the Riak Search application.  I think
+application:start(merge_index) followed by application:start(riak_search)
+should work but I'm not 100% sure and this has not been tested.  You'll
+also want to make sure to edit all app.configs so that it is persistent.
+
+
+&gt;
+    2) Execute some night script that runs on all keys and overwrite them
+&gt; back
+&gt;         with proper mime type.
+&gt;
+
+Yes, you'll want to install the commit hook on the buckets you wish to
+index.  Then you'll want to do a streaming list-keys or bucket map-reduce
+and re-write the data.
+
+
+&gt;
+4) If we see that search overhead is something we can't handle, is there
+&gt; simple
+&gt;     way to disable it without stop production?
+&gt;
+
+I think the best course of action in this case would be to disable the
+commit hook.  But you would have to keep track of anything written during
+this time and re-write it after re-installing the hook.  If you don't then
+you'll have to re-index everything because you don't know what you missed.
+
+5) In what case we would need repair? It is said - on replica loss, but if
+&gt; I understand
+&gt;     correct we have 3 replicas on different nodes don't we? If it happens
+&gt; how difficult and
+&gt;     long would it be for large cluster (about 100 nodes)?
+&gt;
+
+Repair is on a per partition basis.  Number of nodes doesn't come into
+play.  Repair is very specific in that it requires the adjacent partitions
+to be in a good, convergent state.  If they aren't then repair isn't much
+help.
+
+A lot of these entropy issues go away in Yokozuna.  Repairing indexes is
+done automatically, in the background, in an efficient manner.  There is no
+need to re-write data or run manual repair commands.
+
+-Z
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08907.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08933">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08933">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08934.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08901.html">Riak Search</a></span> <span class="sender italic">Pavel Kogan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08906.html">Re: Riak Search</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08907.html">Re: Riak Search</a></span> <span class="sender italic">Pavel Kogan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Search</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08934.html">Re: Riak Search</a></span> <span class="sender italic">Pavel Kogan</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08936.html">Re: Riak Search</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08937.html">Re: Riak Search</a></span> <span class="sender italic">gordyt</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Search">
+<input type="hidden" name="msgid" value="CACZcpe=UEariD_2iM_MSk2bdKO-rX5RaVRh_82rPs-nucdjvzg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08933.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Search%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08907.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08934.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpe=UEariD_2iM_MSk2bdKO-rX5RaVRh_82rPs-nucdjvzg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

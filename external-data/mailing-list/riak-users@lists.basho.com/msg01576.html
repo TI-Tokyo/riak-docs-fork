@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>MapReduce filtering question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#01576" id="c">
+<link rel="index" href="mail6.html#01576" id="i">
+<link rel="prev" href="msg01575.html" id="p">
+<link rel="next" href="msg01580.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01576.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22MapReduce+filtering+question%22&amp;o=newest" rel="nofollow"><span itemprop="name">MapReduce filtering question</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Parker+Thompson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Parker Thompson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101119" rel="nofollow">Fri, 19 Nov 2010 11:16:06 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm experimenting with Riak by trying to port a simple a/b testing framework
+that's currently SQL backed. Since I'm using Ripple/riak-client my code
+below are in Ruby/JS.</pre><pre>
+
+The domain model is fairly simple. I have visitors, which get created for
+any user who hits the site, visitors see alternatives (currently these are
+ActiveRecord objects) and are tracked by creating experiences (the joining
+of a alternative ID and a visitor). Finally, as visitors do things we track
+events, which are distinguished from one another by their classes.
+
+Here is a simplified version of the model code:
+
+class Riak::Visitor
+  include Ripple::Document
+  many :events,      :class_name =&gt; &quot;Riak::Event&quot;
+end
+
+class Riak::Event
+  include Ripple::Document
+end
+
+class Riak::ShareEvent &lt; Riak::Event
+  include Ripple::Document
+end
+
+class Riak::Experience
+  include Ripple::Document
+  one :visitor, :class_name =&gt; &quot;Riak::Visitor&quot;
+  property :alternative_id, Integer, :presence =&gt; true
+end
+
+My problem is that I'd like to collect the set of visitors who have shared,
+or more generally I'd like to return a set of visitors after narrowing down
+the list by linking in specific kind of events. Well, my real problem is
+that I still don't quite grok MapReduce, but this is what I'm trying to
+accomplish.
+
+The riak-client code is included below (see visitors_who_shared). It returns
+a list of all visitors found in the map phase where keep is true. This isn't
+surprising, but I'm not sure how to get the visitors if I don't “keep” them
+in that phase.
+
+Thanks in advance for any help. I'm also happy RTFM and would appreciate
+specific suggestions for doing nontrivial MR jobs in JavaScript.
+
+class Riak::Alternative #not a riak doc
+  attr_accessor :ar_id
+
+  def initialize(ar_id)
+    self.ar_id = ar_id
+  end
+
+  def visitors_who_shared
+    Riak::MapReduce.new(Ripple.client).
+            add(&quot;riak_experiences&quot;).
+            map(map_filter_by_alternative).
+            link(:bucket =&gt; 'riak_visitors', :keep =&gt; true).
+            link(:bucket =&gt; 'riak_events').
+            map(&quot;function(v){ return [[v.bucket, v.key]]; }&quot;).
+            map(map_share_events).
+            run
+  end
+
+  def map_share_events
+    f = &lt;&lt;FUNCTION
+function(v){
+  var data = JSON.parse(v.values[0].data);
+  if(data._type != &quot;Riak::ShareEvent&quot; ){
+    return [];
+  }else{
+    return [[v.bucket, v.key]];
+  }
+}
+FUNCTION
+  end
+
+  def map_filter_by_alternative
+    f = &lt;&lt;FUNCTION
+function(v){
+  var data = JSON.parse(v.values[0].data);
+  if(data.alternative_id !=  #{self.ar_id} ){
+    return [];
+  }else{
+    return [[v.bucket, v.key]];
+  }
+}
+FUNCTION
+  end
+end
+
+Riak::Alternative.new(1).visitors_who_shared
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01575.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#01576">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#01576">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01580.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">MapReduce filtering question</span> <span class="sender italic">Parker Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01580.html">Re: MapReduce filtering question</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01582.html">Re: MapReduce filtering question</a></span> <span class="sender italic">Parker Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01583.html">Re: MapReduce filtering question</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="MapReduce filtering question">
+<input type="hidden" name="msgid" value="AANLkTikEsFtT3Qj0c6PvraypcghyAjmdnmzCSWYFW9kk@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01576.html">
+<input type="submit" value=" Parker Thompson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22MapReduce+filtering+question%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01575.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01580.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTikEsFtT3Qj0c6PvraypcghyAjmdnmzCSWYFW9kk@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

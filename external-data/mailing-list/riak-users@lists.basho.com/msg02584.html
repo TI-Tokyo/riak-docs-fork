@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>missing_field error using riaksearch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02584" id="c">
+<link rel="index" href="maillist.html#02584" id="i">
+<link rel="prev" href="msg02582.html" id="p">
+<link rel="next" href="msg02585.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02584.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22missing_field+error+using+riaksearch%22&amp;o=newest" rel="nofollow"><span itemprop="name">missing_field error using riaksearch</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Morten+Siebuhr%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Morten Siebuhr</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110309" rel="nofollow">Wed, 09 Mar 2011 06:32:24 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi all,
+
+I'm trying to use Riak + Riaksearch as a datastore for Portable
+Contacts [1], but I'm running into a spot of trouble making riaksearch
+actually work;</pre><pre>
+
+I've set up riaksearch with the following schema document:
+
+{
+        schema,
+        [
+                {version, &quot;0.1&quot;}, {default_field, &quot;_owner&quot;}, {n_val, 1}
+        ],
+        [
+                %% Don't parse _id and _owner, just treat it as single token
+                {field, [       {name, &quot;id&quot;},
+                                {required, true},
+                                {analyzer_factory, {erlang, text_analyzers, 
+noop_analyzer_factory}}
+                        ]},
+                {field, [       {name, &quot;_owner&quot;},
+                                {required, true},
+                                {analyzer_factory, {erlang, text_analyzers, 
+noop_analyzer_factory}}
+                        ]},
+                %% Parse Name fields for full-text indexing
+                {field, [       {name, &quot;displayName&quot;},
+                                {aliases, [&quot;nickname&quot;, &quot;preferredUsername&quot;, 
+&quot;name_formatted&quot;,
+&quot;name_displayName&quot;]},
+                                {analyzer_factory, {erlang, text_analyzers, 
+standard_analyzer_factory}}
+                        ]},
+                {field, [       {name, &quot;emails_value&quot;},
+                                {analyzer_factory, {erlang, text_analyzers, 
+standard_analyzer_factory}}
+                        ]},
+
+                %% Add modification dates
+                {field, [       {name, &quot;published&quot;},
+                                {aliases, [&quot;updated&quot;]},
+                                {type, date}
+                        ]}]}.
+
+(Edited slightly for shortness...)
+
+I then add it using
+&gt; sudo sudo search-cmd set_schema PortableContacts 
+&gt; `pwd`/pocolib/drivers/riak-search/schema.erl
+
+And enable it on the 'PortableContacts' bucket:
+&gt; sudo search-cmd install PortableContacts
+
+(BTW: It is not entirely clear from
+<a  rel="nofollow" href="https://wiki.basho.com/Riak-Search---Schema.html">https://wiki.basho.com/Riak-Search---Schema.html</a> if the schema name
+must match the bucket it should work for. At least, I'm not entirely
+sure.)
+
+But when I then try to push a contact entry, it coughs up an 500
+Internal Server Error:
+
+curl -v -d '{&quot;organizations&quot;: [{&quot;name&quot;: &quot;nickels principles&quot;, &quot;title&quot;:
+&quot;curvier floppies&quot;}], &quot;displayName&quot;: &quot;reverberating agrarian clue&quot;,
+&quot;name&quot;: {&quot;givenName&quot;: &quot;reverberating&quot;, &quot;formatted&quot;: &quot;reverberating
+agrarian clue&quot;, &quot;familyName&quot;: &quot;agrarian clue&quot;}, &quot;emails&quot;: [{&quot;value&quot;:
+&quot;short...@example.com&quot;}], &quot;_owner&quot;: &quot;m...@one.com&quot;, &quot;published&quot;:
+&quot;2010-04-26T13:10:33Z&quot;, &quot;id&quot;: &quot;48cad5d0-f057-4316-905e-281d1da32a01&quot;}'
+-H &quot;Content-Type: application/json&quot;
+<a  rel="nofollow" href="http://localhost:8098/riak/PortableContacts/48cad5d0-f057-4316-905e-281d1da32a01">http://localhost:8098/riak/PortableContacts/48cad5d0-f057-4316-905e-281d1da32a01</a>
+* About to connect() to localhost port 8098 (#0)
+*   Trying ::1... Connection refused
+*   Trying 127.0.0.1... connected
+* Connected to localhost (127.0.0.1) port 8098 (#0)
+&gt; POST /riak/PortableContacts/48cad5d0-f057-4316-905e-281d1da32a01 HTTP/1.1
+&gt; User-Agent: curl/7.19.7 (i486-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k 
+&gt; zlib/1.2.3.3 libidn/1.15
+&gt; Host: localhost:8098
+&gt; Accept: */*
+&gt; Content-Type: application/json
+&gt; Content-Length: 396
+&gt;
+&lt; HTTP/1.1 500 Internal Server Error
+&lt; Vary: Accept-Encoding
+&lt; Server: MochiWeb/1.1 WebMachine/1.7.3 (participate in the frantic)
+&lt; Date: Wed, 09 Mar 2011 13:51:50 GMT
+&lt; Content-Type: text/html
+&lt; Content-Length: 749
+&lt;
+&lt;html&gt;&lt;head&gt;&lt;title&gt;500 Internal Server
+Error&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Internal Server Error&lt;/h1&gt;The server
+encountered an error while processing this
+request:&lt;br&gt;&lt;pre&gt;{error,{error,badarg,
+              [{erlang,iolist_to_binary,
+                       [{error,missing_field,&lt;&lt;&quot;organizations_name&quot;&gt;&gt;}]},
+               {wrq,append_to_response_body,2},
+               {riak_kv_wm_raw,accept_doc_body,2},
+               {webmachine_resource,resource_call,3},
+               {webmachine_resource,do,3},
+               {webmachine_decision_core,resource_call,1},
+               {webmachine_decision_core,decision,1},
+* Connection #0 to host localhost left intact
+* Closing connection #0
+               
+{webmachine_decision_core,handle_request,2}]}}&lt;/pre&gt;&lt;P&gt;&lt;HR&gt;&lt;ADDRESS&gt;mochiweb+webmachine
+web server&lt;/ADDRESS&gt;&lt;/body&gt;&lt;/html&gt;
+
+
+Any ideas as to where I'm doing something wrong?
+
+I'm using version 0.14.0-1 of both products on Ubuntu 10.4 x86.
+
+[1] <a  rel="nofollow" href="http://portablecontacts.net/draft-spec.html">http://portablecontacts.net/draft-spec.html</a>
+
+-- 
+Morten Siebuhr
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02582.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02584">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02584">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02585.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">missing_field error using riaksearch</span> <span class="sender italic">Morten Siebuhr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02585.html">Re: missing_field error using riaksearch</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02587.html">Re: missing_field error using riaksearch</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="missing_field error using riaksearch">
+<input type="hidden" name="msgid" value="AANLkTim6CjXoEFwwLENPReHNP_Pb0_HDPjVphmhsn_sn@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02584.html">
+<input type="submit" value=" Morten Siebuhr ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22missing_field+error+using+riaksearch%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02582.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02585.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTim6CjXoEFwwLENPReHNP_Pb0_HDPjVphmhsn_sn@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

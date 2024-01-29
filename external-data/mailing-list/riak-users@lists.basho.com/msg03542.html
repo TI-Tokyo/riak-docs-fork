@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Correct way to use pbc/mapreduce to do multiget where keys and	bucket names are binary values?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03542" id="c">
+<link rel="index" href="maillist.html#03542" id="i">
+<link rel="prev" href="msg03540.html" id="p">
+<link rel="next" href="msg03550.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03542.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Correct+way+to+use+pbc%5C%2Fmapreduce+to+do+multiget+where+keys+and%09bucket+names+are+binary+values%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Correct way to use pbc/mapreduce to do multiget where keys and	bucket names are binary values?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jacques%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jacques</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110602" rel="nofollow">Thu, 02 Jun 2011 16:55:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Thu, Jun 2, 2011 at 3:44 PM, Russell Brown &lt;russell.br...@me.com&gt; wrote:
+&lt;&lt;snip&gt;&gt;</pre><pre>
+
+&gt; Upon further reflection, I realized that base64 encoding wouldn't work
+&gt; unless I stored the values that way single it reads the utf8 as strings
+&gt; correctly .  My plan is store my values directly as byte values.  This is
+&gt; easy with the protobuf bytes types.  However, how would I then encode them
+&gt; in the includes section of the map reduce json block?
+&gt;
+&gt;
+&gt; I'm confused here: I think you are asking how you can add the bucket, key
+&gt; inputs to a m/r job when the PB client MapReduceBuilder only allows Strings
+&gt; in the
+&gt;
+&gt; addRiakObject(String bucket, String key)
+&gt;
+&gt; method. I guess you are asking this since you created the objects as byte[]
+&gt; values with
+&gt;
+&gt; public RiakObject(ByteString bucket, ByteString key, ByteString content)
+&gt;
+&gt; And stored them with
+&gt;
+&gt; public void store(RiakObject value)
+&gt;
+&gt; but I'm guessing.
+&gt;
+
+Basically, you are correct.  We have byte arrays that we use for keys today
+that are specifically built to be as small as possible.  We were hoping to
+use these as is.  We actually moved away from use the current riak protobuf
+client because we found it to be somewhat buggy and troublesome to debug
+(party due to the use of erlang coding styles).  As users of protobuf
+elsewhere, the api was pretty reasonable for us to implement directly.
+ Especially since we really only need the high speed protobuf api for put,
+get and multiget (by using mr).
+
+
+&gt; If that is the case then I think the best we can do with the current API is
+&gt; to generate a String from your bytes. I guess the ByteString class that the
+&gt; PB client uses sends your bytes unmolested, so if you want a String
+&gt; representation of your bytes you want to encode them with ISO-8859-1.  Try
+&gt;
+&gt; addRiakObject(new String(yourBucketBytes, &quot;ISO-8859-1&quot;),  new
+&gt; String(yourKeyBytes, &quot;ISO-8859-1&quot;))
+&gt;
+&gt; When you create the m/r job with the PB MapReduceBuilder.
+&gt;
+&gt; Does that solve your problem?
+&gt;
+
+I'm horrible at character encoding but I don't think so once we use those
+strings in the Map Reduce json object.   Unless we remove a bunch of
+characters from any character sets, I believe we would choke the json
+parsing on the riak side since ultimately the job would be read as a utf8
+string.  It seems more likely that we do bidirectional base85 encoding or
+something similar (basically mapping reserved characters from to something
+else).  But this adds an extra step that we'd like to avoid.  It would also
+inflate the memory requirements for our dataset by a third (not exactly.. I
+guess assuming 15 byte bucket/key combination, I guess it would take us from
+55 to 60 bytes, ~10% growth given key overhead).  We're still not big fans
+since we'd prefer not to fill the cluster with 500-600mm values and then try
+to move to native bytes/ByteStrings later.
+
+
+&lt;&lt;snip&gt;&gt;
+
+&gt;
+&gt; I've noticed that there is a secondary erlang format that can be passed for
+&gt; map reduce jobs, must I use that?  If so, does anyone have an example of a
+&gt; generating one of these from within Java?
+&gt;
+&gt;
+&gt; The java PB client doesn't currently support
+&gt; the application/x-erlang-binary content-type for map/reduce jobs. I think
+&gt; that only the erlang pb client does.
+&gt;
+
+I understand that the current client doesn't support this.  I was more
+thinking that of using
+Jinterface&lt;<a  rel="nofollow" href="http://www.erlang.org/doc/apps/jinterface/java/com/ericsson/otp/erlang/package-summary.html">http://www.erlang.org/doc/apps/jinterface/java/com/ericsson/otp/erlang/package-summary.html</a>&gt;
+to
+generate the erlang version of the map reduce job.  I haven't worked with it
+and really don't have any knowledge around erlang types but figured it might
+be possible. I guess the question was whether anybody thought this was
+feasible.
+
+&lt;&lt;snip&gt;&gt;
+
+&gt; 2. Are the request and response threads in Riak separate or sequential.
+&gt;  For example, if I send 5 normal PbcGetReq requests in quick succession on a
+&gt; single socket does Riak finish the first one before starting on requests
+&gt; 2-5?  Or does it rather thread the requests out as they come in so it will
+&gt; get 2-5 simultaneously?  I'm asking this because I'm trying to figure out
+&gt; how much I should try to reuse a single socket connection.
+&gt;
+&gt;
+&gt; Talking about the java pb client? Each thread gets its own socket. If you
+&gt; want to do 5 concurrent gets, create 5 threads, pass a pb riak client to
+&gt; each, and have each thread do a get, you will get 5 open sockets and 5
+&gt; concurrent gets. If those threads do more operations (within a second (there
+&gt; is a Timer thread reaping connections that are unused for 1 second)) they
+&gt; will reuse the same connection.
+&gt;
+
+I was asking on the Riak side. Our real need is multi-get.  We're looking
+for regular pulls of 20 random bucket/key values.  We need to minimize
+the latency each of the pulls.  I know that we could split this into 20
+separate sockets. (ick... This gets ugly when we're talking about many
+simultaneous pulls from multiple servers.  I'd rather not create pools of
+100 sockets per requesting server if I could avoid it.)   I was wondering
+whether if we sent four requests in a row to riak on the same socket,
+whether it would work on them all at once or serially.  I'm guessing
+serially.
+
+
+&gt; I hope I've gone someway to answering your questions.
+&gt;
+
+Yes, I appreciate the help you're providing. Thank you.
+
+We're currently utilizing Linked-in's Project Voldemort but were hoping to
+transition to Riak because our primary goal is to minimize disk seeks.  I
+know multi-get was previously considered and rejected due to &quot;lack of
+demand&quot;.  I was hoping we could utilize the map-reduce functionality to
+proxy this functionality.
+
+
+&gt;
+&gt; I'd like to get your map/reduce query working and it seems you've hit a
+&gt; genuine blind spot in the current API  (storing a value with a byte[]
+&gt; bucket/key but the MapReduceBuilder requires Strings for bucket/key) so I
+&gt; want to find a work around and make sure that it is in the next version of
+&gt; the API. Thanks for your patience: If you could send me some code that
+&gt; reproduces your problem (github gist is ideal for this) then it'd make it
+&gt; easier.
+&gt;
+&gt;
+I'm sure I can make it work utilizing the path you referenced above and
+base85 or base64.  It is a simple return all values map job.  Based on what
+you're saying it seems like we have three options:
+
+- Use a string based binary encoding for our bucket/key names (e.g. base64)
+- Use a truck load of sockets.  (How will Riak perform if we are generating
+let's say 200-500 connections per riak node?)
+- Try to figure out encoding an erlang version of the map reduce job using
+JInterface (assuming the MapReduce api supports binary buckets and keys if
+using an erlang content-type).
+
+Am I missing any options?  I'm inclined to see if option 3 is available
+unless someone says that is a fool's dream.
+
+Thanks,
+Jacques
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03540.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03542">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03542">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03550.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03524.html">Correct way to use pbc/mapreduce to do multiget where keys a...</a></span> <span class="sender italic">Jacques</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03528.html">Re: Correct way to use pbc/mapreduce to do multiget whe...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03533.html">Re: Correct way to use pbc/mapreduce to do multiget...</a></span> <span class="sender italic">Jacques</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03540.html">Re: Correct way to use pbc/mapreduce to do mult...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Correct way to use pbc/mapreduce to do ...</span> <span class="sender italic">Jacques</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03550.html">Re: Correct way to use pbc/mapreduce t...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03556.html">Re: Correct way to use pbc/mapredu...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03559.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03593.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03594.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03604.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03697.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03706.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03717.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03722.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Correct way to use pbc/mapreduce to do multiget where keys and	bucket names are binary values?">
+<input type="hidden" name="msgid" value="BANLkTi=n5F1aROf5YhkH4mvG9LkjT68fTQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03542.html">
+<input type="submit" value=" Jacques ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Correct+way+to+use+pbc%5C%2Fmapreduce+to+do+multiget+where+keys+and%09bucket+names+are+binary+values%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03540.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03550.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTi=n5F1aROf5YhkH4mvG9LkjT68fTQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

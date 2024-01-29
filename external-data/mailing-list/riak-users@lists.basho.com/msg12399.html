@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: allow_mult vs. 2i</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd9.html#12399" id="c">
+<link rel="index" href="mail9.html#12399" id="i">
+<link rel="prev" href="msg12398.html" id="p">
+<link rel="next" href="msg12420.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12399.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+allow_mult+vs.+2i%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: allow_mult vs. 2i</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130925" rel="nofollow">Wed, 25 Sep 2013 15:33:12 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>inline.
+
+---
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+MCITP: SQL Server 2008, MVP
+Cloudera Certified Developer for Apache Hadoop</pre><pre>
+
+
+On Wed, Sep 25, 2013 at 2:47 PM, Brady Wetherington &lt;br...@bespincorp.com&gt;wrote:
+
+&gt; I've built it a solid proof-of-concept system on leveldb, and use some 2i
+&gt; indexes in order to search for certain things - usually just for counts of
+&gt; things.
+&gt;
+&gt; I have two questions so far:
+&gt;
+&gt; First off, why is Bitcask the default? Is it just because it is faster? Or
+&gt; is it considered more 'stable' or something?
+&gt;
+
+Long ago, when bitcask was elected as the default, LevelDB was not a thing.
+
+Databases strive for stability and the principle of least surprise.
+Changing anything can potentially introduce performance regressions,
+stability problems, and any host of other undesirable and reputation
+destroying things.
+
+Changing the storage back end is high up on the list of things I'd never
+want to do in a database. Why do you think MySQL still defaults to MyISAM?
+
+
+&gt;
+&gt; Next, I've learned about the allow_mult feature you can set on buckets. I
+&gt; wonder if I should use this for my most heavily-used primary-purpose
+&gt; queries? Is there a limit to how many 'siblings' you can have for an entry?
+&gt; Is it inadvisable to do what I'm talking about? Would fetching all of the
+&gt; siblings end up being a disastrous nightmare or something?
+&gt;
+
+The upper limit will depend on the size of your objects. You don't want to
+have object sizes (including siblings) much beyond 6MB. You'll have a lot
+of network congestion. You certainly *could* have bigger object + sibling
+collections, but you'd want to beef up the network backend to something
+like 10GbE, 40GbE, or InfiniBand to deal with the increased gossip.
+
+Fetching all of your siblings is bad if you never resolve siblings since
+you'll have a lot of data.
+
+Allow_mult is typically turned on for production clusters. This is set off
+by default to help new users get a handle on Riak quickly without having to
+worry about siblings. Once you get the hang of how Riak behaves, turning on
+siblings is usually a good thing.
+
+Depending on resolution, it's probably best to read your data, resolve
+siblings, and send that garbage collected object back to Riak - even if
+you're performing a &quot;read only&quot; query. The new Riak DT features eliminate
+some of the worry about siblings by pushing the responsibility back down to
+Riak. Those features are only available if you're building from source, but
+hopefully Riak 2.0 will be out soon.
+
+
+&gt; I *assume* - and I could be wrong - that a 2i query would be slower than a
+&gt; fetch-of-siblings for a particular key - is that wrong?
+&gt;
+&gt; If I switch from using 2i indexes to using allow_mult and siblings, we'd
+&gt; be talking a few hundred thousand to low millions for a sibling-count.
+&gt;
+
+I do not think 'siblings' means what you think it means.
+
+A sibling would occur if two clients, A and B, read v1 of an object and
+then issue writes.
+
+Client A updates object and sets preferences to ['cat pictures', 'ham
+sandwiches']
+Client B updates object and sets preferences to ['knitting with bacon']
+
+With allow_mult enabled you'd have two versions of the object. These are
+siblings.
+
+If you're thinking of some kind of index created by your application, you
+could look at 2i vs using siblings to build a secondary index:
+<a  rel="nofollow" href="http://basho.com/index-for-fun-and-for-profit/">http://basho.com/index-for-fun-and-for-profit/</a> Even when you're creating
+your own secondary index, you still want to perform garbage collection on
+the data you're storing in Riak.
+
+
+&gt; Thanks for making an excellent product! Can't wait to get this bad boy
+&gt; into production and really see what it can do!
+&gt;
+&gt; -B.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12398.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd9.html#12399">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail9.html#12399">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12420.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12398.html">allow_mult vs. 2i</a></span> <span class="sender italic">Brady Wetherington</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: allow_mult vs. 2i</span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12420.html">Re: allow_mult vs. 2i</a></span> <span class="sender italic">Brady Wetherington</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12423.html">Re: allow_mult vs. 2i</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12428.html">Re: allow_mult vs. 2i</a></span> <span class="sender italic">Runar Jordahl</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12429.html">Re: allow_mult vs. 2i</a></span> <span class="sender italic">Brady Wetherington</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: allow_mult vs. 2i">
+<input type="hidden" name="msgid" value="CACJEN2qEmW0ZF+rZUwAHC1vT5hzjxdo5eZbJDVW-f1+=LAvKxA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12399.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+allow_mult+vs.+2i%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12398.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12420.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACJEN2qEmW0ZF+rZUwAHC1vT5hzjxdo5eZbJDVW-f1+=LAvKxA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

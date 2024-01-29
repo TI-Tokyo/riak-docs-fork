@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Date format for Riak Search and its JSON output</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01459" id="c">
+<link rel="index" href="maillist.html#01459" id="i">
+<link rel="prev" href="msg01458.html" id="p">
+<link rel="next" href="msg01464.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01459.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Date+format+for+Riak+Search+and+its+JSON+output%22&amp;o=newest" rel="nofollow"><span itemprop="name">Date format for Riak Search and its JSON output</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nicolas+Fouch%C3%A9%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nicolas Fouché</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101104" rel="nofollow">Thu, 04 Nov 2010 09:17:33 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I can't find the right format for dates in Riak Search, for fields
+suffixed with &quot;_dt&quot;. I tried rfc822 (e.g. &quot;Thu, 04 Nov 2010 16:02:59
+-0000&quot;), and xmlschema/iso8601 (e.g. &quot;2010-11-04T16:07:43Z&quot;), but I
+get an {unhandled_type,date} error when requesting my data in JSON. No
+problem with XML.</pre><pre>
+
+Here are the HTTP queries to reproduce the error:
+
+# Get the bucket props
+
+GET <a  rel="nofollow" href="http://127.0.0.1:8098/riak/models?keys=false">http://127.0.0.1:8098/riak/models?keys=false</a>
+        {&quot;Accept&quot;=&gt;&quot;multipart/mixed, application/json;q=0.7, */*;q=0.5&quot;,
+&quot;X-Riak-ClientId&quot;=&gt;&quot;A1Q9KQ==&quot;}
+
+# Set the pre-commit search hook
+
+PUT <a  rel="nofollow" href="http://127.0.0.1:8098/riak/models">http://127.0.0.1:8098/riak/models</a>
+        {&quot;Accept&quot;=&gt;&quot;multipart/mixed, application/json;q=0.7, */*;q=0.5&quot;,
+&quot;X-Riak-ClientId&quot;=&gt;&quot;A1Q9KQ==&quot;, &quot;Content-Type&quot;=&gt;&quot;application/json&quot;}
+        
+{&quot;props&quot;:{&quot;precommit&quot;:[{&quot;mod&quot;:&quot;riak_search_kv_hook&quot;,&quot;fun&quot;:&quot;precommit&quot;}]}}
+
+# Check if there are any keys to delete
+
+GET <a  rel="nofollow" href="http://127.0.0.1:8098/riak/models?props=false&amp;keys=true">http://127.0.0.1:8098/riak/models?props=false&amp;keys=true</a>
+        {&quot;Accept&quot;=&gt;&quot;multipart/mixed, application/json;q=0.7, */*;q=0.5&quot;,
+&quot;X-Riak-ClientId&quot;=&gt;&quot;A1Q9KQ==&quot;}
+
+# Post a JSON document with a date in rfc822 (day-of-week, DD
+month-name CCYY hh:mm:ss zone)
+
+POST <a  rel="nofollow" href="http://127.0.0.1:8098/riak/models?returnbody=true">http://127.0.0.1:8098/riak/models?returnbody=true</a>
+        {&quot;Accept&quot;=&gt;&quot;multipart/mixed, application/json;q=0.7, */*;q=0.5&quot;,
+&quot;X-Riak-ClientId&quot;=&gt;&quot;A1Q9KQ==&quot;, &quot;Content-Type&quot;=&gt;&quot;application/json&quot;}
+        {&quot;time_dt&quot;:&quot;Thu, 04 Nov 2010 16:02:59 -0000&quot;,&quot;value&quot;:&quot;a value like
+any other value&quot;,&quot;_type&quot;:&quot;Model&quot;}
+
+# Search for the object and request a JSON ouput =&gt; KO
+
+GET <a  rel="nofollow" href="http://127.0.0.1:8098/solr/models/select?q=value%3Aother&amp;wt=json">http://127.0.0.1:8098/solr/models/select?q=value%3Aother&amp;wt=json</a>
+        {&quot;Accept&quot;=&gt;&quot;multipart/mixed, application/json;q=0.7, */*;q=0.5&quot;,
+&quot;X-Riak-ClientId&quot;=&gt;&quot;A1Q9KQ==&quot;}
+
+  &lt;html&gt;&lt;head&gt;&lt;title&gt;500 Internal Server
+Error&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Internal Server Error&lt;/h1&gt;The server
+encountered an error while processing this
+request:&lt;br&gt;&lt;pre&gt;{error,{throw,{unhandled_type,date},
+                [{riak_solr_output,convert_type,2},
+                 {riak_indexed_doc,'-to_mochijson2/2-lc$^0/1-0-',2},
+                 {riak_indexed_doc,'-to_mochijson2/2-lc$^0/1-0-',2},
+                 {riak_indexed_doc,to_mochijson2,2},
+                 {riak_solr_output,'-json_response/7-lc$^0/1-0-',2},
+                 {riak_solr_output,json_response,7},
+                 {riak_solr_searcher_wm,to_json,2},
+
+{webmachine_resource,resource_call,3}]}}&lt;/pre&gt;&lt;P&gt;&lt;HR&gt;&lt;ADDRESS&gt;mochiweb+webmachine
+web server&lt;/ADDRESS&gt;&lt;/body&gt;&lt;/html&gt;[nfo@
+17:13:46]~/Code/tests/riak/search
+
+# Search for the object and request a XML ouput =&gt; OK
+
+GET <a  rel="nofollow" href="http://127.0.0.1:8098/solr/models/select?q=value%3Aother&amp;wt=xml">http://127.0.0.1:8098/solr/models/select?q=value%3Aother&amp;wt=xml</a>
+
+  &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+  &lt;response&gt;
+    &lt;lst name=&quot;responseHeader&quot;&gt;
+      &lt;int name=&quot;status&quot;&gt;0&lt;/int&gt;
+      &lt;int name=&quot;QTime&quot;&gt;1&lt;/int&gt;
+      &lt;lst name=&quot;params&quot;&gt;
+        &lt;str name=&quot;indent&quot;&gt;on&lt;/str&gt;
+        &lt;str name=&quot;start&quot;&gt;0&lt;/str&gt;
+        &lt;str name=&quot;q&quot;&gt;value:other&lt;/str&gt;
+        &lt;str name=&quot;q.op&quot;&gt;or&lt;/str&gt;
+        &lt;str name=&quot;df&quot;&gt;value&lt;/str&gt;
+        &lt;str name=&quot;wt&quot;&gt;standard&lt;/str&gt;
+        &lt;str name=&quot;version&quot;&gt;1.1&lt;/str&gt;
+        &lt;str name=&quot;rows&quot;&gt;2&lt;/str&gt;
+      &lt;/lst&gt;
+    &lt;/lst&gt;
+    &lt;result name=&quot;response&quot; numFound=&quot;1&quot; start=&quot;0&quot; maxScore=&quot;0.500000&quot;&gt;
+      &lt;doc&gt;
+        &lt;str name=&quot;id&quot;&gt;67rGKh9XJSZBsPeet0LpdCzi1hz
+        &lt;/str&gt;
+        &lt;str name=&quot;_type&quot;&gt;Model
+        &lt;/str&gt;
+        &lt;date name=&quot;time_dt&quot;&gt;Thu, 04 Nov 2010 16:02:59 -0000
+        &lt;/date&gt;
+        &lt;str name=&quot;value&quot;&gt;a value like any other value
+        &lt;/str&gt;
+      &lt;/doc&gt;
+    &lt;/result&gt;
+  &lt;/response&gt;
+
+-- Nicolas
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01458.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01459">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01459">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01464.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Date format for Riak Search and its JSON output</span> <span class="sender italic">Nicolas Fouché</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01464.html">Re: Date format for Riak Search and its JSON output</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01465.html">Re: Date format for Riak Search and its JSON outp...</a></span> <span class="sender italic">Nicolas Fouché</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01467.html">Re: Date format for Riak Search and its JSON ...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01543.html">Re: Date format for Riak Search and its J...</a></span> <span class="sender italic">Nicolas Fouché</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Date format for Riak Search and its JSON output">
+<input type="hidden" name="msgid" value="AANLkTingZUMn9US9TKdqsgib3QG_0nFWeaQxh2hA57Dz@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01459.html">
+<input type="submit" value=" Nicolas Fouché ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Date+format+for+Riak+Search+and+its+JSON+output%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01458.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01464.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTingZUMn9US9TKdqsgib3QG_0nFWeaQxh2hA57Dz@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

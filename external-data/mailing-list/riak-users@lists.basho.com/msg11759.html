@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Corrupted Erlang binary term inside LevelDB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd13.html#11759" id="c">
+<link rel="index" href="mail13.html#11759" id="i">
+<link rel="prev" href="msg11758.html" id="p">
+<link rel="next" href="msg11761.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11759.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Corrupted+Erlang+binary+term+inside+LevelDB%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Corrupted Erlang binary term inside LevelDB</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130725" rel="nofollow">Thu, 25 Jul 2013 16:23:55 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Vladimir,
+
+I apologize for not recognizing your name and previous contribution.  I just 
+tend to think in terms of code and performance bottlenecks, not people.</pre><pre>
+
+Your June contribution resulted in changes that were released in 1.4 and 1.3.2. 
+ I and the team thank you.  However, we have not isolated the source of the 
+corruption.  We only know today that it does not happen very often.  We have a 
+second, high transaction site, that has seen the same issue.
+
+I can offer you two non-release options:
+
+- I have a branch to 1.4.0 that fixes a potential, but unproven, race 
+condition.  Details are here:
+
+<a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/mv-sst-fadvise">https://github.com/basho/leveldb/wiki/mv-sst-fadvise</a>
+
+You would have to build eleveldb locally and copy it into your executable tree. 
+ The 1.4 leveldb and eleveldb work fine with Riak 1.3.x. should you desire to 
+limit changes to your production environment.
+
+
+- I have code, soon to be a branch against 1.3.2, that only adds syslog error 
+messages to prove / disprove the race condition.  You could take this code and 
+see if it reports problems.  This route would help the community and mostly me 
+know the root cause is within the race condition addressed by the 
+mv-sst-fadvise branch.
+
+
+The two options above are what I currently have to offer.  I am actively 
+working to find the corruption source.  The good news is that Riak will 
+naturally recover from a &quot;bad CRC&quot; when detected.  The bad news is that the 
+Google defaults let some bad CRCs become good CRCs.  Riak 1.4 and 1.3.2 cannot 
+identify those bad CRCs that became good CRCs.
+
+Matthew
+
+
+
+
+On Jul 25, 2013, at 4:32 PM, Vladimir Shabanov &lt;vshaban...@gmail.com&gt; wrote:
+
+&gt; Good. Will wait for doctor.
+&gt; 
+&gt; A month ago I mailed about segmentation fault
+&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2013-June/012245.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2013-June/012245.html</a>
+&gt; After looking at core dumps you have found this problem with CRC checks being 
+&gt; skipped. I enabled paranoid_checks and got my node up an running.
+&gt; 
+&gt; I've also found that lost/BLOCKS.bad sometimes appears in partitions and have 
+&gt; sent you these blocks for further analysis.
+&gt; 
+&gt; It's very interesting why corrupted data appears in the first place. Nodes 
+&gt; didn't crashed, hardware didn't failed. As I mentioned previously all my 
+&gt; machines are with ECC memory and Riak data is kept on ZFS filesystem (which 
+&gt; also checks CRC for all the data and doesn't report any CRC errors). So it 
+&gt; looks that data is somehow corrupted by Riak itself.
+&gt; 
+&gt; lost/BLOCKS.bad are usually small 2-8kb and appears very infrequently (once a 
+&gt; week, once a month or never for many partitions). I found these BLOCKS.bad in 
+&gt; both data/leveldb and data/anti_entropy. So I have suspicion that there is a 
+&gt; bug in LevelDB.
+&gt; 
+&gt; Looking at LOGs they are created during compactions:
+&gt; &quot;Moving corrupted block to lost/BLOCKS.bad (size 2393)&quot;
+&gt; but there is no more information. What kind of block is it, where it was 
+&gt; found.
+&gt; 
+&gt; Is it possible to somehow find source of those BLOCKS.bad files? I'm building 
+&gt; Riak from sources, maybe it's possible to enable some additional logging to 
+&gt; find what these BLOCKS.bad are?
+&gt; 
+&gt; 
+&gt; 2013/7/25 Matthew Von-Maszewski &lt;matth...@basho.com&gt;
+&gt; Vladimir,
+&gt; 
+&gt; I can explain what happened, but not how to correct the problem.  The 
+&gt; gentleman that can walk you through a repair is tied up on another project, 
+&gt; but he intends to respond as soon as he is able.
+&gt; 
+&gt; We recently discovered / realized that Google's leveldb code does not check 
+&gt; the CRC of each block rewritten during a compaction.  This means that blocks 
+&gt; with bad CRCs get read without being flagged as bad, then rewritten to a new 
+&gt; file with a new, valid CRC.  The corruption is now hidden.
+&gt; 
+&gt; A more thorough discussion of the problem is found here:
+&gt; 
+&gt; <a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/mv-verify-compactions">https://github.com/basho/leveldb/wiki/mv-verify-compactions</a>
+&gt; 
+&gt; 
+&gt; We added code to the 1.3.2 and 1.4 Riak releases to have the block CRC 
+&gt; checked during both read (Get) requests and compaction rewrites.  This 
+&gt; prevents future corruption hiding.  Unfortunately, it does NOTHING for blocks 
+&gt; already corrupted and rewritten with valid CRCs.  You are encountering this 
+&gt; latter condition.  We have a developer advocate / client services person that 
+&gt; has walked others through a fix via the Riak data replicas … 
+&gt; 
+&gt; … please hold and the doctor will be with you shortly.
+&gt; 
+&gt; Matthew
+&gt; 
+&gt; 
+&gt; On Jul 24, 2013, at 9:39 PM, Vladimir Shabanov &lt;vshaban...@gmail.com&gt; wrote:
+&gt; 
+&gt;&gt; Hello,
+&gt;&gt; 
+&gt;&gt; Recently I've started expanding my Riak cluster and found that handoffs were 
+&gt;&gt; continuously retried for one partition.
+&gt;&gt; 
+&gt;&gt; Here are logs from two nodes
+&gt;&gt; <a  rel="nofollow" href="https://gist.github.com/vshabanov/41282e622479fbe81974">https://gist.github.com/vshabanov/41282e622479fbe81974</a>
+&gt;&gt; 
+&gt;&gt; The most interesting parts of logs are
+&gt;&gt; &quot;Handoff receiver for partition ... exited abnormally after processing 
+&gt;&gt; 2860338 objects: {{badarg,[{erlang,binary_to_term,...&quot;
+&gt;&gt; and
+&gt;&gt; &quot;bad argument in call to erlang:binary_to_term(&lt;&lt;131,104,....&quot;
+&gt;&gt; 
+&gt;&gt; Both nodes are running Riak 1.3.2 (old one was running 1.3.1 previously).
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; When I've printed corrupted binary string I found that it corresponds to one 
+&gt;&gt; value.
+&gt;&gt; 
+&gt;&gt; When I've tried to &quot;get&quot; it, it was read OK but node with corrupted value 
+&gt;&gt; shown the same binary_to_term error.
+&gt;&gt; 
+&gt;&gt; When I've tried to delete corrupted value I've got timeout.
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; I'm running machines with ECC memory and ZFS filesystem (which doesn't 
+&gt;&gt; report any checksum failures) so I doubt data was silently corrupted on disk.
+&gt;&gt; 
+&gt;&gt; LOG from corresponding LevelDB partition doesn't show any errors. But there 
+&gt;&gt; is a lost/BLOCKS.bad file in this partition (7kb, created more than a month 
+&gt;&gt; ago and looks like it doesn't contain corrupted value).
+&gt;&gt; 
+&gt;&gt; At the moment I've stopped handoffs using &quot;risk-admin transfer-limit 0&quot;.
+&gt;&gt; 
+&gt;&gt; Why the value was corrupted? It there any way to remove it or fix it?
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11758.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd13.html#11759">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail13.html#11759">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11761.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11738.html">Corrupted Erlang binary term inside LevelDB</a></span> <span class="sender italic">Vladimir Shabanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11757.html">Re: Corrupted Erlang binary term inside LevelDB</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11758.html">Re: Corrupted Erlang binary term inside Lev...</a></span> <span class="sender italic">Vladimir Shabanov</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Corrupted Erlang binary term inside...</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11761.html">Re: Corrupted Erlang binary term in...</a></span> <span class="sender italic">Vladimir Shabanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11770.html">Re: Corrupted Erlang binary te...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11813.html">Re: Corrupted Erlang binar...</a></span> <span class="sender italic">Vladimir Shabanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11818.html">Re: Corrupted Erlang b...</a></span> <span class="sender italic">Brian Sparrow</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Corrupted Erlang binary term inside LevelDB">
+<input type="hidden" name="msgid" value="90A6AD49-3A02-43AD-A746-D0EF6B7A8B5B@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11759.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Corrupted+Erlang+binary+term+inside+LevelDB%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11758.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11761.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">90A6AD49-3A02-43AD-A746-D0EF6B7A8B5B@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

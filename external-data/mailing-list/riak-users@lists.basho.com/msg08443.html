@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riakc_pb_socket:start_link question with a riak cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08443" id="c">
+<link rel="index" href="maillist.html#08443" id="i">
+<link rel="prev" href="msg08441.html" id="p">
+<link rel="next" href="msg08444.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08443.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riakc_pb_socket%5C%3Astart_link+question+with+a+riak+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riakc_pb_socket:start_link question with a riak cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kresten+Krab+Thorup%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kresten Krab Thorup</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120903" rel="nofollow">Mon, 03 Sep 2012 13:37:44 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>That comment is no longer correct since riak now (since 1.0 I believe) ignores 
+client IDs. See 
+<a  rel="nofollow" href="https://github.com/basho/riak/blob/master/releasenotes/riak-1.0.org#getput-improvements">https://github.com/basho/riak/blob/master/releasenotes/riak-1.0.org#getput-improvements</a></pre><pre>
+
+1. Sibling will only occur if you have allow_mult=true enabled on the bucket. 
+The following applies only in that case.
+
+2. The way ordering is determined inside riak is by using the vector clock 
+coming with the write. The only way to get one is reading it from riak. Thus, 
+to do ordered writes you have to first read an object, modify it, then pass it 
+back in. If the object was written by someone else in the mean time you'll get 
+a sibling.
+
+3. Passing in no vclock (a fresh riak_object) now also creates a sibling if 
+there is an existing object for the given key.
+
+Kresten
+Trifork
+
+On 03/09/2012, at 21.33, &quot;Bryan Hughes&quot; 
+&lt;br...@wobblesoft.com&lt;<a  rel="nofollow" href="mailto:br...@wobblesoft.com">mailto:br...@wobblesoft.com</a>&gt;&gt; wrote:
+
+Heh - I found my own answer staring me in the face - 
+<a  rel="nofollow" href="http://wiki.basho.com/Vector-Clocks.html">http://wiki.basho.com/Vector-Clocks.html</a>.
+
+Concurrent writes If two writes occur simultaneously from clients with 
+different client IDs but the same vector clock value, Riak will not be able to 
+determine the correct object to store and the object is given two siblings. 
+These writes could happen to the same node or different ones.
+
+Cheers,
+Bryan
+
+On 9/3/12 10:47 AM, Bryan Hughes wrote:
+Thanks for the replies - this is very helpful.  Our persistence abstraction 
+layer already sports a robust process pool as we do support other persistence 
+solutions (although Riak is our main gun).   I just needed to understand the 
+relationship of the protobuffer client process to the Riak cluster as a whole.  
+I understand now that the client process binds to an individual node in the 
+cluster and not the cluster as a whole.
+
+I wasnt sure there might be some logic somewhere that handled a type of proxy 
+(like Joe was referring to) so that each client connects to a single address 
+and that proxy implements the necessary routing.
+
+Fortunately, I just need to add some round robin and affinity and load 
+balancing management to our persistence layer.  From what I have been reading 
+(including basic-client.txt in the riak/doc), the key is to ensure the same 
+client binds to the same connection against the same node for subsequent writes?
+
+For example, if I have 1000 gen_server processes each reading and writing 
+atomic values to the cluster, and a process uses connection X to node A for a 
+write of record 100, the next write of record 100 should be on the same 
+connection to the same node unless that node goes away.
+
+If I am understanding this correctly, for process A writing record 1 to grab a 
+random connection to a random node and then writing record 2 on a different 
+connection to either the same node or different node will result in nothing but 
+siblings?
+
+Thanks again!
+
+Cheers,
+Bryan
+
+
+On 9/2/12 11:39 PM, Mark Phillips wrote:
+Hi Brysn ,
+
+There have been at least four chunks of code released to handle connection 
+pooling ( in addition to poolboy);
+
+<a  rel="nofollow" href="http://wiki.basho.com/Community-Developed-Libraries-and-Projects.html#Client-Libraries-and-Frameworks">http://wiki.basho.com/Community-Developed-Libraries-and-Projects.html#Client-Libraries-and-Frameworks</a>.
+  ( Scroll down to &quot; Erlang&quot;.)
+
+These might be worth a look.
+
+Mark
+twitter.com/pharkmillups&lt;<a  rel="nofollow" href="http://twitter.com/pharkmillups">http://twitter.com/pharkmillups</a>&gt;
+
+
+
+Mark
+
+
+On Sep 3, 2012, at 6:40, Joseph Lambert 
+&lt;joseph.g.lamb...@gmail.com&lt;<a  rel="nofollow" href="mailto:joseph.g.lamb...@gmail.com">mailto:joseph.g.lamb...@gmail.com</a>&gt;&gt; wrote:
+
+Hi Bryan,
+
+AFAIK, there is no built-in connection pooling for the Riak Erlang client. Each 
+connection will only connect with one node and only that node, but since it's 
+masterless you can connect to any node. You could roll your own connection 
+pooling mechanism, or use something like Poolboy to handle it for you. Using 
+Poolboy is convenient because it comes as a dependency of riak_core.
+
+If you use Poolboy, you'll have to modify riakc_pb_socket slightly to account 
+for the way poolboy initializes connections (add a start_link/1), or create a 
+simple module to pass the initialization from poolboy to riakc_pb_socket.
+
+- Joe Lambert
+
+
+On Mon, Sep 3, 2012 at 11:41 AM, Bryan Hughes 
+&lt;br...@wobblesoft.com&lt;<a  rel="nofollow" href="mailto:br...@wobblesoft.com">mailto:br...@wobblesoft.com</a>&gt;&gt; wrote:
+Hi Guys,
+
+I have a question regarding Riak's protobuffer client gen_server process.  I 
+have a cluster of 5 nodes (machines), each with consecutive IP addresses.  Our 
+application is 100% erlang and runs on its own machine.  The arguments to 
+riakc_pb_socket:start_link/2 is an Address, Port and the optional Options.  The 
+Address and Port is the address of the riak server, but in the case of a 
+masterless cluster of 5 machines, which address do I use?
+
+In reviewing the code for riakc_pb_socket.erl, the client opens a socket via 
+gen_tcp to that particular node in the cluster and only that node.  This means 
+that there is a 1 to 1 connection between the riak node and the client.  Is 
+this correct?  Maybe I am missing something?
+
+If so, then it looks like I need to implement my own round-robin algorithm 
+across a pool of protobuffer clients that I am managing, each bound to a 
+different node in the cluster while testing &quot;aliveness&quot; with ping/2 and an 
+immediate timeout?
+
+Cheers,
+Bryan
+
+--
+
+Bryan Hughes
+Wobblesoft
+
+<a  rel="nofollow" href="http://www.wobblesoft.com">http://www.wobblesoft.com</a>
+
+&quot;Art is never finished, only abandoned. - Leonardo da Vinci&quot;
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+--
+
+Bryan Hughes
+Wobblesoft
+
+<a  rel="nofollow" href="http://www.wobblesoft.com">http://www.wobblesoft.com</a>
+
+&quot;Art is never finished, only abandoned. - Leonardo da Vinci&quot;
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08441.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08443">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08443">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08444.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08434.html">riakc_pb_socket:start_link question with a riak cluste...</a></span> <span class="sender italic">Bryan Hughes</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08435.html">Re: riakc_pb_socket:start_link question with a ri...</a></span> <span class="sender italic">Joseph Lambert</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08436.html">Re: riakc_pb_socket:start_link question with ...</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08439.html">Re: riakc_pb_socket:start_link question w...</a></span> <span class="sender italic">Bryan Hughes</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08441.html">Re: riakc_pb_socket:start_link questi...</a></span> <span class="sender italic">Bryan Hughes</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riakc_pb_socket:start_link q...</span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08444.html">Re: riakc_pb_socket:start_li...</a></span> <span class="sender italic">Bryan Hughes</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08445.html">Re: riakc_pb_socket:star...</a></span> <span class="sender italic">Dan Milon</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08446.html">Re: riakc_pb_socket:star...</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08447.html">Re: riakc_pb_socket:star...</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riakc_pb_socket:start_link question with a riak cluster">
+<input type="hidden" name="msgid" value="D73F448E-3ACD-45F9-BE59-46124361F88E@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08443.html">
+<input type="submit" value=" Kresten Krab Thorup ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riakc_pb_socket%5C%3Astart_link+question+with+a+riak+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08441.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08444.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D73F448E-3ACD-45F9-BE59-46124361F88E@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

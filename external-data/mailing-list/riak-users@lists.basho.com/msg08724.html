@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Key expiration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08724" id="c">
+<link rel="index" href="maillist.html#08724" id="i">
+<link rel="prev" href="msg08715.html" id="p">
+<link rel="next" href="msg08747.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08724.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Key+expiration%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Key expiration</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120927" rel="nofollow">Thu, 27 Sep 2012 03:36:41 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Am 26.09.2012 23:14, schrieb Anthony Molinaro:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+On Wed, Sep 26, 2012 at 08:33:24PM +0200, Nico Meyer wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Great, this explains why bitcask went merging crazy after we updated
+from 0.14 to 1.1! The workaround was to constrain merging to the
+nighttime, and since it kind of worked(TM) since then, I never came
+round to look for the reason for the increased I/O load after the
+update.
+</pre></blockquote><pre style="margin: 0em;">
+Yeah, this is how we noticed as well, moving from 0.14.2 to 1.1.4
+caused IO to go crazy.  It was partially fixed with 1.2, but not
+completely, and we ended up with the grace time fix.</pre><pre>
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I just checked, and this behaviour was introduced in 1.0.3, but
+nothing was mentioned in the release notes :-(. In older versions,
+key expiration really had no impact on triggering merges. This might
+cause problems on its own. If say all you ever do is adding new
+keys, merging is never triggered, which is bad if you are recording
+time series for examples.
+I assume, that this is the reason Basho changed the merge triggering
+logic. No disrespect, but the current solution (including the
+proposed fix) is just wrong. At least if there is a continous,
+evenly spaced (in time) stream of expiring keys, as should be the
+case in most scenarios where one would use key expiration, it
+amounts to triggering a merge each time, just like setting
+frag_merge_trigger to zero.
+The proposed fix will not improve anything, if we are talking about
+the expiry_grace_time option
+(<a  rel="nofollow" href="https://github.com/basho/bitcask/blob/master/src/bitcask.erl#L569">https://github.com/basho/bitcask/blob/master/src/bitcask.erl#L569</a>).
+It just shift time, which is all the same, if you have an infinite
+stream of expiring keys.
+At the very least, a freshly merged bitcask file should be exempt
+from being merged for a certain time, to limit the rate of merging
+the same keys.
+</pre></blockquote><pre style="margin: 0em;">
+Hmm, well we haven't actually tried the fix yet (many other things
+are competing for time).  I did mention on our support ticket that
+I didn't think it was a great solution, as I still suspected it
+would have a stampeding herd sort of mode.  But if things are as
+you suspect it won't make a difference, and we'll still see the
+issue, :(
+</pre></blockquote><tt>If the final fix is contained in the most recent version on github, then 
+</tt><tt>all it effectively does is to add an offset to the expiration time (for 
+</tt><tt>the purpose of triggering merges, not actual expiration).
+</tt><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I believe the real solution has to involve some form of counting the
+number of expired keys for each file, and then adding those count to
+the number of deleted/outdated keys.
+If scanning the key dir in memory periodically is to expensive, it
+is easy enough to do it approximately by storing a histogram of
+timestamps for each file. At least if the expiration time is large
+compared to the time between file rotations, this should  be fairly
+accurate, and the accuracy vs. CPU/mem can be easily tuned by
+changing the size of the histogram. But talk is cheap. I will have
+to look into this anyway, now that I know about it, so hopefully a
+patch might fall out at the end.
+</pre></blockquote><pre style="margin: 0em;">
+I'm not sure why the old behavior of only having expire matter when
+you merge would be an issue.  I would think that having keys expire
+from the in memory index would cause those entries in the files to
+be marked as dead (as they are not indexed), then your merge trigger
+is on dead byte percentage.  But maybe that's not the way indexing
+works.  I unfortunately haven't and don't have the time right now to
+dig in and have been leaving it up to basho support, but maybe you'll
+end up with a better solution (and thus a better patch).
+
+Good Luck,
+
+-Anthony
+
+</pre></blockquote><tt>The old behaviour can be a problem if you never update or delete any 
+</tt><tt>keys explicitly, which is mostly the case if one records time series. 
+</tt><tt>There is/was no background thread that scans for expired keys memory, so 
+</tt><tt>bitcask does not know how many keys are expired at any given moment. 
+</tt><tt>Background scanning would indeed be one solution. But maybe one that is 
+</tt><tt>too expensive CPU wise.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>After sleeping over the problem, I believe indeed the easiest solution 
+</tt><tt>would be to look at the file creation time, and only trigger merges for 
+</tt><tt>files that are at least an hour old or so (could be configurable). But 
+</tt><tt>in your and my case this will most likely just degenerate to merging 
+</tt><tt>every hour anyway, which is still much better than merging every 3 
+</tt><tt>minutes, as is the case now.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Come to think of it, increasing the interval between merge checks (make 
+</tt><tt>it configurable!) might just work as well for most people. So maybe 
+</tt><tt>that's the quickest solution.
+</tt><pre style="margin: 0em;">
+
+Cheers,
+Nico
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08715.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08724">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08724">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08747.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08613.html">Key expiration</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08616.html">Re: Key expiration</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08702.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08712.html">Re: Key expiration</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08713.html">Re: Key expiration</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08716.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08725.html">Re: Key expiration</a></span> <span class="sender italic">Nico Meyer</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08715.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Key expiration</span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08747.html">Re: Key expiration</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Key expiration">
+<input type="hidden" name="msgid" value="50642C2B.6080206@adition.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08724.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Key+expiration%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08715.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08747.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">50642C2B.6080206@adition.com</li>
+</ul>
+</div>
+</body>
+</html>

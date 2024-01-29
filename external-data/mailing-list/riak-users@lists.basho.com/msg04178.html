@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Locking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04178" id="c">
+<link rel="index" href="maillist.html#04178" id="i">
+<link rel="prev" href="msg04176.html" id="p">
+<link rel="next" href="msg04180.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04178.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Locking%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Locking</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110802" rel="nofollow">Tue, 02 Aug 2011 08:29:06 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks for the info.
+
+I haven't analyzed mongo's replication model and only did a quick scan of
+the doc. It isn't clear how would you use the atomic test and set operation
+you mentioned with sharding and replication to implement locks.</pre><pre>
+
+Does the atomic test and set coordinate with all members in a replica set to
+ensure a consistent update.  If not, would you restrict yourself to a single
+node in each shard to do the locking?  Then you have to deal with failover
+(client 1 discovers the locking node somehow, acquires a lock, the locking
+node dies before the other members of the replica set are updated, client 2
+somehow discovers the replacement locking node and as the update didn't make
+it out of the original lock server it also grants a lock).
+
+I can see how it could work with a chain replication scheme like Hibari
+uses, but I'm not sure that's what mongo is doing. You take a performance
+hit to do so.
+
+BR,
+Jon
+
+On Tue, Aug 2, 2011 at 9:04 AM, Jeffrey Kesselman &lt;jef...@nphos.com&gt; wrote:
+
+&gt; Mongo does its clustering a bit differently then Riak.
+&gt;
+&gt; It clusters in two dimensions.  It shards for scalability,
+&gt; and replicates for reliability.  In any group of shards, only one shard has
+&gt; a given piece of data.  But that shard can be replicated in a master/slave
+&gt; ,manner for failover.
+&gt;
+&gt; See:
+&gt;
+&gt; <a  rel="nofollow" href="http://www.mongodb.org/display/DOCS/Sharding+Introduction#ShardingIntroduction-ShardinginaNutshell">http://www.mongodb.org/display/DOCS/Sharding+Introduction#ShardingIntroduction-ShardinginaNutshell</a>
+&gt;
+&gt;
+&gt; On Tue, Aug 2, 2011 at 10:50 AM, Jon Meredith &lt;jmered...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; Hi Jeffrey,
+&gt;&gt;
+&gt;&gt; Do you know if Mongo provides locks that can be used on clusters of
+&gt;&gt; machines and in the presence of network partitions/failures?  Riak could
+&gt;&gt; probably get close if you created a cluster with a single node and performed
+&gt;&gt; all accesses with N=R=W=1 as updating a single vnode is atomic, it's only
+&gt;&gt; when the order of vnode requests can be interleaved that you get problems.
+&gt;&gt;  Of course you'd have a single point of failure....
+&gt;&gt;
+&gt;&gt; Soren: It may be worth looking at a separate lock service along the lines
+&gt;&gt; of Zookeeper - you could take a look at the work Joe Blomstedt did on
+&gt;&gt; riak_zab <a  rel="nofollow" href="https://github.com/jtuple/riak_zab">https://github.com/jtuple/riak_zab</a> but as the FAQ suggests do
+&gt;&gt; not use it in production.
+&gt;&gt;
+&gt;&gt; BR,
+&gt;&gt; Jon.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Tue, Aug 2, 2011 at 8:40 AM, Jeffrey Kesselman &lt;jef...@nphos.com&gt;wrote:
+&gt;&gt;
+&gt;&gt;&gt; jon gave a much better and more detailed description,
+&gt;&gt;&gt; but fundamentally no true lock is possible without an atomic test and
+&gt;&gt;&gt; set operation.
+&gt;&gt;&gt;
+&gt;&gt;&gt; So far, of all the No Sql DBs I've  looked at, only Mongo has that
+&gt;&gt;&gt; capability.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Sun, Jul 31, 2011 at 4:55 PM, Soren Hansen &lt;so...@linux2go.dk&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I've seen a couple of posts here and there on the subject of a locking
+&gt;&gt;&gt;&gt; mechanism for Riak, most notably:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;   <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Riak-and-Locks-td1866960.html">http://riak-users.197444.n3.nabble.com/Riak-and-Locks-td1866960.html</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; While it would only serve as an advisory locking mechanism, wouldn't a
+&gt;&gt;&gt;&gt; bucket with a reasonably high n, w and dw set equal to n, a
+&gt;&gt;&gt;&gt; deterministic naming scheme for the object being locked, and a locking
+&gt;&gt;&gt;&gt; algorithm such as:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; 1. PUT /locks/object_id
+&gt;&gt;&gt;&gt;   If-None-Match: *
+&gt;&gt;&gt;&gt;   Body: &lt;some unique identifier for the client thread&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; 1a. If this fails, wait for a while, then try again.
+&gt;&gt;&gt;&gt; 1b. If it succeeds, proceed to 2.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; 2. The doc for If-None-Match says &quot;this does not prevent concurrent
+&gt;&gt;&gt;&gt; writes; it is possible for the condition to evaluate to true for
+&gt;&gt;&gt;&gt; multiple requests if the requests occur at the same time.&quot;  I'm not
+&gt;&gt;&gt;&gt; completely sure if n=w=dw protects me from concurrent writes (I'm not
+&gt;&gt;&gt;&gt; familiar with the locking semantics of a single riak instance).
+&gt;&gt;&gt;&gt; Anyway, if I'm in fact not protected, the next step is to read the
+&gt;&gt;&gt;&gt; value back to make sure we're actually the ones holding the key. If
+&gt;&gt;&gt;&gt; not, go back to step 1. If yes, proceed as planned.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; 3. Once you're done with the lock, just DELETE it.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; If this were really that simple, someone would have suggested it. So,
+&gt;&gt;&gt;&gt; what is this Riak rookie (i.e. I) missing?
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt; Soren Hansen        | <a  rel="nofollow" href="http://linux2go.dk/">http://linux2go.dk/</a>
+&gt;&gt;&gt;&gt; Ubuntu Developer    | <a  rel="nofollow" href="http://www.ubuntu.com/">http://www.ubuntu.com/</a>
+&gt;&gt;&gt;&gt; OpenStack Developer | <a  rel="nofollow" href="http://www.openstack.org/">http://www.openstack.org/</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04176.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04178">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04178">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04180.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04160.html">Locking</a></span> <span class="sender italic">Soren Hansen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04171.html">Re: Locking</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04175.html">Re: Locking</a></span> <span class="sender italic">Jeffrey Kesselman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04176.html">Re: Locking</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Locking</span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04180.html">Re: Locking</a></span> <span class="sender italic">Jon Meredith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Locking">
+<input type="hidden" name="msgid" value="CAGgQeStL0MMTHLujSEiFUD=Y95ody_3A+PVZP6kZ0Lqms-Ywjw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04178.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Locking%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04176.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04180.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGgQeStL0MMTHLujSEiFUD=Y95ody_3A+PVZP6kZ0Lqms-Ywjw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

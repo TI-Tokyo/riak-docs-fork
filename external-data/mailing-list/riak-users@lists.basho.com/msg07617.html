@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>mochijson2 error from curl mapreduce</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07617" id="c">
+<link rel="index" href="maillist.html#07617" id="i">
+<link rel="prev" href="msg07616.html" id="p">
+<link rel="next" href="msg07618.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07617.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22mochijson2+error+from+curl+mapreduce%22&amp;o=newest" rel="nofollow"><span itemprop="name">mochijson2 error from curl mapreduce</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+Roy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John Roy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120605" rel="nofollow">Tue, 05 Jun 2012 13:29:07 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I saw something similar from an individual who was using javascript 
+(<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-July/004843.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-July/004843.html</a>),
+ but I don't think I have the same problem in erlang.  Any help is greatly 
+appreciated.</pre><pre>
+
+I'm consistently getting the following error from my curl map reduce calls:
+
+{error,{exit,{json_encode,{bad_term,…..
+
+output dictionary here, then:
+
+        [{mochijson2,json_encode,2},
+         {mochijson2,'-json_encode_array/2-fun-0-',3},
+         {lists,foldl,3},
+         {mochijson2,json_encode_array,2},
+         {riak_kv_wm_mapred,pipe_mapred_nonchunked,5},
+         {webmachine_resource,resource_call,3},
+         {webmachine_resource,do,3},
+
+The term that follows the error appears to the correct result of the map reduce.
+
+I'm just trying the mr locally for testing purposes.  I'm using eleveldb 
+backend and riak (1.1.2 2012-04-17) OSX x86_64.
+
+Here's the curl command:
+
+curl -v -X POST <a  rel="nofollow" href="http://127.0.0.1:8098/mapred">http://127.0.0.1:8098/mapred</a> -H &quot;Content_Type: 
+application/json&quot; -d @query.js
+
+and the query.js:
+
+{
+    &quot;inputs&quot; : {
+        &quot;bucket&quot; : &quot;test7&quot;,
+        &quot;index&quot; : &quot;field1_int&quot;,
+        &quot;start&quot; : 0,
+        &quot;end&quot; : 23
+    },
+    &quot;query&quot; : [
+        { &quot;map&quot; : {&quot;language&quot; : &quot;erlang&quot;, &quot;module&quot; : &quot;impressions&quot;, &quot;function&quot; 
+: &quot;emitStats&quot;, &quot;keep&quot; : false} },
+        { &quot;reduce&quot; : {&quot;language&quot; : &quot;erlang&quot;, &quot;module&quot; : &quot;impressions&quot;, 
+&quot;function&quot; : &quot;reduceStats&quot;, &quot;keep&quot; : true} }
+    ],
+    &quot;timeout&quot; : 600000
+}
+
+and finally the associated erlang functions:
+
+emitStats(G, undefined, none)-&gt;
+    ObjectJson = riak_object:get_value(G),
+    {struct, DocPropList} = mochijson:decode(ObjectJson),
+    I = {proplists:get_value(&quot;obj_name&quot;,DocPropList,&quot;None&quot;),
+         proplists:get_value(&quot;type&quot;,DocPropList,&quot;None&quot;),
+         proplists:get_value(&quot;obj_url&quot;,DocPropList,&quot;None&quot;),
+         &quot;hourly&quot;},
+    [dict:from_list([{I,1}])].
+
+reduceStats(Gcounts, none)-&gt;
+    [lists:foldr(fun(G, Acc)-&gt;dict:merge(fun(_, X, Y) -&gt; X+Y end,G, Acc) end,
+                 dict:new(),
+                 Gcounts)].
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07616.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07617">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07617">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07618.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">mochijson2 error from curl mapreduce</span> <span class="sender italic">John Roy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07618.html">Re: mochijson2 error from curl mapreduce</a></span> <span class="sender italic">Bob Ippolito</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07619.html">Re: mochijson2 error from curl mapreduce</a></span> <span class="sender italic">John Roy</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="mochijson2 error from curl mapreduce">
+<input type="hidden" name="msgid" value="95884B9C-6243-4AD5-9233-A15DC2E9B843@thoughtleadr.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07617.html">
+<input type="submit" value=" John Roy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22mochijson2+error+from+curl+mapreduce%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07616.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07618.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">95884B9C-6243-4AD5-9233-A15DC2E9B843@thoughtleadr.com</li>
+</ul>
+</div>
+</body>
+</html>

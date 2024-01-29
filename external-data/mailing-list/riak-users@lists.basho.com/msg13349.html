@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: anti_entropy_expire</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#13349" id="c">
+<link rel="index" href="mail5.html#13349" id="i">
+<link rel="prev" href="msg13348.html" id="p">
+<link rel="next" href="msg13354.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13349.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+anti_entropy_expire%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: anti_entropy_expire</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Edgar+Veiga%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Edgar Veiga</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140102" rel="nofollow">Thu, 02 Jan 2014 02:07:04 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>This is the only thing related to AAE that exists in my app.config. I
+haven't changed any default values...</pre><pre>
+
+            %% Enable active anti-entropy subsystem + optional debug
+messages:
+            %%   {anti_entropy, {on|off, []}},
+            %%   {anti_entropy, {on|off, [debug]}},
+            {anti_entropy, {on, []}},
+
+            %% Restrict how fast AAE can build hash trees. Building the tree
+            %% for a given partition requires a full scan over that
+partition's
+            %% data. Once built, trees stay built until they are expired.
+            %% Config is of the form:
+            %%   {num-builds, per-timespan-in-milliseconds}
+            %% Default is 1 build per hour.
+            {anti_entropy_build_limit, {1, 3600000}},
+
+            %% Determine how often hash trees are expired after being built.
+            %% Periodically expiring a hash tree ensures the on-disk hash
+tree
+            %% data stays consistent with the actual k/v backend data. It
+also
+            %% helps Riak identify silent disk failures and bit rot.
+However,
+            %% expiration is not needed for normal AAE operation and should
+be
+            %% infrequent for performance reasons. The time is specified in
+            %% milliseconds. The default is 1 week.
+            {anti_entropy_expire, 604800000},
+
+            %% Limit how many AAE exchanges/builds can happen concurrently.
+            {anti_entropy_concurrency, 2},
+
+            %% The tick determines how often the AAE manager looks for work
+            %% to do (building/expiring trees, triggering exchanges, etc).
+            %% The default is every 15 seconds. Lowering this value will
+            %% speedup the rate that all replicas are synced across the
+cluster.
+            %% Increasing the value is not recommended.
+            {anti_entropy_tick, 15000},
+
+            %% The directory where AAE hash trees are stored.
+            {anti_entropy_data_dir, &quot;/var/lib/riak/anti_entropy&quot;},
+
+            %% The LevelDB options used by AAE to generate the
+LevelDB-backed
+            %% on-disk hashtrees.
+            {anti_entropy_leveldb_opts, [{write_buffer_size, 4194304},
+                                         {max_open_files, 20}]},
+
+I'll update the bloom filters value and see what happens...
+
+It's thursday again, and the regeneration process has started again. Since
+I've updated to 1.4.6, I have another thing different. The get/put values
+for each cluster node now have a &quot;random&quot; behaviour. Take a look at the
+next screenshot
+
+<a  rel="nofollow" href="https://cloudup.com/cgbu9VNhSo1">https://cloudup.com/cgbu9VNhSo1</a>
+
+Best regards
+
+
+On 31 December 2013 21:16, Charlie Voiselle &lt;cvoise...@basho.com&gt; wrote:
+
+&gt; Edgar:
+&gt;
+&gt; Could you attach the AAE section of your app.config?  I’d like to look
+&gt; into this issue further for you.  Something I think you might be running
+&gt; into is <a  rel="nofollow" href="https://github.com/basho/riak_core/pull/483">https://github.com/basho/riak_core/pull/483</a>.
+&gt;
+&gt; The issue of concern is that the LevelDB bloom filter is not enabled
+&gt; properly for the instance into which the AAE data is stored.  You can
+&gt; mitigate this particular issue by adding *{use_bloomfilter, true}* as
+&gt; shown below:
+&gt;
+&gt;             %% The LevelDB options used by AAE to generate the LevelDB-backed
+&gt;             %% on-disk hashtrees.
+&gt;             {anti_entropy_leveldb_opts, [{write_buffer_size, 4194304},
+&gt;                                          {max_open_files, 20}]},
+&gt;
+&gt;
+&gt; Becomes:
+&gt;
+&gt;
+&gt;             %% The LevelDB options used by AAE to generate the LevelDB-backed
+&gt;             %% on-disk hashtrees.
+&gt;
+&gt;             {anti_entropy_leveldb_opts, [{write_buffer_size, 4194304},
+&gt;                                        {use_bloomfilter, true},
+&gt;                                          {max_open_files, 20}]},
+&gt;
+&gt;
+&gt; This might not solve your specific problem, but it will certainly improve
+&gt; your AAE performance.
+&gt;
+&gt; Thanks,
+&gt; Charlie Voiselle
+&gt;
+&gt; On Dec 31, 2013, at 12:04 PM, Edgar Veiga &lt;edgarmve...@gmail.com&gt; wrote:
+&gt;
+&gt; Hey guys!
+&gt;
+&gt; Nothing on this one?
+&gt;
+&gt; Btw: Happy new year :)
+&gt;
+&gt;
+&gt; On 27 December 2013 22:35, Edgar Veiga &lt;edgarmve...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; This is a du -hs * of the riak folder:
+&gt;&gt;
+&gt;&gt; 44G anti_entropy
+&gt;&gt; 1.1M kv_vnode
+&gt;&gt; 252G leveldb
+&gt;&gt; 124K ring
+&gt;&gt;
+&gt;&gt; It's a 6 machine cluster, so ~1512G of levelDB.
+&gt;&gt;
+&gt;&gt; Thanks for the tip, I'll upgrade in a near future!
+&gt;&gt;
+&gt;&gt; Best regards
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On 27 December 2013 21:41, Matthew Von-Maszewski &lt;matth...@basho.com&gt;wrote:
+&gt;&gt;
+&gt;&gt;&gt; I have a query out to the developer that can better respond to your
+&gt;&gt;&gt; follow-up questions.  It might be Monday before we get a reply due to the
+&gt;&gt;&gt; holidays.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Do you happen to know how much data is in the leveldb dataset and/or one
+&gt;&gt;&gt; vnode?  Not sure it will change the response, but might be nice to have
+&gt;&gt;&gt; that info available.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Matthew
+&gt;&gt;&gt;
+&gt;&gt;&gt; P.S.  Unrelated to your question:  Riak 1.4.4 is available for download.
+&gt;&gt;&gt;  It has a couple of nice bug fixes for leveldb.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Dec 27, 2013, at 2:08 PM, Edgar Veiga &lt;edgarmve...@gmail.com&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Ok, thanks for confirming!
+&gt;&gt;&gt;
+&gt;&gt;&gt; Is it normal, that this action affects the overall state of the cluster?
+&gt;&gt;&gt; On the 26th It started the regeneration and the the response times of the
+&gt;&gt;&gt; cluster raised to never seen values. It was a day of heavy traffic but
+&gt;&gt;&gt; everything was going quite ok until it started the regeneration process..
+&gt;&gt;&gt;
+&gt;&gt;&gt; Have you got any advices about changing those app.config values? My
+&gt;&gt;&gt; cluster is running smoothly for the past 6 months and I don't want to start
+&gt;&gt;&gt; all over again :)
+&gt;&gt;&gt;
+&gt;&gt;&gt; Best Regards
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On 27 December 2013 18:56, Matthew Von-Maszewski &lt;matth...@basho.com&gt;wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Yes.  Confirmed.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; There are options available in app.config to control how often this
+&gt;&gt;&gt;&gt; occurs and how many vnodes rehash at once:  defaults are every 7 days and
+&gt;&gt;&gt;&gt; two vnodes per server at a time.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Matthew Von-Maszewski
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; On Dec 27, 2013, at 13:50, Edgar Veiga &lt;edgarmve...@gmail.com&gt; wrote:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Hi!
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I've been trying to find what may be the cause of this.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Every once in a week, all the nodes in my riak cluster start to do some
+&gt;&gt;&gt;&gt; kind of operation that lasts at least for two days.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; You can watch a sample of my munin logs regarding the last week in here:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="https://cloudup.com/imWiBwaC6fm">https://cloudup.com/imWiBwaC6fm</a>
+&gt;&gt;&gt;&gt; Take a look at the days 19 and 20, and now it has started again on the
+&gt;&gt;&gt;&gt; 26...
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I'm suspecting that this may be caused by the aae hash trees being
+&gt;&gt;&gt;&gt; regenerated, as you say in your documentation:
+&gt;&gt;&gt;&gt; For added protection, Riak periodically (default: once a week) clears
+&gt;&gt;&gt;&gt; and regenerates all hash trees from the on-disk K/V data.
+&gt;&gt;&gt;&gt; Can you confirm me that this may be the root of the &quot;problem&quot; and if
+&gt;&gt;&gt;&gt; it's normal for the action to last for two days?
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I'm using riak 1.4.2 on 6 machines, with centOS. The backend is levelDB.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Best Regards,
+&gt;&gt;&gt;&gt; Edgar Veiga
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13348.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#13349">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail5.html#13349">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13354.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13331.html">anti_entropy_expire</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13332.html">Re: anti_entropy_expire</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13333.html">Re: anti_entropy_expire</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13334.html">Re: anti_entropy_expire</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13335.html">Re: anti_entropy_expire</a></span> <span class="sender italic">John Daily</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13336.html">Re: anti_entropy_expire</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13347.html">Re: anti_entropy_expire</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13348.html">Re: anti_entropy_expire</a></span> <span class="sender italic">Charlie Voiselle</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: anti_entropy_expir...</span> <span class="sender italic">Edgar Veiga</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13354.html">Re: anti_entropy_expir...</a></span> <span class="sender italic">Edgar Veiga</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: anti_entropy_expire">
+<input type="hidden" name="msgid" value="CAM-EGEq2zM1qHeyNNroU+MN-WdiX5ZcvcP_WUWxahDDDnjaw8Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13349.html">
+<input type="submit" value=" Edgar Veiga ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+anti_entropy_expire%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13348.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13354.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAM-EGEq2zM1qHeyNNroU+MN-WdiX5ZcvcP_WUWxahDDDnjaw8Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: General Memory/Performance Tuning Guidelines</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03397" id="c">
+<link rel="index" href="maillist.html#03397" id="i">
+<link rel="prev" href="msg03388.html" id="p">
+<link rel="next" href="msg03401.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03397.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+General+Memory%5C%2FPerformance+Tuning+Guidelines%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: General Memory/Performance Tuning Guidelines</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rusty+Klophaus%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rusty Klophaus</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110524" rel="nofollow">Tue, 24 May 2011 14:32:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Gordon,
+
+I have limited knowledge of configuring Innostore but can help answer some
+of your merge_index questions.</pre><pre>
+
+The most important merge_index setting in terms of memory usage is
+'buffer_rollover_size'. This affects how large the buffer is allowed to
+grow, in bytes, before getting converted to an on-disk segment. Each
+partition maintains a separate buffer, so any increases to this number will
+be multiplied by the number of partitions in your system. The higher this
+number, the less frequently merge_index will need to perform compactions.
+
+The second most important settings for memory usage are a combination of
+'segment_full_read_size' and 'max_compact_segments'. During compaction, the
+system will completely page any segments smaller than the
+'segment_full_read_size' value into memory. This should generally be as
+large or larger than the 'buffer_rollover_size'. The higher this number, the
+quicker each compaction will be. 'max_compact_segments' is the maximum
+number of segments to compact at one time. The higher this number, the more
+segments merge_index can involve in each compaction. In the worst case, a
+compaction could take ('segment_full_read_size' * 'max_compact_segments')
+bytes of RAM.
+
+The rest of the settings have a much smaller impact on performance and
+memory usage, and exist mainly for tweaking and special cases.
+
+This is a completely unscientific estimate based on observing other Riak
+Search applications, but I'd set buffer_rollover_size so that (# Partitions
+* buffer_rollover_size) is about one-half the memory you wish for
+merge_index to consume, hopefully somewhere between 1M and 10M. The rest of
+the memory will be used by in-memory offset tables, compaction processes,
+and during query operations.
+
+Hope that helps.
+
+Best,
+Rusty
+
+
+On Mon, May 23, 2011 at 2:05 PM, Gordon Tillman &lt;gtill...@mezeo.com&gt; wrote:
+
+&gt; Greetings!
+&gt;
+&gt; We are working with a riaksearch cluster that uses innostore as the primary
+&gt; backend in tandem with merge_index that is required by search.  From reading
+&gt; the Basho wiki it looks like the following are the most important factors
+&gt; affecting memory and performance:
+&gt;
+&gt;        • innostore
+&gt;                • put data_home_dir and log_group_home_dir on different
+&gt; spindles
+&gt;                • noatime
+&gt;                • buffer_pool_size
+&gt;                • flush_method
+&gt;        • merge_index
+&gt;                • data_root
+&gt;                • buffer_rollover_size
+&gt;                • max_compact_segments
+&gt;                • segment_file_buffer_size
+&gt;                • segment_full_read_size
+&gt;                • segment_block_size
+&gt;
+&gt; Ideally, data_home_dir, log_group_home_dir, and data_root would all be on
+&gt; different spindles, but if you had just 2 disks available what would you
+&gt; recommend?  Would it be best to have data_home_dir and data_root on one and
+&gt; then log_group_home_dir on the other?
+&gt;
+&gt; in calculating the proper setting for buffer_pool_size you are directed to
+&gt; allocate 60-80 percent of available RAM.  So lets assume you want to take
+&gt; the remaining 20-40% of available RAM and split it up between innostore and
+&gt; merge_index?
+&gt;
+&gt; Would it be best to give each of them half of that value?
+&gt;
+&gt; Determining the approximate memory requirements for merge_index isn't (to
+&gt; me) real obvious.  I looks like the following all have  an effect:
+&gt;
+&gt;  * buffer_rollover_size
+&gt;  * buffer_delayed_write_size
+&gt;  * max_compact_segments
+&gt;  * segment_query_read_ahead_size
+&gt;  * segment_compaction_read_ahead_size
+&gt;  * segment_full_read_size
+&gt;  * segment_block_size
+&gt;  * segment_values_staging_size
+&gt;
+&gt; Is there a formula for determining the (approximate) proper values to use
+&gt; given a certain amount of available RAM?
+&gt;
+&gt; Thanks in advance for any advice.  Sorry for all the questions!
+&gt;
+&gt; --gordon
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03388.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03397">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03397">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03401.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03388.html">General Memory/Performance Tuning Guidelines</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: General Memory/Performance Tuning Guidelines</span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03401.html">Re: General Memory/Performance Tuning Guidelines</a></span> <span class="sender italic">Gordon Tillman</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: General Memory/Performance Tuning Guidelines">
+<input type="hidden" name="msgid" value="BANLkTikbjpj_2W3y8qVOtbY7cB2mGK4ZDg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03397.html">
+<input type="submit" value=" Rusty Klophaus ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+General+Memory%5C%2FPerformance+Tuning+Guidelines%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03388.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03401.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTikbjpj_2W3y8qVOtbY7cB2mGK4ZDg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

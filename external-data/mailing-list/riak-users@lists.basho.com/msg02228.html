@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Ripple one Association Troubles</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02228" id="c">
+<link rel="index" href="maillist.html#02228" id="i">
+<link rel="prev" href="msg02227.html" id="p">
+<link rel="next" href="msg02229.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02228.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Ripple+one+Association+Troubles%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Ripple one Association Troubles</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Stephen+Allred%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Stephen Allred</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110208" rel="nofollow">Tue, 08 Feb 2011 13:33:09 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sean,
+
+I've updated to 1.9.2p136, completely removed my data from my riak store and 
+removed all the devise code from my User model and I'm still getting the same 
+issue.</pre><pre>
+
+--- user.rb ---
+require 'ripple'
+#require 'digest'
+
+class User
+  include Ripple::Document
+  
+  #devise :registerable, :confirmable, :database_authenticatable, :recoverable, 
+:validatable
+
+  property :email,                  String, :presence =&gt; true
+  property :password,               String
+  property :password_confirmation,  String
+  property :encrypted_password,     String
+  property :password_salt,          String
+  property :reset_password_token,   String
+  property :confirmation_token,     String
+  property :confirmed_at,           String
+  property :confirmation_sent_at,   String
+  timestamps!
+  
+  key_on :email
+  
+  def key
+    email
+  end
+
+  def id
+    email
+  end
+end
+---
+
+--- journal_entry.rb ---
+require 'ripple'
+
+class JournalEntry
+  include Ripple::Document
+  
+  property :short_title,  String, :presence =&gt; true
+  property :title,        String, :presence =&gt; true
+  property :entry,        String, :presence =&gt; true
+  timestamps!
+  
+  one :user
+  
+  key_on :short_title
+end
+---
+
+Here's the exact input and output from the steps:
+
+$ rails console
+Loading development environment (Rails 3.0.3)
+ruby-1.9.2-p136 :001 &gt; user = User.new
+ =&gt; &lt;User:[new] email=nil password=nil password_confirmation=nil 
+encrypted_password=nil password_salt=nil reset_password_token=nil 
+confirmation_token=nil confirmed_at=nil confirmation_sent_at=nil 
+created_at=2011-02-08 21:21:13 +0000 updated_at=nil&gt; 
+ruby-1.9.2-p136 :002 &gt; user.save
+ =&gt; false 
+ruby-1.9.2-p136 :003 &gt; user.email = &quot;stephenall...@stevesmiscellany.com&quot;
+ =&gt; &quot;stephenall...@stevesmiscellany.com&quot; 
+ruby-1.9.2-p136 :004 &gt; user.save
+ =&gt; true 
+ruby-1.9.2-p136 :005 &gt; journal = JournalEntry.new
+ =&gt; &lt;JournalEntry: short_title=nil title=nil entry=nil created_at=2011-02-08 
+21:23:17 +0000 updated_at=nil&gt; 
+ruby-1.9.2-p136 :006 &gt; journal.short_title = &quot;test&quot;
+ =&gt; &quot;test&quot; 
+ruby-1.9.2-p136 :007 &gt; journal.title = &quot;test&quot;
+ =&gt; &quot;test&quot; 
+ruby-1.9.2-p136 :008 &gt; journal.entry = &quot;test&quot;
+ =&gt; &quot;test&quot; 
+ruby-1.9.2-p136 :009 &gt; journal.user = user
+ =&gt; &lt;User:stephenall...@stevesmiscellany.com 
+email=&quot;stephenall...@stevesmiscellany.com&quot; password=nil 
+password_confirmation=nil encrypted_password=nil password_salt=nil 
+reset_password_token=nil confirmation_token=nil confirmed_at=nil 
+confirmation_sent_at=nil created_at=2011-02-08 21:21:13 UTC 
+updated_at=2011-02-08 21:21:39 UTC&gt; 
+ruby-1.9.2-p136 :010 &gt; journal.save
+ =&gt; true 
+ruby-1.9.2-p136 :011 &gt; journal.user
+ =&gt; &lt;User:stephenall...@stevesmiscellany.com 
+email=&quot;stephenall...@stevesmiscellany.com&quot; password=nil 
+password_confirmation=nil encrypted_password=nil password_salt=nil 
+reset_password_token=nil confirmation_token=nil confirmed_at=nil 
+confirmation_sent_at=nil created_at=2011-02-08 21:21:13 UTC 
+updated_at=2011-02-08 21:21:39 UTC&gt; 
+ruby-1.9.2-p136 :012 &gt; journal = JournalEntry.first
+ =&gt; &lt;JournalEntry:test short_title=&quot;test&quot; title=&quot;test&quot; entry=&quot;test&quot; 
+created_at=2011-02-08 21:23:17 UTC updated_at=2011-02-08 21:24:12 UTC&gt; 
+ruby-1.9.2-p136 :013 &gt; journal.user
+(Object doesn't support #inspect)
+ =&gt;  
+ruby-1.9.2-p136 :014 &gt; 
+
+Maybe I'm doing something wrong here?
+
+If not, I'll try creating a simple dummy model to associate the journal entry 
+with to see whether it's something else/some of the devise code is still active 
+somewhere in the User model.
+
+Cheers,
+Steve
+
+On 8 Feb 2011, at 8:28 PM, Sean Cribbs wrote:
+
+&gt; You might also try upgrading to 1.9.2p136 (I hope you're using rvm). I'm not 
+&gt; convinced that's the problem, however.
+&gt; 
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt; 
+&gt; On Feb 8, 2011, at 3:11 PM, Stephen Allred wrote:
+&gt; 
+&gt;&gt; Sean
+&gt;&gt; 
+&gt;&gt; $ ruby -v 
+&gt;&gt; ruby 1.9.2p0 (2010-08-18 revision 29036) [x86_64-darwin10.4.3]
+&gt;&gt; 
+&gt;&gt; I'll try cleaning out my riak store and then without the devise code give it 
+&gt;&gt; a go.
+&gt;&gt; 
+&gt;&gt; Cheers,
+&gt;&gt; Steve
+&gt;&gt; 
+&gt;&gt; On 8 Feb 2011, at 8:08PM, Sean Cribbs wrote:
+&gt;&gt; 
+&gt;&gt;&gt; Stephen,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Without loading the devise-ripple stuff, I copied and pasted your model 
+&gt;&gt;&gt; code into irb, and cannot reproduce the problem.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; irb&gt; user = User.create(:email =&gt; &quot;s...@basho.com&quot;)
+&gt;&gt;&gt; =&gt; &lt;User:s...@basho.com email=&quot;s...@basho.com&quot; password=nil 
+&gt;&gt;&gt; password_confirmation=nil created_at=2011-02-08 20:06:27 UTC 
+&gt;&gt;&gt; updated_at=2011-02-08 20:06:27 UTC&gt; 
+&gt;&gt;&gt; irb&gt; journal_entry = JournalEntry.new(:short_title =&gt; &quot;test&quot;, :title =&gt; 
+&gt;&gt;&gt; &quot;test&quot;, :entry =&gt; &quot;test&quot;)
+&gt;&gt;&gt; =&gt; &lt;JournalEntry:test short_title=&quot;test&quot; title=&quot;test&quot; entry=&quot;test&quot; 
+&gt;&gt;&gt; created_at=2011-02-08 15:06:56 -0500 updated_at=nil&gt; 
+&gt;&gt;&gt; irb&gt; journal_entry.user = user
+&gt;&gt;&gt; =&gt; &lt;User:s...@basho.com email=&quot;s...@basho.com&quot; password=nil 
+&gt;&gt;&gt; password_confirmation=nil created_at=2011-02-08 20:06:27 UTC 
+&gt;&gt;&gt; updated_at=2011-02-08 20:06:27 UTC&gt; 
+&gt;&gt;&gt; irb&gt; journal_entry.save
+&gt;&gt;&gt; =&gt; true 
+&gt;&gt;&gt; irb&gt; journal_entry.reload
+&gt;&gt;&gt; =&gt; &lt;JournalEntry:test short_title=&quot;test&quot; title=&quot;test&quot; entry=&quot;test&quot; 
+&gt;&gt;&gt; created_at=2011-02-08 20:06:56 UTC updated_at=2011-02-08 20:07:14 UTC&gt; 
+&gt;&gt;&gt; irb&gt; journal_entry.user
+&gt;&gt;&gt; =&gt; &lt;User:s...@basho.com email=&quot;s...@basho.com&quot; password=nil 
+&gt;&gt;&gt; password_confirmation=nil created_at=2011-02-08 20:06:27 UTC 
+&gt;&gt;&gt; updated_at=2011-02-08 20:06:27 UTC&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Out of curiosity, what version of Ruby are you using?
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt;&gt; Developer Advocate
+&gt;&gt;&gt; Basho Technologies, Inc.
+&gt;&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;&gt;&gt; 
+&gt;&gt;&gt; On Feb 8, 2011, at 2:54 PM, Stephen Allred wrote:
+&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; I've tried commenting out the devise stuff and added the properties that 
+&gt;&gt;&gt;&gt; came from devise:
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; --- user.rb ---
+&gt;&gt;&gt;&gt; require 'ripple'
+&gt;&gt;&gt;&gt; #require 'digest'
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; class User
+&gt;&gt;&gt;&gt; include Ripple::Document
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; #devise :registerable, :confirmable, :database_authenticatable, 
+&gt;&gt;&gt;&gt; :recoverable, :validatable
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; property :email,                  String, :presence =&gt; true
+&gt;&gt;&gt;&gt; property :password,               String
+&gt;&gt;&gt;&gt; property :password_confirmation,  String
+&gt;&gt;&gt;&gt; property :encrypted_password,     String
+&gt;&gt;&gt;&gt; property :password_salt,          String
+&gt;&gt;&gt;&gt; property :reset_password_token,   String
+&gt;&gt;&gt;&gt; property :confirmation_token,     String
+&gt;&gt;&gt;&gt; property :confirmed_at,           String
+&gt;&gt;&gt;&gt; property :confirmation_sent_at,   String
+&gt;&gt;&gt;&gt; timestamps!
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; key_on :email
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; def key
+&gt;&gt;&gt;&gt; email
+&gt;&gt;&gt;&gt; end
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; def id
+&gt;&gt;&gt;&gt; email
+&gt;&gt;&gt;&gt; end
+&gt;&gt;&gt;&gt; end
+&gt;&gt;&gt;&gt; ---
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; I'm still getting the same &quot;(Object doesn't support #inspect)&quot; when I call 
+&gt;&gt;&gt;&gt; journal_entry.user (nil class).
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; Cheers,
+&gt;&gt;&gt;&gt; Steve
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; On 8 Feb 2011, at 7:01 PM, Sean Cribbs wrote:
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; I haven't played with ripple-devise. Try commenting those parts out first 
+&gt;&gt;&gt;&gt;&gt; and see what happens.
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt;&gt;&gt;&gt; Developer Advocate
+&gt;&gt;&gt;&gt;&gt; Basho Technologies, Inc.
+&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; On Feb 8, 2011, at 1:53 PM, Stephen Allred wrote:
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt; Sean,
+&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt; Yeah, I fetched it in using User.first before trying to assign it.
+&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt; Could this have something to do with using ripple-devise (the User 
+&gt;&gt;&gt;&gt;&gt;&gt; document is a ripple-devise user)?
+&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt;&gt;&gt;&gt; Steve
+&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt; On 8 Feb 2011, at 6:47 PM, Sean Cribbs wrote:
+&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Stephen,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Was your User object saved before you added it the journal entry?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Developer Advocate
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Basho Technologies, Inc.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; On Feb 8, 2011, at 1:46 PM, Stephen Allred wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Sean,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; $ puts journal_entry.robject.links.inspect
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; #&lt;Set: {&lt;/riak/users/stephenallred%40stevesmiscellany.com&gt;; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; riaktag=&quot;user&quot;, &lt;/riak/journal_entries&gt;; riaktag=&quot;up&quot;}&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; =&gt; nil 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; $ journal_entry
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; =&gt; &lt;JournalEntry:test short_title=&quot;test&quot; title=&quot;test&quot; entry=&quot;test&quot; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; created_at=2011-02-07 22:47:17 UTC updated_at=2011-02-08 18:08:47 UTC&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; $ journal_entry.user
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; (Object doesn't support #inspect)
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; =&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; $ journal_entry.user.inspect
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; NoMethodError: undefined method `key' for nil:NilClass
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/activesupport-3.0.3/lib/active_support/whiny_nil.rb:48:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `method_missing'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/ripple-0.8.3/lib/ripple/document/finders.rb:122:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `block in instantiate'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/ripple-0.8.3/lib/ripple/document/finders.rb:121:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `tap'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/ripple-0.8.3/lib/ripple/document/finders.rb:121:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `instantiate'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/ripple-0.8.3/lib/ripple/associations/one_linked_proxy.rb:25:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `find_target'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/ripple-0.8.3/lib/ripple/associations/proxy.rb:113:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `load_target'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/ripple-0.8.3/lib/ripple/associations/proxy.rb:41:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `inspect'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from (irb):17
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/railties-3.0.3/lib/rails/commands/console.rb:44:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `start'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/railties-3.0.3/lib/rails/commands/console.rb:8:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `start'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; /Users/stephenallred/.rvm/gems/ruby-1.9.2-p0/gems/railties-3.0.3/lib/rails/commands.rb:23:in
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  `&lt;top (required)&gt;'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from script/rails:6:in `require'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;        from script/rails:6:in `&lt;main&gt;'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Hopefully those are useful,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Thanks for the quick response!
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Steve
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; On 8 Feb 2011, at 6:37 PM, Sean Cribbs wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Stephen,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Sounds like you've either found a bug.  When you have saved the 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; journal entry in irb, what is the output of this command?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; puts journal_entry.robject.links.inspect
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Developer Advocate
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Basho Technologies, Inc.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; On Feb 8, 2011, at 1:23 PM, Stephen Allred wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Hi all,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; I'm having trouble setting up a one association in a ripple 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; document. I'm trying to setup an association between a user and a 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; journal entry, such that the journal has one user, that the user 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; created.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; My JournalEntry document:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; --- journal_entry.rb ---
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; require 'ripple'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; class JournalEntry
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; include Ripple::Document
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; property :short_title,  String, :presence =&gt; true
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; property :title,        String, :presence =&gt; true
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; property :entry,        String, :presence =&gt; true
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; timestamps!
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; one :user
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; key_on :short_title
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; end
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; ---
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; My User document:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; --- user.rb ---
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; require 'ripple'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; require 'digest'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; class User
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; include Ripple::Document
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; devise :registerable, :confirmable, :database_authenticatable, 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; :recoverable, :validatable
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; property :email,                  String, :presence =&gt; true
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; property :password,               String
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; property :password_confirmation,  String
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; timestamps!
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; key_on :email
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; def key
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; email
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; end
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; def id
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; email
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; end
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; end
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; ---
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; I've tried in the rails console to associate a user with 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; journal_entry (journal_entry.user = user), save it and reload it. 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; The resulting reloaded journal_entry does not have a user (calling 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; journal_entry.user prints &quot;(Object doesn't support #inspect)&quot;).
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; My journal entry in riak loaded via the browser looks like:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; {&quot;short_title&quot;:&quot;test&quot;,&quot;title&quot;:&quot;test&quot;,&quot;entry&quot;:&quot;test&quot;,&quot;created_at&quot;:&quot;Mon,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  07 Feb 2011 22:47:17 -0000&quot;,&quot;updated_at&quot;:&quot;Tue, 08 Feb 2011 18:08:47 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; -0000&quot;,&quot;_type&quot;:&quot;JournalEntry&quot;}
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Does anyone know what I'm doing wrong?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Cheers!
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Steve
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt; 
+&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02227.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02228">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02228">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02229.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02219.html">Ripple one Association Troubles</a></span> <span class="sender italic">Stephen Allred</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02220.html">Re: Ripple one Association Troubles</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02221.html">Re: Ripple one Association Troubles</a></span> <span class="sender italic">Stephen Allred</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02222.html">Re: Ripple one Association Troubles</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02223.html">Re: Ripple one Association Troubles</a></span> <span class="sender italic">Stephen Allred</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02224.html">Re: Ripple one Association Troubles</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02226.html">Re: Ripple one Association Troubl...</a></span> <span class="sender italic">Stephen Allred</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02227.html">Re: Ripple one Association Tr...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Ripple one Association Tr...</span> <span class="sender italic">Stephen Allred</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02229.html">Re: Ripple one Association Tr...</a></span> <span class="sender italic">Stephen Allred</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02230.html">Re: Ripple one Association Tr...</a></span> <span class="sender italic">Stephen Allred</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02231.html">Re: Ripple one Association Tr...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02232.html">Re: Ripple one Association Tr...</a></span> <span class="sender italic">Stephen Allred</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02233.html">Re: Ripple one Association Tr...</a></span> <span class="sender italic">Stephen Allred</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Ripple one Association Troubles">
+<input type="hidden" name="msgid" value="D6A0B7EF-984F-4AC7-867D-6DE5DDCCF7DA@stevesmiscellany.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02228.html">
+<input type="submit" value=" Stephen Allred ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Ripple+one+Association+Troubles%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02227.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02229.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D6A0B7EF-984F-4AC7-867D-6DE5DDCCF7DA@stevesmiscellany.com</li>
+</ul>
+</div>
+</body>
+</html>

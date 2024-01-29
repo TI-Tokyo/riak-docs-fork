@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Indexing conflicts (feature)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd14.html#11401" id="c">
+<link rel="index" href="mail14.html#11401" id="i">
+<link rel="prev" href="msg11399.html" id="p">
+<link rel="next" href="msg11403.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11401.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Indexing+conflicts+%5C%28feature%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Indexing conflicts (feature)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Erik+S%C3%B8e+S%C3%B8rensen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Erik Søe Sørensen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130704" rel="nofollow">Thu, 04 Jul 2013 05:15:01 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi all -
+</pre><tt>I'm not sure whether this has been discussed here before, but I've at 
+</tt><tt>times felt that Riak - while having a great way of supporting resolution 
+</tt><tt>of write conflicts - is missing a good way of *detecting* such conflicts.
+</tt><pre style="margin: 0em;">
+(Unless of course some feature has been added which I have missed...)
+</pre><tt>And recently, when trying to reason about whether our Riak-based 
+</tt><tt>algorithm gave the guarantees it was supposed to, and what to do about 
+</tt><tt>it when it didn't, one of the conclusions was &quot;either this goes well, or 
+</tt><tt>else we get a conflict, in which case all is well if we find and handle 
+</tt><tt>that conflict in a timely manner&quot;.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>Now, I'm as much for periodic jobs reviewing nontrivial parts of the 
+</tt><tt>database as the next man (and also fudge factors such as &quot;upper bound on 
+</tt><tt>consistency delay&quot;), but I think we can do better. :-)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Thus, I give to you, for your consideration and discussion, a mechanism 
+</tt><tt>for indexing conflicts in 2i as they arise:
+</tt><pre style="margin: 0em;">
+
+    <a  rel="nofollow" href="https://github.com/trifork/riak_kv/tree/sibling_index">https://github.com/trifork/riak_kv/tree/sibling_index</a>
+
+</pre><tt>I think 2i is a quite appropriate vehicle for this. The implementation 
+</tt><tt>doesn't have much rocket science in it, either. As for the special names 
+</tt><tt>involved (and the extent to which the mechanism should be configurable), 
+</tt><tt>I'll leave that to the naming (and configurability) experts.
+</tt><tt>As far as I know, the code would also handle conflicts created at 
+</tt><tt>replication time.
+</tt><pre style="margin: 0em;">
+
+Enough talk - demo time:
+
+   # First, setup bucket to support conflicts:
+   $ curl -XPUT -H'content-type: application/json' -d'{&quot;props&quot;:
+   {&quot;allow_mult&quot;: true}}' <a  rel="nofollow" href="http://localhost:8098/buckets/somebucket/props">http://localhost:8098/buckets/somebucket/props</a>
+
+   # Create an object, marking it as something we'd like to monitor for
+   siblings:
+   $ curl -XPUT -d'Value 1' -H'X-Riak-Meta-X-Index-Siblings: true'
+   <a  rel="nofollow" href="http://localhost:8098/buckets/somebucket/keys/thekey">http://localhost:8098/buckets/somebucket/keys/thekey</a>
+
+   # Then create a conflict:
+   $ curl -XPUT -d'Value 2'
+   <a  rel="nofollow" href="http://localhost:8098/buckets/somebucket/keys/thekey">http://localhost:8098/buckets/somebucket/keys/thekey</a>
+
+   # Are there any conflicts?
+   $ curl -XGET
+   <a  rel="nofollow" href="http://localhost:8098/buckets/somebucket/index/x_riak_siblings_int/0/999999">http://localhost:8098/buckets/somebucket/index/x_riak_siblings_int/0/999999</a>
+   {&quot;keys&quot;:[&quot;thekey&quot;]}
+
+   # The value of the index is the number of siblings.
+   $ curl -XGET
+   <a  rel="nofollow" href="http://localhost:8098/buckets/somebucket/index/x_riak_siblings_int/2/2">http://localhost:8098/buckets/somebucket/index/x_riak_siblings_int/2/2</a>
+   {&quot;keys&quot;:[&quot;thekey&quot;]}
+
+
+What do you think?
+
+Regards,
+Erik Søe Sørensen
+--
+Mobile: + 45 26 36 17 55 | Skype: eriksoesorensen | Twitter: @eriksoe
+</pre><tt>Trifork A/S  |  Margrethepladsen 4  |  DK-8000 Aarhus C | 
+</tt><tt>www.trifork.com &lt;<a  rel="nofollow" href="http://www.trifork.com/">http://www.trifork.com/</a>&gt;
+</tt><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11399.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd14.html#11401">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail14.html#11401">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11403.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Indexing conflicts (feature)">
+<input type="hidden" name="msgid" value="51D566BB.5000406@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11401.html">
+<input type="submit" value=" Erik Søe Sørensen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Indexing+conflicts+%5C%28feature%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11399.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11403.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">51D566BB.5000406@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

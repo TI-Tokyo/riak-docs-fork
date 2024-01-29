@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Question about link-walk results returned by erlang_pb_client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#13815" id="c">
+<link rel="index" href="mail2.html#13815" id="i">
+<link rel="prev" href="msg13813.html" id="p">
+<link rel="next" href="msg13810.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13815.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Question+about+link%5C-walk+results+returned+by+erlang_pb_client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Question about link-walk results returned by erlang_pb_client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22fxmy+wang%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">fxmy wang</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140316" rel="nofollow">Sun, 16 Mar 2014 07:24:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Alex,
+
+Thank you for the clarify( and the warning :) ).</pre><pre>
+
+Just out of curiosity, by using erlang_pb_client, is there a good way
+to retrieve *all* the Objects that have been walked in on shot( like
+the HTTP interface does)?
+
+And if there's not, then how is the HTTP map-reduce implemented so
+that it can return all the Objects alone the way?
+
+Best Regards :)
+fxmy
+
+2014-03-15 0:30 GMT+08:00 Alex Moore &lt;amo...@basho.com&gt;:
+&gt; Hi fxmy,
+&gt;
+&gt; The return value is just Bucket/Key/link-tag pairs, without ObjectValue or
+&gt; other metadata.
+&gt;&gt;
+&gt;&gt; {ok,[{0,[[&lt;&lt;&quot;people&quot;&gt;&gt;,&lt;&lt;&quot;timoreilly&quot;&gt;&gt;,&lt;&lt;&quot;friend&quot;&gt;&gt;]]},
+&gt;&gt;
+&gt;&gt; {1,[[&lt;&lt;&quot;people&quot;&gt;&gt;,&lt;&lt;&quot;dhh&quot;&gt;&gt;,&lt;&lt;&quot;friend&quot;&gt;&gt;]]}]}
+&gt;
+&gt;
+&gt; Is this intended or not?
+&gt;
+&gt;
+&gt; This is intended.  You are running a map reduce job with one &quot;link&quot; stage,
+&gt; which does the link walking for you.
+&gt; Link stages only return a list of key/value/relation tuples.
+&gt;
+&gt; If so, what's the best way to get these ObjectValues through one single pass
+&gt; of link-walking?
+&gt;
+&gt;
+&gt; If you want to grab everything in one shot you would have to feed the link
+&gt; stage's output into a map stage to grab the actual objects:
+&gt;
+&gt; {ok, RiakObj} = riakc_pb_socket:mapred(Pid,[{&lt;&lt;&quot;people&quot;&gt;&gt;,
+&gt; &lt;&lt;&quot;timoreilly&quot;&gt;&gt;}],
+&gt; [{link, &lt;&lt;&quot;people&quot;&gt;&gt;, &lt;&lt;&quot;friend&quot;&gt;&gt;, false},
+&gt;  {link, &lt;&lt;&quot;people&quot;&gt;&gt;, &lt;&lt;&quot;friend&quot;&gt;&gt;, false},
+&gt;  {map, {modfun, riak_kv_mapreduce, map_identity}, none, true}]).
+&gt;
+&gt; This should give you the entire object for the results of the last link
+&gt; phase, namely Dave Thomas's.
+&gt;
+&gt; I should warn you thought that while link walking and map reduce let you do
+&gt; things like this in one shot, you should be cautious about using them in
+&gt; production since a bad query can kill performance.
+&gt;
+&gt; Thanks,
+&gt; Alex
+&gt;
+&gt; On Mar 14, 2014, at 6:49 AM, fxmy wang &lt;fxm...@gmail.com&gt; wrote:
+&gt;
+&gt;
+&gt; Hi, list,
+&gt;
+&gt; This should be a trivial question and I think I'm definitely missing
+&gt; something( and feeling stupid :\).
+&gt;
+&gt; So when I am doing a chained link-walking through HTTP interface like
+&gt; this(copied from link walking docs):
+&gt;&gt;
+&gt;&gt; curl -v localhost:8091/riak/people/davethomas/_,friend,1/_,friend,_/
+&gt;
+&gt;
+&gt; The output is quite verbose, including Bucket/Key/Value etc.etc.
+&gt;&gt;
+&gt;&gt; --JCgqdOHsL4BdXPCb0cuQDnLTxOH
+&gt;&gt;
+&gt;&gt; Content-Type: multipart/mixed; boundary=LpfqXc9urbAJJNFH7aGGPBiAtnX
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --LpfqXc9urbAJJNFH7aGGPBiAtnX
+&gt;&gt;
+&gt;&gt; X-Riak-Vclock: a85hYGBgzGDKBVIcc+04TgWFOj/NYEpkzGNlyNCadoYvCwA=
+&gt;&gt;
+&gt;&gt; Location: /riak/people/timoreilly
+&gt;&gt;
+&gt;&gt; Content-Type: text/plain
+&gt;&gt;
+&gt;&gt; Link: &lt;/riak/people/dhh&gt;; riaktag=&quot;friend&quot;, &lt;/riak/people&gt;; rel=&quot;up&quot;
+&gt;&gt;
+&gt;&gt; Etag: 3DmGNeyDj2hUlLR2UhJvMr
+&gt;&gt;
+&gt;&gt; Last-Modified: Thu, 13 Mar 2014 13:11:04 GMT
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I am an excellent public speaker.
+&gt;&gt;
+&gt;&gt; --LpfqXc9urbAJJNFH7aGGPBiAtnX--
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --JCgqdOHsL4BdXPCb0cuQDnLTxOH
+&gt;&gt;
+&gt;&gt; Content-Type: multipart/mixed; boundary=IcBLyeIFObvJlJGyXuhTty5cRSs
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --IcBLyeIFObvJlJGyXuhTty5cRSs
+&gt;&gt;
+&gt;&gt; X-Riak-Vclock: a85hYGBgzGDKBVIcR4M2cgeFOkdkMCUy5rEyzNSadoYvCwA=
+&gt;&gt;
+&gt;&gt; Location: /riak/people/dhh
+&gt;&gt;
+&gt;&gt; Content-Type: text/plain
+&gt;&gt;
+&gt;&gt; Link: &lt;/riak/people&gt;; rel=&quot;up&quot;
+&gt;&gt;
+&gt;&gt; Etag: 4qbA2ZufXNgzFRb8PlSLUO
+&gt;&gt;
+&gt;&gt; Last-Modified: Thu, 13 Mar 2014 13:11:53 GMT
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I drive a Zonda.
+&gt;&gt;
+&gt;&gt; --IcBLyeIFObvJlJGyXuhTty5cRSs--
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --JCgqdOHsL4BdXPCb0cuQDnLTxOH--
+&gt;
+&gt;
+&gt;
+&gt; But when I retried it through the erlang_pb_client
+&gt;&gt;
+&gt;&gt; riakc_pb_socket:mapred(Pid,[{&lt;&lt;&quot;people&quot;&gt;&gt;, &lt;&lt;&quot;davethomas&quot;&gt;&gt;}],[{link,
+&gt;&gt; &lt;&lt;&quot;people&quot;&gt;&gt;, &lt;&lt;&quot;friend&quot;&gt;&gt;, true},{link, &lt;&lt;&quot;people&quot;&gt;&gt;, &lt;&lt;&quot;friend&quot;&gt;&gt;,
+&gt;&gt; true}]).
+&gt;
+&gt;
+&gt; The return value is just Bucket/Key/link-tag pairs, without ObjectValue or
+&gt; other metadata.
+&gt;&gt;
+&gt;&gt; {ok,[{0,[[&lt;&lt;&quot;people&quot;&gt;&gt;,&lt;&lt;&quot;timoreilly&quot;&gt;&gt;,&lt;&lt;&quot;friend&quot;&gt;&gt;]]},
+&gt;&gt;
+&gt;&gt; {1,[[&lt;&lt;&quot;people&quot;&gt;&gt;,&lt;&lt;&quot;dhh&quot;&gt;&gt;,&lt;&lt;&quot;friend&quot;&gt;&gt;]]}]}
+&gt;
+&gt;
+&gt; Is this intended or not?
+&gt; If so, what's the best way to get these ObjectValues through one single pass
+&gt; of link-walking?
+&gt;
+&gt;
+&gt; Cheers,
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13813.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#13815">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#13815">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13810.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13806.html">Question about link-walk results returned by erlang_pb_client</a></span> <span class="sender italic">fxmy wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13809.html">Re: Question about link-walk results returned by erlang_p...</a></span> <span class="sender italic">Alex Moore</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13812.html">How to set HTTP Last-Modified header from HTTP API</a></span> <span class="sender italic">Jeff Peck</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13813.html">Re: How to set HTTP Last-Modified header from HTT...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Question about link-walk results returned by erla...</span> <span class="sender italic">fxmy wang</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Question about link-walk results returned by erlang_pb_client">
+<input type="hidden" name="msgid" value="CA+izqxkCNwjo9F4jiSL5tbm+MqkK=ExMMFSXv4_MV4+vMFNOPA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13815.html">
+<input type="submit" value=" fxmy wang ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Question+about+link%5C-walk+results+returned+by+erlang_pb_client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13813.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13810.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+izqxkCNwjo9F4jiSL5tbm+MqkK=ExMMFSXv4_MV4+vMFNOPA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

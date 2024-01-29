@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Deleting items from search index increases disk usage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09203" id="c">
+<link rel="index" href="maillist.html#09203" id="i">
+<link rel="prev" href="msg09164.html" id="p">
+<link rel="next" href="msg09159.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09203.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleting+items+from+search+index+increases+disk+usage%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Deleting items from search index increases disk usage</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremy+Raymond%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremy Raymond</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121105" rel="nofollow">Mon, 05 Nov 2012 10:06:58 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I gave this approach a try on the test cluster and it worked. I disabled
+search on all buckets. Then dropped the merge index on each node via the MI
+Pid. This freed up the space (it didn't remove all the subfolders in the
+merge_index but the disk usage went down to a few hundred K). Then I
+reindex the items I wished to be searchable after re-enabling search on the
+buckets.</pre><pre>
+
+--
+Jeremy
+
+
+On Fri, Nov 2, 2012 at 1:09 PM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+
+&gt; Jeremy,
+&gt;
+&gt; On Fri, Nov 2, 2012 at 12:31 PM, Jeremy Raymond &lt;jeraym...@gmail.com&gt;wrote:
+&gt;
+&gt;&gt; I cycled through the compaction on another node. Again after 3 rounds
+&gt;&gt; compaction has stopped. On one node the merge index is 26 GB on the other
+&gt;&gt; 21 GB. So it looks like I've hit the 5 segment compaction no-op condition
+&gt;&gt; on both nodes.
+&gt;
+&gt;
+&gt; I concur.  This condition seems arbitrary to me and I'm not sure if there
+&gt; is a good reason for it to exist.  But it's there and the only way we could
+&gt; remove it for you is to hot-load a new beam.
+&gt;
+&gt;
+&gt;&gt; What would account for the difference in merge_index size? Shouldn't
+&gt;&gt; these be relatively the same? There must still be tombstones in there...
+&gt;&gt;
+&gt;
+&gt; Riak Search uses term-based partitioning.  It could be that you have some
+&gt; terms that are more frequent than others which would account for some of
+&gt; the difference.
+&gt;
+&gt;
+&gt;&gt;
+&gt;&gt; On my production cluster the merge_index is ~44GB. I estimate that
+&gt;&gt; approximately 90 - 95% of the index data belongs to the bucket I no longer
+&gt;&gt; want indexed. Manually deleting items from the index then manually
+&gt;&gt; triggering compaction doesn't look like it will scale. Will this workflow
+&gt;&gt; work to re-build the search index. I need to keep the cluster available for
+&gt;&gt; writes while doing this:
+&gt;&gt;
+&gt;&gt; 1. In a rolling fashion, disable Riak Search one node at a time.
+&gt;&gt; 2. Delete the contents of the merge_index on each node.
+&gt;&gt; 3. In a rolling fashion, re-enable Riak Search on each node.
+&gt;&gt; 4. Reindex the items to be included in the search index.
+&gt;&gt;
+&gt;
+&gt; No, instead of disabling Riak Search you'll want to take the nodes down
+&gt; one at a time, remove the merge index data, restart.  After doing this for
+&gt; all nodes then re-index your data.
+&gt;
+&gt;
+&gt;&gt;
+&gt;&gt; This should do the trick right? Do I need to disable search before
+&gt;&gt; clearing out the merge_index folders or would disabling the search index on
+&gt;&gt; the buckets via search-cmd be enough (and then re-enabling) before
+&gt;&gt; re-indexing?
+&gt;&gt;
+&gt;
+&gt; Again, don't bother disabling search.  The key is to take the nodes down
+&gt; because merge index caches stuff in memory.
+&gt;
+&gt; Actually, I thought of another way to achieve the same result without
+&gt; taking the nodes down.  If you have a non-production cluster to test this
+&gt; on that would be a good precaution.  I'm 99% sure this should work without
+&gt; issue.
+&gt;
+&gt; 1. Make sure no indexes are incoming, do this either at your client or
+&gt; uninstall all search hooks
+&gt;
+&gt; For each node:
+&gt;
+&gt; 2. Get a list of the MI Pids like in the manual compaction example
+&gt; 3. For each MI Pid call merge_index:drop(MIPid)
+&gt; 3a. Verify the data files were removed on disk
+&gt;
+&gt; After performing steps 2 &amp; 3 on each node:
+&gt;
+&gt; 4. Re-write the objects you want indexed (of course remember to re-install
+&gt; the hooks if you removed them in step 1)
+&gt;
+&gt; -Z
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09164.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09203">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09203">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09159.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09089.html">Re: Deleting items from search index increases disk usage</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09090.html">Re: Deleting items from search index increases disk us...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09105.html">Re: Deleting items from search index increases dis...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09141.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09157.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09158.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09160.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09162.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09163.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09164.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Deleting items from search index increases...</span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09159.html">Re: Deleting items from search index increases...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Deleting items from search index increases disk usage">
+<input type="hidden" name="msgid" value="CAE_i+t9883aww7NULciEvzGeBbT49=PPjBj40KzrHEqpJkhpVQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09203.html">
+<input type="submit" value=" Jeremy Raymond ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleting+items+from+search+index+increases+disk+usage%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09164.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09159.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAE_i+t9883aww7NULciEvzGeBbT49=PPjBj40KzrHEqpJkhpVQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

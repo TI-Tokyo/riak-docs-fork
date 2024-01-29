@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>riak java pb client does not let go of bad sockets</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07071" id="c">
+<link rel="index" href="maillist.html#07071" id="i">
+<link rel="prev" href="msg07067.html" id="p">
+<link rel="next" href="msg07087.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07071.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak+java+pb+client+does+not+let+go+of+bad+sockets%22&amp;o=newest" rel="nofollow"><span itemprop="name">riak java pb client does not let go of bad sockets</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Will+Gage%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Will Gage</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120328" rel="nofollow">Wed, 28 Mar 2012 11:10:05 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hello,
+</pre><pre>
+
+I have run into a production issue that I think stems from either a defect in 
+the com.basho.riak:riak-client:jar:1.0.4 library, or a misunderstanding in my 
+use of it.  I'm actively trying to fix the issue, but I thought I'd put a 
+feeler out to this list to see if others have encountered the issue, or whether 
+there's a clear problem in our use of the library.
+
+Environment:
+---------------------
+* Java web application running in Tomcat:
+** JDK: jdk1.6.0_24-jce6
+** Tomcat: apache-tomcat-7.0.23
+** Basho Riak Client version: com.basho.riak:riak-client:jar:1.0.4
+* 6 node Riak cluster running Riak 1.0.1
+
+Error sequence:
+-----------------------
+The production issue has happened a few times, and it follows this sequence:
+
+1. We get a rash of SocketException: Connection Reset errors
+
+java.net.SocketException: Connection reset
+    at java.net.SocketInputStream.read(SocketInputStream.java:168)
+    at java.io.BufferedInputStream.fill(BufferedInputStream.java:218)
+    at java.io.BufferedInputStream.read(BufferedInputStream.java:237)
+    at java.io.DataInputStream.readInt(DataInputStream.java:370)
+    at com.basho.riak.pbc.RiakConnection.receive(RiakConnection.java:92)
+    at com.basho.riak.pbc.RiakClient.processFetchReply(RiakClient.java:278)
+    at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:252)
+    at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:241)
+    at 
+com.basho.riak.client.raw.pbc.PBClientAdapter.fetch(PBClientAdapter.java:156)
+    at 
+com.basho.riak.client.raw.pbc.PBClientAdapter.fetch(PBClientAdapter.java:139)
+    at com.basho.riak.client.raw.ClusterClient.fetch(ClusterClient.java:107)
+    
+2. Followed 50 milliseconds later by a steady stream of SocketException: Broken 
+pipe messages, until we restart the Tomcat container.
+
+java.net.SocketException: Broken pipe
+    at java.net.SocketOutputStream.socketWrite0(Native Method)
+    at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:92)
+    at java.net.SocketOutputStream.write(SocketOutputStream.java:136)
+    at java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:65)
+    at java.io.BufferedOutputStream.flush(BufferedOutputStream.java:123)
+    at java.io.DataOutputStream.flush(DataOutputStream.java:106)
+    at com.basho.riak.pbc.RiakConnection.send(RiakConnection.java:82)
+    at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:251)
+    at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:241)
+    at 
+com.basho.riak.client.raw.pbc.PBClientAdapter.fetch(PBClientAdapter.java:156)
+    at 
+com.basho.riak.client.raw.pbc.PBClientAdapter.fetch(PBClientAdapter.java:139)
+    at com.basho.riak.client.raw.ClusterClient.fetch(ClusterClient.java:107)
+
+3. Within our 6-node Riak cluster, almost exactly 1 minute after the initial 
+connection reset errors, one node emits a crash log:
+
+2012-03-27 14:56:51 =ERROR REPORT====
+** Generic server &lt;0.289.0&gt; terminating 
+** Last message in was {inet_async,#Port&lt;0.3319&gt;,41462,{ok,#Port&lt;0.73913715&gt;}}
+** When Server state == {state,riak_kv_pb_listener,#Port&lt;0.3319&gt;,{state,8087}}
+** Reason for termination == 
+** {timeout,{'gen_server2',call,[&lt;0.1838.1574&gt;,{set_socket,#Port&lt;0.73913715&gt;}]}}
+2012-03-27 14:57:08 =CRASH REPORT====
+  crasher:
+    initial call: gen_nb_server:init/1
+    pid: &lt;0.289.0&gt;
+    registered_name: []
+    exception exit: 
+{timeout,{'gen_server2',call,[&lt;0.1838.1574&gt;,{set_socket,#Port&lt;0.73913715&gt;}]}}
+      in function  gen_server:terminate/6
+      in call from proc_lib:init_p_do_apply/3
+    ancestors: [riak_kv_sup,&lt;0.194.0&gt;]
+    messages: [{#Ref&lt;0.0.704.111074&gt;,ok}]
+    links: [&lt;0.200.0&gt;]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 377
+    stack_size: 24
+    reductions: 117962
+  neighbours:
+2012-03-27 14:57:09 =SUPERVISOR REPORT====
+     Supervisor: {local,riak_kv_sup}
+     Context:    child_terminated
+     Reason:     
+{timeout,{'gen_server2',call,[&lt;0.1838.1574&gt;,{set_socket,#Port&lt;0.73913715&gt;}]}}
+     Offender:   
+[{pid,&lt;0.289.0&gt;},{name,riak_kv_pb_listener},{mfargs,{riak_kv_pb_listener,start_link,[]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+
+The Riak cluster seems to bounce back to health (all nodes connected and 
+responding) by the time we see the errors and check it, but the clients (the 
+Tomcat application) never recover until we restart them.  It seems pretty clear 
+that a process within the Riak cluster is dying and taking its sockets with it, 
+after which the clients are not recovering.
+
+
+Theory
+----------
+The working theory is that the client library is never flushing out bad 
+connections.  You can see here that connections are always returned to the 
+pool.  I have not yet seen any evidence that connections are ever tested for 
+health once allocated.
+
+&gt;From com.basho.riak.pbc.RiakClient, line 224-237:
+
+        public RiakObject[] fetch(ByteString bucket, ByteString key, int 
+readQuorum)
+                        throws IOException {
+                RpbGetReq req = RPB.RpbGetReq.newBuilder().setBucket(bucket)
+                                .setKey(key).setR(readQuorum).build();
+
+                RiakConnection c = getConnection();
+                try {
+                        c.send(MSG_GetReq, req);
+                        return processFetchReply(c, bucket, key).getObjects();
+                } finally {
+                        release(c);
+                }
+
+        }
+
+And this is how our reference to the client is created, using client-side 
+cluster configs:
+
+            // set up a PBClientConfig per host
+            for(String host : hosts) {
+
+                PBClientConfig pbcConfig = new PBClientConfig.Builder()
+                        .withInitialPoolSize(config.getInitialPoolSize())
+                        .withPort(config.getRiakPort())
+                        .withHost(host.trim())
+                        
+.withConnectionTimeoutMillis(config.getConnectionWaitTimeoutMillis())
+                        
+.withIdleConnectionTTLMillis(config.getIdleConnectionTTLMillis())
+                        .withSocketBufferSizeKb(config.getBufferSizeKb())
+                        .withPoolSize(config.getMaximunPoolSize())
+                        .build();
+
+                clusterConfig.addClient(pbcConfig);
+
+            }
+
+            // Connection pooling is done internally in the PBClusterClient 
+created by the factory
+            RawClient rawClient = 
+PBClusterClientFactory.getInstance().newClient(clusterConfig);
+
+            this.client = rawClient;
+
+Is the expectation within the client library that our own application code 
+would detect bad connections and recreate the pool / client once we've detected 
+them?
+
+
+Thanks,
+Will
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07067.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07071">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07071">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07087.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">riak java pb client does not let go of bad sockets</span> <span class="sender italic">Will Gage</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07087.html">Re: riak java pb client does not let go of bad sockets</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07089.html">RE: riak java pb client does not let go of bad socket...</a></span> <span class="sender italic">Will Gage</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="riak java pb client does not let go of bad sockets">
+<input type="hidden" name="msgid" value="9CE1842A3184B64CBA22D3F7495AD1893227450A@SZHQMSXNODE1A.shopzilla.corp">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07071.html">
+<input type="submit" value=" Will Gage ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak+java+pb+client+does+not+let+go+of+bad+sockets%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07067.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07087.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">9CE1842A3184B64CBA22D3F7495AD1893227450A@SZHQMSXNODE1A.shopzilla.corp</li>
+</ul>
+</div>
+</body>
+</html>

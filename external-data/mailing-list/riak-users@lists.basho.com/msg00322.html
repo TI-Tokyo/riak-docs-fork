@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Performance of write requests?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00322" id="c">
+<link rel="index" href="maillist.html#00322" id="i">
+<link rel="prev" href="msg00303.html" id="p">
+<link rel="next" href="msg00301.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00322.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+of+write+requests%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Performance of write requests?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Karsten+Thygesen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Karsten Thygesen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100511" rel="nofollow">Tue, 11 May 2010 10:55:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Ryan
+
+I'm running the cluster on 4 physical servers with many cores each so CPU is 
+not a limitation. Regarding the storage, we use Sun Openstorage which essential 
+means, that we are writing to a flashdisk. Besides, I tried to use memorybased 
+filesystem for storage with non significant changes in performance (50% better 
+or so), so I doubt, that IO is my challenge. </pre><pre>
+
+But I have noted the ZFS tuning recommendations - that will come in handy when 
+we go in larger roll out.
+
+But - David Dawson pointed me in the right direction - my simple converter 
+script did a &quot;fetch record, write record, repeat&quot; lifecycle and the bare 
+roundtrip time was a killer.
+
+I have not extended my little script to become multithreaded (each write to the 
+cluster happens in a dedicated thread) and that very simple enhancement now 
+gave me more then 200 writes/sec, so I believe that the bottleneck is in my 
+script and not the RIAK cluster right now.
+
+I have run out of time for today, but I will continue my experiments tomorrow 
+and finetune my script more (read: make it more parallel and perhaps distribute 
+it to more hosts).
+
+Best regards,
+Karsten
+
+On May 10, 2010, at 23:46 , Ryan Tilder wrote:
+
+&gt; A couple of quick questions for you Karsten that should help us get an idea 
+&gt; of what kind of issues you might be having.
+&gt; 
+&gt; How many physical hosts are you running the four OpenSolaris virtuals on?  If 
+&gt; they're all running on the same host and you don't have a pretty substantial 
+&gt; RAID array backing their local storage, you're just going to get I/O 
+&gt; contention between the virtuals, slowing down writes.
+&gt; 
+&gt; There are some ZFS tuning parameters we've found that can improve write 
+&gt; throughput.  Since you're using dets there's one in particular that will be 
+&gt; helpful.  You can run this command as root on each OpenSolaris virtual:
+&gt; 
+&gt; zfs atime=off &lt;pool&gt;
+&gt; 
+&gt; The fact that you can essentially double your performance by running another 
+&gt; client in parallel does make me wonder whether or not it might be a mild 
+&gt; performance issue with your invocation of the ripple client.  Do you see a 
+&gt; linear increase in write performance as you increase the number of parallel 
+&gt; writers?
+&gt; 
+&gt; --Ryan
+&gt; 
+&gt; On Mon, May 10, 2010 at 8:36 AM, Karsten Thygesen &lt;kar...@netic.dk&gt; wrote:
+&gt; Hi
+&gt; 
+&gt; I'm doing a small proof-of-concept and the goal is to store about 250.000.000 
+&gt; records in a Riak cluster. Today, we have the data in MySQL, but we strive 
+&gt; for better performance and we might even expect up to 5 times as mush data 
+&gt; during the next couple of years. The data is denormalized and &quot;document&quot; like 
+&gt; so they are an easy match for NoSQL paradigm. 
+&gt; 
+&gt; For the small POC, I have built a 4 node cluster with 4 dedicated virtual 
+&gt; servers running Opensolaris on top of VMWare but with quite fast storage 
+&gt; below. In fron of the cluster I have a loadbalancer which will distribute 
+&gt; reuests evenly among the nodes.
+&gt; 
+&gt; Each node is running riak-0.10 with almost deafult configuration. I have 
+&gt; added &quot;-smp enabled&quot; to vm.args and each node is otherwise using default 
+&gt; configuration (except for name of cause). This also implies N=2 and dest for 
+&gt; storage backend.
+&gt; 
+&gt; I have written a small ruby script which uses riak-client from Ripple (latest 
+&gt; version) as well as curd for http connections and it quite simple takes each 
+&gt; record from the database and stores is in riak. Each record is around 
+&gt; 500-1000 bytes large and entirely structured text/data. I store them as JSON 
+&gt; objects.
+&gt; 
+&gt; The script can easily read more than 15.000 records/second, process them and 
+&gt; print them to the screen, so I doubt the script is the bottleneck.
+&gt; 
+&gt; When I try to write them to the riak cluster via the loadbalancer, I can only 
+&gt; write around 50-60 records/second and while writing, the beam process is only 
+&gt; using  around 10% cpu and no major IO activity is going on.
+&gt; 
+&gt; I have tried to move the data directory to /tmp (memory filesystem) and with 
+&gt; this setup, I can get around 90 write/sec (yes - only for testing - I can not 
+&gt; live with memoryfilesystem in production with this dataset).
+&gt; 
+&gt; I have also noticed, that the performance I get is almost equivalent nomatter 
+&gt; if I write through the loadbalancer or I just select a node and sends all my 
+&gt; writes to that one. 
+&gt; 
+&gt; I have also tried a &quot;multithreaded&quot; approach where I simply run two of my 
+&gt; datamover scripts in parallel, and that way, I can get around 110 
+&gt; writes/second.
+&gt; 
+&gt; With the current performance, it will take me more than a month to move my 
+&gt; data from mysql to Riak, so I need a multitude of better performance.
+&gt; 
+&gt; Do you have any suggestions for how to get better performance? I was hoping 
+&gt; for towards 1000 writes/second so feel free to speculate - perhaps I should 
+&gt; just add quite a bunch of more servers?
+&gt; 
+&gt; Best regards,
+&gt; Karsten
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+
+</pre>
+<p><strong><a href="msg00322/smime.p7s" ><img src="../attachment.png" alt="Attachment:" width=27 height=28></a>
+<a href="msg00322/smime.p7s" >smime.p7s</a></strong><br>
+<em>Description:</em> S/MIME cryptographic signature</p>
+<pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00303.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00322">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00322">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00301.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00298.html">Performance of write requests?</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00302.html">Re: Performance of write requests?</a></span> <span class="sender italic">Mårten Gustafson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00304.html">Re: Performance of write requests?</a></span> <span class="sender italic">Stephan Maka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00305.html">Re: Performance of write requests?</a></span> <span class="sender italic">Ryan Tilder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00323.html">Re: Performance of write requests?</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg00303.html">Re: Performance of write requests?</a></span> <span class="sender italic">Ryan Tilder</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Performance of write requests?</span> <span class="sender italic">Karsten Thygesen</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg00301.html">Performance of write requests?</a></span> <span class="sender italic">Stephan Maka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00306.html">Re: Re: Performance of write requests?</a></span> <span class="sender italic">wde</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Performance of write requests?">
+<input type="hidden" name="msgid" value="59E25427-CA04-4BF2-8B6D-00FE29CC0A12@netic.dk">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00322.html">
+<input type="submit" value=" Karsten Thygesen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+of+write+requests%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00303.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00301.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">59E25427-CA04-4BF2-8B6D-00FE29CC0A12@netic.dk</li>
+</ul>
+</div>
+</body>
+</html>

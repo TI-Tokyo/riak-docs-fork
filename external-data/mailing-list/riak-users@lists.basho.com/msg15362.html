@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>High kv get/put latency while other uses search ?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15362" id="c">
+<link rel="index" href="maillist.html#15362" id="i">
+<link rel="prev" href="msg15357.html" id="p">
+<link rel="next" href="msg15367.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15362.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22High+kv+get%5C%2Fput+latency+while+other+uses+search+%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">High kv get/put latency while other uses search ?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Steve+Garon%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Steve Garon</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20141212" rel="nofollow">Fri, 12 Dec 2014 07:42:33 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi all,
+
+I started to have some issues with our Riak cluster, one of our buckets is
+starting to get quite big, between 60M - 80M entries, and now we are
+starting to see huge latency issues when we try to remove data out of it.</pre><pre>
+
+Our usual get/put latency average in normal write operation is 5000us get
+and 9000us put. We have over 1000 workers executing a task and sending
+their results to the Riak cluster. That part works really well.
+
+The problem is that we can't keep all that data forever so each of our task
+results has and expiry field that we query using SOLR to delete expired
+data. We have 1 thread that issues queries to SOLR to get a bunch of
+results to delete and 50 worker thread that issue the delete commands to
+the Riak cluster. Now the problem is that has soon as I start issuing
+search queries latency goes through the roof. Just issuing the search
+queries to gather the data adds a 60 000us get latency and a 50 000us put
+latency to the KV gets and puts. I don't get how searching through SOLR
+could create such latency in the gets and put, it should not have any
+effect. And if I actually turn on the deleting workers its yet another 10
+000us get latency and 10 000us put latency. The deletion workers latency, I
+get that, they are actually changing the data. It's the search latency that
+I find a bit odd.
+
+Even worst, now the search index in that bucket seems extremely slow. Any
+queries that I do on that search index takes at minimum 1800ms. That may be
+part of the problem. But at the end of the day the index is not even that
+big, 15GB on each node.
+
+To put you more in context, this is a break down of our Riak cluster:
+
+6x Dell r620
+     2x10 cores CPUs with HT = 40 logical cores
+     256 GB Ram
+     3x300GB 15k RPM SATA in Mirror = OS
+     6x900GB 15k RPM SATA in RAID5 = Riak+SOLR
+     4x10G Nic (but only one is configured for now)
+     Ubuntu 14.04.1 Server
+     *I've done all suggested tweaks from Riak docs on the OS
+
+Current Riak config changed from default:
+leveldb
+ring size of 128
+solr -xmx16g and ConcMarkSweepGC
+erlang at smp:20:20
+*tried erlang.async_thread to 256 but didn't do anything
+
+The result bucket replication is set to n=2
+
+Load average on each nodes never goes over 5-6, which I find extremely low
+for such a big machine. There is never any read on the disk because all
+leveldb files and the search index fit on the OS cache.
+
+Am I expecting too much from Riak/SOLR? There has to be something that I'm
+doing wrong somewhere...
+
+Steve
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15357.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15362">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15362">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15367.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="High kv get/put latency while other uses search ?">
+<input type="hidden" name="msgid" value="CAMNf=zSBLOodfrL63twkVuAZyyub61baD2-YXWySPgt_q77-Vw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15362.html">
+<input type="submit" value=" Steve Garon ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22High+kv+get%5C%2Fput+latency+while+other+uses+search+%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15357.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15367.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMNf=zSBLOodfrL63twkVuAZyyub61baD2-YXWySPgt_q77-Vw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

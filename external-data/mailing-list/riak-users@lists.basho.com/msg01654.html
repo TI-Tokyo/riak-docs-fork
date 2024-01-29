@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Problems with weird errors running 0.13</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01654" id="c">
+<link rel="index" href="maillist.html#01654" id="i">
+<link rel="prev" href="msg01649.html" id="p">
+<link rel="next" href="msg01664.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01654.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problems+with+weird+errors+running+0.13%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Problems with weird errors running 0.13</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dan+Reverri%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dan Reverri</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101129" rel="nofollow">Mon, 29 Nov 2010 10:15:38 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Jon,
+
+It looks like Riak 0.13 may be running an initial empty reduce phase; we'll
+look into this issue. With that said, the reduce function you have defined
+does not account for &quot;re-reduce&quot;. The following article explains how reduce
+phases work:
+<a  rel="nofollow" href="https://wiki.basho.com/display/RIAK/MapReduce#MapReduce-HowaReducePhaseWorksinRiak">https://wiki.basho.com/display/RIAK/MapReduce#MapReduce-HowaReducePhaseWorksinRiak</a></pre><pre>
+
+Note the following from the article:
+&quot;The important thing to understand is that the function defining the reduce
+phase may be evaluated multiple times, and the input of later evaluations
+will include the input of earlier evaluations.&quot;
+
+Based on your defined reduce function it looks like you are trying to count
+the number of objects in the &quot;test&quot; bucket. Rather than return the length of
+the incoming list it would be better to sum the values of the incoming list
+using &quot;reduceSum&quot;:
+<a  rel="nofollow" href="https://github.com/basho/riak_kv/blob/master/priv/mapred_builtins.js#L66">https://github.com/basho/riak_kv/blob/master/priv/mapred_builtins.js#L66</a>
+
+Thanks,
+Dan
+
+Daniel Reverri
+Developer Advocate
+Basho Technologies, Inc.
+d...@basho.com
+
+
+On Mon, Nov 29, 2010 at 7:08 AM, Jon Brisbin &lt;
+jon.bris...@npcinternational.com&gt; wrote:
+
+&gt;
+&gt; On Nov 29, 2010, at 8:59 AM, David Smith wrote:
+&gt;
+&gt; &gt; On Mon, Nov 29, 2010 at 7:43 AM, Jon Brisbin
+&gt; &gt; &lt;jon.bris...@npcinternational.com&gt; wrote:
+&gt; &gt;&gt; I'm working on the Spring Data and Grails Gorm support for Riak and I'm
+&gt; seeing some problems running my tests against Riak 0.13. I don't see these
+&gt; problems when running 0.12.
+&gt; &gt;
+&gt; &gt; Can you elaborate on the problems you're seeing, please?
+&gt;
+&gt; There's two problems I'm seeing, one is with map/reduce, the other is that
+&gt; the server will crash under the load the tests put on it (I'll send a
+&gt; separate email with steps to reproduce).
+&gt;
+&gt; Here's an example of a problem I'm seeing in M/R (from an earlier message):
+&gt;
+&gt; I'm seeing some weird behavior with map/reduce in 0.13 versus 0.12 and I'm
+&gt; not sure what's going on here. I'm hanging out in the chat room right now
+&gt; trying to find out, but basically, if I run this test case against 0.13 I
+&gt; get a completely different result than what I get in 0.12:
+&gt;
+&gt; <a  rel="nofollow" href="http://pastie.org/1320874">http://pastie.org/1320874</a>
+&gt;
+&gt; In 0.12, I get [1] in 0.13 I get [2].
+&gt;
+&gt; The output I'm logging looks like this for 0.12:
+&gt;
+&gt; 11/23/2010 (13:39:47):
+&gt; map={&quot;bucket&quot;:&quot;test&quot;,&quot;key&quot;:&quot;test&quot;,&quot;vclock&quot;:&quot;a85hYGBgzGDKBVIsTE+lb2UwJTLmsTLUTEk4xpcFAA==&quot;,&quot;values&quot;:[{&quot;metadata&quot;:{&quot;Links&quot;:[],&quot;X-Riak-VTag&quot;:&quot;5qaBBTXfdEQUyCBTDRRIQ7&quot;,&quot;content-type&quot;:&quot;application/json&quot;,&quot;X-Riak-Last-Modified&quot;:&quot;Tue,
+&gt; 23 Nov 2010 19:39:40
+&gt; GMT&quot;,&quot;X-Riak-Meta&quot;:[]},&quot;data&quot;:&quot;{\&quot;test\&quot;:\&quot;value\&quot;,\&quot;integer\&quot;:12}\n&quot;}]}
+&gt; 11/23/2010 (13:39:47): reduce=[1]
+&gt;
+&gt; And this in 0.13:
+&gt;
+&gt; 11/23/2010 (13:46:52):
+&gt; map={&quot;bucket&quot;:&quot;test&quot;,&quot;key&quot;:&quot;test&quot;,&quot;vclock&quot;:&quot;a85hYGDgzmDKBVIsjDI+7RlMiYx5rAz9ExKO8UGE2ZqTWGZL10AlRCfBJVgYLplNxhQGqmeMbn4EldBEUs/k7LodUxionils9l2oRBGy+cHJ7zGFgeqZk3faQCVOT0aoZzG1PohFmNWr8CxUWGUaijFv+lYiS2QBAA==&quot;,&quot;values&quot;:[{&quot;metadata&quot;:{&quot;Links&quot;:[],&quot;X-Riak-VTag&quot;:&quot;If4qIgutNTerbEmxiKLhR&quot;,&quot;content-type&quot;:&quot;application/json&quot;,&quot;X-Riak-Last-Modified&quot;:&quot;Tue,
+&gt; 23 Nov 2010 19:46:44
+&gt; GMT&quot;,&quot;X-Riak-Meta&quot;:[]},&quot;data&quot;:&quot;{\&quot;test\&quot;:\&quot;value\&quot;,\&quot;integer\&quot;:12}\n&quot;}]}
+&gt; 11/23/2010 (13:46:52): reduce=[]
+&gt; 11/23/2010 (13:46:52): reduce=[1,0]
+&gt;
+&gt; I tried Homebrew (OS X 10.6) and the OS X download packages of both
+&gt; versions.
+&gt;
+&gt; Jon Brisbin
+&gt; Portal Webmaster
+&gt; NPC International, Inc.
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01649.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01654">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01654">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01664.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01647.html">Problems with weird errors running 0.13</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01648.html">Re: Problems with weird errors running 0.13</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01649.html">Re: Problems with weird errors running 0.13</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Problems with weird errors running 0.13</span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01664.html">Re: Problems with weird errors running 0.13</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01670.html">Re: Problems with weird errors running 0...</a></span> <span class="sender italic">Dan Reverri</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01660.html">Re: Problems with weird errors running 0.13</a></span> <span class="sender italic">David Smith</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01661.html">Re: Problems with weird errors running 0.13</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01672.html">Re: Problems with weird errors running 0.13</a></span> <span class="sender italic">Kevin Smith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Problems with weird errors running 0.13">
+<input type="hidden" name="msgid" value="AANLkTinHNTTpkrtVBV_UWN8GbQZCx4mknA=RdXGi3Du6@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01654.html">
+<input type="submit" value=" Dan Reverri ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problems+with+weird+errors+running+0.13%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01649.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01664.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTinHNTTpkrtVBV_UWN8GbQZCx4mknA=RdXGi3Du6@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Absolute consistency</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06144" id="c">
+<link rel="index" href="maillist.html#06144" id="i">
+<link rel="prev" href="msg06143.html" id="p">
+<link rel="next" href="msg06145.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06144.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Absolute consistency</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120105" rel="nofollow">Thu, 05 Jan 2012 13:14:45 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Internet went down as I was writing an email. Looks like everyone
+already did a great job answering the availability issues. Although, I
+might as well chime in as a Basho engineer.</pre><pre>
+
+On a side note, it looks like we've completely highjacked the
+&quot;Absolute consistency&quot; question initially proposed. I'll email out
+some thoughts on that later.
+
+&gt; Why would anyone ever want 2 copies on one physical PC?
+
+You wouldn't want 2 copies on one machine. But, if a user requests 3
+replicas, and there are only 2 machines, then that third replica has
+to go somewhere.
+
+This is a common scenario during initial data loading, development,
+and testing/evaluation of Riak. For example, people often start up a
+single-node RIak cluster, load up some data, and then add 2 or more
+nodes to turn it into a properly sized cluster. Before the new nodes
+are added, all the replicas live on the single-node. As nodes are
+added, replicas will move to the additional nodes to ensure
+availability.
+
+Simply put, unless you have enough machines to hold all your requested
+replicas, there isn't much RIak can do for you. You could certainly
+argue that perhaps you could merge replicas and only have 2 written in
+the reduced node case, and then copy a replica as enough machines are
+added to match/exceed the replica count. But, that's additional
+complexity for very minor gain. I would rather Riak have a single
+easily understood operating mode that you can rely on to understand
+your availability guarantees then have alternative operating modes
+depending on cluster sizing.
+
+If you want to run a Riak cluster with N=3, you should have 3+ nodes.
+
+With that said, Kyle correctly mentioned edge cases where having more
+nodes than N could still leave to reduced availability. Specifically,
+if the number of nodes does not cleanly divide the ring size, then
+there may be reduced availability preference lists at the wrap-around
+point of the Riak ring. For example, a 64 partition ring with 4 nodes
+won't have this problem; but a 64 partition ring with 3 nodes may.
+This is considered a bug, and is documented at:
+<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=228">https://issues.basho.com/show_bug.cgi?id=228</a>
+
+As listed on the issue, there are operational workarounds that ensure
+this doesn't occur. Such as going with 64/4 rather than 64/3. Fixing
+the issue entirely is something we at Basho are working towards. The
+new ring claim algorithm in the upcoming release of Riak makes the
+wrap-around issue much less likely anytime you have more than N nodes.
+A future release will address the issue more directly.
+
+-Joe
+
+On Thu, Jan 5, 2012 at 1:12 PM, Tim Robinson &lt;t...@blackstag.com&gt; wrote:
+&gt; Thank you for this info. I'm still somewhat confused.
+&gt;
+&gt; Why would anyone ever want 2 copies on one physical PC? Correct me if I am 
+&gt; wrong, but part of the sales pitch for Riak is that the cost of hardware is 
+&gt; lessened by distributing your data across a cluster of less expensive 
+&gt; machines as opposed to having it all one reside on an enormous server with 
+&gt; very little redundancy.
+&gt;
+&gt; The 2 copies of data on one physical PC provides no redundancy, but increases 
+&gt; hardware costs quite a bit.
+&gt;
+&gt; Right?
+&gt;
+&gt; Thanks,
+&gt; Tim
+&gt;
+&gt; -----Original Message-----
+&gt; From: &quot;Aphyr&quot; &lt;ap...@aphyr.com&gt;
+&gt; Sent: Thursday, January 5, 2012 1:01pm
+&gt; To: &quot;Tim Robinson&quot; &lt;t...@blackstag.com&gt;
+&gt; Cc: &quot;Runar Jordahl&quot; &lt;runar.jord...@gmail.com&gt;, riak-users@lists.basho.com
+&gt; Subject: Re: Absolute consistency
+&gt;
+&gt; On 01/05/2012 11:44 AM, Tim Robinson wrote:
+&gt;&gt; Ouch.
+&gt;&gt;
+&gt;&gt; I'm shocked that is not considered a major bug. At minimum that kind of 
+&gt;&gt; stuff should be front and center in their wiki/docs. Here I am thinking n 2 
+&gt;&gt; on a 3 node cluster means I'm covered when in fact I am not. It's the whole 
+&gt;&gt; reason I gave Riak consideration.
+&gt;&gt;
+&gt;&gt; Tim
+&gt;
+&gt; I think you may have this backwards. N=3 and 2 nodes would mean one node
+&gt; has 1 copy, and 1 node has 2 copies, of any given piece. For n=2 and 3
+&gt; nodes, there should be no overlap.
+&gt;
+&gt; The other thing to consider is that for certain combinations of
+&gt; partition number P and node number N, distributing partitions mod N can
+&gt; result in overlaps at the edge of the ring. This means zero to n
+&gt; preflists can overlap on some nodes. That means n=3 can, *with the wrong
+&gt; choice of N and P*, result in minimum 2 machines having copies of any
+&gt; given key, assuming P &gt; N.
+&gt;
+&gt; There are also failure modes to consider. I haven't read the new key
+&gt; balancing algo, so my explanation may be out of date.
+&gt;
+&gt; --Kyle
+&gt;
+&gt;
+&gt; Tim Robinson
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06143.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06144">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06144">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06145.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06134.html">Re: Absolute consistency</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06135.html">Re: Absolute consistency</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06136.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06137.html">Re: Absolute consistency</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06138.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06139.html">Re: Absolute consistency</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06140.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06141.html">Re: Absolute consistency</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06142.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06143.html">Re: Absolute consistency</a></span> <span class="sender italic">Aphyr</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Absolute consistency</span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06145.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06152.html">Re: Absolute consistency</a></span> <span class="sender italic">Thomas Bakketun</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06217.html">Re: Absolute consistency</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06231.html">Re: Absolute consistency</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06232.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06233.html">Re: Absolute consistency</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06234.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06236.html">Re: Absolute consistency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06237.html">Re: Absolute consistency</a></span> <span class="sender italic">Vishal Shah</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06241.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Absolute consistency">
+<input type="hidden" name="msgid" value="CANvk2KRgG4b7SmDBRbYuFpqBK_9c9WKJ3pZfKG9oc7OpKKuoaA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06144.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06143.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06145.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KRgG4b7SmDBRbYuFpqBK_9c9WKJ3pZfKG9oc7OpKKuoaA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

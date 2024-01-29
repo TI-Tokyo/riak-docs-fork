@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: tuning riak for 100s of concurrent connections</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02471" id="c">
+<link rel="index" href="maillist.html#02471" id="i">
+<link rel="prev" href="msg02486.html" id="p">
+<link rel="next" href="msg02472.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02471.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+tuning+riak+for+100s+of+concurrent+connections%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: tuning riak for 100s of concurrent connections</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Les+Mikesell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Les Mikesell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110225" rel="nofollow">Fri, 25 Feb 2011 10:41:53 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>Those settings shouldn't make a big difference in how the number of 
+</tt><tt>connections scale up, though.  There is a theoretical maximum rate limit 
+</tt><tt>for creating new connections as each socket is supposed to sit in 
+</tt><tt>TIME_WAIT for a packet round-trip time to ensure that nothing 
+</tt><tt>outstanding will collide with that socket number when it is reused for 
+</tt><tt>the same IP address.  Maybe your test is hitting that limit.  Can you 
+</tt><tt>set SO_REUSEADDR?
+</tt><pre style="margin: 0em;">
+</pre><pre>
+
+On 2/25/2011 12:25 PM, Sean Cribbs wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Now you're talking about tweaking kernel-level settings -- something well 
+outside my expertise (although TCP slow-start comes to mind).  That said, it's 
+kind of hard not to use TCP if you want a reliable connection, warts and all.
+
+Sean Cribbs&lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On Feb 25, 2011, at 1:06 PM, Wilson MacGyver wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+any advise to solve this?
+
+On Fri, Feb 25, 2011 at 1:05 PM, Sean Cribbs&lt;s...@basho.com&gt;  wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Yes, the majority of the cost is probably in TCP setup. That pain is happening at the TCP 
+stack level, not in Erlang.  It's actually really cheap and easy to spawn a new process 
+in Erlang, so there's no reason to have &quot;standby workers&quot;, especially when they 
+don't need to maintain state between requests.
+
+Sean Cribbs&lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On Feb 25, 2011, at 12:45 PM, Wilson MacGyver wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I've tried it, it didn't have much impact. A bit more info on how I'm
+doing the test.
+
+I'm using apachebench. I purposely have it grab the same key/value over and over
+again.
+
+if I use concurrent connection of 10, 1000 requests each. 50% of the
+request complets
+within 7ms, longest request is 38ms. this is quite good.
+
+now, if I increase the concurrent connection to 100, 50% of the
+request complets at 77ms.
+
+it &quot;feels&quot; like a paying for startup cost of connection problem to me.
+Is there a way to purposely
+startup riak with a bunch of standby workers, or something to that effect?
+
+On Fri, Feb 25, 2011 at 11:37 AM, Sean Cribbs&lt;s...@basho.com&gt;  wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+You can disable Nagle on the riak side (at least on 0.14 and later). Put this 
+in the riak_core section of app.config:
+
+{disable_http_nagle, true}
+
+Sean Cribbs&lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On Feb 25, 2011, at 9:33 AM, Wilson MacGyver wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+TCP_NODELAY is something you'd set when you use the socket API call,
+not a global tuning setting on the OS as I recall.
+
+On Fri, Feb 25, 2011 at 9:28 AM, Nico Meyer&lt;nico.me...@adition.com&gt;  wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Whenever I see latencies which are roughly multiples of 40ms it screams
+to me 'nagle algorithm'. I have seen this so often now, that the first
+thing I check is, if the TCP_NODELAY option is set on the TCP socket on
+both ends.
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+--
+Omnem crede diem tibi diluxisse supremum.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+--
+Omnem crede diem tibi diluxisse supremum.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02486.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02471">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02471">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02472.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02462.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02465.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02466.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02468.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02469.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02470.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02478.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02480.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Bryan O'Sullivan</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02481.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02486.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: tuning riak for 100s of concurrent connections</span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02472.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02473.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02475.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02485.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02477.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02483.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02474.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02476.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02479.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02484.html">Re: tuning riak for 100s of concurrent connections</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: tuning riak for 100s of concurrent connections">
+<input type="hidden" name="msgid" value="4D67F7E5.2090608@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02471.html">
+<input type="submit" value=" Les Mikesell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+tuning+riak+for+100s+of+concurrent+connections%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02486.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02472.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4D67F7E5.2090608@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

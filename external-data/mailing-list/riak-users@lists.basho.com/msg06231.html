@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Absolute consistency</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06231" id="c">
+<link rel="index" href="maillist.html#06231" id="i">
+<link rel="prev" href="msg06217.html" id="p">
+<link rel="next" href="msg06232.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06231.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Absolute consistency</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120110" rel="nofollow">Tue, 10 Jan 2012 14:51:08 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi list,
+
+After some discussion internally we've agreed that setting PR=R, PW=W=DW
+and PR+PW &gt; N is insufficient to guarantee reading your writes.
+In the case where PR=quorum, PW=quorum, say for N=3 that would mean
+PR=R=PW=W=DW=2 there is at least one case where you would not be
+*guaranteed* to read your write.</pre><pre>
+
+It goes like this
+  Write to a preference list containing primary1, primary2, primary3 -
+write succeeds on primary1, primary2 and fails on primary3 (say out of disk
+space)
+  Primary 2 goes down
+  Read from a preference list containing primary1, fallback2, primary3 and
+fallback2/primary3 answer first fulfilling R and giving stale data.
+
+The current best option I can think of is to set PR=R=PW=W=DW=N to ensure
+all primary replicas and only primary replicas are involved.  Any failures
+will make access to those objects unavailable, but that may be better than
+nothing for some use cases.
+
+I've added a task for us to investigate whether applying the PR/PW
+constraint on the replies received from the vnode is sufficient to make it
+more useful, however with the way that handoff works there are likely to be
+windows of inconsistency with PR/PW set to anything other than N.  Riak is
+at it's heart an eventually consistent database, however investigating
+alternate approaches to stronger consistency is a very interesting research
+topic for us going into 2012.
+
+Best regards,
+Jon
+
+
+On Tue, Jan 10, 2012 at 12:15 PM, Andrew Thompson &lt;and...@hijacked.us&gt;wrote:
+
+&gt; Thomas,
+&gt;
+&gt; I just replicated your setup (at least for the PR gets) and you can
+&gt; indeed violate PR/PW when you pause a node on a VM. The reason this
+&gt; happens is that riak's check for PR/PW simply looks at the ring's
+&gt; preflist for a partition and checks that the required number of
+&gt; partitions for that preflist are marked as primaries.
+&gt;
+&gt; Now, when you pause a VM you interrupt any TCP connections that node has
+&gt; open, just like if you unplugged the network cable, but not like if the
+&gt; OS shut down or riak itself crashed. In those cases a FIN packet is sent
+&gt; so that the other erlang nodes notice that their persistant connections
+&gt; to that node have been reset, they will then reassign ownership of the
+&gt; partitions owned by that downed node and PR/PW will start to fail.
+&gt;
+&gt; However, since FIN packets are not generated when you pause the VM, it
+&gt; takes a few moments for the erlang network heartbeat stuff to notice
+&gt; that the node is down, so the preflists aren't recalculated. This is the
+&gt; window where you see the mysterious behaviour.
+&gt;
+&gt; Now, this is arguably a bug, although fixing it might be challenging.
+&gt; I've filed <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=1318">https://issues.basho.com/show_bug.cgi?id=1318</a> to track this.
+&gt;
+&gt; I don't have a workaround that I can think of offhand, unfortunately.
+&gt;
+&gt; Andrew
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+
+
+-- 
+Jon Meredith
+Platform Engineering Manager
+Basho Technologies, Inc.
+jmered...@basho.com
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06217.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06231">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06231">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06232.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06138.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06139.html">Re: Absolute consistency</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06140.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06141.html">Re: Absolute consistency</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06142.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06143.html">Re: Absolute consistency</a></span> <span class="sender italic">Aphyr</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06144.html">Re: Absolute consistency</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06145.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06152.html">Re: Absolute consistency</a></span> <span class="sender italic">Thomas Bakketun</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06217.html">Re: Absolute consistency</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Absolute consistency</span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06232.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06233.html">Re: Absolute consistency</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06234.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06236.html">Re: Absolute consistency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06237.html">Re: Absolute consistency</a></span> <span class="sender italic">Vishal Shah</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06241.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06252.html">Re: Absolute consistency</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06254.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06240.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Absolute consistency">
+<input type="hidden" name="msgid" value="CAGgQeSv1Mo88yZhLiM5sa42dpyFMn+51uHgxrhE4wWTbAN9WXQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06231.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06217.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06232.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGgQeSv1Mo88yZhLiM5sa42dpyFMn+51uHgxrhE4wWTbAN9WXQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

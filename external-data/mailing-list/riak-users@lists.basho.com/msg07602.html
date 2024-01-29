@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Handoff stalled on 1.0.2 riak cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07602" id="c">
+<link rel="index" href="maillist.html#07602" id="i">
+<link rel="prev" href="msg07599.html" id="p">
+<link rel="next" href="msg07601.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07602.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Handoff+stalled+on+1.0.2+riak+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Handoff stalled on 1.0.2 riak cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+Axel+Eriksson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John Axel Eriksson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120604" rel="nofollow">Mon, 04 Jun 2012 00:11:04 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks Mark,
+
+I think I've pinpointed the problem. When our cluster died because one node
+became unresponsive we saw the rest of our cluster go down. The nodes
+started crashing and did so even when restarted after about a minute
+(something about neighbours crashed in the logs).</pre><pre>
+
+So in a panic I disabled riak search since we don't use it and I think I
+saw some mention of it in the logs. Anyway, after a few hours we got things
+running again, unfortunately we're not entirely sure - it might have been
+running out of file descriptors. I then added a new node which never got
+any data and the handoff was stalled. Nothing worked to get it to
+&quot;unstall&quot;... until I remembered that I disabled riak search. As soon as I
+enabled that again the cluster started behaving as expected. Exactly why
+that was I don't know.
+
+Also, how stable/unstable would you say Luwak is? We're depending heavily
+on it, we know it's not supported anymore and we haven't yet found a good
+replacement? Should we be worried about our data? We've got maybe 700-800
+GB in the cluster, large files from 2MB to 700-800MB.
+
+Best,
+John
+
+On Mon, Jun 4, 2012 at 4:43 AM, Mark Phillips &lt;m...@basho.com&gt; wrote:
+
+&gt; Hi John,
+&gt;
+&gt; Assuming things aren't back to normal... A few things:
+&gt;
+&gt; Attach to any running node and run this:
+&gt;
+&gt; rpc:multicall([node() | nodes()], riak_core_vnode_manager, force_handoffs, 
+&gt; []).
+&gt;
+&gt; This will attempt to force handoff. If this restarts handoff, you've got new 
+&gt; issue that we'll need to track down. Please report back if this gets handoffs 
+&gt; running again .
+&gt;
+&gt; Another possible fix:
+&gt;
+&gt; Take a look at <a  rel="nofollow" href="https://github.com/basho/riak_core/pull/153">https://github.com/basho/riak_core/pull/153</a>
+&gt;
+&gt; This was fixed on 1.1, but it might be what's hitting you (though, 
+&gt; admittedly, your issue does seem like a perfect match for the issue from the 
+&gt; 1.0.2 release notes).
+&gt;
+&gt; If this is what's ailing you, there's a work-around here:
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak_core/pull/153#issuecomment-4527706">https://github.com/basho/riak_core/pull/153#issuecomment-4527706</a>
+&gt;
+&gt; If neither of these work, let us know and we'll take a deeper look. 
+&gt; Specifically:
+&gt;
+&gt; a) any log files you could send along would be helpful
+&gt; b) the output of the following diagnostic:
+&gt;
+&gt; f(Members).
+&gt; Members = riak_core_ring:all_members(element(2, 
+&gt; riak_core_ring_manager:get_raw_ring())).
+&gt; [{N, rpc:call(N, riak_core_handoff_manager, status, [])} || N &lt;- Members].
+&gt;
+&gt; Thanks, John.
+&gt;
+&gt; Mark
+&gt;
+&gt;
+&gt;
+&gt; On Sun, Jun 3, 2012 at 5:06 AM, John Axel Eriksson &lt;j...@insane.se&gt; wrote:
+&gt;
+&gt;&gt; Hi.
+&gt;&gt;
+&gt;&gt; We had an issue where one of the riak servers died (had to be force
+&gt;&gt; removed from cluster). After we did that things got really bad and most
+&gt;&gt; data was unreachable for hours. I added a new node to replace the old one
+&gt;&gt; at one point as well - that never got any data and even now about a day
+&gt;&gt; later it hasn't gotten any data.
+&gt;&gt; What seems to be the issue now is that there are a few nodes are waiting
+&gt;&gt; on handoff of 1 partition. When I look at ring_status I see this:
+&gt;&gt;
+&gt;&gt; Attempting to restart script through sudo -u riak
+&gt;&gt; ================================== Claimant
+&gt;&gt; ===================================
+&gt;&gt; Claimant:  'riak@r-001.x.x.x
+&gt;&gt; Status:     up
+&gt;&gt; Ring Ready: true
+&gt;&gt;
+&gt;&gt; ============================== Ownership Handoff
+&gt;&gt; ==============================
+&gt;&gt; Owner:      riak@r-004.x.x.x
+&gt;&gt; Next Owner: riak@r-003.x.x.x
+&gt;&gt;
+&gt;&gt; Index: 930565495644285842450002452081070828921550798848
+&gt;&gt;   Waiting on: []
+&gt;&gt;   Complete:   [riak_kv_vnode,riak_pipe_vnode,riak_search_vnode]
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt;
+&gt;&gt; ============================== Unreachable Nodes
+&gt;&gt; ==============================
+&gt;&gt; All nodes are up and reachable
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Ok, so it looks like the problem described in the Release Notes for 1.0.2
+&gt;&gt; here <a  rel="nofollow" href="https://github.com/basho/riak/blob/1.0.2-release/RELEASE-NOTES.org">https://github.com/basho/riak/blob/1.0.2-release/RELEASE-NOTES.org</a>.
+&gt;&gt; Unfortunately I've run that code (through riak attach) with no result.
+&gt;&gt;
+&gt;&gt; It's been in this state for 12 hours now I think. What can we do to fix
+&gt;&gt; our cluster?
+&gt;&gt;
+&gt;&gt; I upgraded to 1.0.3 hoping it would fix our problems but that didn't
+&gt;&gt; help. I cannot upgrade to 1.1.x because we mainly use Luwak for large
+&gt;&gt; object support
+&gt;&gt; and that's discontinued in 1.1.x as far as I know.
+&gt;&gt;
+&gt;&gt; Thanks for your help,
+&gt;&gt; John
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07599.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07602">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07602">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07601.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07598.html">Handoff stalled on 1.0.2 riak cluster</a></span> <span class="sender italic">John Axel Eriksson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07599.html">Re: Handoff stalled on 1.0.2 riak cluster</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Handoff stalled on 1.0.2 riak cluster</span> <span class="sender italic">John Axel Eriksson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Handoff stalled on 1.0.2 riak cluster">
+<input type="hidden" name="msgid" value="CAMmJxt+vicLn8QgEF3go4QOMGwjaU4GSp3SO+Y66e-5v=eQpcQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07602.html">
+<input type="submit" value=" John Axel Eriksson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Handoff+stalled+on+1.0.2+riak+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07599.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07601.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMmJxt+vicLn8QgEF3go4QOMGwjaU4GSp3SO+Y66e-5v=eQpcQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

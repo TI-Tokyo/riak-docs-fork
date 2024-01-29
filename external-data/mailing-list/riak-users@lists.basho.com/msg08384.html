@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: rik loading taking huge time?any suggestion for betterment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08384" id="c">
+<link rel="index" href="maillist.html#08384" id="i">
+<link rel="prev" href="msg08372.html" id="p">
+<link rel="next" href="msg08385.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08384.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+rik+loading+taking+huge+time%5C%3Fany+suggestion+for+betterment%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: rik loading taking huge time?any suggestion for betterment</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mike+Oxford%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mike Oxford</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120828" rel="nofollow">Tue, 28 Aug 2012 10:56:47 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Use the <a  rel="nofollow" href="https://github.com/basho/riak-erlang-client">https://github.com/basho/riak-erlang-client</a> directly, instead of
+calling os:cmd and pushing through CURL.
+You can also parallelize it at that time, because right now you're doing
+25million os:cmd calls and making 25million curl calls.  Open up a pool of
+connections (or even just N and round-robin them) and keep them open.</pre><pre>
+
+A 2-node cluster will have 1/3 of the set on one machine, and 2/3 on the
+other.  You may consider moving to N=2 on the bucket, which will put one
+copy on each machine (eg, dual-master.)
+
+Beyond that, you have not provided enough information as to where the
+bottleneck may be, though I'm sure the Basho crew will have some better
+better answers.  :)
+
+-mox
+
+
+On Mon, Aug 27, 2012 at 8:26 PM, &lt;sangeetha.pattabiram...@cognizant.com&gt;wrote:
+
+&gt;  Dear team,
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; I am trying to load 25 million dataset (1.3 Gb)  of sample call data  onto
+&gt; riak..its a 4-quad core ---1.5 TB storage 2-node raik cluster…takes
+&gt;  real    5671m12.812s.please suggest the solutions for the betterment of
+&gt; the same…5671m12.812s is quite huge…we deal with bigdata and I need to
+&gt; store and test 165 GB on the riak..if so I may take years for loading I
+&gt; guess with the present scenario…loaded 165 GB on to mongodb and got the
+&gt; results..for *comparative performance study of mongodb  and riak db* …please 
+&gt; do assist me with the  same .
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; *using the following code for loading :*
+&gt;
+&gt;
+&gt;
+&gt; #!/usr/local/bin/escript
+&gt;
+&gt; main([Filename]) -&gt;
+&gt;
+&gt;     {ok, Data} = file:read_file(Filename),
+&gt;
+&gt;     Lines = tl(re:split(Data, &quot;\r?\n&quot;, [{return, binary},trim])),
+&gt;
+&gt;     lists:foreach(fun(L) -&gt; LS = re:split(L, &quot;,&quot;), format_and_insert(LS)
+&gt; end, Lines).
+&gt;
+&gt;
+&gt;
+&gt; format_and_insert(Line) -&gt;
+&gt;
+&gt;     JSON =
+&gt; io_lib:format(&quot;{\&quot;id\&quot;:\&quot;~s\&quot;,\&quot;phonenumber\&quot;:~s,\&quot;callednumber\&quot;:~s,\&quot;starttime\&quot;:~s,\&quot;endtime\&quot;:~s,\&quot;status\&quot;:~s}&quot;,
+&gt; Line),
+&gt;
+&gt;     Command = io_lib:format(&quot;curl -X PUT
+&gt; <a  rel="nofollow" href="http://10.232.5.169:8098/riak/CustCalls25m/~s">http://10.232.5.169:8098/riak/CustCalls25m/~s</a> -d '~s' -H 'content-type:
+&gt; application/json'&quot;, [hd(Line),JSON]),
+&gt;
+&gt;     io:format(&quot;Inserting: ~s~n&quot;, [hd(Line)]),
+&gt;
+&gt;     os:cmd(Command).
+&gt;
+&gt;
+&gt;
+&gt; *[hadoop@CTSINGMRGTO data]$ time ./load_data25m CustCalls25m.csv &gt;&gt;
+&gt; 25m.txt &amp;*
+&gt;
+&gt; [3] 32354
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; [hadoop@CTSINGMRGTO data]$
+&gt;
+&gt; *real    5671m12.812s*
+&gt;
+&gt; user    1725m31.862s
+&gt;
+&gt; sys     3074m42.135s
+&gt;
+&gt; [hadoop@CTSINGMRGTO data]$
+&gt;
+&gt;
+&gt;
+&gt; [hadoop@CTSINGMRGTO data]$ tail -4 25m.txt
+&gt;
+&gt; Inserting: 24999997
+&gt;
+&gt; Inserting: 24999998
+&gt;
+&gt; Inserting: 24999999
+&gt;
+&gt; *Inserting: 25000000*
+&gt;
+&gt; [hadoop@CTSINGMRGTO data]$
+&gt;
+&gt;
+&gt;  This e-mail and any files transmitted with it are for the sole use of the
+&gt; intended recipient(s) and may contain confidential and privileged
+&gt; information. If you are not the intended recipient(s), please reply to the
+&gt; sender and destroy all copies of the original message. Any unauthorized
+&gt; review, use, disclosure, dissemination, forwarding, printing or copying of
+&gt; this email, and/or any action taken in reliance on the contents of this
+&gt; e-mail is strictly prohibited and may be unlawful.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08372.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08384">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08384">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08385.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08372.html">rik loading taking huge time?any suggestion for be...</a></span> <span class="sender italic">Sangeetha.PattabiRaman2</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: rik loading taking huge time?any suggesti...</span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08385.html">Re: rik loading taking huge time?any sugg...</a></span> <span class="sender italic">Mike Oxford</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: rik loading taking huge time?any suggestion for betterment">
+<input type="hidden" name="msgid" value="CADB2LbgHQdeqRzHiV9K=KV0OAm770G337pAzxURfLfXoD=LtKQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08384.html">
+<input type="submit" value=" Mike Oxford ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+rik+loading+taking+huge+time%5C%3Fany+suggestion+for+betterment%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08372.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08385.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CADB2LbgHQdeqRzHiV9K=KV0OAm770G337pAzxURfLfXoD=LtKQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

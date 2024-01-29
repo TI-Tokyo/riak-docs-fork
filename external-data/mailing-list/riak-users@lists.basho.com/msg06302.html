@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Delta updates using pre-commit hooks</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06302" id="c">
+<link rel="index" href="maillist.html#06302" id="i">
+<link rel="prev" href="msg06288.html" id="p">
+<link rel="next" href="msg06327.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06302.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Delta+updates+using+pre%5C-commit+hooks%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Delta updates using pre-commit hooks</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Marek+Zawirski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Marek Zawirski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120117" rel="nofollow">Tue, 17 Jan 2012 16:27:18 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Ryan, Marc,
+
+</pre><tt>thanks for your answer with a bunch of useful info. I should have 
+</tt><tt>introduced ourselves better given your replies. In fact we authored the 
+</tt><tt>paper on CRDTs that Ryan mentioned and we continue to work in this area. 
+</tt><tt>I am putting some relevant people in CC. What we try now is to 
+</tt><tt>experiment with CRDTs on top of Riak.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>More recently, we came up with a class of CRDT data types that mix 
+</tt><tt>state-based and log-based propagation of updates. This is why I asked 
+</tt><tt>about the feasibility of &quot;delta-updates&quot; implementation.
+</tt><tt>Ryan, I got the idea you confirmed - sending delta as object value and 
+</tt><tt>recomputing the real value using (hackish) pre-commit hook at the 
+</tt><tt>coordinator node. It seems though the overhead of shipping (and 
+</tt><tt>logging?) big objects to each data node can render the trick not worth 
+</tt><tt>itself. Given your knowledge on Riak internals, would it be difficult to 
+</tt><tt>modify Riak to support hooks at data nodes? I understand there is going 
+</tt><tt>to be some subtle ordering cases of versions and it is probably not a 
+</tt><tt>common feature everybody are looking for, rather a hack. It could help 
+</tt><tt>us though, at least for sake of the experiments.
+</tt><pre style="margin: 0em;">
+
+Marek
+
+On 16.01.2012 15:30, Mark Steele wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I for one would love to see a CRDT-like interface in Riak...
+
+Cheers,
+
+Mark Steele, CISSP, CSM
+Bering Media Inc.
+
+
+On Sat, Jan 14, 2012 at 1:03 PM, Ryan Zezeski &lt;rzeze...@basho.com
+&lt;<a  rel="nofollow" href="mailto:rzeze...@basho.com">mailto:rzeze...@basho.com</a>&gt;&gt; wrote:
+
+    Marek,
+
+    You're definitely butting up against the limits of Riak's data model
+    here.  It sounds like you are looking for something like Redis?
+      E.g. add element E to set S.  You could probably use statebox [1]
+    and pull some tricks in the precommit hook to determine if the
+    incoming client object is the initial object or a delta but you
+    would still need to perform a read in the hook to get the box, apply
+    the delta, and then return that object from the hook.  As you said
+    this happens on the coordinator and there is no easy way to
+    guarantee this op applies local to the data off the top of my head.
+      At least a precommit hook would prevent streaming the object
+    to/from the client.
+
+    I think what you really want is native support for different data
+    models on top of Riak.  Internally, we've played around with a CRDT
+    [2] interface on top of Riak where instead of sending objects you
+    send operations.  This is analogous to how Redis works (although the
+    underlying implementation is very different given Riak's distributed
+    nature).  The trick with a new data model is making sure it scales
+    and making sure we understand its consistency model.
+
+    Riak's pedigree is the key-value model.  I'm sure you could hack
+    something together on top of Riak's KV model with precommit hooks
+    but you will be swimming upstream.  That said, we're always looking
+    at new models that would compliment our existing key-value model.
+
+    -Ryan
+
+    [1]: <a  rel="nofollow" href="https://github.com/mochi/statebox">https://github.com/mochi/statebox</a>
+
+    [2]: <a  rel="nofollow" href="http://hal.archives-ouvertes.fr/inria-00555588/">http://hal.archives-ouvertes.fr/inria-00555588/</a>
+
+    On Wed, Jan 4, 2012 at 10:11 AM, Marek Zawirski
+    &lt;marek.zawir...@lip6.fr &lt;<a  rel="nofollow" href="mailto:marek.zawir...@lip6.fr">mailto:marek.zawir...@lip6.fr</a>&gt;&gt; wrote:
+
+        Hi,
+
+        we are trying use Riak as a storage layer for experimental
+        higher-level data types updated by clients, using a set of
+        well-defined operations. To this end, each data type instance is
+        stored under a single key. One problem with this approach is that
+        after client modifies even a small piece of the data structure, it
+        needs to write (and transfer) the whole data structure back to Riak.
+        We are looking for a way to reduce this overhead by sending just a
+        delta operation, preferably without partitioning the data
+        structure to
+        several keys.
+
+        One approach we thought about is to perform operations on Riak-side
+        using pre-commit hooks or similar technique. I.e. reconstruct
+        the new
+        value on Riak using original old value + delta send by client. The
+        operations (deltas) we are talking about have necessary
+        properties to
+        ensure convergence. Still, it seems there a couple technical issues
+        involved, we are looking how to solve them:
+        1) pre-commit API seems to only offer access to the object value
+        passed by client during write and not the old value; I wonder - am I
+        able to read the value from the store in pre-commit hook? In
+        particular, the value previously read by the client writing,
+        identified by version vector?
+        2) pre-commit hooks are executed on the coordinator node; is
+        there an
+        easy way in Riak to apply operations at data nodes instead?
+
+        Thanks for any info that can help addressing these issues.
+
+        Regards,
+        Marek Zawirski
+
+        _______________________________________________
+        riak-users mailing list
+        riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+        <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06288.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06302">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06302">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06327.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06127.html">Delta updates using pre-commit hooks</a></span> <span class="sender italic">Marek Zawirski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06285.html">Re: Delta updates using pre-commit hooks</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06288.html">Re: Delta updates using pre-commit hooks</a></span> <span class="sender italic">Mark Steele</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Delta updates using pre-commit hooks</span> <span class="sender italic">Marek Zawirski</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06327.html">Re: Delta updates using pre-commit hooks</a></span> <span class="sender italic">John DeTreville</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Delta updates using pre-commit hooks">
+<input type="hidden" name="msgid" value="4F160B1E.7050206@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06302.html">
+<input type="submit" value=" Marek Zawirski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Delta+updates+using+pre%5C-commit+hooks%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06288.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06327.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4F160B1E.7050206@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

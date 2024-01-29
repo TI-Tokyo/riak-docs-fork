@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Running dev setup based on "The Riak Fast Track", nodes crashing	during re-add to index existing documents.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08579" id="c">
+<link rel="index" href="maillist.html#08579" id="i">
+<link rel="prev" href="msg08577.html" id="p">
+<link rel="next" href="msg08583.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08579.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Running+dev+setup+based+on+%5C%22The+Riak+Fast+Track%5C%22%2C+nodes+crashing%09during+re%5C-add+to+index+existing+documents.%22&amp;o=newest" rel="nofollow"><span itemprop="name">Running dev setup based on "The Riak Fast Track", nodes crashing	during re-add to index existing documents.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ted+Cooper%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ted Cooper</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120917" rel="nofollow">Mon, 17 Sep 2012 18:45:47 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm running a 4-&quot;node&quot; cluster on one machine, riak-1.2.0.  The
+configuration is very close to the default development environment setup,
+except I've turned on riak search in app.config for each node and added the
+indexing pre-commit hook and a schema (I've tested it on individual
+documents and it indexes them correctly) for one bucket.  I added ~5mm
+documents to this bucket before I turned search on, and from what I've been
+told the best way to re-index existing documents is to re-add each
+(search:index_doc doesn't seem to do anything for me).  I'm trying to do
+this from the local console of one of the nodes in the cluster as follows:</pre><pre>
+
+{ok, C} = riak:local_client().
+{ok, Keys} = C:list_keys(&lt;&lt;&quot;user&quot;&gt;&gt;).
+plists:foreach(fun(Key) -&gt; {ok, Doc} = C:get(&lt;&lt;&quot;user&quot;&gt;&gt;, Key), C:put(Doc)
+end, Keys, {processes, 8}).
+
+8 processes reading from/writing to one cluster in parallel shouldn't be a
+problem and hopefully reduces the amount of time wasted waiting for IO.
+ Each key is only re-added by a single process, so there should be no
+issues with consensus, right?
+
+This has failed every time I've tried to do it for one reason or another.
+ This run, the first bad thing that happened was node 4 going down.  From
+dev/dev4/log/crash.log:
+2012-09-17 20:08:15 =CRASH REPORT====
+  crasher:
+    initial call: application_master:init/4
+    pid: &lt;0.486.0&gt;
+    registered_name: []
+    exception exit:
+{{bad_return,{{riak_search_app,start,[normal,[]]},{'EXIT',{badarg,[{ets,lookup,[riak_core_node_watcher,{by_node,'
+dev4@127.0.0.1
+'}],[]},{riak_core_node_watcher,internal_get_services,1,[{file,&quot;src/riak_core_node_watcher.erl&quot;},{line,412}]},{riak_core,wait_for_service,2,[{file,&quot;src/riak_core.erl&quot;},{line,435}]},{riak_search_app,start,2,[{file,&quot;src/riak_search_app.erl&quot;},{line,22}]},{application_master,start_it_old,4,[{file,&quot;application_master.erl&quot;},{line,274}]}]}}}},[{application_master,init,4,[{file,&quot;application_master.erl&quot;},{line,138}]},{proc_lib,init_p_do_apply,3,[{file,&quot;proc_lib.erl&quot;},{line,227}]}]}
+    ancestors: [&lt;0.485.0&gt;]
+    messages: [{'EXIT',&lt;0.487.0&gt;,normal}]
+    links: [&lt;0.485.0&gt;,&lt;0.7.0&gt;]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 987
+    stack_size: 24
+    reductions: 184
+  neighbours:
+2012-09-17 20:10:02 =ERROR REPORT====
+Error in process &lt;0.629.0&gt; on node 'dev4@127.0.0.1' with exit value:
+{function_clause,[{proplists,get_value,[one,{error,{riak_api,pbc_connects},nonexistent_metric},undefined],[{file,&quot;proplists.erl&quot;},{line,222}]},{riak_kv_stat,backwards_compat,3,[{file,&quot;src/riak_kv_stat.erl&quot;},{line,337}]},{riak_kv_stat...
+
+Watching the console on node 1, I saw a lot of errors like:
+20:05:02.546 [error] Supervisor riak_kv_put_fsm_sup had child undefined
+started with {riak_kv_put_fsm,start_link,undefined} at &lt;0.5165.19&gt; exit
+with reason {{nodedown,'dev4@127.0.0.1
+'},{gen_server,call,[{riak_search_vnode_master,'dev4@127.0.0.1'},{riak_vnode_req_v1,890602560248518965780370444936484965102833893376,{server,undefined,undefined},{index_v1,[{&lt;&lt;&quot;user&quot;&gt;&gt;,&lt;&lt;&quot;user_profile_user_app_stat_fsh&quot;&gt;&gt;,&lt;&lt;&quot;8140&quot;&gt;&gt;,&lt;&lt;&quot;503ea1bb81340f1ff4b0dcdd&quot;&gt;&gt;,[{p,[0]}],1347926701849954},{&lt;&lt;&quot;user&quot;&gt;&gt;,&lt;&lt;&quot;_id&quot;&gt;&gt;,&lt;&lt;&quot;503ea1bb81340f1ff4b0dcdd&quot;&gt;&gt;,&lt;&lt;&quot;503ea1bb81340f1ff4b0dcdd&quot;&gt;&gt;,[{p,[0]}],1347926701849954}]}},infinity]}}
+in context child_terminated
+
+I started node 4 back up and allowed the operation to continue.  Later node
+1, where I was using the console to re-add documents, went down.
+
+console.log shows many of these:
+20:13:03.159 [info] Starting hinted_handoff transfer of riak_kv_vnode from '
+dev1@127.0.0.1' 1164634117248063262943561351070788031288321245184 to '
+dev4@127.0.0.1' 1164634117248063262943561351070788031288321245184
+...
+20:13:21.660 [info] An outbound handoff of partition riak_search_vnode
+251195593916248939066258330623111144003363405824 was terminated for reason:
+{shutdown,max_concurrency}
+
+along with successful compaction entries.
+
+error.log has no entries contemporaneous to the crash.
+
+crash.log has no entries contemporaneous to the crash, just older entries
+from when node 4 went down:
+2012-09-17 20:05:02 =SUPERVISOR REPORT====
+     Supervisor: {local,riak_kv_put_fsm_sup}
+     Context:    child_terminated
+     Reason:     {{nodedown,'dev4@127.0.0.1
+'},{gen_server,call,[{riak_search_vnode_master,'dev4@127.0.0.1
+'},{riak_vnode_req_v1,890602560248518965780370444936484965102833893376,{server,undefined,undefined},{index_v1,[{&lt;&lt;&quot;user&quot;&gt;&gt;,&lt;&lt;&quot;user_profile_user_app_stat_fsh&quot;&gt;&gt;,&lt;&lt;&quot;8140&quot;&gt;&gt;,&lt;&lt;&quot;503ea1bb81340f1ff4b0dcdd&quot;&gt;&gt;,[{p,[0]}],1347926701849954},{&lt;&lt;&quot;user&quot;&gt;&gt;,&lt;&lt;&quot;_id&quot;&gt;&gt;,&lt;&lt;&quot;503ea1bb81340f1ff4b0dcdd&quot;&gt;&gt;,&lt;&lt;&quot;503ea1bb81340f1ff4b0dcdd&quot;&gt;&gt;,[{p,[0]}],1347926701849954}]}},infinity]}}
+     Offender:
+[{pid,&lt;0.5165.19&gt;},{name,undefined},{mfargs,{riak_kv_put_fsm,start_link,undefined}},{restart_type,temporary},{shutdown,5000},{child_type,worker}]
+
+Actual console output ends like this:
+20:13:21.755 [info] An outbound handoff of partition riak_search_vnode
+1255977969581244695331291653115555720016817029120 was terminated for
+reason: {shutdown,max_concurrency}
+20:13:24.090 [info] hinted_handoff transfer of riak_search_vnode from '
+dev1@127.0.0.1' 342539446249430371453988632667878832731859189760 to '
+dev4@127.0.0.1' 342539446249430371453988632667878832731859189760 completed:
+sent 12953 objects in 2.42 seconds
+20:13:27.511 [info] Pid &lt;0.1421.0&gt; compacted 3 segments for 4446992 bytes
+in 3.454234 seconds, 1.23 MB/sec
+20:13:37.676 [info] Pid &lt;0.1315.0&gt; compacted 3 segments for 3540694 bytes
+in 2.156376 seconds, 1.57 MB/sec
+20:13:39.907 [info] Pid &lt;0.1408.0&gt; compacted 3 segments for 3645337 bytes
+in 2.230437 seconds, 1.56 MB/sec
+20:13:42.860 [info] Pid &lt;0.1439.0&gt; compacted 3 segments for 3242485 bytes
+in 1.951775 seconds, 1.58 MB/sec
+20:13:47.046 [info] Pid &lt;0.1246.0&gt; compacted 3 segments for 2196290 bytes
+in 1.181681 seconds, 1.77 MB/sec
+Segmentation fault: 11
+
+This isn't in keeping with the stability other people seem to have with
+riak, so I'm guessing my cluster is misconfigured.  I can attach full logs,
+app.config, and anything else if needed.
+
+Thanks,
+Ted
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08577.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08579">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08579">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08583.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Running dev setup based on &quot;The Riak Fast Track&quot;, nodes crashing	during re-add to index existing documents.">
+<input type="hidden" name="msgid" value="CAHiX1aDBBywgAMLv4CG3sb6OHo=q6DA9P54sNfMfvhdek9HoYg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08579.html">
+<input type="submit" value=" Ted Cooper ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Running+dev+setup+based+on+%5C%22The+Riak+Fast+Track%5C%22%2C+nodes+crashing%09during+re%5C-add+to+index+existing+documents.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08577.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08583.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHiX1aDBBywgAMLv4CG3sb6OHo=q6DA9P54sNfMfvhdek9HoYg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

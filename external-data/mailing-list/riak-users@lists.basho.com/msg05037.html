@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Have Riak servers in separate cluster behind a load balancer, or	on same machines as web server?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05037" id="c">
+<link rel="index" href="maillist.html#05037" id="i">
+<link rel="prev" href="msg05036.html" id="p">
+<link rel="next" href="msg05039.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05037.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Have+Riak+servers+in+separate+cluster+behind+a+load+balancer%2C+or%09on+same+machines+as+web+server%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Have Riak servers in separate cluster behind a load balancer, or	on same machines as web server?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Greg+Stein%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Greg Stein</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111004" rel="nofollow">Tue, 04 Oct 2011 16:00:06 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm with Kyle on this one. Even better, my 'newhttp' branch on Github
+enables this kind of multiple-connection and automatic fail-over.</pre><pre>
+
+That branch does have a basic sketch for automatic addition/removal of
+Riak nodes as you manipulate your cluster. I'll need it one day, but
+not &quot;now&quot;, so I haven't finished it yet (the monitor.py background
+thread).
+
+Regarding security: it is the same for option A and B and C (you're
+just shifting stuff around, but it is pretty much all the same). Put
+your webservers in one security group, and the Riak nodes in another.
+Open the Riak ports *only* to the webserver security group and to each
+other.
+
+Avoiding two services on one machine (e.g web + riak) is also much
+easier to manage/maintain. Just have web machines and riak machines.
+
+Cheers,
+-g
+
+On Tue, Oct 4, 2011 at 17:09, Aphyr &lt;ap...@aphyr.com&gt; wrote:
+&gt; Option C: Deploy your web servers with a list of hosts to connect to. Have
+&gt; the clients fail over when a riak node goes down. Lower latency without
+&gt; sacrificing availability. If you're using protobufs, this may not be as big
+&gt; of an issue.
+&gt;
+&gt; --Kyle
+&gt;
+&gt; On 10/04/2011 02:04 PM, O'Brien-Strain, Eamonn wrote:
+&gt;&gt;
+&gt;&gt; I am contemplating two different architectures for deploying Riak nodes
+&gt;&gt; and web servers.
+&gt;&gt;
+&gt;&gt; Option A:  Riak nodes are in their own cluster of dedicated machines
+&gt;&gt; behind a load balancer.  Web servers talk to the Riak nodes via the load
+&gt;&gt; balancer. (See diagram <a  rel="nofollow" href="http://eamonn.org/i/riak-arch-A.png">http://eamonn.org/i/riak-arch-A.png</a> )
+&gt;&gt;
+&gt;&gt; Option B: Each web server machine also has a Riak node, and there are also
+&gt;&gt; some Riak-only machines.  Each web server only talks to its own localhost
+&gt;&gt; Riak node. (See diagram <a  rel="nofollow" href="http://eamonn.org/i/riak-arch-B.png">http://eamonn.org/i/riak-arch-B.png</a> )
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; All machines will deployed as elastic cloud instances.  I will want to
+&gt;&gt; spin up and spin down instances, particularly the web servers, as demand
+&gt;&gt; varies.  Both load balancers are non-sticky.  Web servers are currently
+&gt;&gt; talking to Riak via HTTP (though might change that to protocol buffers in
+&gt;&gt; the future).  Currently Riak is configured with the default options.
+&gt;&gt;
+&gt;&gt; Here is my thinking of the comparative advantages:
+&gt;&gt;
+&gt;&gt; Option A:
+&gt;&gt;
+&gt;&gt;  - Better for security, because can lock down the Riak load balancer to
+&gt;&gt; only open a single port and only for connections from the web servers.
+&gt;&gt;  - Less churn for Riak of nodes entering and leaving the Riak cluster (as
+&gt;&gt; web servers spin up and down)
+&gt;&gt;  - More flexibility in scaling storage and web tiers independently of each
+&gt;&gt; other
+&gt;&gt;
+&gt;&gt; Option B:
+&gt;&gt;
+&gt;&gt;  - Faster localhost connection from web server to Riak
+&gt;&gt;
+&gt;&gt; I think availability is similar for the two options.
+&gt;&gt;
+&gt;&gt; The web server response time is the primary metric I want to optimize.
+&gt;&gt;  Most web server requests will cause several requests to Riak.
+&gt;&gt;
+&gt;&gt; What other factors should I take into account?  What measurements could I
+&gt;&gt; make to help me decide between the architectures?  Are there other
+&gt;&gt; architectures I should consider? Should I add memcached? Does anyone have
+&gt;&gt; any experiences they could share in deploying such systems?
+&gt;&gt;
+&gt;&gt; Thanks.
+&gt;&gt; __
+&gt;&gt; Eamonn
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05036.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05037">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05037">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05039.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05035.html">Have Riak servers in separate cluster behind a load...</a></span> <span class="sender italic">O'Brien-Strain, Eamonn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05036.html">Re: Have Riak servers in separate cluster behi...</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Have Riak servers in separate cluster ...</span> <span class="sender italic">Greg Stein</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05039.html">Re: Have Riak servers in separate clus...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05040.html">Re: Have Riak servers in separate clus...</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05042.html">Re: Have Riak servers in separate ...</a></span> <span class="sender italic">Greg Stein</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05038.html">Re: Have Riak servers in separate cluster behi...</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05043.html">Re: Have Riak servers in separate cluster ...</a></span> <span class="sender italic">Greg Stein</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05044.html">Re: Have Riak servers in separate clus...</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05045.html">Re: Have Riak servers in separate ...</a></span> <span class="sender italic">Greg Stein</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05046.html">Re: Have Riak servers in sepa...</a></span> <span class="sender italic">Aphyr</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05041.html">Re: Have Riak servers in separate cluster behi...</a></span> <span class="sender italic">Kev Burns</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Have Riak servers in separate cluster behind a load balancer, or	on same machines as web server?">
+<input type="hidden" name="msgid" value="CABD8fLUYvhqaQb2pkPg1Kow3t+PUFvv7aZA=eT-gbo216ygVJg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05037.html">
+<input type="submit" value=" Greg Stein ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Have+Riak+servers+in+separate+cluster+behind+a+load+balancer%2C+or%09on+same+machines+as+web+server%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05036.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05039.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABD8fLUYvhqaQb2pkPg1Kow3t+PUFvv7aZA=eT-gbo216ygVJg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

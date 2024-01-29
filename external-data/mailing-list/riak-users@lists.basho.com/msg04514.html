@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: innostore performance tuning</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04514" id="c">
+<link rel="index" href="maillist.html#04514" id="i">
+<link rel="prev" href="msg04513.html" id="p">
+<link rel="next" href="msg04516.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04514.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+innostore+performance+tuning%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: innostore performance tuning</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110830" rel="nofollow">Tue, 30 Aug 2011 10:09:33 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>&lt;after_school_special_voice&gt;I never learned to 
+read!&lt;/after_school_special_voice&gt;</pre><pre>
+
+For performance metrics, you could see if there are any dtrace points for 
+InnoDB. I wouldn't be able to tell you how to write them, but you'd want to 
+look for things like page splits writes/second, file growth operations. That'll 
+tell you what kind of storage operations are causing your performance slow 
+down. There's an Oracle blog that looks like it contains some basics on writing 
+this sort of thing: 
+<a  rel="nofollow" href="http://blogs.oracle.com/realneel/entry/inniostat_innodb_io_statistics">http://blogs.oracle.com/realneel/entry/inniostat_innodb_io_statistics</a>
+
+The other obvious options to switch up are adding noatime to skip the file 
+access time writes and switching innostore to use dynamic format tables to 
+avoid the large write issues. I think InnoDB uses 16K pages by default, so 8K 
+objects are going to leave a lot of empty space in the data file leading to 
+increased I/O. The write performance on previously seen objects is probably 
+coincidence because InnoDB doesn't have to grow the data files and isn't 
+performing page splits.
+
+With very sparse page population (large values), you're going to have to update 
+a lot of data pages when you insert a single row since every leaf level page 
+contains pointers to the next and previous page. Worst case scenario - writing 
+a single record could lead to four updates - data page, intermediate page, and 
+next and previous page. So, 8k of data could result in 32k of write. With a 16k 
+data page, a 9k write becomes a 64k write because of updates to other pages. 
+
+Also, if you can put the log files on separate disks than your data files (at 
+least for this load process) then you'll get much better throughput (less I/O 
+contention, etc blah blah blah DBA blah blah).
+---
+Jeremiah Peschka - Founder, Brent Ozar PLF, LLC
+Microsoft SQL Server MVP
+
+On Aug 30, 2011, at 9:55 AM, Jonathan Langevin wrote:
+
+&gt; He's already running Raid 10
+&gt; 
+&gt; 
+&gt; Jonathan Langevin
+&gt; Systems Administrator
+&gt; Loom Inc.
+&gt; Wilmington, NC: (910) 241-0433 - jlange...@loomlearning.com - 
+&gt; www.loomlearning.com - Skype: intel352
+&gt; 
+&gt; 
+&gt; 
+&gt; On Tue, Aug 30, 2011 at 12:51 PM, Jeremiah Peschka 
+&gt; &lt;jeremiah.pesc...@gmail.com&gt; wrote:
+&gt; InnoStore is going to insert the data in key order. When you attempt to 
+&gt; insert a record that would fit in between two keys (inserting &quot;apple&quot; between 
+&gt; &quot;aardvark&quot; and &quot;Byzantium&quot;) you're probably going to get a page split, just 
+&gt; like in an RDBMS. The data needs to be re-shuffled in order to write it in 
+&gt; key order. Despite using MVCC, InnoDB is an index ordered table. Data is 
+&gt; written in key order. LevelDB shouldn't have the ordered write issues that 
+&gt; InnoStore has.
+&gt; 
+&gt; The procedure to bulk load your data is going to be the same as bulk loading 
+&gt; data for any large Data Warehouse - ordered inserts will help you.
+&gt; 
+&gt; If there's a way to load your data in smaller ordered chunks, that's going to 
+&gt; help you out too.
+&gt; 
+&gt; Some other options would be to increase the buffer_pool_size for InnoStore. 
+&gt; InnoDB will use RAM as a disk cache to avoid disk hits. This would be a &quot;Good 
+&gt; Thing&quot;. Since you're writing in 8k chunks, roughly, you could also increase 
+&gt; the page size. This would be something to experiment with, but increasing 
+&gt; database page size could improve write performance. Odds are if your average 
+&gt; record size is 8kb, then you're writing multiple pages per record (key + 
+&gt; value), which is causing even more I/O (two or more page reads per object). 
+&gt; Some filesystem tuning could be in order. SQL Server, for instance, performs 
+&gt; sequential reads in 64k chunks. The best practice for disk performance there 
+&gt; is to format NTFS to use 64k blocks. The throughput between the defaults and 
+&gt; 64k reads is amazing.
+&gt; 
+&gt; Also, you may want to look at your storage configuration in the back end. If 
+&gt; you have that much data, are you using a SAN or DAS? Both of these can help 
+&gt; get additional write performance, especially if you adjust the storage device 
+&gt; to cache writes in a battery backed cache. What kind of drive configuration 
+&gt; do you have? You can get tremendous write performance improvements by moving 
+&gt; to RAID10.
+&gt; 
+&gt; ---
+&gt; Jeremiah Peschka - Founder, Brent Ozar PLF, LLC
+&gt; Microsoft SQL Server MVP
+&gt; 
+&gt; On Aug 30, 2011, at 9:34 AM, David Koblas wrote:
+&gt; 
+&gt; &gt; Yes - but the thought of sorting 800M records which are all about 8k in 
+&gt; &gt; size is a little daunting...  Something like a 6TB sort...  Plus it doesn't 
+&gt; &gt; answer the ongoing insert problem, which is 20 keys/sec isn't functional.
+&gt; &gt;
+&gt; &gt; --david
+&gt; &gt;
+&gt; &gt; On 8/30/11 9:27 AM, Kresten Krab Thorup wrote:
+&gt; &gt;&gt; If you can insert the objects in ascending key order, then innostore will 
+&gt; &gt;&gt; be much faster than a random insert.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Mobile: + 45 2343 4626 | Skype: krestenkrabthorup | Twitter: @drkrab
+&gt; &gt;&gt; Trifork A/S   |  Margrethepladsen 4  | DK- 8000 Aarhus C |  Phone : +45 
+&gt; &gt;&gt; 8732 8787  |  www.trifork.com&lt;<a  rel="nofollow" href="http://www.trifork.com/">http://www.trifork.com/</a>&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt; Trifork organizes the world class conference on software development: GOTO 
+&gt; &gt;&gt; Aarhus&lt;<a  rel="nofollow" href="http://www.gotocon.com/">http://www.gotocon.com/</a>&gt;  - check it out!
+&gt; &gt;&gt;
+&gt; &gt;&gt; [cid:part1.09040606.08080401@trifork.com]
+&gt; &gt;&gt;
+&gt; &gt;&gt; On Aug 30, 2011, at 6:14 PM, David Koblas wrote:
+&gt; &gt;&gt;
+&gt; &gt;&gt; I'm currently working on importing a very large dataset (800M) into Riak 
+&gt; &gt;&gt; and running into some serious performance problems.  Hopefully this is 
+&gt; &gt;&gt; just configuration issues and nothing deeper...
+&gt; &gt;&gt;
+&gt; &gt;&gt; Hardware -
+&gt; &gt;&gt;   * 8 proc box
+&gt; &gt;&gt;   * 32 Gb ram
+&gt; &gt;&gt;   * 5TB disk - RAID10
+&gt; &gt;&gt;
+&gt; &gt;&gt; Have a cluster of 4 for these boxes all running riak - riak configuration 
+&gt; &gt;&gt; options that are different from stock:
+&gt; &gt;&gt;
+&gt; &gt;&gt;   * Listening on all IP address &quot;0.0.0.0&quot;
+&gt; &gt;&gt;   * {storage_backend, riak_kv_innostore_backend},
+&gt; &gt;&gt;   * innostore section - {buffer_pool_size, 17179869184}, %% 16GB
+&gt; &gt;&gt;   * innostore section - {flush_method, &quot;O_DIRECT&quot;}
+&gt; &gt;&gt;
+&gt; &gt;&gt; What I see is that the performance of my import script runs at about 
+&gt; &gt;&gt; 200...300 keys per/second for keys that it's seen recently (e.g. re-runs) 
+&gt; &gt;&gt; then drops to 20ish keys per/sec for new keys.
+&gt; &gt;&gt; STATS: 1000 keys handled in 3 seconds 250.75 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 3 seconds 258.20 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 4 seconds 240.11 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 5 seconds 177.63 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 4 seconds 246.26 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 5 seconds 184.79 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 5 seconds 195.95 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 47 seconds 21.02 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 44 seconds 22.63 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 42 seconds 23.64 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 43 seconds 22.88 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 45 seconds 22.12 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 43 seconds 22.83 keys/sec
+&gt; &gt;&gt; STATS: 1000 keys handled in 43 seconds 23.11 keys/sec
+&gt; &gt;&gt; Of course with 800M records to import a performance of 20 keys/sec is not 
+&gt; &gt;&gt; useful, plus as time goes on having an insert rate at that level is going 
+&gt; &gt;&gt; to be problematic.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Questions -
+&gt; &gt;&gt;   Is there additional things to change for imports and datasets on this 
+&gt; &gt;&gt; scale?
+&gt; &gt;&gt;   Is there a way to get additional debugging to see where the performance 
+&gt; &gt;&gt; issues are?
+&gt; &gt;&gt;
+&gt; &gt;&gt; Thanks,
+&gt; &gt;&gt; _______________________________________________
+&gt; &gt;&gt; riak-users mailing list
+&gt; &gt;&gt; riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; &gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04513.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04514">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04514">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04516.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04508.html">innostore performance tuning</a></span> <span class="sender italic">David Koblas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04509.html">Re: innostore performance tuning</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04512.html">Re: innostore performance tuning</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04510.html">Re: innostore performance tuning</a></span> <span class="sender italic">David Koblas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04511.html">Re: innostore performance tuning</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04513.html">Re: innostore performance tuning</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: innostore performance tuning</span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04516.html">Re: innostore performance tuning</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04517.html">Re: innostore performance tuning</a></span> <span class="sender italic">Scott Lystig Fritchie</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04529.html">Re: innostore performance tuning</a></span> <span class="sender italic">David Koblas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04530.html">Re: innostore performance tuning</a></span> <span class="sender italic">David Smith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: innostore performance tuning">
+<input type="hidden" name="msgid" value="4498E872-7F3A-44C9-9B2D-CFA81DDCAE77@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04514.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+innostore+performance+tuning%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04513.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04516.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4498E872-7F3A-44C9-9B2D-CFA81DDCAE77@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

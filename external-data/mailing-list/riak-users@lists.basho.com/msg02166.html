@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: bug after ~10K get/store requests</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02166" id="c">
+<link rel="index" href="maillist.html#02166" id="i">
+<link rel="prev" href="msg02137.html" id="p">
+<link rel="next" href="msg02136.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02166.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+bug+after+%5C%7E10K+get%5C%2Fstore+requests%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: bug after ~10K get/store requests</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110202" rel="nofollow">Wed, 02 Feb 2011 01:41:57 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+The problem was not primarily that both processes ran on the same host,
+but that the per process limits where to low for your load.
+You would observe the same behaviour with Apache instead of Riak (maybe
+the startup scripts of Apache in most distros increases the filehandle
+limit, but lets just assume that is not the case :-) ).</pre><pre>
+
+Of course if you want to get realistic results from your load test, you
+should run the clients on different hosts from the one riak is running
+on in any case.
+
+Cheers,
+Nico 
+
+Am Dienstag, den 01.02.2011, 17:05 -0800 schrieb Paco NATHAN:
+&gt; Thank you, Nico.
+&gt; Much appreciated. I'm embarrassed that we opened up a load test
+&gt; process on the same host as the data store and didn't realize we were
+&gt; spammer ourselves :)
+&gt; 
+&gt; 
+&gt; On Fri, Jan 28, 2011 at 04:44, Nico Meyer &lt;nico.me...@adition.com&gt; wrote:
+&gt; &gt; Have you tried raising the limit for open filehandles (ulimit -n)?
+&gt; &gt; Each TCP connection also uses one filehandle, and by default they will
+&gt; &gt; linger around for 60 seconds after the connection is closed.
+&gt; &gt;
+&gt; &gt; The PHP client uses the REST interface afaik, so I assume it will open a
+&gt; &gt; new TCP connection for each request. What /proc/sys/fs/file-nr while you
+&gt; &gt; are running your test. What does the first column show when the request
+&gt; &gt; start to fail? I would guess about 2048 if you run riak and your test
+&gt; &gt; script on the same machine or about 1024 if they are on different
+&gt; &gt; machines.
+&gt; &gt;
+&gt; &gt; You could also try tp lower /proc/sys/net/ipv4/tcp_fin_timeout to say
+&gt; &gt; 10, which should be more than enough on a LAN. This means closed TCP
+&gt; &gt; connections only linger for 10 seconds, so unless you do more than about
+&gt; &gt; 10000 requests/s the default filehandle limit should be enough.
+&gt; &gt;
+&gt; &gt; Of course on a production system you should read up on these settings
+&gt; &gt; and set them according to your load and usage patterns.
+&gt; &gt;
+&gt; &gt; Cheers,
+&gt; &gt; Nico
+&gt; &gt;
+&gt; &gt; Am Donnerstag, den 27.01.2011, 13:57 -0800 schrieb Paco NATHAN:
+&gt; &gt;&gt; We're seeing a repeatable error -- running some tests with Riak
+&gt; &gt;&gt; 0.14.0-1 on Ubuntu, with PHP 5.3.3-1ubuntu9.3
+&gt; &gt;&gt;
+&gt; &gt;&gt; We have a load test, using the PHP client, which stores then gets 1MM
+&gt; &gt;&gt; objects. This is being run against both Riak and MySQL as part of a
+&gt; &gt;&gt; performance evaluation suite.  The MySQL side runs fine, so the test
+&gt; &gt;&gt; script seems fine.
+&gt; &gt;&gt;
+&gt; &gt;&gt; On the Riak side, we generally get an exception from
+&gt; &gt;&gt; RiakObject::populate() which throws 'Could not contact Riak Server..'
+&gt; &gt;&gt; after having done between 10-20K store/get pairs, each with different
+&gt; &gt;&gt; keys.  It doesn't always happen.
+&gt; &gt;&gt;
+&gt; &gt;&gt; There's nothing else running on this system, and we see it both on our
+&gt; &gt;&gt; VMware instances and on an EC2 m1.xlarge
+&gt; &gt;&gt;
+&gt; &gt;&gt; I get the sense that our Riak client is causing a temporary DoS on our
+&gt; &gt;&gt; Riak server...
+&gt; &gt;&gt; Has anyone else seen this?
+&gt; &gt;&gt;
+&gt; &gt;&gt; Maybe adding some retry logic into the client would resolve it?
+&gt; &gt;&gt;
+&gt; &gt;&gt; Thanks,
+&gt; &gt;&gt;
+&gt; &gt;&gt; Paco
+&gt; &gt;&gt; IMVU
+&gt; &gt;&gt;
+&gt; &gt;&gt; _______________________________________________
+&gt; &gt;&gt; riak-users mailing list
+&gt; &gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02137.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02166">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02166">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02136.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02135.html">bug after ~10K get/store requests</a></span> <span class="sender italic">Paco NATHAN</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02137.html">Re: bug after ~10K get/store requests</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: bug after ~10K get/store requests</span> <span class="sender italic">Nico Meyer</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: bug after ~10K get/store requests">
+<input type="hidden" name="msgid" value="1296639703.2078.5.camel@erdnuss1.virtualminds-office.de">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02166.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+bug+after+%5C%7E10K+get%5C%2Fstore+requests%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02137.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02136.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1296639703.2078.5.camel@erdnuss1.virtualminds-office.de</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Crashed node has Bitcask merge errors on restart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04238" id="c">
+<link rel="index" href="maillist.html#04238" id="i">
+<link rel="prev" href="msg04237.html" id="p">
+<link rel="next" href="msg04239.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04238.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Crashed+node+has+Bitcask+merge+errors+on+restart%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Crashed node has Bitcask merge errors on restart</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeff+Pollard%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeff Pollard</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110805" rel="nofollow">Fri, 05 Aug 2011 06:04:25 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hey David,
+
+Thanks for the reply.  I'm in the process of downloading our backup data to
+the node as we speak.  I'll restore the bitcask directory to that data and
+boot the node, and will let you know how it goes.</pre><pre>
+
+Thanks again for your help.
+
+On Fri, Aug 5, 2011 at 6:01 AM, David Smith &lt;diz...@basho.com&gt; wrote:
+
+&gt; Hi Jeff,
+&gt;
+&gt; I believe you are encountering BZ 1097 (<a  rel="nofollow" href="http://issues.basho.com/1097">http://issues.basho.com/1097</a>),
+&gt; where a suddenly truncated bitcask file can cause problems when
+&gt; attempting to merge. The truncation is typically the result of
+&gt; underlying O/S or hardware failure and simply means that the last
+&gt; record in a bitcask file didn't get fully written. Generally, bitcask
+&gt; recovers from this by ignoring the last incomplete record, but there
+&gt; was a case in the merging (fixed by this bug report) where this didn't
+&gt; happen properly.
+&gt;
+&gt; So, you have a few options:
+&gt;
+&gt; 1. You can restore your last known good bitcask directory on this
+&gt; node. This is the easiest fix and the other Riak nodes will
+&gt; read-repair any out-of-date values as the data is accessed.
+&gt;
+&gt; 2. You can grab the latest bitcask source, build it and drop that in
+&gt; place on the bjorked node. (Replacing the existing bitcask code). This
+&gt; is a bit more legwork (since compilation is involved), but should
+&gt; allow the node to recover without further intervention.
+&gt;
+&gt; Hope that helps,
+&gt;
+&gt; D.
+&gt;
+&gt; On Fri, Aug 5, 2011 at 2:12 AM, Jeff Pollard &lt;jeff.poll...@gmail.com&gt;
+&gt; wrote:
+&gt; &gt; Hey All,
+&gt; &gt; We had one of our riak node servers crash, and when booted back up it's
+&gt; now
+&gt; &gt; in this very inconsistent state where it responds to requests for a while
+&gt; &gt; (minute or two), then all requests time out for a little while, then go
+&gt; back
+&gt; &gt; to not responding to requests.  It's been ~90 minutes since the crash and
+&gt; &gt; reboot of the server, and we're still in this bad state.
+&gt; &gt; We use the bitcask data store, and looking through the logs I see a lot
+&gt; of
+&gt; &gt; merge failures in the sasl-error.log file.  See this gist for the tail -n
+&gt; &gt; 2000 of the sasl-error.log.  The interesting bit is mostly at the bottom:
+&gt; &gt; <a  rel="nofollow" href="https://gist.github.com/1127104">https://gist.github.com/1127104</a>
+&gt; &gt;
+&gt; &gt; I'm not really sure how to proceed and would love some help on the
+&gt; matter.
+&gt; &gt;  For the time being we have this node pulled out of our load balancer and
+&gt; &gt; the rest of the nodes see this node as down, so we're still functional in
+&gt; &gt; production, but I'd obviously like to fix this up ASAP.
+&gt; &gt; One final thing to note is that we have backups of the entire Riak data
+&gt; &gt; directory from before the crash, which we could restore from if that
+&gt; helps.
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt; &gt;
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Dave Smith
+&gt; Director, Engineering
+&gt; Basho Technologies, Inc.
+&gt; diz...@basho.com
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04237.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04238">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04238">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04239.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04235.html">Crashed node has Bitcask merge errors on restart</a></span> <span class="sender italic">Jeff Pollard</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04237.html">Re: Crashed node has Bitcask merge errors on restart</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Crashed node has Bitcask merge errors on restart</span> <span class="sender italic">Jeff Pollard</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04239.html">Re: Crashed node has Bitcask merge errors on restart</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04240.html">Re: Crashed node has Bitcask merge errors on restart</a></span> <span class="sender italic">Jeff Pollard</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Crashed node has Bitcask merge errors on restart">
+<input type="hidden" name="msgid" value="CAF0rtAFSv5EvZDZUQ7HU_CnhfYA50yWnnssEap9dyowsCy5e2A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04238.html">
+<input type="submit" value=" Jeff Pollard ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Crashed+node+has+Bitcask+merge+errors+on+restart%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04237.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04239.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAF0rtAFSv5EvZDZUQ7HU_CnhfYA50yWnnssEap9dyowsCy5e2A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

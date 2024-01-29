@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Map reduce timeout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01208" id="c">
+<link rel="index" href="maillist.html#01208" id="i">
+<link rel="prev" href="msg01203.html" id="p">
+<link rel="next" href="msg01206.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01208.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Map+reduce+timeout%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Map reduce timeout</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Germain+Maurice%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Germain Maurice</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101005" rel="nofollow">Tue, 05 Oct 2010 12:06:46 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+ Thank you Dan. :)
+</pre><tt>If i have searched in the previous emails on the mailing list, i would 
+</tt><tt>find the solution. :/
+</tt><pre style="margin: 0em;"></pre><pre>
+
+
+Le 05/10/10 19:11, Dan Reverri a écrit :
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Germain,
+
+</pre><tt>There is an issue in 0.12 that causes whole bucket map/reduce jobs to 
+</tt><tt>ignore user supplied timeouts. This happens if the results are not 
+</tt><tt>streamed. You can activate streaming by adding &quot;chunked=true&quot; to the 
+</tt><tt>end of your request:
+</tt><tt>curl -v -XPOST <a  rel="nofollow" href="http://localhost:8098/mapred?chunked=true">http://localhost:8098/mapred?chunked=true</a> -d 
+</tt><tt>&quot;{\&quot;timeout\&quot;:600000,\&quot;query\&quot;:[{\&quot;map\&quot;:{\&quot;source\&quot;:\&quot;function(v) { 
+</tt><tt>var data = Riak.mapValuesJson(v)[0] ; if ( data.faved_what != 
+</tt><tt>undefined &amp;&amp; data.faved_what.total != undefined ) { return  [ 
+</tt><tt>data.faved_what.total ] ; } return []; 
+</tt><tt>}\&quot;,\&quot;language\&quot;:\&quot;javascript\&quot;,\&quot;arg\&quot;:[],\&quot;keep\&quot;:false}},{\&quot;reduce\&quot;:{\&quot;source\&quot;:\&quot;function(values, 
+</tt><tt>arg) { return [ values.reduce( function (item, total) { return item + 
+</tt><tt>total*1 ; }, 0 ) ] 
+</tt><tt>}\&quot;,\&quot;language\&quot;:\&quot;javascript\&quot;,\&quot;arg\&quot;:[],\&quot;keep\&quot;:true}}],\&quot;inputs\&quot;:\&quot;people\&quot;}&quot;
+</tt><pre style="margin: 0em;">
+
+This issue has been fixed in 0.13:
+<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=523">https://issues.basho.com/show_bug.cgi?id=523</a>
+
+Thanks,
+Dan
+
+Daniel Reverri
+Developer Advocate
+Basho Technologies, Inc.
+d...@basho.com &lt;<a  rel="nofollow" href="mailto:d...@basho.com">mailto:d...@basho.com</a>&gt;
+
+
+</pre><tt>On Tue, Oct 5, 2010 at 9:05 AM, Germain Maurice 
+</tt><tt>&lt;germain.maur...@linkfluence.net 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:germain.maur...@linkfluence.net">mailto:germain.maur...@linkfluence.net</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+     Hello everybody,
+
+    I'm trying to execute some mapreduce jobs and i have a problem
+    with timeout.
+    I'm working with riak_kv_version : &lt;&lt;&quot;0.12.1&quot;&gt;&gt; with a single node
+    &quot;cluster&quot;.
+
+    My inputs are &quot;people&quot; bucket which contains more than 200k
+    documents. So i have decided to set mapreduce timeout to 600000
+    milliseconds.
+    Obviously, it doesn't take care of timeout.
+    You'll find below the JSON object i sent to Riak/mapred and the
+    Internal Server Error less than 60 seconds after. I added the
+    error message i got
+    in riak console.
+
+    =====
+    &gt; date; perl riak.pl &lt;<a  rel="nofollow" href="http://riak.pl">http://riak.pl</a>&gt; ; date
+    mardi 5 octobre 2010, 17:47:58 (UTC+0200)
+    ---
+    &quot;{\&quot;timeout\&quot;:600000,\&quot;query\&quot;:[{\&quot;map\&quot;:{\&quot;source\&quot;:\&quot;function(v)
+    { var data = Riak.mapValuesJson(v)[0] ; if ( data.faved_what !=
+    undefined &amp;&amp; data.faved_what.total != undefined ) { return  [
+    data.faved_what.total ] ; } return [];
+    
+}\&quot;,\&quot;language\&quot;:\&quot;javascript\&quot;,\&quot;arg\&quot;:[],\&quot;keep\&quot;:false}},{\&quot;reduce\&quot;:{\&quot;source\&quot;:\&quot;function(values,
+    arg) { return [ values.reduce( function (item, total) { return
+    item + total*1 ; }, 0 ) ]
+    
+}\&quot;,\&quot;language\&quot;:\&quot;javascript\&quot;,\&quot;arg\&quot;:[],\&quot;keep\&quot;:true}}],\&quot;inputs\&quot;:\&quot;people\&quot;}&quot;
+    --- 500 Internal Server Error
+
+    mardi 5 octobre 2010, 17:48:53 (UTC+0200)
+    =====
+
+    ********
+    =ERROR REPORT==== 5-Oct-2010::17:48:53 ===
+    Failed reduce: {timeout,
+                      {gen_server,call,
+                          [&lt;0.143.0&gt;,
+                           {dispatch,
+                               {&lt;0.143.0&gt;,#Ref&lt;0.0.5.43514&gt;},
+                               {{jsanon,
+    &lt;&lt;&quot;function(values, arg) { return [ values.reduce( function (item,
+    total) { return item + total*1 ; }, 0 ) ] }&quot;&gt;&gt;},
+                                [&lt;&lt;&quot;2607&quot;&gt;&gt;,&lt;&lt;&quot;261&quot;&gt;&gt;,&lt;&lt;&quot;1753&quot;&gt;&gt;,&lt;&lt;&quot;81&quot;&gt;&gt;,
+    &lt;&lt;&quot;18190&quot;&gt;&gt;,&lt;&lt;&quot;581&quot;&gt;&gt;,&lt;&lt;&quot;811&quot;&gt;&gt;,&lt;&lt;&quot;732&quot;&gt;&gt;,
+    &lt;&lt;&quot;1831&quot;&gt;&gt;,&lt;&lt;&quot;967&quot;&gt;&gt;,&lt;&lt;&quot;2650&quot;&gt;&gt;,&lt;&lt;&quot;222&quot;&gt;&gt;,
+    &lt;&lt;&quot;674&quot;&gt;&gt;,&lt;&lt;&quot;2136&quot;&gt;&gt;,&lt;&lt;&quot;1467&quot;&gt;&gt;,&lt;&lt;&quot;362&quot;&gt;&gt;,
+    &lt;&lt;&quot;19965&quot;&gt;&gt;,&lt;&lt;&quot;2025&quot;&gt;&gt;,&lt;&lt;&quot;348&quot;&gt;&gt;,&lt;&lt;&quot;4817&quot;&gt;&gt;,
+    &lt;&lt;&quot;286&quot;&gt;&gt;],
+                                []}},
+                           10000]}}
+
+    =ERROR REPORT==== 5-Oct-2010::17:48:53 ===
+    ** State machine &lt;0.24966.6&gt; terminating
+    ** Last event in was {inputs,[&lt;&lt;&quot;286&quot;&gt;&gt;]}
+    ** When State == executing
+    **      Data  == {state,1,riak_kv_reduce_phase,
+                        {state,
+                            {javascript,
+                                {reduce,
+                                    {jsanon,
+    &lt;&lt;&quot;function(values, arg) { return [ values.reduce( function (item,
+    total) { return item + total*1 ; }, 0 ) ] }&quot;&gt;&gt;},
+                                    [],true}},
+                            [],[]},
+</pre><tt>                       
+</tt><tt>    true,true,undefined,[],undefined,1,&lt;0.24964.6&gt;,660000}
+</tt><pre style="margin: 0em;">
+    ** Reason for termination =
+    ** {error,failed_reduce}
+    ********
+
+    Any idea about this ??
+
+    Thank you,
+    I'll go back to work on my slides for saturday :)
+
+
+</pre><tt>    -- 
+</tt><tt>    Germain Maurice
+</tt><pre style="margin: 0em;">
+    Administrateur Système/Réseau
+    Tel : +33.(0)1.42.43.54.33
+
+    <a  rel="nofollow" href="http://www.linkfluence.net">http://www.linkfluence.net</a>
+
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01203.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01208">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01208">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01206.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01196.html">Map reduce timeout</a></span> <span class="sender italic">Germain Maurice</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01198.html">Re: Map reduce timeout</a></span> <span class="sender italic">francisco treacy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01203.html">Re: Map reduce timeout</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Map reduce timeout</span> <span class="sender italic">Germain Maurice</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Map reduce timeout">
+<input type="hidden" name="msgid" value="4CAB7A6E.3070806@linkfluence.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01208.html">
+<input type="submit" value=" Germain Maurice ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Map+reduce+timeout%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01203.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01206.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4CAB7A6E.3070806@linkfluence.net</li>
+</ul>
+</div>
+</body>
+</html>

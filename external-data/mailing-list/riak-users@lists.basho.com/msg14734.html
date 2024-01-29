@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Bitcask Key Listing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14734" id="c">
+<link rel="index" href="maillist.html#14734" id="i">
+<link rel="prev" href="msg14732.html" id="p">
+<link rel="next" href="msg14751.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14734.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Bitcask+Key+Listing%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Bitcask Key Listing</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kelly+McLaughlin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kelly McLaughlin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140819" rel="nofollow">Tue, 19 Aug 2014 08:27:59 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Jason,
+
+</pre><tt>There are two aspects to to a key listing operation that make it 
+</tt><tt>expensive relative to normal gets or puts.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>The first part is that, due to the way data is distributed in Riak, key 
+</tt><tt>listing requires a covering set of vnodes to participate in
+</tt><tt>order to determine the list of keys for a bucket. A minimal covering set 
+</tt><tt>of vnodes works out to 1/N nodes in the cluster where N
+</tt><tt>is the n_val of the bucket. By default this is 3 so in the default case 
+</tt><tt>a key listing request must send a request to and receive
+</tt><tt>responses from 1/3 of the nodes in the cluster. This incurs network 
+</tt><tt>traversal overhead as the keys from each vnode are returned
+</tt><tt>and the speed to completion is limited by the slowest vnode in the 
+</tt><tt>covering set. This is true regardless of the backend in use.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The second part is specific to bitcask. Bitcask is an unordered backend 
+</tt><tt>and the consequence of this when doing a key listing is
+</tt><tt>that all of the keys stored by a vnode that participates in a key 
+</tt><tt>listing request must be scanned. It doesn't matter if there are
+</tt><tt>2 keys or 2000 keys for the bucket being queried, they all must be 
+</tt><tt>scanned. This is a case where all the keys being stored in memory
+</tt><tt>is beneficial to performance, but as the amount of data stored increases 
+</tt><tt>so does the expense to scan over it. The leveldb backend is
+</tt><tt>ordered and we are able to take advantage of that fact to only scan over 
+</tt><tt>data for the bucket in question, but for bitcask that is
+</tt><pre style="margin: 0em;">
+not an option.
+
+</pre><tt>At this time there is nothing in the works to specifically improve key 
+</tt><tt>listing performance. It is certainly something we are aware of,
+</tt><pre style="margin: 0em;">
+but at this time there are other things with higher priority.
+
+Hope that helps answer your question.
+
+
+Kelly
+
+
+On 08/19/2014 05:17 AM, Jaston Campbell wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+I currently maintain my own indexes for some things, and use natural keys where 
+I can, but a question has been nagging me lately.
+
+Why is key listing slow?  Specifically, why is bitcask key listing slow?
+
+One of the biggest issues with bitcask is all keys (including the bucket name 
+and some overhead) must fit into RAM.  For large amounts of keys, I understand 
+the coordination data transfer will hurt, but shouldn't things like list 
+buckets (or listing keys from small buckets) be fast?
+
+Is there a reason this is slow, and is there a plan to fix it?
+
+Thanks,
+Jason
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14732.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14734">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14734">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14751.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14732.html">Bitcask Key Listing</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Bitcask Key Listing</span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14751.html">Re: Bitcask Key Listing</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14758.html">Re: Bitcask Key Listing</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Bitcask Key Listing">
+<input type="hidden" name="msgid" value="53F36CAC.8020103@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14734.html">
+<input type="submit" value=" Kelly McLaughlin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Bitcask+Key+Listing%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14732.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14751.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">53F36CAC.8020103@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

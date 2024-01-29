@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Secondary Index Limits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14816" id="c">
+<link rel="index" href="maillist.html#14816" id="i">
+<link rel="prev" href="msg14815.html" id="p">
+<link rel="next" href="msg14808.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14816.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Secondary+Index+Limits%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Secondary Index Limits</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Cribbs%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Cribbs</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140829" rel="nofollow">Fri, 29 Aug 2014 09:19:06 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Correct, there is a key in LevelDB for each Riak key that has the
+index term attached. This is somewhat mitigated by Snappy compression
+(600K records might very well compress into a single block), but it is
+nowhere near the storage efficiency of something like Solr's indexes.
+It still has to scan.</pre><pre>
+
+On Fri, Aug 29, 2014 at 11:01 AM, Bryan &lt;br...@go-factory.net&gt; wrote:
+&gt; Hi Sean,
+&gt;
+&gt; Sweet! Thanks for the explanation. Much appreciated and very helpful.  Just a 
+&gt; bit more clarification, on an equality lookup, where the ‘foobar’ key has a 
+&gt; value ‘barfoo’ that is the very low-cardinality, are those indexed objects 
+&gt; individually stored as a key/value term which then is enumerated over, versus 
+&gt; a key/list_of_values term? In other words, if I have 600K records where 
+&gt; foobar=barfoo, will this be 600K reads, or 1 read with a list of 600K entries 
+&gt; which are then enumerated over in memory?
+&gt;
+&gt; Cheers,
+&gt; Bryan
+&gt; ----
+&gt;
+&gt; Bryan Hughes
+&gt; Go Factory
+&gt;
+&gt; <a  rel="nofollow" href="http://www.go-factory.net">http://www.go-factory.net</a>
+&gt;
+&gt; On Aug 29, 2014, at 6:46 AM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; I made a minor mistake in my example, the PrimaryKey is part of the
+&gt;&gt; index key, whereas the value contains nothing. It's more like this:
+&gt;&gt;
+&gt;&gt; {i, IndexName, IndexTerm, PrimaryKey} =&gt; &lt;&lt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; So for the initial seek, we construct a key like so:
+&gt;&gt;
+&gt;&gt; {i, &lt;&lt;&quot;foobar_bin&quot;&gt;&gt;, &lt;&lt;&quot;baz&quot;&gt;&gt;, &lt;&lt;&gt;&gt;}
+&gt;&gt;
+&gt;&gt; On Fri, Aug 29, 2014 at 8:44 AM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+&gt;&gt;&gt; Hi Bryan,
+&gt;&gt;&gt;
+&gt;&gt;&gt; Index entries are just keys in LevelDB like normal values are. So,
+&gt;&gt;&gt; performance is relatively constant at write time but is O(N) at read
+&gt;&gt;&gt; (because you are scanning the index). The high-cardinality term will
+&gt;&gt;&gt; definitely be expensive to enumerate, but the low-cardinality terms
+&gt;&gt;&gt; will be much less so. The index entries in LevelDB look roughly like
+&gt;&gt;&gt; this:
+&gt;&gt;&gt;
+&gt;&gt;&gt; {i, IndexName, IndexTerm} =&gt; PrimaryKey
+&gt;&gt;&gt;
+&gt;&gt;&gt; Since the keys are encoded with sext, we encode the start key of the
+&gt;&gt;&gt; range (or the equality query), start an iterator and then seek to that
+&gt;&gt;&gt; start key and start reading values. When a key is reached that exceeds
+&gt;&gt;&gt; the range or equality query, we stop iterating.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Of course, that is an oversimplification, there are issues with
+&gt;&gt;&gt; backpressure from the request coordinator process against the
+&gt;&gt;&gt; iterators, streaming merge sort if you want the results back in order
+&gt;&gt;&gt; or paginated, etc. Also, all 2I queries are run via coverage, which
+&gt;&gt;&gt; ensures that the entire keyspace is &quot;covered&quot; but hits most if not all
+&gt;&gt;&gt; nodes in the cluster.
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Thu, Aug 28, 2014 at 9:18 PM, Bryan &lt;br...@go-factory.net&gt; wrote:
+&gt;&gt;&gt;&gt; Hi Everyone,
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Apologies as this has probably been asked before. Unfortunately I have not
+&gt;&gt;&gt;&gt; been able to parse through the list serve to find a reasonable answer and
+&gt;&gt;&gt;&gt; the Basho wiki docs seem to be missing this information. I have read up on
+&gt;&gt;&gt;&gt; the secondary index docs.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I am interested to better understand how the secondary indexes perform when
+&gt;&gt;&gt;&gt; there is a very low distribution of values that are indexed. For example,
+&gt;&gt;&gt;&gt; lets say I have a bucket with 1 million objects that I create a secondary
+&gt;&gt;&gt;&gt; index on. Now lets say the index is on a value that has an uneven
+&gt;&gt;&gt;&gt; distribution where one of the values is not selective while the others are,
+&gt;&gt;&gt;&gt; such that 60% of the values fall into a single indexed value, while the
+&gt;&gt;&gt;&gt; remaining 40% have a good distribution.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; For example, I have a record (i.e. object) where the indexed field is
+&gt;&gt;&gt;&gt; ‘foobar_bin'. I have 1 million objects in the bucket that have 100 unique
+&gt;&gt;&gt;&gt; ‘foobar’ values distributed over the 1 million objects. One of the values
+&gt;&gt;&gt;&gt; repeats for 60% of the records (600K) and the rest have an even 
+&gt;&gt;&gt;&gt; distribution
+&gt;&gt;&gt;&gt; of about 4%.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; How will the secondary indexes perform with this and is this an appropriate
+&gt;&gt;&gt;&gt; use of the secondary indexes? Finally, what I have read is not completely
+&gt;&gt;&gt;&gt; clear on what happens if the indexed value is updated when the value has
+&gt;&gt;&gt;&gt; such a low degree of selectivity?
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; We have less than 512 partitions and are using the erlang client.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thanks in advance - any insights will be much appreciated!
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Cheers,
+&gt;&gt;&gt;&gt; Bryan
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; ----
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Bryan Hughes
+&gt;&gt;&gt;&gt; Go Factory
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://www.go-factory.net">http://www.go-factory.net</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; --
+&gt;&gt;&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt;&gt; Software Engineer
+&gt;&gt;&gt; Basho Technologies, Inc.
+&gt;&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt; Software Engineer
+&gt;&gt; Basho Technologies, Inc.
+&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;
+
+
+
+-- 
+Sean Cribbs &lt;s...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14815.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14816">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14816">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14808.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14803.html">Riak Secondary Index Limits</a></span> <span class="sender italic">Bryan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14805.html">Re: Riak Secondary Index Limits</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14806.html">Re: Riak Secondary Index Limits</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14815.html">Re: Riak Secondary Index Limits</a></span> <span class="sender italic">Bryan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Secondary Index Limits</span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Secondary Index Limits">
+<input type="hidden" name="msgid" value="CAHsw=e30a=txLbp+4+WiSSJtZii-PVeUT60K8Dbr85VB5SKVbw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14816.html">
+<input type="submit" value=" Sean Cribbs ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Secondary+Index+Limits%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14815.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14808.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHsw=e30a=txLbp+4+WiSSJtZii-PVeUT60K8Dbr85VB5SKVbw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

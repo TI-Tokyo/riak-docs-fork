@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Wierd hanging problem</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#13937" id="c">
+<link rel="index" href="mail2.html#13937" id="i">
+<link rel="prev" href="msg13929.html" id="p">
+<link rel="next" href="msg13938.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13937.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Wierd+hanging+problem%22&amp;o=newest" rel="nofollow"><span itemprop="name">Wierd hanging problem</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Michael+Dillon%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Michael Dillon</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140327" rel="nofollow">Thu, 27 Mar 2014 09:40:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I was running Riak 2.0pre11 but now see the same problem on pre20
+
+I've reduced the Riak cluster to one single node, to eliminate the
+inter-node communication from the issue. From another server I run a script
+to do 100,000 inserts using the Python client (presumable 1.4.something).
+Each insert is in a loop with 3 retries and it always specifies a server
+timeout value. For this test, the HTML docs are small enough that the
+60,000 millisec default timeout value is always specified. Currently there
+is no socket timeout specified on the client side.</pre><pre>
+
+Part way through, one of the inserts hung. On investigation the Riak server
+seemed in an OK state. I ran strace ps ax and it did not hang. strace
+riak-admin status also was OK. top showed one of the riak processes and
+strace -p PID showed that it was waiting in select. But then, after a
+retry, the client continued to do inserts. That particular strace showed no
+change so not sure whether the process was important. Ran top again and the
+same process showed 80% CPU utilization.
+
+Then we got a full hang of Riak. The client did not retry because the
+server did not timeout. It just hung and hung. Over 15 minutes as I write
+this. When I ran strace ps ax on the Riak server, it hung reading
+/proc/PID/cmdline where PID was the same as the one mentioned above. When I
+run pstree -p (which never hangs) it shows this
+
+|-run_erl(4171)---beam.smp(4173)-+-cpu_sup(4473)
+
+4173 is the PID that I have been talking about. Oddly enough, when I opened
+a new SSH connection to this server, the strace ps ax which had been hung
+on opening a /proc file, suddenly ran to completion. However, running it
+again, hung again on the same line. Here are a few lines of strace ps ax
+
+stat(&quot;/proc/4173&quot;, {st_mode=S_IFDIR|0555, st_size=0, ...}) = 0
+
+open(&quot;/proc/4173/stat&quot;, O_RDONLY)       = 6
+
+read(6, &quot;4173 (beam.smp) S 4171 4173 4173&quot;..., 1024) = 277
+
+read(6, &quot;&quot;, 747)                        = 0
+
+close(6)                                = 0
+
+open(&quot;/proc/4173/status&quot;, O_RDONLY)     = 6
+
+read(6, &quot;Name:\tbeam.smp\nState:\tS (sleepin&quot;..., 1024) = 787
+
+read(6, &quot;&quot;, 237)                        = 0
+
+close(6)                                = 0
+
+open(&quot;/proc/4173/cmdline&quot;, O_RDONLY)    = 6
+
+read(6,
+
+Any idea what is happening?
+
+When Riak is running normally, is there a way to identify a PID which would
+be useful to attach to strace if I see this problem developing? Or some
+other way to look at status of all the different beam.smp processes and
+identify where the problem is located?
+
+Doesn't this indicate a problem with the way that Riak implements the
+server timeout? Shouldn't some supervisor be killing and restarting a child
+process or subtree when this occurs?
+-- 
+Michael Dillon - Senior Software Engineer
+PageFreezer.com
+#200 - 311 Water Street
+Vancouver,  BC  V6B 1B8
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13929.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#13937">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#13937">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13938.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Wierd hanging problem</span> <span class="sender italic">Michael Dillon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13938.html">Re: Wierd hanging problem</a></span> <span class="sender italic">Michael Dillon</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13939.html">Re: Wierd hanging problem</a></span> <span class="sender italic">Jon Meredith</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Wierd hanging problem">
+<input type="hidden" name="msgid" value="CAFvXM0t_GP+TQyQsBkPnhLmp7ma-eKjoAvvscXxkmyqM=-SuKQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13937.html">
+<input type="submit" value=" Michael Dillon ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Wierd+hanging+problem%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13929.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13938.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFvXM0t_GP+TQyQsBkPnhLmp7ma-eKjoAvvscXxkmyqM=-SuKQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

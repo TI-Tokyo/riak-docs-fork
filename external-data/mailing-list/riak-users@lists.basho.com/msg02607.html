@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Inconsistent map/reduce results</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02607" id="c">
+<link rel="index" href="mail2.html#02607" id="i">
+<link rel="prev" href="msg02606.html" id="p">
+<link rel="next" href="msg02790.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02607.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Inconsistent+map%5C%2Freduce+results%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Inconsistent map/reduce results</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Antonio+Rohman+Fernandez%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Antonio Rohman Fernandez</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110310" rel="nofollow">Thu, 10 Mar 2011 18:57:07 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+
+if you want to avoid caching ( without configuration ), you can put
+some random variable in your map or reduce or both... that does the
+trick for me as the query will be always different: </pre><pre>
+
+$seed =
+randomStringHere;
+
+{&quot;map&quot;:{&quot;language&quot;:&quot;javascript&quot;,&quot;source&quot;:&quot;function(v,k,a)
+{ seed='.$seed.'; x=Riak.mapValuesJson(v)[0]; return
+[v.values[0].data]; }&quot;} 
+
+Rohman 
+
+On Thu, 10 Mar 2011 17:47:49 -0800,
+Keith Dreibelbis  wrote:  
+
+Thanks for the prompt response, Grant. I
+made the configuration change you suggested, and it fixed my problem.
+
+
+Some followup questions: 
+
+- is it possible to configure this
+dynamically on a per-bucket basis, or just per-server like it is now? 
+-
+is this fixed in a newer version?
+
+On Thu, Mar 10, 2011 at 2:56 PM,
+Grant Schofield  wrote:
+
+There are currently some bugs in the mapreduce
+caching system. The best thing to do would be to disable the feature, on
+0.13 you can do this by editing or adding the vnode_cache_entries to the
+riak_kv section of your app.config. The entry would look like:
+
+{vnode_cache_entries, 0}, 
+
+Grant Schofield 
+Developer Advocate  
+Basho
+Technologies  
+
+On Mar 10, 2011, at 4:16 PM, Keith Dreibelbis wrote:   
+
+
+Hi riak-users, 
+
+I'm trying to do a map/reduce query from java on a
+0.13 server, and get inconsistent results. What I'm doing should be
+pretty simple. I'm hoping someone will notice an obvious error in here,
+or have some insight: 
+
+This is an automated test. I'm doing a simple
+query where I'm trying to get the keys for records with a certain field
+value. In SQL it would look like &quot;SELECT id FROM table WHERE age =
+'32'&quot;. In java I'm invoking it like this: 
+
+ MapReduceResponse r =
+riak.mapReduceOverBucket(getBucket()) 
+
+.map(JavascriptFunction.anon(func), true) 
+ .submit();  
+
+where riak is
+a RiakClient, getBucket() returns the name of the bucket, and func is a
+string that looks like: 
+
+function(value, keyData, arg) { 
+ var data =
+Riak.mapValuesJson(value)[0]; 
+ if(data.age == &quot;32&quot;) 
+ return
+[value.key]; 
+ else 
+ return []; 
+ }  
+
+No reduce phase. All entries in
+the example bucket are json and have an age field. This initially works
+correctly, it gets back the matching records as expected. It also works
+in curl. It's an automated test, so each time I run this, it is using a
+different bucket. After about a dozen queries, this starts to fail. It
+returns an empty result, when it should have found records. It fails in
+curl at the same time. 
+
+I initially suspected this might have something
+to do with doing map reduce too soon after writing, and the write not
+being available on all nodes. However, I changed the bucket schema
+entries for w,r,rw,dw from &quot;quorum&quot; to &quot;all&quot;, and this still happens (is
+there another bucket setting I missed?). In addition, I only have 3
+nodes (I'm using the dev123 example), and am running curl long enough
+afterwards. 
+
+Here's the strange part that makes me suspicious. If I
+make insignificant changes to the query, for example change the double
+quotes to single quotes, add whitespace or extra parentheses, etc, then
+it suddenly works again. It will work on an existing bucket, and on
+subsequent tests, but again only about a dozen times before it starts
+failing again. Same behavior in curl. This makes me suspect that the
+server is doing some incorrect caching around this js function, based on
+the function string. 
+
+Any explanation about what's going on? 
+
+Keith  
+_______________________________________________
+riak-users mailing
+list
+riak-users@lists.basho.com
+[2]
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+[3]
+
+-- 
+
+                 [4]
+
+ANTONIO ROHMAN FERNANDEZ
+CEO, Founder &amp; Lead
+Engineer
+roh...@mahalostudio.com [5]              
+PROJECTS
+MaruBatsu.es
+[6]
+PupCloud.com [7]
+Wedding Album [8]
+
+ 
+
+Links:
+------
+[1]
+<a  rel="nofollow" href="mailto:gr...@basho.com">mailto:gr...@basho.com</a>
+[2] <a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>
+[3]
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+[4]
+<a  rel="nofollow" href="http://mahalostudio.com">http://mahalostudio.com</a>
+[5] <a  rel="nofollow" href="mailto:roh...@mahalostudio.com">mailto:roh...@mahalostudio.com</a>
+[6]
+<a  rel="nofollow" href="http://marubatsu.es">http://marubatsu.es</a>
+[7] <a  rel="nofollow" href="http://pupcloud.com">http://pupcloud.com</a>
+[8]
+<a  rel="nofollow" href="http://wedding.mahalostudio.com">http://wedding.mahalostudio.com</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02606.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02607">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#02607">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02790.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02603.html">Inconsistent map/reduce results</a></span> <span class="sender italic">Keith Dreibelbis</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02604.html">Re: Inconsistent map/reduce results</a></span> <span class="sender italic">Grant Schofield</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02606.html">Re: Inconsistent map/reduce results</a></span> <span class="sender italic">Keith Dreibelbis</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Inconsistent map/reduce results</span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02790.html">Re: Inconsistent map/reduce resu...</a></span> <span class="sender italic">Keith Dreibelbis</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02812.html">Re: Inconsistent map/reduce...</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02814.html">Re: Inconsistent map/re...</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02815.html">Re: Inconsistent map/re...</a></span> <span class="sender italic">Matthew Heitzenroder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02819.html">Re: Inconsistent ma...</a></span> <span class="sender italic">Keith Dreibelbis</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Inconsistent map/reduce results">
+<input type="hidden" name="msgid" value="7c25c1ca6a3340715ef3f2238e6c98cb@mahalostudio.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02607.html">
+<input type="submit" value=" Antonio Rohman Fernandez ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Inconsistent+map%5C%2Freduce+results%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02606.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02790.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">7c25c1ca6a3340715ef3f2238e6c98cb@mahalostudio.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak CS with hadoop over s3 protocol</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14602" id="c">
+<link rel="index" href="maillist.html#14602" id="i">
+<link rel="prev" href="msg14600.html" id="p">
+<link rel="next" href="msg14605.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14602.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS+with+hadoop+over+s3+protocol%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak CS with hadoop over s3 protocol</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kota+Uenishi%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kota Uenishi</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140731" rel="nofollow">Thu, 31 Jul 2014 17:12:26 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I played on Hadoop MapReduce on Riak CS, and it actually worked with
+the latest 1.5 beta package. Hadoop relies S3 connectivity on jets3t,
+so if MapR uses vanilla jets3t it will work. I believe so because MapR
+works on EMR (which usually extracts data from S3).</pre><pre>
+
+Technically, you can add several options about S3 endpoints to connect
+other S3-compatible cloud storages into jets3t.properties, which are
+mainly &quot;s3service.s3-endpoint&quot; and
+&quot;s3service.s3-endpoint-http(s)-port&quot;. I put the properties file into
+hadoop conf directory and it worked. Maybe there is a config-loading
+in MapR, too. [1] In this case, you should properly configure your CS
+use your domain by cs_root_host in app.config. [2]
+
+If your Riak CS is not configured with your own domain, you can also
+configure MapReduce to use proxy setting like this:
+
+httpclient.proxy-host=localhost
+httpclient.proxy-port=8080
+
+I usually use this configuration when I play locally. Put them into
+jets3t.properties.
+
+Note that 1.4.x CS won't work properly if the output file is on CS
+again - it doesn't have copy API used in the final file copy after
+reduce. We have 1.5 pre-release package internally and testing. Sooner
+or later it will be released.
+
+[1] <a  rel="nofollow" href="https://jets3t.s3.amazonaws.com/toolkit/configuration.html">https://jets3t.s3.amazonaws.com/toolkit/configuration.html</a>
+[2] 
+<a  rel="nofollow" href="http://docs.basho.com/riakcs/latest/cookbooks/configuration/Configuring-Riak-CS/">http://docs.basho.com/riakcs/latest/cookbooks/configuration/Configuring-Riak-CS/</a>
+
+On Fri, Aug 1, 2014 at 4:08 AM, John Daily &lt;jda...@basho.com&gt; wrote:
+&gt; This blog post on configuring S3 clients to work with CS may be useful:
+&gt; <a  rel="nofollow" href="http://basho.com/riak-cs-proxy-vs-direct-configuration/">http://basho.com/riak-cs-proxy-vs-direct-configuration/</a>
+&gt;
+&gt; Sent from my iPhone
+&gt;
+&gt; On Jul 31, 2014, at 2:53 PM, Andrew Stone &lt;ast...@basho.com&gt; wrote:
+&gt;
+&gt; Hi Charles,
+&gt;
+&gt; AFAIK we haven't ever tested Riak Cs with the MapR connector. However, if
+&gt; MapR works with S3, you should just have to change the IP to point to a load
+&gt; balancer in front of your local Riak CS cluster. I'm unaware of how to
+&gt; change that setting in MapR though. It seems like a question for them and
+&gt; not Basho.
+&gt;
+&gt; -Andrew
+&gt;
+&gt;
+&gt; On Wed, Jul 30, 2014 at 5:16 PM, Charles Shah &lt;find.chuck...@gmail.com&gt;
+&gt; wrote:
+&gt;&gt;
+&gt;&gt; Hi,
+&gt;&gt;
+&gt;&gt; I would like to use MapR with Riak CS for hadoop map reduce jobs. My code
+&gt;&gt; is currently referring to objects using s3n:// urls.
+&gt;&gt; I'd like to be able to have the hadoop code on MapR point to the Riak CS
+&gt;&gt; cluster using the s3 url.
+&gt;&gt; Is there a proxy or hostname setting in hadoop to be able to route the s3
+&gt;&gt; url to the riak cs cluster ?
+&gt;&gt;
+&gt;&gt; Thanks
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+
+
+-- 
+Kota UENISHI / @kuenishi
+Basho Japan KK
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14600.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14602">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14602">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14605.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14598.html">Riak CS with hadoop over s3 protocol</a></span> <span class="sender italic">Charles Shah</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14599.html">Re: Riak CS with hadoop over s3 protocol</a></span> <span class="sender italic">Andrew Stone</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14600.html">Re: Riak CS with hadoop over s3 protocol</a></span> <span class="sender italic">John Daily</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak CS with hadoop over s3 protocol</span> <span class="sender italic">Kota Uenishi</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14605.html">Re: Riak CS with hadoop over s3 protocol</a></span> <span class="sender italic">Charles Shah</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14606.html">Re: Riak CS with hadoop over s3 protoco...</a></span> <span class="sender italic">Kota Uenishi</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak CS with hadoop over s3 protocol">
+<input type="hidden" name="msgid" value="CALhKnOSZp7ZWVP9=b3-cp79+Gjmno1EDXhh33MXd_rBW0Q45rw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14602.html">
+<input type="submit" value=" Kota Uenishi ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS+with+hadoop+over+s3+protocol%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14600.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14605.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CALhKnOSZp7ZWVP9=b3-cp79+Gjmno1EDXhh33MXd_rBW0Q45rw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

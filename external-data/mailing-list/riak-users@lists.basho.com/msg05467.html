@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: 2i for single-result lookup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05467" id="c">
+<link rel="index" href="maillist.html#05467" id="i">
+<link rel="prev" href="msg05466.html" id="p">
+<link rel="next" href="msg05468.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05467.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+2i+for+single%5C-result+lookup%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: 2i for single-result lookup</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nate+Lawson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nate Lawson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111107" rel="nofollow">Mon, 07 Nov 2011 20:31:27 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I appreciate you sharing your design. But I can never understand why people go 
+to such great lengths to add transactions to an eventually-consistent db.</pre><pre>
+
+You could possibly solve the same problem by using memcached or Redis. Example:
+
+1. Look up the user in Riak. If that lookup succeeds, abort.
+2. Store a copy of the new username via memcached add() with a generous expiry 
+interval.
+3. If it exists already (atomic in memcached), you lost a race with another 
+user and error out. If not, also store the username in Riak.
+4. The memcached key will expire at some point after Riak becomes consistent, 
+keeping your memory use reasonable.
+
+Is user creation such a high percentage of your transaction volume that you 
+have to build something almost as complicated as a VCS on top of it in order to 
+scale? For robustness, isn't it simpler to just disable user creation if your 
+memcached single-point-of-failure is down and you weren't able to failover to 
+the spare?
+
+I'm not criticizing you since you may have some unique need I overlooked. But 
+would the above work for you?
+
+-Nate
+
+On Nov 7, 2011, at 7:16 PM, Justin Karneges wrote:
+
+&gt; Hmm, but if the username (or email) must be unique then I think this problem 
+&gt; may be more than just indexing.  There's also an id reservation issue.
+&gt; 
+&gt; At least in my case, I did not think 2i would work for me, because I needed 
+&gt; one of the indexes (email) to be unique and reservable on a first-come basis, 
+&gt; yet I wanted people to be able to change email addresses.  The resulting 
+&gt; algorithm is a bit disgusting but it essentially works like this:
+&gt; 
+&gt; 1) All keys are tagged with extra metadata:
+&gt;  a) creation date (Riak only has modified date)
+&gt;  b) random &quot;value&quot; id (I'm using a UUID for this).  this is meant to indicate 
+&gt; a particular generation of a key's value.  updates to a key should retain 
+&gt; this 
+&gt; value, but overwrites should have new ids.
+&gt; 
+&gt; 2) User keys (where the indexes point) must contain extra metadata: a set of 
+&gt; index references (index creation date / value id pairs).
+&gt; 
+&gt; The idea with #1 and #2 here is that indexes point to users and users point 
+&gt; to 
+&gt; indexes.  Notably, users point to specific index key *versions* thanks to the 
+&gt; extra metadata.  This aids in conflict resolution (more on that later).
+&gt; 
+&gt; 3) If you want to claim an index, then you first checks to see if a key 
+&gt; already 
+&gt; exists with that name.  If it does then you can't claim (&quot;account already 
+&gt; exists&quot;).  If a key with that name does not exist then you make the index key 
+&gt; with a link pointing to the user data key.  Both the index key and user keys 
+&gt; need to have creation date and value id metadata.  Additionally, the user key 
+&gt; needs to add a reference to this index into its set of references.  Of course 
+&gt; a conflict can occur if two clients try to claim indexes simultaneously.  
+&gt; That's fine, you'll end up with two values (siblings) at the same index with 
+&gt; different creation dates and value ids, and conflict resolution will deal 
+&gt; with 
+&gt; that.
+&gt; 
+&gt; 4) When retrieving a user, you must confirm the relationship between the 
+&gt; index 
+&gt; and the object.  Essentially a valid keypair is the earliest dated index 
+&gt; sibling that points to a user key with the latest dated index reference that 
+&gt; points back to it.  Determining this validity requires retrieving both keys, 
+&gt; regardless of which one you start from, and in certain conflict cases may 
+&gt; require crawling through to other keys.  If you cannot verify the 
+&gt; relationship 
+&gt; between index and object then you must treat this case as if neither exist.
+&gt; 
+&gt; What does this all mean?
+&gt; 
+&gt; You can create users, unique by some value, on a first come basis.  If two 
+&gt; clients try to create accounts with the same name at the same time, then an 
+&gt; arbitrary one will win.  If two existing users try to change to the same 
+&gt; name, 
+&gt; an arbitrary one will win, and the loser *will not lose his original 
+&gt; reservation*.  I mapped out some pretty awful race conditions like if three 
+&gt; existing users (A, B, and C) exist and A and B suddenly try to change to the 
+&gt; same name at the same moment C tries to change to B's original name, and B 
+&gt; loses to A, then B is guaranteed to get his index back and C's claim becomes 
+&gt; invalid.
+&gt; 
+&gt; Oh, and finally, whichever index key is valid becomes the authoritative value 
+&gt; of that data field.  For example, in my case I'm indexing by email.  This 
+&gt; means 
+&gt; if I want to look up a user's email address based on the direct user ID, I 
+&gt; first look up the user object key directly, then I determine its valid index 
+&gt; (needed to be done anyway just to confirm the user's validity to exist) and 
+&gt; then use *that* index value as the user's email address.  You would *not* use 
+&gt; some email field value in the JSON blob.  In fact, better to not have your 
+&gt; index field in the JSON blob at all since conflict resolution won't be able 
+&gt; to 
+&gt; fix it.
+&gt; 
+&gt; OH, and one last thing.  There was concern about writing a user requiring two 
+&gt; writes, opening up the potential of leaving behind orphan keys in the event 
+&gt; of 
+&gt; failure.  I've started to come to the conclusion that this is acceptable, and 
+&gt; you just need to sweep it up later.  The above-described scheme will work 
+&gt; fine 
+&gt; even if you leave dirty keys all over the place and never resolve siblings.  
+&gt; You'll never have half of a user or some dangling index or anything.  The 
+&gt; validity checks at read-time ensure this.  But, some periodically run task 
+&gt; that cleans up your DB with MapReduce operations would be smart.
+&gt; 
+&gt; Maybe there's a better way to do this, but I thought I'd share.
+&gt; 
+&gt; Justin
+&gt; 
+&gt; On Monday, November 07, 2011 06:19:48 PM Nate Lawson wrote:
+&gt;&gt; Ok, then 2I will work fine for what you're doing if you're going to keep
+&gt;&gt; adding fields like that. You can just use the binary type for the 2I keys
+&gt;&gt; (_bin).
+&gt;&gt; 
+&gt;&gt; <a  rel="nofollow" href="http://basho.com/blog/technical/2011/09/14/Secondary-Indexes-in-Riak/">http://basho.com/blog/technical/2011/09/14/Secondary-Indexes-in-Riak/</a>
+&gt;&gt; 
+&gt;&gt; You first said you were concerned about the query performance due to the
+&gt;&gt; covering set access and that you only had 2 unique fields. That's why I
+&gt;&gt; suggested you create a manual index (either email or userid) to lookup the
+&gt;&gt; other key. But with this additional info you mention, I think you should
+&gt;&gt; just use 2I since that's one of its main purposes.
+&gt;&gt; 
+&gt;&gt; -Nate
+&gt;&gt; 
+&gt;&gt; On Nov 7, 2011, at 6:11 PM, Greg Pascale wrote:
+&gt;&gt;&gt; Hi Nate,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; There are only 2 secondary keys for now (in addition to the primary key),
+&gt;&gt;&gt; but this number will grow to 5 or more pretty soon.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; I think when you say &quot;insert each separately&quot;, you mean create 2
+&gt;&gt;&gt; duplicate objects, one keyed by username and one keyed by email. Or do
+&gt;&gt;&gt; you mean create one object keyed by username, and then another object
+&gt;&gt;&gt; containing the username and keyed by email (a manual index if you will)?
+&gt;&gt;&gt; Code complexity is the main reason I'd like to avoid a solution like
+&gt;&gt;&gt; this. Suddenly a user create operation requires n writes to be
+&gt;&gt;&gt; considered a success. If one fails, I need to delete the others, etc… It
+&gt;&gt;&gt; quickly becomes a pain.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; I don't know what you mean by &quot;some relationship between the keys&quot;
+&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; On Nov 7, 2011, at 5:45 PM, Greg Pascale wrote:
+&gt;&gt;&gt;&gt;&gt; Hi,
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; I'm thinking about using 2i for a certain piece of my system, but I'm
+&gt;&gt;&gt;&gt;&gt; worried that the document-based partitioning may make it suboptimal.
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; The issue is that the secondary fields I want to query over (email and
+&gt;&gt;&gt;&gt;&gt; username) are unique, so each will only ever map to one value. Since
+&gt;&gt;&gt;&gt;&gt; 2i queries a coverage set, but I'm only ever looking for one result,
+&gt;&gt;&gt;&gt;&gt; it's going to be hitting n-1 machines needlessly.
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; So, what I'm looking to understand is how much overhead a single-result
+&gt;&gt;&gt;&gt;&gt; 2i lookup like this will incur vs. a primary-key lookup, or even vs.
+&gt;&gt;&gt;&gt;&gt; search. Search doesn't intuitively feel like the right tool here, but
+&gt;&gt;&gt;&gt;&gt; I wonder if it may actually be preferable since it uses term-based
+&gt;&gt;&gt;&gt;&gt; partitioning.
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; If it's only 2 keys, why not insert each separately? You will double
+&gt;&gt;&gt;&gt; your total number of keys in the db. But both search and 2I are
+&gt;&gt;&gt;&gt; creating extra keys anyway in their private indices, so it has the same
+&gt;&gt;&gt;&gt; or worse effect on total storage as doubling your primary keys. And
+&gt;&gt;&gt;&gt; query efficiency is worse, as you point out.
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 2I and search are more useful where there's some relationship between
+&gt;&gt;&gt;&gt; the keys, not when they're fully independent as you point out.
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; -Nate
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05466.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05467">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05467">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05468.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05462.html">2i for single-result lookup</a></span> <span class="sender italic">Greg Pascale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05463.html">Re: 2i for single-result lookup</a></span> <span class="sender italic">Nate Lawson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05464.html">Re: 2i for single-result lookup</a></span> <span class="sender italic">Greg Pascale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05465.html">Re: 2i for single-result lookup</a></span> <span class="sender italic">Nate Lawson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05466.html">Re: 2i for single-result lookup</a></span> <span class="sender italic">Justin Karneges</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: 2i for single-result lo...</span> <span class="sender italic">Nate Lawson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05468.html">Re: 2i for single-resul...</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05479.html">Re: 2i for single-r...</a></span> <span class="sender italic">Greg Pascale</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05480.html">Re: 2i for single-resul...</a></span> <span class="sender italic">Justin Karneges</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05472.html">Re: 2i for single-result lookup</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: 2i for single-result lookup">
+<input type="hidden" name="msgid" value="23569CBF-E532-4553-98AB-F7A75890AE96@root.org">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05467.html">
+<input type="submit" value=" Nate Lawson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+2i+for+single%5C-result+lookup%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05466.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05468.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">23569CBF-E532-4553-98AB-F7A75890AE96@root.org</li>
+</ul>
+</div>
+</body>
+</html>

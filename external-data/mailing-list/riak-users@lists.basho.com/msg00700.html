@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Q: What mechanism does Riak have to deal with the unique user	issue?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00700" id="c">
+<link rel="index" href="maillist.html#00700" id="i">
+<link rel="prev" href="msg00699.html" id="p">
+<link rel="next" href="msg00701.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00700.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Q%5C%3A+What+mechanism+does+Riak+have+to+deal+with+the+unique+user%09issue%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Q: What mechanism does Riak have to deal with the unique user	issue?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Cribbs%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Cribbs</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100709" rel="nofollow">Fri, 09 Jul 2010 18:07:45 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Carbon-copying to riak-users since this is an important discussion.
+
+You seem to have a fundamental misunderstanding about how quorums work. Write 
+quorums (W and DW) aren't guarantees of atomicity and [global] consistency, but 
+of durability.  There's no distributed transaction, two-phase commit, or mutual 
+coordination of writes, simply an acknowledgment that the write was received on 
+an adequate number of nodes. </pre><pre>
+
+One unintuitive side-effect of these &quot;sloppy quorums&quot; is that a write may 
+appear to fail to the client (i.e. not meet quorum), but actually succeed on 
+some number of nodes within the cluster.  However, on the next read, if the 
+nodes that did succeed report in a timely fashion, the previously failed nodes 
+will be updated with the new value (read repair).
+
+I tried to place strong caveats on the use of the If-None-Match header and 
+read-before-write strategy because they can only be implemented on the 
+client-side, and they only are able to present an asynchronously aggregated 
+state at the time of request, not a strong guarantee of global consistency. 
+Again, buyer beware.
+
+Sean Cribbs &lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On Jul 9, 2010, at 7:17 PM, Carl Humphrey wrote:
+
+&gt; Hi Sean,
+&gt; 
+&gt; regarding the answer to this question, i'm a bit confused with the answer.
+&gt; 
+&gt; couldn't I choose to forgo availability  ( for some of the cluster users ) 
+&gt; and only create a new user when a majority vote write passes
+&gt; 
+&gt; for instance
+&gt; 
+&gt; i have 3 servers each connected to each other
+&gt; 
+&gt; if 1 server gets cut off from the other 2 , it couldn't get a majority vote 
+&gt; on a write and therefore cant add new users
+&gt; 
+&gt; however the other side of the split brain could get a majority vote ( 2 out 
+&gt; of 3 ) and therefore its safe to write. ( with the?If-None_Match header? )
+&gt; 
+&gt; is this not the way the CAP settings work in riak work?
+&gt;  
+&gt; if i want to be able to dish out unique resources to customer do i have to 
+&gt; implement zookeeper alongside riak to do it?
+&gt; 
+&gt; Much Thanks
+&gt; Carl.
+&gt; 
+&gt; Q: What mechanism does Riak have to deal with the unique user issue?
+&gt; 
+&gt; Riak has neither write locks nor transactions. There is no way to absolutely 
+&gt; guarantee uniqueness without introducing an intermediary that acts as a 
+&gt; single-arbiter (and point-of-failure). However, in cases when you aren't 
+&gt; experiencing high write-concurrency on the data in question there are a few 
+&gt; things you can do to simulate the uniqueness constraint:
+&gt; 
+&gt; Check for existence of the key before writing. In HTTP, this is as simple as 
+&gt; a HEAD request. If the response is 404 Not Found, the object probably doesn't 
+&gt; exist.
+&gt; Use a conditional PUT (in HTTP) when creating the object. The If-None-Match: 
+&gt; *header should prevent you from blindly overwriting an existing key.
+&gt; Neither of these solutions are bullet-proof because all operations happen in 
+&gt; Riak asynchronously. Remember that it's eventually consistent, meaning that 
+&gt; not all parts of the system may agree at all times, but they will converge on 
+&gt; a single state over time. There will be corner-cases where a key doesn't 
+&gt; exist when you check for it, the write via the conditional request succeeds, 
+&gt; and you still end up creating an object in conflict. Caveat emptor.
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00699.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00700">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00700">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00701.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Q: What mechanism does Riak have to deal with the unique user	issue?">
+<input type="hidden" name="msgid" value="83D2817A-B748-4D75-B6CC-1F4A13904A23@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00700.html">
+<input type="submit" value=" Sean Cribbs ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Q%5C%3A+What+mechanism+does+Riak+have+to+deal+with+the+unique+user%09issue%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00699.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00701.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">83D2817A-B748-4D75-B6CC-1F4A13904A23@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: link limitations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00670" id="c">
+<link rel="index" href="maillist.html#00670" id="i">
+<link rel="prev" href="msg00668.html" id="p">
+<link rel="next" href="msg00671.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00670.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+link+limitations%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: link limitations</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22francisco+treacy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">francisco treacy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100630" rel="nofollow">Wed, 30 Jun 2010 10:06:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Ripple/riak-client doesn't split a bunch of links into multiple
+headers for you, right?</pre><pre>
+
+I'm trying the new associations feature which works great btw, but if
+i'm limited to 100/150 links or a horrible workaround (in terms of
+client code), I'd probably be better off storing that in an associated
+document and resorting to map-reduce.
+
+Something like (in Javascript):
+
+var map = function(v) {
+  var doc = Riak.mapValuesJson(v)[0];
+  return doc.following.map(function(key) { return ['users', key] })
+}
+
+db
+  .map(map)
+  // [ eventually a .link({})  here ]
+  .map(&quot;Riak.mapValuesJson&quot;)
+  .run([['user_relations', 'user1']])()
+
+This approach also makes more sense to me now, it allows me to
+decouple relationships from the users docs, leaving those lightweight
+for other operations.
+
+Thanks,
+Francisco
+
+2010/6/30 Sean Cribbs &lt;s...@basho.com&gt;:
+&gt; Francisco,
+&gt;
+&gt; The answer is to make your client submit multiple Link headers, which Riak 
+&gt; will join together. Watch what happens if I do that with curl:
+&gt;
+&gt; $ curl -v -X PUT <a  rel="nofollow" href="http://localhost:8098/riak/test/one">http://localhost:8098/riak/test/one</a> -H &quot;Content-Type: 
+&gt; text/plain&quot; -d 'Hello,world' -H 'Link: &lt;/riak/test/two&gt;; riaktag=&quot;next&quot;' -H 
+&gt; 'Link: &lt;/riak/test/zero&gt;; riaktag=&quot;previous&quot;'
+&gt; * About to connect() to localhost port 8098 (#0)
+&gt; *   Trying ::1... Connection refused
+&gt; *   Trying fe80::1... Connection refused
+&gt; *   Trying 127.0.0.1... connected
+&gt; * Connected to localhost (127.0.0.1) port 8098 (#0)
+&gt;&gt; PUT /riak/test/one HTTP/1.1
+&gt;&gt; User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 
+&gt;&gt; OpenSSL/0.9.8l zlib/1.2.3
+&gt;&gt; Host: localhost:8098
+&gt;&gt; Accept: */*
+&gt;&gt; Content-Type: text/plain
+&gt;&gt; Link: &lt;/riak/test/two&gt;; riaktag=&quot;next&quot;
+&gt;&gt; Link: &lt;/riak/test/zero&gt;; riaktag=&quot;previous&quot;
+&gt;&gt; Content-Length: 11
+&gt;&gt;
+&gt; &lt; HTTP/1.1 204 No Content
+&gt; &lt; Vary: Accept-Encoding
+&gt; &lt; Server: MochiWeb/1.1 WebMachine/1.7 (participate in the frantic)
+&gt; &lt; Date: Wed, 30 Jun 2010 14:02:55 GMT
+&gt; &lt; Content-Type: text/plain
+&gt; &lt; Content-Length: 0
+&gt; &lt;
+&gt; * Connection #0 to host localhost left intact
+&gt; * Closing connection #0
+&gt;
+&gt; $ curl -v <a  rel="nofollow" href="http://localhost:8098/riak/test/one">http://localhost:8098/riak/test/one</a>
+&gt; * About to connect() to localhost port 8098 (#0)
+&gt; *   Trying ::1... Connection refused
+&gt; *   Trying fe80::1... Connection refused
+&gt; *   Trying 127.0.0.1... connected
+&gt; * Connected to localhost (127.0.0.1) port 8098 (#0)
+&gt;&gt; GET /riak/test/one HTTP/1.1
+&gt;&gt; User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 
+&gt;&gt; OpenSSL/0.9.8l zlib/1.2.3
+&gt;&gt; Host: localhost:8098
+&gt;&gt; Accept: */*
+&gt;&gt;
+&gt; &lt; HTTP/1.1 200 OK
+&gt; &lt; X-Riak-Vclock: a85hYGBgzGDKBVIsjAzzwzOYEhnzWBn6T80/ypcFAA==
+&gt; &lt; Vary: Accept-Encoding
+&gt; &lt; Server: MochiWeb/1.1 WebMachine/1.7 (participate in the frantic)
+&gt; &lt; Link: &lt;/riak/test/two&gt;; riaktag=&quot;next&quot;, &lt;/riak/test/zero&gt;; 
+&gt; riaktag=&quot;previous&quot;, &lt;/riak/test&gt;; rel=&quot;up&quot;
+&gt; &lt; Last-Modified: Wed, 30 Jun 2010 14:02:55 GMT
+&gt; &lt; ETag: 3uMSzFK8guChtOhlvtx99g
+&gt; &lt; Date: Wed, 30 Jun 2010 14:03:32 GMT
+&gt; &lt; Content-Type: text/plain
+&gt; &lt; Content-Length: 11
+&gt; &lt;
+&gt; * Connection #0 to host localhost left intact
+&gt; * Closing connection #0
+&gt; Hello,world
+&gt;
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;
+&gt; On Jun 29, 2010, at 10:07 PM, francisco treacy wrote:
+&gt;
+&gt;&gt; Hi all,
+&gt;&gt;
+&gt;&gt; We're developing social features in our app that involve Twitter-like
+&gt;&gt; relations between users.
+&gt;&gt;
+&gt;&gt; As we have a 'users' bucket, the initial implementation is to add
+&gt;&gt; links to following users (and link followers back) in order to create
+&gt;&gt; a two-way relationship.
+&gt;&gt;
+&gt;&gt; User A  ==== following ====&gt; User B
+&gt;&gt; User B ==== follower ====&gt; User A
+&gt;&gt;
+&gt;&gt; This makes sense and turns out to work perfectly fine, but I am
+&gt;&gt; concerned with hitting limits rather soon. For some reason (webmachine
+&gt;&gt; related?) there is an 8k limit for the Link header. I verified this
+&gt;&gt; (documents with 8192b+ Link headers won't be persisted).
+&gt;&gt;
+&gt;&gt; Considering average key sizes and the typical usecase of our app, this
+&gt;&gt; means we can store somewhere between 100 and 150 links - max. Given we
+&gt;&gt; store different types of links (not only to other users), it'll
+&gt;&gt; definitely won't work for us.
+&gt;&gt;
+&gt;&gt; So I guess my question is two-fold:
+&gt;&gt; (a) is this limit intended? if not, how can it be eluded?
+&gt;&gt; (b) are there better ways of modeling this scenario?
+&gt;&gt;
+&gt;&gt; I was thinking along the lines of storing this 'followers/following'
+&gt;&gt; data in an associated document instead, and feeding a link phase keys
+&gt;&gt; coming from a map function.
+&gt;&gt;
+&gt;&gt; Those of you who tried implementing Twitter in Riak :) ...how did you
+&gt;&gt; approach the problem?
+&gt;&gt;
+&gt;&gt; Francisco
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00668.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00670">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00670">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00671.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00667.html">link limitations</a></span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00668.html">Re: link limitations</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: link limitations</span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00671.html">Re: link limitations</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: link limitations">
+<input type="hidden" name="msgid" value="AANLkTikcrKSX67jASmI_kGuHrvQkjs-w0mG65WgiudLS@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00670.html">
+<input type="submit" value=" francisco treacy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+link+limitations%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00668.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00671.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTikcrKSX67jASmI_kGuHrvQkjs-w0mG65WgiudLS@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

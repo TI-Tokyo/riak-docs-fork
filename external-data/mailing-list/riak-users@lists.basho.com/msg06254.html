@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Absolute consistency</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06254" id="c">
+<link rel="index" href="maillist.html#06254" id="i">
+<link rel="prev" href="msg06252.html" id="p">
+<link rel="next" href="msg06240.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06254.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Absolute consistency</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Les+Mikesell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Les Mikesell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120111" rel="nofollow">Wed, 11 Jan 2012 22:44:51 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Wed, Jan 11, 2012 at 9:14 PM, Joseph Blomstedt &lt;j...@basho.com&gt; wrote:
+&gt;
+&gt; Some thoughts to ponder:
+&gt;
+&gt; 1. Do you allow multiple clients to write to Riak at the same time?
+&gt; With concurrent writers, &quot;atomic&quot; can mean multiple things. Do you
+&gt; want linearizability? Do you want one writer to fail?</pre><pre>
+
+In our particular case we have redundant feeds with upstream
+processing that will provide a unique key per item.  So we expect two
+concurrent writers and want one to fail, the other to succeed and be
+indexed.  There's a bit of messiness involved because some (few) of
+the items will be updates to existing data.
+
+&gt; Is optimistic
+&gt; concurrency control or MVCC your solution? You could route everything
+&gt; though a single writer, but then you introduce a
+&gt; single-point-of-failure (SPOF). Adding an SPOF in-front of a highly
+&gt; available system is non-ideal. Or, perhaps a single writer with leader
+&gt; election / failover?
+
+The point of the design is to avoid any SPOF.  The upstream data comes
+from multiple sources, so the redundant feeds are expected to cover
+individual source failures to the extent possible, letting the DB drop
+the duplicates but add its own internal redundancy for storage.
+
+&gt; 2. What about write failure? In Riak, a write failure does not mean
+&gt; the value won't later show-up in a read. If you issue a PW=3 write, it
+&gt; may fail because it succeeded to write to 1 replica, but not the other
+
+We expect one to fail.  If it fails for any reason other than the key
+already existing, the writer client can queue and retry within limits
+(its a feed, not interactive).
+
+&gt; In general, distributed consistency is non-trivial. Even master/slave
+&gt; systems have choices to make. Synchronous vs asynchronous replication.
+&gt; ElasticSearch is synchronous (at least to secondary RAM), while
+&gt; MongoDB is asynchronous. If you have multiple slaves, what consistency
+&gt; guarantees are there between all of them? If the master crashes during
+&gt; a write that was replicated to some but not all slaves, is it possible
+&gt; to get different values on a read if different subset of slaves crash
+&gt; as well? For the strongest replication guarantees, you end up with
+&gt; protocols with higher latency and lower availability guarantees. It's
+&gt; always a tradeoff game.
+
+I don't expect to trust any of these schemes 100%.  We will have
+another instance of the cluster in another location and a tool that
+compares recently created keys between them (one of the reasons for
+wanting efficient range queries).    We are still kicking around the
+relative reliability and other tradeoffs of trying to inject all 4
+feeds into each DB vs. the two local copies vs. crisscrossed.
+Crisscrossed will probably win.
+
+&gt; As Jon mentioned, stronger consistency is a research area for 2012.
+&gt; While CAP dictates that you can't have C/A/P at once, there's no
+&gt; reason you can't have a product that provides both AP requests and CP
+&gt; requests. Perhaps there will be more to discuss on that point later on
+&gt; this year.
+
+Yes, even understanding that you can't guarantee both at once, you
+could let the client decide which it wants.  Some things can wait.
+
+-- 
+   Les Mikesell
+     lesmikes...@gmail.com
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06252.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06254">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06254">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06240.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06152.html">Re: Absolute consistency</a></span> <span class="sender italic">Thomas Bakketun</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06217.html">Re: Absolute consistency</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06231.html">Re: Absolute consistency</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06232.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06233.html">Re: Absolute consistency</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06234.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06236.html">Re: Absolute consistency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06237.html">Re: Absolute consistency</a></span> <span class="sender italic">Vishal Shah</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06241.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06252.html">Re: Absolute consistency</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Absolute consistency</span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06240.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Absolute consistency">
+<input type="hidden" name="msgid" value="CAOAgVpyXELqm3fQXHo=SAg4SDcCefcV4558eG8jb8Aw5jYA6Yg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06254.html">
+<input type="submit" value=" Les Mikesell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06252.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06240.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOAgVpyXELqm3fQXHo=SAg4SDcCefcV4558eG8jb8Aw5jYA6Yg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak use cases\patterns and a few questions.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05937" id="c">
+<link rel="index" href="maillist.html#05937" id="i">
+<link rel="prev" href="msg05933.html" id="p">
+<link rel="next" href="msg06078.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05937.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+use+cases%5C%5Cpatterns+and+a+few+questions.%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak use cases\patterns and a few questions.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bogunov%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bogunov</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111214" rel="nofollow">Wed, 14 Dec 2011 09:38:04 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+I have been doing research about Riak use cases and patterns (talked to a
+few people with production usage experience).
+I have tried using it for developing some project from scratch a few months
+ago, but received to much resistance from my team, so dropped it =).
+Thought i think the technology developed by basho is great, so i want to
+write an article or maybe give a talk about it at some local developer
+conference =)</pre><pre>
+
+So from my own experience and words of those, who i`m talked with - I
+developed such a picture in my head:
+
+Riak works very well as &quot;real&quot; k\v:
+- user session, user data streams(with append only data) (like facebook
+wall), and likes.
+not so good for relational\indexed data:
+- before 2i indexes you have to roll own your own indexes using riak(but &gt;2
+disk reads can be quite costly) or redis\postregsql\mysql (and support
+their own sharding\migration\etc, which kind of forces you to write your
+own sharding logic anyway, which really doesn't make  sense as you expected
+riak to take care of that part).
+- with 2i indexes you are doing mini-M\R job and this have some performance
+penalties.
+
+Not as well as m\r engine:
+  - it is used for multiget (i suppose for languages like php, because
+doing map-reduce is easier than doing multi-thread reading)
+  - it is used for run-once tasks like building index.
+but :
+  - using it ad-hoc for analytics seems to be too slow ( why riak doesn't
+support &quot;pre&quot;-reduce on &quot;map&quot;-vnode like actual google M\R ?). [actually
+this statement based on 0.14 usages, don't know anybody who has used
+riak-pipe ]
+
+RiakSearch have been developed for a: checkbox &quot;we have full-text search&quot;.
+I will compare it with Sphinx(<a  rel="nofollow" href="http://sphinxsearch.com/">http://sphinxsearch.com/</a>) as i got quite a
+lot experience with it(used it extensively and know author personally =)).
+
+RiakSearch does have this magical &quot;availability&quot; built-in, but only for
+writes: if you lost shard`s data you have to &quot;reindex&quot; ALL your dataset
+completely, because you don't know which part of the dataset, that shard
+held (if you lost sphinx`s shard you will have to do this too, but because
+sharding will be configured in sphinx`s conf manually, you won't need to
+reindex all data, only lost part).
+
+If Sphinx`s shard dies you will have to wait for it to timeout, but you can
+configure timeout, but as far as i understand you can't configure timeout
+in RiakSearch.
+
+RiakSearch can consume a lot of memory while searching low cardinality
+terms because it uses term-based sharding and there is no way to fix this
+(except inline fields), sphinx uses fixed amount of memory for sorting and
+weighting(and document-base sharding) (this obviously leads to approximate
+results + limit to returned ids, but for full-text search this is
+acceptable), can i configure same fixed memory usage for RiakSearch request
+?.
+Plus sphinx has configurable ranking, grouping, sorting and weighting, and
+plain faster. Thought sphinx has accumulated at least 10-20 man-years of
+development and more features =)
+
+So here are the questions:
+1) I think I'm a little biased here, but why would i use RiakSearch at all
+? I think using sphinx\solr(elastic search) will give me more benefits as
+they are specialized full-text search engines with most of the
+search-related problems solved already. And RiakSearch will force me to
+reindex lost node\data as any other search engine, so practically no gain
+from that feature .
+2) Does anybody uses Riak`s M\R on daily basis for analytics ? Or everybody
+tend to use specialized data-warehouse products for that matter ?
+3) Anybody uses 2i heavily ? Using sharded redis\*sql seems to be wrong,
+but that was the only way before 2i ? Maybe there are trickier way to do
+this (keeping indexes at ets\lets backend ) ? How majority of users do this
+?
+4) What happens with 2i then one of &quot;covering&quot; vnode fails ?Can i configure
+timeout for it ?
+5) Theoretical question regarding quorums: what happens if I issue a (w =
+2) put, first vnode aknowledge write, but the second will fail, and quorum
+will trigger failure, does first node will roll-back write (I assume - no)
+?
+If it doesn't then will it be deleted during read-repair ? Because having
+sibling of write which i aknowledged as failed, and &quot;replayed&quot; later can
+cause too much inconsistency. What is the right way to handle this ?
+6) Does anybody uses some sort of sorting\pagination with Riak ? Do you
+prebuild specialized sorted index for it to work ? Using RiakSearch for it
+doesn't seems to be a good idea.
+
+Thanks in advance =)
+-- 
+email: bogu...@gmail.com
+skype: i.bogunov
+phone: +7 968 842 5783
+Regards, Bogunov Ilya
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05933.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05937">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05937">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06078.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Riak use cases\patterns and a few questions.</span> <span class="sender italic">Bogunov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06078.html">Re: Riak use cases\patterns and a few questions.</a></span> <span class="sender italic">Mark Phillips</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak use cases\patterns and a few questions.">
+<input type="hidden" name="msgid" value="CAFv3XZcrJhvYzTwM1H5Wdyw5f-Dg9tVrBbK3L3-vO3eooWNtRg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05937.html">
+<input type="submit" value=" Bogunov ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+use+cases%5C%5Cpatterns+and+a+few+questions.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05933.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06078.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFv3XZcrJhvYzTwM1H5Wdyw5f-Dg9tVrBbK3L3-vO3eooWNtRg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: "Failed to compact" in RiakSearch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03056" id="c">
+<link rel="index" href="maillist.html#03056" id="i">
+<link rel="prev" href="msg03042.html" id="p">
+<link rel="next" href="msg03057.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03056.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22Failed+to+compact%5C%22+in+RiakSearch%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: "Failed to compact" in RiakSearch</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Morten+Siebuhr%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Morten Siebuhr</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110415" rel="nofollow">Fri, 15 Apr 2011 01:27:45 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Rusty,
+
+On Thu, Apr 14, 2011 at 8:00 PM, Rusty Klophaus &lt;ru...@basho.com&gt; wrote:
+&gt; Hi Morten,
+&gt; Thanks for sending the log files. I was able to figure out, at least
+&gt; partially, what's going on here.</pre><pre>
+
+Fantastic - thanks!
+
+&gt; The &quot;Failed to compact&quot; message is a result of trying to index a token
+&gt; that's greater than 32kb in size. (The index storage engine, called
+&gt; merge_index, assumes tokens sizes smaller than 32kb.) I was able to decode
+&gt; part of the term in question by pulling data from the log file, and it looks
+&gt; like you may be indexing HTML with base64 encoded inline images, ie: &lt;img
+&gt; src=&quot;data:image/jpeg;base64,iVBORw0KG...&quot;&gt; The inline image is being treated
+&gt; as a single token, and it's greater than 32kb.
+
+That's odd - in the search schema, I asked it to ignore everything
+besides a few specific fields:
+
+{
+        schema,
+        [
+                {version, &quot;0.1&quot;},
+                {default_field, &quot;_owner&quot;},
+                {n_val, 1}
+        ],
+        [
+                %% Don't parse _id and _owner, just treat it as single token
+                {field, [
+                                {name, &quot;id&quot;},
+                                {required, true},
+                                {analyzer_factory, {erlang, text_analyzers, 
+noop_analyzer_factory}}
+                        ]},
+                {field, [
+                                {name, &quot;_owner&quot;},
+                                {required, true},
+                                {analyzer_factory, {erlang, text_analyzers, 
+noop_analyzer_factory}}
+                        ]},
+
+                %% Parse Name fields for full-text indexing
+                {field, [
+                                {name, &quot;displayName&quot;},
+                                {aliases, [&quot;nickname&quot;, &quot;preferredUsername&quot;, 
+&quot;name_formatted&quot;,
+&quot;name_displayName&quot;]},
+                                {analyzer_factory, {erlang, text_analyzers, 
+standard_analyzer_factory}}
+                        ]},
+
+                {field, [
+                                {name, &quot;emails_value&quot;},
+                                {analyzer_factory, {erlang, text_analyzers, 
+standard_analyzer_factory}}
+                        ]},
+
+                %% Add modification dates
+                {field, [
+                                {name, &quot;published&quot;},
+                                {aliases, [&quot;updated&quot;]},
+                                {type, date}
+                        ]},
+
+                %% Skip all else...
+                {dynamic_field, [
+                                {name, &quot;*&quot;},
+                                {skip, true}
+                        ]}
+        ]
+}.
+
+(We're indexing Portable Contacts, where the user images reside in a
+'image'-field.)
+
+&gt; The short term workaround is to either:
+&gt; 1) Preprocess your data to avoid this situation.
+&gt; 2) Or, create a custom analyzer that limits the size of terms
+&gt; (See <a  rel="nofollow" href="http://wiki.basho.com/Riak-Search---Schema.html for">http://wiki.basho.com/Riak-Search---Schema.html for</a> more information
+&gt; about analyzers and custom analyzers.)
+&gt; The long term solution is for us to increase the maximum token size in
+&gt; merge_index. I've filed a bugzilla issue for this, trackable
+&gt; here: <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=1069">https://issues.basho.com/show_bug.cgi?id=1069</a>
+&gt; Still investigating the &quot;Too many db tables&quot; error. This is being caused by
+&gt; the system opening too many ETS tables. It *may* be related to the
+&gt; compaction error described above, but I'm not sure.
+&gt; Search (specifically merge_index) uses ETS tables heavily, and the number of
+&gt; tables is affected by a few different factors. Can you send me some more
+&gt; information to help debug, specifically:
+&gt;
+&gt; How many partitions (vnodes) are in your cluster? (If you haven't changed
+&gt; any settings, then the default is 64.)
+
+It's 64 (no defaults changed at all).
+
+&gt; How many machines are in your cluster?
+
+Four.
+
+&gt; How many segments are on the node where you are seeing these errors?
+&gt; (Run: &quot;find DATAPATH/merge_index/*/*.data | wc -l&quot;, replacing DATAPATH with
+&gt; the path to your Riak data directory for that node.)
+
+foreach srv ( nosql1 nosql2 nosql4 nosql5 )
+echo -n &quot;$srv &quot;; ssh $srv sh -c 'find
+/var/lib/riaksearch/merge_index/*/*.data | wc -l'
+end
+nosql1 32434
+nosql2 14170
+nosql4 15480
+nosql5 13501
+
+(nosql1 is the one the error log is lifted from - but the errors
+seemed to come of all of the servers.)
+
+&gt; Approximately how much data are you loading (# Docs and # MB), and how
+&gt; quickly are you trying to load it?
+
+~17m records, weighing in just shy of four GB.
+
+While I didn't do the loading, I believe we did it with 25 concurrent
+threads, using the four machines in round-robin fashion.
+
+/Siebuhr
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03042.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03056">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03056">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03057.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02999.html">&quot;Failed to compact&quot; in RiakSearch</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03001.html">Re: &quot;Failed to compact&quot; in RiakSearch</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03016.html">Re: &quot;Failed to compact&quot; in RiakSearch</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03017.html">Re: &quot;Failed to compact&quot; in RiakSear...</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03042.html">Re: &quot;Failed to compact&quot; in Riak...</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: &quot;Failed to compact&quot; in...</span> <span class="sender italic">Morten Siebuhr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03057.html">Re: &quot;Failed to compact&quot...</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03069.html">Re: &quot;Failed to compact&...</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: &quot;Failed to compact&quot; in RiakSearch">
+<input type="hidden" name="msgid" value="BANLkTikdP2TSpLwCyzNLdq=PVHXAUcpfpQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03056.html">
+<input type="submit" value=" Morten Siebuhr ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22Failed+to+compact%5C%22+in+RiakSearch%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03042.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03057.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTikdP2TSpLwCyzNLdq=PVHXAUcpfpQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

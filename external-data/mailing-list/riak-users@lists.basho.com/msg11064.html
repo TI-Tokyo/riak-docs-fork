@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: multi datacenter replication</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#11064" id="c">
+<link rel="index" href="maillist.html#11064" id="i">
+<link rel="prev" href="msg11063.html" id="p">
+<link rel="next" href="msg11079.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11064.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+multi+datacenter+replication%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: multi datacenter replication</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Patrick+Christopher%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Patrick Christopher</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130513" rel="nofollow">Mon, 13 May 2013 17:22:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Adron,
+Thanks for the reply!
+
+The architectural thought that you pose is the idea I'm going for but
+having riak do all of the replication, not a new client.  The model would
+be:
+  - single riak cluster
+  - bucket a replicates to data center remoteA
+  - bucket b replicates to data center remoteB
+  - remoteB will never access data from a
+  - remoteA will never access data from b</pre><pre>
+
+Does riak support that?  I've not seen any database that supports that
+model on its own.
+
+Pat
+
+
+On Mon, May 13, 2013 at 12:42 PM, Adron Hall &lt;ad...@basho.com&gt; wrote:
+
+&gt; Hey Pat,
+&gt;
+&gt;  A few answers, thoughts and questions.
+&gt;
+&gt; 1. Each bucket allows (if after v1.1/1.2) replication. In 1.1 and above
+&gt; there is a repl value that accepts a true or false value. True turns on
+&gt; realtime and fullsync abilities. In 1.2 above has additional boolean
+&gt; parameters of realtime, fullsync, or both. Enabling the property via
+&gt; command line:
+&gt;
+&gt; curl -v -XPUT -H &quot;Content-Type: application/json&quot; \
+&gt; -d '{&quot;props&quot;:{&quot;repl&quot;:true}}' \
+&gt; <a  rel="nofollow" href="http://127.0.0.1:8091/riak/my_bucket">http://127.0.0.1:8091/riak/my_bucket</a>
+&gt;
+&gt; 2. Running both styles of replication should be fine. They're on by
+&gt; default to start. In the particular situation you describe - using realtime
+&gt; on all the time should work well and then only using the fullsync when the
+&gt; ship docks and connects at a higher speed - using something to trigger that.
+&gt;
+&gt; A few additional questions:
+&gt;
+&gt;    - I recall we spoke about data sizes of 3-5k per ship, but then there
+&gt;    was all of the data that would go along with each client, could you provide
+&gt;    more elaboration around what count, sizes, connections to other elements
+&gt;    and related information data? Why type/pieces would need to go to each
+&gt;    ship, etc.
+&gt;    - For the connections to each ship during satellite link what does the
+&gt;    bandwidth, latency and other characteristics look like? Latency times of
+&gt;    800, 1500, 6000 or possibly higher 8000, 10000?
+&gt;
+&gt; Another Architectural Thought:
+&gt;
+&gt;    - One idea that stands out would be to use Riak as the primary cluster
+&gt;    but to implement a client that does replication itself specifically for a
+&gt;    bucket (or buckets). It seems like, from my understanding so far, that the
+&gt;    client might be the key mechanism to control any type of replication - with
+&gt;    or without MDC being used. Basically following a standard hub-and-spoke
+&gt;    server &amp; client model.
+&gt;
+&gt; Hope that helps, cheers!
+&gt;
+&gt; -Adron
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; On Fri, May 10, 2013 at 9:45 AM, Patrick Christopher &lt;
+&gt; pat.christop...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; Hi,
+&gt;&gt; I’m working on an application that will be spread across many (150-200)
+&gt;&gt; data centers.  I had a great chat with Adron at the Seattle Riak Office
+&gt;&gt; Hours and I think that Riak can provide the backbone of the solution.
+&gt;&gt; Adron is a great help but I have come away with (or have come up with) two
+&gt;&gt; more questions.
+&gt;&gt;
+&gt;&gt; 1.    Does riak support specifying bucket level multi data center
+&gt;&gt; replication? There is a single master data center that has all of the data,
+&gt;&gt; and that central cluster replicates a single different bucket to each of
+&gt;&gt; the remote data centers.  Its a hub/spoke model where something at the hub
+&gt;&gt; has a view of the full data set and something at a spoke end only has a
+&gt;&gt; view of a single, unique bucket.
+&gt;&gt;
+&gt;&gt; 2.       What would be the best way to setup a priority replication
+&gt;&gt; strategy?  There is always a link between the main dc and the spoke dcs,
+&gt;&gt; but sometimes its a big fast link and we'd want to do a full replication
+&gt;&gt; and sometimes its the equivalent of a 56k modem and we only want to
+&gt;&gt; replicate time critical data.  I think riak can handle this by using the
+&gt;&gt; real-time sync for critical data and the full-sync for a full sync.  Will
+&gt;&gt; that work or is that asking for trouble running both styles?
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; And there was a small note in the 
+&gt;&gt; docs&lt;<a  rel="nofollow" href="http://docs.basho.com/riakee/latest/cookbooks/Multi-Data-Center-Replication-Architecture/">http://docs.basho.com/riakee/latest/cookbooks/Multi-Data-Center-Replication-Architecture/</a>&gt;
+&gt;&gt;  that
+&gt;&gt; says, &quot; ...there are two primary modes of operation...&quot; are there other,
+&gt;&gt; secondary modes of replication or is this me over-parsing the docs?
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Thank you,
+&gt;&gt;
+&gt;&gt; Pat
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; *Adron B Hall*
+&gt; Blog &lt;<a  rel="nofollow" href="http://compositecode.com/">http://compositecode.com/</a>&gt;, Adron.Me &lt;<a  rel="nofollow" href="http://adron.me/">http://adron.me/</a>&gt;, 
+&gt; @adron&lt;<a  rel="nofollow" href="http://twitter.com/adron">http://twitter.com/adron</a>&gt;
+&gt; with Basho &lt;<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>&gt; @Basho &lt;<a  rel="nofollow" href="https://twitter.com/basho">https://twitter.com/basho</a>&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11063.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#11064">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#11064">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11079.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11050.html">multi datacenter replication</a></span> <span class="sender italic">Patrick Christopher</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11063.html">Re: multi datacenter replication</a></span> <span class="sender italic">Adron Hall</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: multi datacenter replication</span> <span class="sender italic">Patrick Christopher</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11079.html">Re: multi datacenter replication</a></span> <span class="sender italic">Adron Hall</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11096.html">Re: multi datacenter replication</a></span> <span class="sender italic">Patrick Christopher</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11122.html">Re: multi datacenter replication</a></span> <span class="sender italic">Adron Hall</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: multi datacenter replication">
+<input type="hidden" name="msgid" value="CAC1MoV7+pB_c8qhE2agerKJ67iVN+yZJ_FjKreHL8CoTuxL_kg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11064.html">
+<input type="submit" value=" Patrick Christopher ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+multi+datacenter+replication%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11063.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11079.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAC1MoV7+pB_c8qhE2agerKJ67iVN+yZJ_FjKreHL8CoTuxL_kg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: configuration problem: riak.conf being ignored</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14134" id="c">
+<link rel="index" href="maillist.html#14134" id="i">
+<link rel="prev" href="msg14133.html" id="p">
+<link rel="next" href="msg14135.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14134.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+configuration+problem%5C%3A+riak.conf+being+ignored%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: configuration problem: riak.conf being ignored</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joe+DeVivo%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joe DeVivo</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140425" rel="nofollow">Fri, 25 Apr 2014 09:04:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>It’s no coincidence that these are the two settings that have changed how 
+they’re set between Erlang R15 and R16, but that’s not the whole story.</pre><pre>
+
+It looks like ERL_MAX_PORTS and ERL_MAX_ETS_TABLES are both still valid 
+environment variables in R16+.  If you use their R16 counterparts (+Q and +e), 
+those values are used, but if you don’t, the -env variables are used instead.
+
+Cuttlefish currently uses +Q and +e; however the code that displays those log 
+messages is written to inspect the environment variables only. Here’s a link to 
+that code, if you’re curious: 
+<a  rel="nofollow" href="https://github.com/basho/riak_kv/blob/2.0.0beta1/src/riak_kv_env.erl#L139-L164">https://github.com/basho/riak_kv/blob/2.0.0beta1/src/riak_kv_env.erl#L139-L164</a>
+
+The fix for this w.r.t to max_ports is easy, just change it to 
+system_info(port_limit). The problem is max_ets_tables, which needs 
+system_info(ets_limit) which wasn’t introduced until Erlang R16B03. Riak 2.0 is 
+shipping with Erlang R16B02, but with a couple of backported patches from later 
+versions of Erlang. 
+
+Currently we’re hoping to backport the system_info(ets_limit) fix, and then 
+modify the code linked above accordingly.
+
+Thanks for your help in identifying this issue.
+
+—joe
+
+On April 25, 2014 at 5:32:20 AM, Sean Allen (s...@monkeysnatchbanana.com) wrote:
+
+Setting ERL_MAX_PORTS and ERL_MAX_ETS_TABLES did have an effect.
+
+
+On Fri, Apr 25, 2014 at 5:47 AM, Sean Allen &lt;s...@monkeysnatchbanana.com&gt; wrote:
+More on this looking at the command line that started it,
+
+did/does pre-20 erlang not pick up the vm options correctly?
+
+/usr/lib64/riak/erts-5.10.3/bin/beam.smp -P 256000 -e 262144 -Q 65536 -A 64 -K 
+true -W w -- -root /usr/lib64/riak -progname riak -- -home /opt/riak -- -boot 
+/usr/lib64/riak/releases/2.0.0pre20/riak -config 
+/var/lib/riak/generated.configs/app.2014.04.24.19.12.05.config -setcookie riak 
+-name ***** -smp enable -vm_args 
+/var/lib/riak/generated.configs/vm.2014.04.24.19.12.05.args -pa 
+/usr/lib64/riak/lib/basho-patches -- console
+
+(hostname removed in the above)
+
+
+
+On Fri, Apr 25, 2014 at 5:40 AM, Sean Allen &lt;s...@monkeysnatchbanana.com&gt; wrote:
+riak-2 
+
+we have the following in /etc/riak/riak.conf
+
+
+erlang.max_ports = 65536
+erlang.max_ets_tables = 262144
+
+however i get the following on startup:
+
+2014-04-24 19:12:09.697 [warning] &lt;0.799.0&gt; riak_kv_env: Erlang ports limit of 
+1024 is low, at least 64000 is recommended
+2014-04-24 19:12:09.698 [warning] &lt;0.799.0&gt; riak_kv_env: ETS table count limit 
+of 1400 is low, at least 256000 is recommended.
+
+So it appears that riak.conf isn't actually being used. Pointers?
+
+
+--
+
+Ce n'est pas une signature
+
+
+
+--
+
+Ce n'est pas une signature
+
+
+
+--
+
+Ce n'est pas une signature
+_______________________________________________  
+riak-users mailing list  
+riak-users@lists.basho.com  
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>  
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14133.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14134">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14134">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14135.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14130.html">configuration problem: riak.conf being ignored</a></span> <span class="sender italic">Sean Allen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14131.html">Re: configuration problem: riak.conf being ignored</a></span> <span class="sender italic">Sean Allen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14133.html">Re: configuration problem: riak.conf being ignored</a></span> <span class="sender italic">Sean Allen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: configuration problem: riak.conf being ignored</span> <span class="sender italic">Joe DeVivo</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: configuration problem: riak.conf being ignored">
+<input type="hidden" name="msgid" value="etPan.535a86eb.2eb141f2.615@Black13.local">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14134.html">
+<input type="submit" value=" Joe DeVivo ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+configuration+problem%5C%3A+riak.conf+being+ignored%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14133.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14135.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">etPan.535a86eb.2eb141f2.615@Black13.local</li>
+</ul>
+</div>
+</body>
+</html>

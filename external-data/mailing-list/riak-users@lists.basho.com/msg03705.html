@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Problem with deleting keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03705" id="c">
+<link rel="index" href="maillist.html#03705" id="i">
+<link rel="prev" href="msg03703.html" id="p">
+<link rel="next" href="msg03707.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03705.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problem+with+deleting+keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Problem with deleting keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110616" rel="nofollow">Thu, 16 Jun 2011 02:58:56 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hello David,
+
+this behaviour is quite expected if you think about how Riak works.
+</pre><tt>Assuming you use the default replication factor of n=3, each key is 
+</tt><tt>stored on all of your three nodes. If you delete a key while one node 
+</tt><tt>(let's call it A) is down, the key is deleted from the two nodes that 
+</tt><tt>are still up (let's call them B and C), and remains on the downed node A.
+</tt><tt>Once node A is up again, the situation is indistinguishable from B and C 
+</tt><tt>having a hard drive crash and loosing all their data, in that A has the 
+</tt><tt>key and B and C know nothing about it.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>If you do a GET of the deleted key at this point, the result depends on 
+</tt><tt>the r-value that you choose. For r&gt;1 you will get a not_found on the 
+</tt><tt>first get. For r=1 you might get the data or a not_found, depending on 
+</tt><tt>which two nodes answer first (see 
+</tt><tt><a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=992">https://issues.basho.com/show_bug.cgi?id=992</a> about basic quorum for an 
+</tt><tt>explanation). Also, at that point read repair will kick in and 
+</tt><tt>re-replicate the key to all nodes, so subsequent GETs will always return 
+</tt><tt>the original datum.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>listing keys on the other hand does not use quorum but just does a set 
+</tt><tt>union of all keys of all the nodes in you cluster. Essentially it is 
+</tt><tt>equivalent to r=1 without basic quorum. The same is true for map/reduce 
+</tt><tt>queries to my knowledge
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The essential problem is that a real physical delete is 
+</tt><tt>indistinguishable from data loss (or never having had the data in the 
+</tt><tt>first place), while those two things are logically different.
+</tt><tt>If you want to be sure that a key is deleted with all its replicas you 
+</tt><tt>must delete it with a write quorum setting of w=n. Also you need to tell 
+</tt><tt>Riak not to count fallback vnodes toward you write quorum. This feature 
+</tt><tt>is quite new and I believe only available in the head revision. Also I 
+</tt><tt>forgot the name of the parameter and don't know if it is even applicable 
+</tt><tt>for DELETEs.
+</tt><tt>Anyhow, if you do all this, your DELETEs will simply fail if any of the 
+</tt><tt>nodes that has a copy of the key is down (so in your case, if any node 
+</tt><tt>is down).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If you only want to logically delete, and don't care about freeing the 
+</tt><tt>disk space and RAM that is used by the key, you should use a special 
+</tt><tt>value, which is interpreted by your application as a not found. That way 
+</tt><tt>you also get proper conflict resolution between DELETEs and PUTs (say 
+</tt><tt>one client deletes a key while another one updates it).
+</tt><pre style="margin: 0em;">
+
+Cheers,
+Nico
+
+Am 16.06.2011 00:55, schrieb David Mitchell:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Erlang: R13B04
+
+Riak: 0.14.2
+
+</pre><tt>I have a three node cluster, and while one node was down, I deleted 
+</tt><tt>every key in a certain bucket.  Then, I started the node that was 
+</tt><tt>down, and it joined the cluster.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Now, when do a listing on these keys in this bucket, and I get the 
+</tt><tt>entire list.  I can also get the values of the bucket.  However, when 
+</tt><tt>I try to delete the keys, the keys are not deleted.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Can anyone help me get the nodes back in a consistent state?  I have 
+</tt><tt>tried restarting the nodes.
+</tt><pre style="margin: 0em;">
+
+David
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03703.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03705">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03705">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03707.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03702.html">Problem with deleting keys</a></span> <span class="sender italic">David Mitchell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03703.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Problem with deleting keys</span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03707.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03708.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03709.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03710.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03711.html">Re: Problem with deleting ke...</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03721.html">Re: Problem with deletin...</a></span> <span class="sender italic">Andrew Thompson</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03713.html">Re: Problem with deleting ke...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03714.html">Re: Problem with deleting ke...</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03723.html">Re: Problem with deletin...</a></span> <span class="sender italic">Andrew Thompson</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03712.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Nico Meyer</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Problem with deleting keys">
+<input type="hidden" name="msgid" value="4DF9D3A4.9030106@adition.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03705.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problem+with+deleting+keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03703.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03707.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4DF9D3A4.9030106@adition.com</li>
+</ul>
+</div>
+</body>
+</html>

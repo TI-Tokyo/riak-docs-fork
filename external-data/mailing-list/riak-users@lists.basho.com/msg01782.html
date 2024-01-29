@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Java Client performance woes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01782" id="c">
+<link rel="index" href="maillist.html#01782" id="i">
+<link rel="prev" href="msg01781.html" id="p">
+<link rel="next" href="msg01783.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01782.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client+performance+woes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Java Client performance woes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sven+Riedel%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sven Riedel</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101213" rel="nofollow">Mon, 13 Dec 2010 23:24:40 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+On Dec 14, 2010, at 4:47 AM, Jake Eakle wrote:</pre><pre>
+
+&gt; While attempting to write a YCSB[1] interface for Riak (for a school project, 
+&gt; so alternative benchmarking tools aren't solutions), I have encountered some 
+&gt; pretty severe performance issues with the official Java client. In 
+&gt; particular, an insert currently takes a minimum of 50 milliseconds, which I 
+&gt; have determined are spent in HttpClient.executeMethod() (10 msec) and 
+&gt; HttpMethod.getResponseBody() (40 msec). These are both calls into the Apache 
+&gt; Commons HttpLib  library that the Riak client depends on. At these speeds, 
+&gt; even loading a YCSB workload into Riak is practically untenable -- by 
+&gt; comparison, we benchmarked Cassandra inserts at roughly .5 msec. 
+&gt; 
+&gt; I heard something in the irc channel about using protobuf instead, but the 
+&gt; section of the code that uses protobuf is utterly undocumented, and seems to 
+&gt; mostly be supporting the StreamClient, which, if the README is to be 
+&gt; believed, is only for streaming reads anyway.
+&gt; 
+&gt; Any practical advice about how to get Riak up and running from Java at 
+&gt; workable speeds would be very much appreciated.
+
+
+
+Some hints from my forrays into benchmarking riak:
+
+With the HTTP protocol:
+- Feeding one item at a time to one node of the ring can be surprisingly slow. 
+Use an HTTP load balancer like nginx and you'll get a speed improvement by at 
+least an order of magnitude
+- Also, feed the data through more than one connection. Using HTTP and a 
+loadbalancer I've seen nearly linear speed improvements up to 32 processes 
+feeding data. I didn't test beyond 32 processes, so I don't know how things 
+continue further up the parallelism ladder, but I believe things will keep 
+growing at a comparable rate.
+- Adding more nodes to the ring (preferrably on separate physical machines, or 
+at least separate spindles) will improve your writing speed further.
+
+Using the PB with Java:
+- Writes are possible with the java PB client, however performance seems 
+erratic. Writing data in a single thread and no other traffic to the ring, I 
+got between 50 and 140 inserts per second. I have no idea what causes the huge 
+variance though. It may be in the protocol, it may be in the java client, it 
+may have been the java GC running frequently for my generated data.
+
+In General:
+- Have a look at your replication factor and write consistency settings. For 
+optimal writing speed you'll have to have a w-value of 1. Furthermore, if you 
+have a higher replication factor than you have nodes ( or rather: storages) in 
+the ring, at some point you'll be running into IO contention because several 
+different nodes are fighting over the harddisk.
+
+For my benchmarking setup I had 6 nodes on 2 machines, each machine having a 
+RAID-0 across 4 disks, replication factor 3, write consistency 1. Using HTTP 
+with a loadbalancer and 32 writing processes I got over 500 writes per second. 
+I'd assume running only one or two nodes per machine will give you another 
+significant speed boost.
+
+Regards,
+Sven
+
+------------------------------------------
+Scoreloop AG, Brecherspitzstrasse 8, 81541 Munich, Germany, www.scoreloop.com
+sven.rie...@scoreloop.com
+
+Sitz der Gesellschaft: München, Registergericht: Amtsgericht München, HRB 
+174805 
+Vorstand: Dr. Marc Gumpinger (Vorsitzender), Dominik Westner, Christian van der 
+Leeden, Vorsitzender des Aufsichtsrates: Olaf Jacobi 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01781.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01782">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01782">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01783.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01780.html">Java Client performance woes</a></span> <span class="sender italic">Jake Eakle</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01781.html">Re: Java Client performance woes</a></span> <span class="sender italic">Jake Eakle</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Java Client performance woes</span> <span class="sender italic">Sven Riedel</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Java Client performance woes">
+<input type="hidden" name="msgid" value="2DD9615C-FD00-444B-989F-581AC72DAFE2@scoreloop.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01782.html">
+<input type="submit" value=" Sven Riedel ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client+performance+woes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01781.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01783.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">2DD9615C-FD00-444B-989F-581AC72DAFE2@scoreloop.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: about hash calculation in reference page at docs.basho.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09912" id="c">
+<link rel="index" href="maillist.html#09912" id="i">
+<link rel="prev" href="msg09910.html" id="p">
+<link rel="next" href="msg09969.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09912.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+about+hash+calculation+in+reference+page+at+docs.basho.com%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: about hash calculation in reference page at docs.basho.com</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Charlie+Voiselle%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Charlie Voiselle</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130129" rel="nofollow">Tue, 29 Jan 2013 13:26:48 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Donald:
+
+Since the list of partitions can easily be segmented using a filter on 
+partition values
+that are greater than the hashed value, it makes for a simple determination of 
+the ordered
+preflist.</pre><pre>
+
+For Example: Hash = 1045375627425331784151332358177649483819648417632
+
+Parition                                            | P &gt; H | List  |
+----------------------------------------------------+-------+-------+ 
+0                                                   | False |   B   |
+182687704666362864775460604089535377456991567872    | False |   B   |
+365375409332725729550921208179070754913983135744    | False |   B   |
+548063113999088594326381812268606132370974703616    | False |   B   |
+730750818665451459101842416358141509827966271488    | False |   B   |
+913438523331814323877303020447676887284957839360    | False |   B   |
+1096126227998177188652763624537212264741949407232   | True  |   A   |
+1278813932664540053428224228626747642198940975104   | True  |   A   |
+----------------------------------------------------+-------+-------+
+
+Then so long as order is maintained, your sorted preflist is simply A ++ B.
+
+It would be a (if only slightly) more complex algorithm, requiring 
+determination by
+lookahead if you were in the correct partition, in order to have the partitions 
+names be
+starting values.
+
+To answer your second question, the partitions are named by dividing the 
+integer keyspace
+by the num partitions to create an incrementor[1].  This incrementor is used as 
+the
+stepping factor in a sequence from 0 to RINGTOP value -- 
+`trunc(math:pow(2,160)-1)`.
+
+You can call these functions yourself in the `riak attach` as follows:
+
+(dev1@127.0.0.1)1&gt; Inc = chash:ring_increment(8).
+182687704666362864775460604089535377456991567872
+
+(dev1@127.0.0.1)2&gt; [{IndexAsInt} || IndexAsInt &lt;-lists:seq(0,( trunc( 
+math:pow(2,160) -1)
+-1),Inc)]. 
+[{0}, 
+{182687704666362864775460604089535377456991567872},
+{365375409332725729550921208179070754913983135744},
+{548063113999088594326381812268606132370974703616},
+{730750818665451459101842416358141509827966271488},
+{913438523331814323877303020447676887284957839360},
+{1096126227998177188652763624537212264741949407232},
+{1278813932664540053428224228626747642198940975104}]}
+
+
+Hope this helps! 
+Charlie Voiselle
+
+--- 
+[0] <a  rel="nofollow" href="https://github.com/basho/riak_core/blob/master/src/chash.erl#L88">https://github.com/basho/riak_core/blob/master/src/chash.erl#L88</a> 
+[1] <a  rel="nofollow" href="https://github.com/basho/riak_core/blob/master/src/chash.erl#L162">https://github.com/basho/riak_core/blob/master/src/chash.erl#L162</a>
+
+
+
+
+
+On Jan 29, 2013, at 9:47 AM, Donald Yan &lt;dyan....@gmail.com&gt; wrote:
+
+&gt; Hi Charlie, 
+&gt; 
+&gt; That really helps to clear the confusion.  Thanks again!
+&gt; 
+&gt; Then it comes to the next question :-)  Just curious to know: is there a 
+&gt; special reason why using the end value as the partition's name?  Normally, 
+&gt; most people I think would pick the beginning value as the partition's name in 
+&gt; common logic.  
+&gt; 
+&gt; And a second question related to the above question is how this end value is 
+&gt; picked: partition named &quot;0&quot; is actually ending with number 0, and so forth 
+&gt; for the other partitions.  This is like the 160-bit space got right-shifted 
+&gt; one number relative to 0-started numbering system.  Is there a special reason 
+&gt; for it in Riak, or simply want to use 1-started numbering system.
+&gt; 
+&gt; 
+&gt; wr, donald
+&gt; 
+&gt; On Mon, Jan 28, 2013 at 3:21 PM, Charlie Voiselle &lt;cvoise...@basho.com&gt; wrote:
+&gt; Donald:
+&gt; 
+&gt; Since we are traversing the ring in a clockwise fashion, the data is written 
+&gt; into the next partition you would run into moving forward.  You can see how 
+&gt; the partitions are chosen in chash:ordered_from/2 at 
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak_core/blob/master/src/chash.erl#L138">https://github.com/basho/riak_core/blob/master/src/chash.erl#L138</a>.  The 
+&gt; preference list is built using the partitions that come after the hashed 
+&gt; value.
+&gt; 
+&gt; If you consider the partition's name to be the end value that the partition 
+&gt; holds, the an object that hashes to 
+&gt; 1045375627425331784151332358177649483819648417632 being assigned to 
+&gt; 1096126227998177188652763624537212264741949407232 makes sense. That partition 
+&gt; would hold items that hash from 
+&gt; 913438523331814323877303020447676887284957839361 to 
+&gt; 1096126227998177188652763624537212264741949407232
+&gt; 
+&gt; 
+&gt; Does this help?
+&gt; 
+&gt; Thanks,
+&gt; Charlie Voiselle
+&gt; 
+&gt; 
+&gt; On Jan 24, 2013, at 12:05 AM, Donald Yan &lt;dyan....@gmail.com&gt; wrote:
+&gt; 
+&gt;&gt; Hi there,
+&gt;&gt; 
+&gt;&gt; I'm reading this page at 
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/references/appendices/concepts/Replication/#Understanding-replication-by-example">http://docs.basho.com/riak/latest/references/appendices/concepts/Replication/#Understanding-replication-by-example</a>
+&gt;&gt;  and have a question about the example given in the page.  I quote it here:
+&gt;&gt; &quot;
+&gt;&gt; The DocIdx hash is a 160 bit integer:
+&gt;&gt; 
+&gt;&gt; (dev1@127.0.0.1)5&gt; &lt;&lt;I:160/integer&gt;&gt; = DocIdx.
+&gt;&gt; &lt;&lt;183,28,67,173,80,128,26,94,190,198,65,15,27,243,135,127,121,101,255,96&gt;&gt;
+&gt;&gt; (dev1@127.0.0.1)6&gt; I.
+&gt;&gt; 1045375627425331784151332358177649483819648417632
+&gt;&gt; The node looks up the hashed key in the ring which returns a list of 
+&gt;&gt; “preferred” partitions for the given key.
+&gt;&gt; 
+&gt;&gt; (node1@127.0.0.1)&gt; Preflist = riak_core_ring:preflist(DocIdx, Ring).
+&gt;&gt; [{1096126227998177188652763624537212264741949407232, 'dev1@127.0.0.1'},
+&gt;&gt; {1278813932664540053428224228626747642198940975104, 'dev2@127.0.0.1'},
+&gt;&gt; {0, 'dev1@127.0.0.1'},
+&gt;&gt; {182687704666362864775460604089535377456991567872, 'dev2@127.0.0.1'},
+&gt;&gt; {365375409332725729550921208179070754913983135744, 'dev3@127.0.0.1'},
+&gt;&gt; {548063113999088594326381812268606132370974703616, 'dev1@127.0.0.1'},
+&gt;&gt; {730750818665451459101842416358141509827966271488, 'dev2@127.0.0.1'},
+&gt;&gt; {913438523331814323877303020447676887284957839360, 'dev3@127.0.0.1'}]
+&gt;&gt; 
+&gt;&gt; &quot;
+&gt;&gt; 
+&gt;&gt; I question is since the key is  calculated as 
+&gt;&gt; &quot;1045375627425331784151332358177649483819648417632&quot;, shouldn't the prefer 
+&gt;&gt; list be like the following instead?
+&gt;&gt; &quot;
+&gt;&gt; [{913438523331814323877303020447676887284957839360, 'dev3@127.0.0.1'},
+&gt;&gt; {1096126227998177188652763624537212264741949407232, 'dev1@127.0.0.1'},
+&gt;&gt; {1278813932664540053428224228626747642198940975104, 'dev2@127.0.0.1'},
+&gt;&gt; {0, 'dev1@127.0.0.1'},
+&gt;&gt; {182687704666362864775460604089535377456991567872, 'dev2@127.0.0.1'},
+&gt;&gt; {365375409332725729550921208179070754913983135744, 'dev3@127.0.0.1'},
+&gt;&gt; {548063113999088594326381812268606132370974703616, 'dev1@127.0.0.1'},
+&gt;&gt; {730750818665451459101842416358141509827966271488, 'dev2@127.0.0.1'}]
+&gt;&gt; &quot;
+&gt;&gt; because value &quot;1045375627425331784151332358177649483819648417632&quot; falls 
+&gt;&gt; between 913438523331814323877303020447676887284957839360 (partition 5) and 
+&gt;&gt; 1096126227998177188652763624537212264741949407232 (partition 6)?
+&gt;&gt; 
+&gt;&gt; Please Riak experts help to clear my confusion here.  Why partition 6, 7, 0 
+&gt;&gt; are on the top 3 of the list?
+&gt;&gt; 
+&gt;&gt; Appreciate in advance.
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; -donald
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09910.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09912">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09912">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09969.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09877.html">about hash calculation in reference page at docs.basho.co...</a></span> <span class="sender italic">Donald Yan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09905.html">Re: about hash calculation in reference page at docs...</a></span> <span class="sender italic">Charlie Voiselle</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09910.html">Re: about hash calculation in reference page at ...</a></span> <span class="sender italic">Donald Yan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: about hash calculation in reference page...</span> <span class="sender italic">Charlie Voiselle</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09969.html">Re: about hash calculation in reference ...</a></span> <span class="sender italic">Donald Yan</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: about hash calculation in reference page at docs.basho.com">
+<input type="hidden" name="msgid" value="8650643B-C865-4876-BEA8-0B7E671B2ED8@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09912.html">
+<input type="submit" value=" Charlie Voiselle ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+about+hash+calculation+in+reference+page+at+docs.basho.com%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09910.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09969.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">8650643B-C865-4876-BEA8-0B7E671B2ED8@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

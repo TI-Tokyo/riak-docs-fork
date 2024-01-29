@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: {error, notfound} items in mapreduce during ownership handoff</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10340" id="c">
+<link rel="index" href="maillist.html#10340" id="i">
+<link rel="prev" href="msg10338.html" id="p">
+<link rel="next" href="msg10294.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10340.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%7Berror%2C+notfound%5C%7D+items+in+mapreduce+during+ownership+handoff%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: {error, notfound} items in mapreduce during ownership handoff</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+Daily%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John Daily</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130306" rel="nofollow">Wed, 06 Mar 2013 15:34:27 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Disclaimer: I haven't done this myself, or even attempted to compile the code 
+below, but in hopes it makes your life a little easier...</pre><pre>
+
+Here's some Erlang that should allow you to abstract away the checks. Assuming 
+that you have a function named &quot;real_map_fun&quot; that takes a single Riak object 
+as an argument, you should be able to reuse &quot;check_found&quot; and &quot;check_tombstone&quot; 
+below and wrap the call to &quot;real_map_fun&quot; in a function like &quot;map_something&quot;.
+
+map_something(Obj, _, _) -&gt;
+    check_found(Obj, fun real_map_fun/1).
+
+
+check_found({error, notfound}, _Fun) -&gt;
+    [];
+check_found(Obj, Fun) -&gt;
+    check_tombstone(dict:is_key(&lt;&lt;&quot;X-Riak-Deleted&quot;&gt;&gt;,
+                                riak_object:get_metadata(Obj)),
+                    Obj, Fun).
+
+
+check_tombstone(true, _Obj, _Fun) -&gt;
+    [];
+check_tombstone(false, Obj, Fun) -&gt;
+    Fun(Obj).
+
+-John
+
+
+On Mar 6, 2013, at 4:45 PM, Jeremy Raymond &lt;jeraym...@gmail.com&gt; wrote:
+
+&gt; Thanks for the response. To handle not founds and tombstones I need this in 
+&gt; every map function?
+&gt; 
+&gt; map_something({error, notfound}, _, _) -&gt;
+&gt;     [];
+&gt; map_something(RiakObj, _, _) -&gt;
+&gt;     Metadata = riak_object:get_metadata(RiakObj),
+&gt;     case dict:is_key(&lt;&lt;&quot;X-Riak-Deleted&quot;&gt;&gt;, Metadata) of
+&gt;         true -&gt;
+&gt;             []; % I have a tombstone
+&gt;         false -&gt;
+&gt;             [ok] % I have a valid item
+&gt;     end.
+&gt; 
+&gt; Is there a better or built-in way to do this filtering?
+&gt; 
+&gt; --
+&gt; Jeremy
+&gt; 
+&gt; 
+&gt; On Wed, Mar 6, 2013 at 4:08 PM, John Daily &lt;jda...@basho.com&gt; wrote:
+&gt; I'm sorry this went unanswered, Jeremy.  Thanks for the follow up.
+&gt; 
+&gt; Your code needs to be able to handle notfound errors and tombstones[1] 
+&gt; regardless of ownership handoff. The coverage for the 2i or listkeys input 
+&gt; will be calculated up front, with the work distributed to a node where the 
+&gt; key is expected to be found, but it's always possible that the node selected 
+&gt; may not have the data you want due to network or system errors that haven't 
+&gt; yet healed.
+&gt; 
+&gt; Both the notfound and the fitting error in the logs (which is benign, and 
+&gt; related to the notfound problem) should be less common under Riak 1.3, 
+&gt; although ownership handoff will still exacerbate the problem.
+&gt; 
+&gt; [1] <a  rel="nofollow" href="https://github.com/basho/riak_kv/issues/358">https://github.com/basho/riak_kv/issues/358</a>
+&gt; 
+&gt; -John Daily
+&gt; Technical Evangelist
+&gt; jda...@basho.com
+&gt; 
+&gt; 
+&gt; On Mar 6, 2013, at 3:14 PM, Jeremy Raymond &lt;jeraym...@gmail.com&gt; wrote:
+&gt; 
+&gt;&gt; So I should expect {error, notfound} inputs to map jobs while ownership 
+&gt;&gt; handoff is in progress? Are the not found items actually unavailable during 
+&gt;&gt; handoff or is this just not found on the old node, but will be picked up by 
+&gt;&gt; the new node during the same mapreduce job?
+&gt;&gt; 
+&gt;&gt; --
+&gt;&gt; Jeremy
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Thu, Feb 28, 2013 at 11:28 AM, Jeremy Raymond &lt;jeraym...@gmail.com&gt; wrote:
+&gt;&gt; Yesterday I added a new node to my cluster. During the time when ownership 
+&gt;&gt; handoff was happening (several hours of work) mapreduce map functions were 
+&gt;&gt; receiving {error, notfound} as inputs. My Erlang mapred functions weren't 
+&gt;&gt; designed to handle this. They hadn't encountered this before during normal 
+&gt;&gt; operation. After the ownership handoff process completed the {error, 
+&gt;&gt; notfound} inputs have stopped.
+&gt;&gt; 
+&gt;&gt; Any explanations for the {error, notfound} inputs during ownership handoff? 
+&gt;&gt; Is this because a node is attempting to process an object now moved to 
+&gt;&gt; another node? If this is the case would the notfound object be found on the 
+&gt;&gt; other node in the same mapreduce job (i.e. still visible to the overall 
+&gt;&gt; mapred process)? Should I assume {error, notfound} inputs for all mapred 
+&gt;&gt; jobs as a valid possible input and always handle it?
+&gt;&gt; 
+&gt;&gt; I've also accumulated about 50MB of &quot;Pipe worker startup failed:fitting was 
+&gt;&gt; gone before startup&quot; on each node during the ownership_transfer process. 
+&gt;&gt; These messages are benign?
+&gt;&gt; 
+&gt;&gt; Thanks a lot.
+&gt;&gt; 
+&gt;&gt; --
+&gt;&gt; Jeremy
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10338.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10340">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10340">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10294.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10288.html">{error, notfound} items in mapreduce during ownership hando...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10336.html">Re: {error, notfound} items in mapreduce during owners...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10337.html">Re: {error, notfound} items in mapreduce during ow...</a></span> <span class="sender italic">John Daily</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10338.html">Re: {error, notfound} items in mapreduce durin...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: {error, notfound} items in mapreduce d...</span> <span class="sender italic">John Daily</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: {error, notfound} items in mapreduce during ownership handoff">
+<input type="hidden" name="msgid" value="86F5FCBE-8B19-4969-A07A-5D79FC89FCD9@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10340.html">
+<input type="submit" value=" John Daily ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%7Berror%2C+notfound%5C%7D+items+in+mapreduce+during+ownership+handoff%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10338.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10294.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">86F5FCBE-8B19-4969-A07A-5D79FC89FCD9@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: A script to check bitcask keydir sizes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#02722" id="c">
+<link rel="index" href="mail5.html#02722" id="i">
+<link rel="prev" href="msg02666.html" id="p">
+<link rel="next" href="msg02728.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02722.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+script+to+check+bitcask+keydir+sizes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: A script to check bitcask keydir sizes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anthony+Molinaro%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anthony Molinaro</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110323" rel="nofollow">Wed, 23 Mar 2011 15:24:36 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>So a question about when to add new nodes.  I'm looking at the output of
+this script and the output of riak-admin status to attempt to figure out
+if it's time to grow a cluster.</pre><pre>
+
+I have 4 nodes 1024 partitions replication factor 3, currently with a
+single bitcask single bucket where both the key and the value are 36 bytes.
+
+According to the bitcask spreadsheet the overhead per key is 40 bytes
+
+The current key counts/memory are
+
+             key_counts  mem_total  mem_allocated   (key_count*76)
+node1        22381785  25269010432  21015953408     1701015660
+node2        22378092  25269010432  14076137472     1700734992
+node3        22373770  25269010432  21565509632     1700406520
+node4        22382394  25269010432  21493731328     1701061944
+
+node2 failed at some point and was replaced with with a new node.
+
+So there is some oddness here I don't understand.  According to the
+calculated value I should see about 1.7GB per box used, instead I see
+21GB on most machines except for the one which was restarted which has
+14GB.  From looking at memory it seems like I should be adding some nodes
+real soon or amount allocated will hit the total amount.  Or maybe there's
+a memory leak which will reduce the amount of memory (as with node2)?
+
+I'm just trying to figure out why I seem to almost be out of memory with
+23 million documents when the Bitcask capacity planning spreadsheet seems
+to suggest I should be able to have 282 million with 20 GiB of free Ram.
+
+Confused,
+
+-Anthony
+
+On Wed, Mar 16, 2011 at 12:04:48PM -0700, Aphyr wrote:
+&gt; I'm trying to track some basic metrics so we can plan for cluster
+&gt; capacity, monitor transfers, etc. Figured this might be of interest
+&gt; to other riak admins. Apologies if my erlang is nonidiomatic, I'm
+&gt; still learning. :)
+&gt; 
+&gt; #!/usr/bin/env escript
+&gt; %%! -name riakstatuscheck -setcookie riak
+&gt; 
+&gt; main([]) -&gt; main([&quot;riak@127.0.0.1&quot;]);
+&gt; main([Node]) -&gt;
+&gt;   io:format(&quot;~w\n&quot;, [
+&gt;     lists:foldl(
+&gt;       fun({_VNode, Count}, Sum) -&gt; Sum + Count end,
+&gt;       0,
+&gt;       rpc:call(list_to_atom(Node), riak_kv_bitcask_backend, key_counts, [])
+&gt;     )
+&gt;   ]).
+&gt; 
+&gt; 
+&gt; $ ./riakstatus riak@127.0.0.1
+&gt; 18729
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+-- 
+------------------------------------------------------------------------
+Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02666.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#02722">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail5.html#02722">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02728.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02666.html">A script to check bitcask keydir sizes</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: A script to check bitcask keydir sizes</span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02728.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02731.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02733.html">Re: A script to check bitcask keydir siz...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02738.html">Re: A script to check bitcask keydi...</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02739.html">Re: A script to check bitcask k...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02740.html">Re: A script to check bitcask k...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03608.html">Re: A script to check bitca...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03609.html">Re: A script to check bitca...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03613.html">Re: A script to check bitca...</a></span> <span class="sender italic">Mike Oxford</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: A script to check bitcask keydir sizes">
+<input type="hidden" name="msgid" value="20110323222421.GB23579@alumni.caltech.edu">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02722.html">
+<input type="submit" value=" Anthony Molinaro ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+script+to+check+bitcask+keydir+sizes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02666.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02728.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20110323222421.GB23579@alumni.caltech.edu</li>
+</ul>
+</div>
+</body>
+</html>

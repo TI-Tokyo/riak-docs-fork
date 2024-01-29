@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Problems with bitcask, file merge errors, too many 0 byte files</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07571" id="c">
+<link rel="index" href="maillist.html#07571" id="i">
+<link rel="prev" href="msg07570.html" id="p">
+<link rel="next" href="msg07573.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07571.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problems+with+bitcask%2C+file+merge+errors%2C+too+many+0+byte+files%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Problems with bitcask, file merge errors, too many 0 byte files</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120529" rel="nofollow">Tue, 29 May 2012 20:47:18 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Jacob,
+
+I only glanced at this but have some comments inline.</pre><pre>
+
+On Tue, May 29, 2012 at 8:44 PM, Jacob Chapel &lt;jacob.cha...@gmail.com&gt;wrote:
+
+&gt; Our Riak server which is running 1.0.2 at the moment using bitcask backend
+&gt; and search is crashing often and when restarted will crash again
+&gt; immediately due to system_limit error.
+&gt;
+&gt; 2012-05-29 19:28:54.808 [error] &lt;0.1001.0&gt;@riak_kv_vnode:init:245 Failed
+&gt; to start riak_kv_bitcask_backend Reason:
+&gt; {{badmatch,{error,system_limit}},[{bitcask,scan_key_files,3},{bitcask,init_keydir,2},{bitcask,open,2},{riak_kv_bitcask_backend,start,2},{riak_kv_vnode,init,1},{riak_core_vnode,init,1},{gen_fsm,init_it,6},{proc_lib,init_p_do_apply,3}]}
+&gt;
+
+The system limit I imagine is related to the 20k 0 byte files causing you
+to reach open file limit.  That is, not the cause but a symptom of the
+problem.
+
+
+&gt;
+&gt; Before, we were getting emfile errors, so we upped the ulimit for open
+&gt; files which helped. Soon after (about a week) it crashed again but due to
+&gt; the above error. After looking into it and asking on IRC, there wasn't much
+&gt; information but looked to be due to a ton of 0 (zero) byte files in the
+&gt; bitcask folder. In fact when counting, at first there were over 20k 0 byte
+&gt; files. Someone who had similar issues was instructed to delete them, and
+&gt; common sense says that 0 byte files don't hold any data. So I backed them
+&gt; up (just in case) and removed them from the bitcask folder. That allowed
+&gt; the server to startup and run again.
+&gt;
+&gt;
+The fact that you have many 0 byte files is an indication that bitcask is
+crashing a lot.  You haven't noticed this probably because Riak has been
+working fine until now.  Although, had you peeked at your logs you probably
+would have noticed lots of vnode/bitcask crashes.
+
+
+&gt; Fast forward a few days to now, it appears to have crashed due to the same
+&gt; issue. Having over 20k new 0 byte files. I asked on IRC again but not much
+&gt; could be helped since they didn't know. I backed up and removed the files
+&gt; again and it runs. How can I prevent these files?
+&gt;
+&gt; Also, as this sample log output shows:
+&gt; <a  rel="nofollow" href="https://gist.github.com/a2e3c473e1d582bd87a2">https://gist.github.com/a2e3c473e1d582bd87a2</a>
+&gt;
+
+This, I believe, is the heart of your problem.  It looks like you have
+corrupted data files.  IIRC bitcask merging is still susceptible to
+crashing when dealing with corrupted data files.  So every time a merge is
+triggered the bitcask instance crashes and restarts causing a new 0 byte
+file to be created.  Once this happens enough times you have enough of
+these files to reach the system limit.
+
+Just confirmed, I'm pretty sure this is the issue you are running into.
+
+<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=1160">https://issues.basho.com/show_bug.cgi?id=1160</a>
+
+
+&gt;
+&gt; We are getting a lot of file merge errors and child processes dying
+&gt; randomly (not sure how to read the error).
+&gt;
+&gt; I am not really sure where to go from here, we can't keep removing 0 byte
+&gt; files to keep the server up, and I am sure there is some setting or
+&gt; configuration problem that just isn't apparent. Help would be very much
+&gt; appreciated.
+&gt;
+
+Depending on how many partitions have corrupt data files you could delete
+the bitcask data, kill the owning vnode, and perform list-keys +
+read-repair to repair the replicas.  However, looking at your log it seems
+like you have a lot of partitions with corrupt data files (I'm guessing
+this was because of your previous emfile issue).  If you feel brave you
+could probably remove the bad bits with a hex editor but I imagine we have
+some code to automate this somewhere.  I gotta go right now but perhaps
+someone else can point you to an easy fix.
+
+-Z
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07570.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07571">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07571">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07573.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07570.html">Problems with bitcask, file merge errors, too many 0 byte fil...</a></span> <span class="sender italic">Jacob Chapel</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Problems with bitcask, file merge errors, too many 0...</span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Problems with bitcask, file merge errors, too many 0 byte files">
+<input type="hidden" name="msgid" value="CACZcpemSQkf15trYaUozBok0m_3T0wnAyakTo0t_1cDCYj8wwg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07571.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problems+with+bitcask%2C+file+merge+errors%2C+too+many+0+byte+files%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07570.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07573.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpemSQkf15trYaUozBok0m_3T0wnAyakTo0t_1cDCYj8wwg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

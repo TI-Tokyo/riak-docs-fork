@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: This is about riak search question. How to search utf8 format dat?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09067" id="c">
+<link rel="index" href="maillist.html#09067" id="i">
+<link rel="prev" href="msg09063.html" id="p">
+<link rel="next" href="msg09068.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09067.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+This+is+about+riak+search+question.+How+to+search+utf8+format+dat%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: This is about riak search question. How to search utf8 format dat?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121028" rel="nofollow">Sun, 28 Oct 2012 12:10:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Wed, Oct 10, 2012 at 12:52 AM, 郎咸武 &lt;langxian...@gmail.com&gt; wrote:
+&gt;
+&gt;
+&gt; *2)To put a Object to &lt;&lt;&quot;user1&quot;&gt;&gt; bucket. The data is utf8 format.*
+&gt;
+&gt; (trends@jason-lxw)123&gt; f(O), O=riakc_obj:new(&lt;&lt;&quot;user1&quot;&gt;&gt;,
+&gt; &lt;&lt;&quot;jason5&quot;&gt;&gt;,list_to_binary(mochijson:encode({struct, [{name,
+&gt; binary_to_list(unicode:characters_to_binary(&quot;爱&quot;))},{sex,&quot;male&quot;}]})),
+&gt; &quot;application/json&quot;).
+&gt; {riakc_obj,&lt;&lt;&quot;user1&quot;&gt;&gt;,&lt;&lt;&quot;jason5&quot;&gt;&gt;,undefined,[],
+&gt;            {dict,1,16,16,8,80,48,
+&gt;                  {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],...},
+&gt;
+&gt;  {{[],[],[],[],[],[],[],[],[],[],[[&lt;&lt;...&gt;&gt;|...]],[],[],...}}},
+&gt;            &lt;&lt;&quot;{\&quot;name\&quot;:\&quot;\\u00e7\\u0088\\u00b1\&quot;,\&quot;sex\&quot;:\&quot;male\&quot;}&quot;&gt;&gt;}
+&gt; (((trends@jason-lxw)124&gt; riakc_pb_socket:put(Pid, O).
+&gt;
+&gt; ok
+&gt;
+&gt;
+First, let's start with your data and make sure it's getting stored
+properly.</pre><pre>
+
+3&gt; UC = unicode:characters_to_binary(&quot;爱&quot;).
+&lt;&lt;231,136,177&gt;&gt;
+
+Okay, so Erlang properly decoded this into a 3-byte unicode sequence.  What
+does mochijson2 think? (I noticed you are using mochison, I recommend using
+mochijson2).
+
+4&gt; mochijson2:encode({struct, [{name, UC}]}).
+[123,[34,&quot;name&quot;,34],58,[34,&quot;\\u7231&quot;,34],125]
+
+Good, mochijson2 properly interpreted this as u7231.  A quick lookup on the
+web verifies this is correct:
+<a  rel="nofollow" href="http://www.fileformat.info/info/unicode/char/7231/index.htm">http://www.fileformat.info/info/unicode/char/7231/index.htm</a>.
+
+But notice in your code you call binary_to_list on the binary before
+passing it to mochi.  Lets see what happened.
+
+15&gt; binary_to_list(UC).
+[231,136,177]
+
+Okay, so the integers are correct.  But Erlang treats lists differently
+from binaries.  It's just a list of integers to Erlang.
+
+16&gt; io:format(&quot;~ts~n&quot;,[binary_to_list(UC)]).
+ç±
+ok
+
+This is why mochi converted it to 3 chatacters: \\u00e7\\u0088\\u00b1
+
+To make a proper unicode list the unicode:caracters_to_list function must
+be used.
+
+17&gt; UCS = unicode:characters_to_list(&quot;爱&quot;).
+[29233]
+
+18&gt; io:format(&quot;~ts~n&quot;, [UCS]).
+爱
+ok
+
+Let's try encoding again, but this time leave out the list_to_binary.
+
+19&gt; riakc_obj:new(&lt;&lt;&quot;user1&quot;&gt;&gt;, &lt;&lt;&quot;jason5&quot;&gt;&gt;, mochijson2:encode({struct,
+[{name, unicode:characters_to_binary(&quot;爱&quot;)}]}), &quot;application/json&quot;).
+{riakc_obj,&lt;&lt;&quot;user1&quot;&gt;&gt;,&lt;&lt;&quot;jason5&quot;&gt;&gt;,undefined,[],
+           {dict,1,16,16,8,80,48,
+                 {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],...},
+
+ {{[],[],[],[],[],[],[],[],[],[],[[&lt;&lt;...&gt;&gt;|...]],[],[],...}}},
+           [123,[34,&quot;name&quot;,34],58,[34,&quot;\\u7231&quot;,34],125]}
+
+And there we go.  A properly encoded unicode character.
+
+-Z
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09063.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09067">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09067">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09068.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: This is about riak search question. How to search utf8 format dat?">
+<input type="hidden" name="msgid" value="CACZcpen9L5uqdMPEJnU0A7jysf+P-qHJaoxW738+iwRhLNKu+g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09067.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+This+is+about+riak+search+question.+How+to+search+utf8+format+dat%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09063.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09068.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpen9L5uqdMPEJnU0A7jysf+P-qHJaoxW738+iwRhLNKu+g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

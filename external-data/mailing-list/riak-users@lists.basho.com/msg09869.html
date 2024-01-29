@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak Search on KV data in erlang terms</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09869" id="c">
+<link rel="index" href="maillist.html#09869" id="i">
+<link rel="prev" href="msg09867.html" id="p">
+<link rel="next" href="msg09874.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09869.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+Search+on+KV+data+in+erlang+terms%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak Search on KV data in erlang terms</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Takeshi+Matsumura%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Takeshi Matsumura</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130122" rel="nofollow">Tue, 22 Jan 2013 07:16:34 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I tried to store erlang data and query them by using the Riak Search without 
+success so far, and thus would like to ask if I'm doing the right thing. Riak 
+Search was enabled in the app.config file and the server was restarted. The 
+pre-commit hook was installed from the command line.</pre><pre>
+
+bin/search-cmd install mybucket
+
+The erlang data that I uploaded is a proplists with a single pair of key and 
+value.
+
+[{&quot;name&quot;, &quot;bob&quot;}]
+
+It was uploaded by using the curl command with Content-Type 
+&quot;application/x-erlang&quot;. (hoge.erl.txt contains the above erlang terms).
+
+curl -v -d @hoge.erl.txt -X PUT -H &quot;content-type: application/x-erlang&quot; 
+&quot;<a  rel="nofollow" href="http://localhost:8098/riak/mybucket/bob&quot">http://localhost:8098/riak/mybucket/bob&quot</a>;
+
+I could get the document by issuing curl command to &quot;/riak/mybucket/bob&quot;. The 
+HTTP response header contained the correct Content-Type, &quot;application/x-erlang&quot;.
+
+Then I run the Riak Search from the command line.
+
+bin/search-cmd search mybucket &quot;name:bob&quot;
+
+Unfortunately, the result said &quot;Found 0 results&quot;.
+
+As I wondered if this is a problem related to the erlang terms, I tried the 
+same with a JSON data that is found in the &quot;Indexing and Querying KV Data&quot; page 
+but setting &quot;application/json&quot; to the Content-type.
+
+{
+ &quot;name&quot;:&quot;Alyssa P. Hacker&quot;,
+ &quot;bio&quot;:&quot;I'm an engineer, making awesome things.&quot;,
+ &quot;favorites&quot;:{
+              &quot;book&quot;:&quot;The Moon is a Harsh Mistress&quot;,
+              &quot;album&quot;:&quot;Magical Mystery Tour&quot;
+             }
+}
+
+Then the Riak Search could find this document with the query &quot;name:Alyssa*&quot;.
+
+According to the &quot;Indexing and Querying KV Data&quot; page of the Riak document, 
+erlang terms can be queried by using the Riak Search. However, it is unclear to 
+me if it is enabled by default because the page says XML, JSON, and plain-text 
+encodings are supported out of the box but it doesn't mention the erlang terms.
+
+I followed the &quot;Other Data Encodings&quot; section and set the 
+&quot;riak_search_kv_erlang_extractor&quot; module, but it didm't change the situation.
+
+curl -XPUT -H 'content-type: application/json' \
+    <a  rel="nofollow" href="http://localhost:8098/riak/mybucket">http://localhost:8098/riak/mybucket</a> \
+    -d '{&quot;props&quot;:{&quot;search_extractor&quot;:{&quot;mod&quot;:&quot;riak_search_kv_erlang_extractor&quot;, 
+&quot;fun&quot;:&quot;extract&quot;, &quot;arg&quot;:&quot;my_arg&quot;}}}'
+
+I changed the data as follows and uploaded but it didn't help either.
+
+[{&lt;&lt;&quot;name&quot;&gt;&gt;, &lt;&lt;&quot;bob&quot;&gt;&gt;}]
+
+I appreciate any hints for me to go forward. Thank you in advance.
+
+Best regards,
+ Takeshi
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09867.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09869">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09869">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09874.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Riak Search on KV data in erlang terms</span> <span class="sender italic">Takeshi Matsumura</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09874.html">Re: Riak Search on KV data in erlang terms</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09875.html">Re: Riak Search on KV data in erlang terms</a></span> <span class="sender italic">Takeshi Matsumura</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak Search on KV data in erlang terms">
+<input type="hidden" name="msgid" value="FE47C61B-1911-4F5C-965B-9B83061F8817@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09869.html">
+<input type="submit" value=" Takeshi Matsumura ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+Search+on+KV+data+in+erlang+terms%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09867.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09874.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">FE47C61B-1911-4F5C-965B-9B83061F8817@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

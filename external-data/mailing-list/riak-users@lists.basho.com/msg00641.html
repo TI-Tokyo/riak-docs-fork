@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak_multi_backend and bitcask</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00641" id="c">
+<link rel="index" href="maillist.html#00641" id="i">
+<link rel="prev" href="msg00640.html" id="p">
+<link rel="next" href="msg00642.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00641.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_multi_backend+and+bitcask%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak_multi_backend and bitcask</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dan+Reverri%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dan Reverri</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100623" rel="nofollow">Wed, 23 Jun 2010 11:17:36 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Tamas,
+
+You can find the public bug tracker here:
+<a  rel="nofollow" href="https://issues.basho.com/">https://issues.basho.com/</a></pre><pre>
+
+Regarding using Bitcask with multiple backends, the only issue I've seen is
+trying to setup multiple bitcask backends. Bitcask defines options using the
+&quot;bitcask&quot; application specification which is globally set for the node; this
+prevents multiple instances of the bitcask backend from running on a single
+node:
+<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=210">https://issues.basho.com/show_bug.cgi?id=210</a>
+
+You should be able to run a bitcask backend along side other backend types
+such as dets.
+
+I did not completely follow your description; what issues did you see after
+setting bitcask as a backend in the multibackend options? Were keys not
+stored? Did you see errors in the log files? Did you try to setup multiple
+bitcask backends?
+
+Thanks,
+Dan
+
+Daniel Reverri
+Developer Advocate
+Basho Technologies, Inc.
+d...@basho.com
+
+
+On Wed, Jun 23, 2010 at 1:45 PM, Tamas Nagy &lt;tamas.n...@erlang-solutions.com
+&gt; wrote:
+
+&gt; Hi,
+&gt;
+&gt; I'm pretty new to the list (and riak) so please forgive my ignorance but I
+&gt; didn't manage to find a public bugtracker for riak. Hence I'm posting my
+&gt; problem here. (Bitbucket and Internet Explorer(using it not by choice) do
+&gt; not mix well. So that might be the problem why I didn't find it).
+&gt;
+&gt; I've tried to use riak_kv_multi_backend with one of the backends being the
+&gt; riak_kv_bitcask_backend. This does not seem to work with riak-0.11.0. I
+&gt; checked tip as well, and I do not think it would work either. The problem
+&gt; boils to these few lines (code snippets from tip):
+&gt;
+&gt; riak_kv_vnode:
+&gt;
+&gt; handle_info({Mod, Msg}, StateName, #state { mod = Mod } = StateData) -&gt;
+&gt;    Mod:handle_info(StateData#state.modstate, Msg),
+&gt;    {next_state, StateName, StateData, ?TIMEOUT}.
+&gt;
+&gt; riak_kv_bitcask_backend:
+&gt;
+&gt; start(Partition, _Config) -&gt;
+&gt;    %% Schedule sync (if necessary)
+&gt;    case application:get_env(bitcask, sync_strategy) of
+&gt;        {ok, {seconds, Seconds}} -&gt;
+&gt;            SyncIntervalMs = timer:seconds(Seconds),
+&gt;            erlang:send_after(SyncIntervalMs, self(),
+&gt;                              {?MODULE, {sync, SyncIntervalMs}});
+&gt;        _ -&gt;            ok    end,
+&gt;    %% Schedule merge checks
+&gt;    erlang:send_after(?MERGE_CHECK_INTERVAL, self(), {?MODULE,
+&gt; merge_check}),
+&gt;
+&gt;
+&gt; riak_kv_multi_backend:
+&gt;
+&gt; handle_info(State, Msg) -&gt;
+&gt;    F = fun(_Name, Module, SubState) -&gt;
+&gt;                Module:handle_info(SubState, Msg)
+&gt;        end,    [F(X) || X &lt;- State#state.backends],
+&gt;    ok.
+&gt;
+&gt; If riak_kv_multi_backend is configured in riak_kv_vnode the state's mod is
+&gt; riak_kv_multi_backend but the messages scheduled in riak_kv_bitcask_backend
+&gt; are going to have riak_kv_bitcask_backend as their Mod tag.
+&gt;
+&gt; With my limited understanding about the rest of the sytem it seems to me
+&gt; that adding this case to riak_kv_vnode would fix the problem:
+&gt; handle_info({Mod, Msg}, StateName, #state { mod = riak_kv_multi_backend } =
+&gt; StateData) -&gt;
+&gt;    riak_kv_multi_backend:handle_info(StateData#state.modstate, Msg),
+&gt;    {next_state, StateName, StateData, ?TIMEOUT};
+&gt;
+&gt; It is a bit wasteful because all the configured backends will get called
+&gt; with this message, but it is the best I can think of without leaking too
+&gt; much information about the specific backends into the generic code.
+&gt;
+&gt; Modifying the handle_info case would work as well however one check would
+&gt; need to disappear:
+&gt;
+&gt; handle_info({_ModTag, Msg}, StateName, #state { mod = Mod } = StateData) -&gt;
+&gt;    Mod:handle_info(StateData#state.modstate, Msg),
+&gt;    {next_state, StateName, StateData, ?TIMEOUT}.
+&gt;
+&gt; There are a plethora of other ways to fix this like passing the Mod tag to
+&gt; riak_kv_multi_backend so that it can filter based on it (this is probably my
+&gt; favourite as it is not wasteful and there aren't many code changes needed
+&gt; either):
+&gt; riak_kv_vnode:
+&gt; handle_info({Mod, Msg}, StateName, #state { mod = riak_kv_multi_backend } =
+&gt; StateData) -&gt;
+&gt;    riak_kv_multi_backend:handle_info(StateData#state.modstate, {Mod, Msg}),
+&gt;    {next_state, StateName, StateData, ?TIMEOUT};
+&gt;
+&gt; riak_kv_multi_backend:
+&gt; handle_info(State, {Mod, Msg}) -&gt;
+&gt;    F = fun(_Name, Module, SubState) -&gt;
+&gt;                Module:handle_info(SubState, Msg)
+&gt;        end,    [F(X) || X = {_, Module, _} &lt;- State#state.backends, Module
+&gt; =:= Mod],
+&gt;    ok.
+&gt;
+&gt; Code is not tested, but should compile. :)
+&gt;
+&gt; Regards,
+&gt;    Tamas
+&gt;
+&gt; --
+&gt; Tamas Nagy
+&gt; Erlang Solutions Ltd.
+&gt; <a  rel="nofollow" href="http://www.erlang-solutions.com">http://www.erlang-solutions.com</a>
+&gt; ---------------------------------------------------
+&gt;
+&gt; ---------------------------------------------------
+&gt;
+&gt; WE'VE CHANGED NAMES!
+&gt;
+&gt; Since January 1st 2010 Erlang Training and Consulting Ltd. has become
+&gt; ERLANG SOLUTIONS LTD.
+&gt;
+&gt; www.erlang-solutions.com
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00640.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00641">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00641">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00642.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00640.html">riak_multi_backend and bitcask</a></span> <span class="sender italic">Tamas Nagy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak_multi_backend and bitcask</span> <span class="sender italic">Dan Reverri</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00642.html">Re: riak_multi_backend and bitcask</a></span> <span class="sender italic">Tamas Nagy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00643.html">Re: riak_multi_backend and bitcask</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00644.html">Re: riak_multi_backend and bitcask</a></span> <span class="sender italic">Dan Reverri</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg00645.html">Re: riak_multi_backend and bitcask</a></span> <span class="sender italic">Tamas Nagy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00646.html">Re: riak_multi_backend and bitcask</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00647.html">Re: riak_multi_backend and bitcask</a></span> <span class="sender italic">Tamas Nagy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak_multi_backend and bitcask">
+<input type="hidden" name="msgid" value="AANLkTimGr4xlehSx4XEgocZWqJsnFbFiPM2wWX-r-ot7@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00641.html">
+<input type="submit" value=" Dan Reverri ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_multi_backend+and+bitcask%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00640.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00642.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTimGr4xlehSx4XEgocZWqJsnFbFiPM2wWX-r-ot7@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

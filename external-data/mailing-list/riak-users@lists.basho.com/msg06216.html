@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Rebalancing pain and 100 percentile stat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06216" id="c">
+<link rel="index" href="maillist.html#06216" id="i">
+<link rel="prev" href="msg06214.html" id="p">
+<link rel="next" href="msg06218.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06216.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Rebalancing+pain+and+100+percentile+stat%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Rebalancing pain and 100 percentile stat</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120110" rel="nofollow">Tue, 10 Jan 2012 11:01:20 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'll leave the stats questions for someone else, but I'll try to
+answer your rebalancing questions.</pre><pre>
+
+First off, what ring size is your cluster? If it's larger than 256,
+you could be hitting a known gossip overload condition. Generally,
+anything under 1024 is fine, but for EC2, 256/512 may be the real
+practical limit. This condition is discussed a bit in the 1.0.2
+release notes under the &quot;Large Ring Sizes&quot; and &quot;Potential
+Cluster/Gossip Overload&quot; sections. The good news is that the upcoming
+1.0.3 point release includes a gossip throttling capability that
+reduces this problem, and the next major release of Riak includes
+changes that remove the problem entirely.
+
+Assuming the above isn't the issue, then it's you're looking simply at
+too much rebalancing happening at once. There are a few issues here to
+discuss.
+
+First, the partition claiming algorithm traditionally used in Riak
+does not conform to minimal consistent hashing. In many cases, it
+often falls back to a complete re-claiming of the entire ring and
+therefore you end with 80% of the cluster data being shuffled around
+during a rebalance. In Riak 1.0, we added a new claim algorithm that
+almost always results in minimal rebalancing. However, this algorithm
+is not enabled by default. It will be enabled by default in the
+upcoming 1.0.3 and 1.1 releases. We already have a large EDS customer
+using the new claim algorithm in production with great success on
+1.0.2. I can provide details on enabling in for 1.0.2, but it would be
+easiest to just wait until 1.0.3 ships.
+
+Now, regardless of the number of transfers, it is always a good idea
+for rebalancing to not incapacitate your cluster. Rather than having
+an explicit priority level between requests, Riak provides several
+handoff related knobs that can be tuned to minimize the impact of data
+handoff. In 1.0.2, there are two knobs: handoff_concurrency, and
+forced_ownership_handoff. The first knob limits the total number of
+outbound transfers that a node can initiate at one time. The default
+is 4. The second knob determines how many primary ownership handoffs
+can occur while the cluster is under load (normally, handoff only
+occurs when a node has been idle for a default timeout of 1 minute).
+The second knob is a cluster wide setting and defaults to 8. In other
+words, up to 8 handoffs can be triggered across the entire cluster
+while the cluster is under load.
+
+To prevent cluster overload, you should consider tuning theses values.
+For what it's worth, handoff_concurrency is being set to a default of
+1 in the next release of Riak, as we found 4 to be a bit aggressive.
+To change the values, adding something like the following to your
+riak_core section of the app.config file on each Riak node:
+====
+{handoff_concurrency, 1},
+{forced_ownership_handoff, 1},
+====
+
+One final issue is that the handoff_concurrency limit only effects
+outbound transfers. It's entirely possible for multiple nodes to
+initiate outbound transfers to the same target node, thus overloading
+that node. This will be changed in the next major release of Riak, so
+that handoff_concurrency limits both incoming and outgoing transfers.
+Of course, if your cluster is under load, then the only handoff that
+will occur is the forced ownership transfers anyway. So, limiting
+forced_ownership_handoff to 1 or 2 provides a similar solution, as it
+limits transfers across the entire cluster.
+
+Regards,
+Joe
+
+
+On Tue, Jan 10, 2012 at 11:17 AM, Elias Levy
+&lt;fearsome.lucid...@gmail.com&gt; wrote:
+&gt; Good day,
+&gt;
+&gt; Yesterday we went through the exercise of doubling the size of our initial 3
+&gt; node cluster.  The rebalancing took four hours or so.  Each node now has
+&gt; between 7 and 8 GB of data stored in the Leveldb backend with an n_val of 3.
+&gt;
+&gt;
+&gt; During rebalancing the cluster became nearly useless. The CPUs where largely
+&gt; pegged, and IO was hit hard, as could be expected.  Op throughput dropped to
+&gt; the floor and services depending on Riak become unresponsive, as they waited
+&gt; on Riak ops and then failed with timeouts.  This was in EC2 m1.large
+&gt; instances with ephemeral drives.
+&gt;
+&gt; A few questions.
+&gt;
+&gt; Is this expected behavior?  Granted, these are EC2 boxes and Leveldb depends
+&gt; heavily on disk, but I can't imagine folks using Riak on production his this
+&gt; type of performance hit resulting from rebalancing.
+&gt;
+&gt; Are client ops prioritized higher than the rebalancing work?  If not, why
+&gt; not?
+&gt;
+&gt; I recall there was some mention that by using Riak EDS it was possible to
+&gt; fill in a new node slowly, and then have it join the cluster when its nearly
+&gt; in sync, thus limiting the stampede effect that regular rebalancing seems to
+&gt; bring on.  Is that the case?  If so, is there any documentation on this?
+&gt;
+&gt;
+&gt; I am also starting to suspect the timing statistics that Riak reports.
+&gt;  We've been charting them, and comparing them before and after the doubling
+&gt; of the cluster size shows some odd results.  Nearly all stats in the older
+&gt; nodes (mean, median, 95 percentile, 99 percentile, 100 percentile) are about
+&gt; the same before and after the addition of new nodes.  This is the case even
+&gt; though there are now double as many nodes to handle requests, and each node
+&gt; has about half as much data as before.  The only one that did change was the
+&gt; puts 100 percentile.  It increased during the rebalancing, and then stayed
+&gt; at its higher value.  How is this possible?
+&gt;
+&gt; In fact, I find the 100 percentile stat a bit incredible.  One of the boxes
+&gt; is showing a 8,012 seconds 100 percentile stat (yes, I did divide by one
+&gt; million to convert from microseconds).
+&gt;
+&gt; Or are the time stats not rolling stats?  Are they computed since the start
+&gt; of the node, meaning that the 100 percentile will never go down, only up?
+&gt;
+&gt; Elias
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06214.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06216">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06216">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06218.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06214.html">Rebalancing pain and 100 percentile stat</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Rebalancing pain and 100 percentile stat</span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06218.html">Re: Rebalancing pain and 100 percentile stat</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06220.html">Re: Rebalancing pain and 100 percentile stat</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06221.html">Re: Rebalancing pain and 100 percentile stat</a></span> <span class="sender italic">Ian Plosker</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Rebalancing pain and 100 percentile stat">
+<input type="hidden" name="msgid" value="CANvk2KREDdw8AyfL3koptg95+RGPDp0vPDNq4QGDGO_Gwhd3pA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06216.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Rebalancing+pain+and+100+percentile+stat%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06214.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06218.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KREDdw8AyfL3koptg95+RGPDp0vPDNq4QGDGO_Gwhd3pA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Deleting items from search index increases disk usage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09141" id="c">
+<link rel="index" href="maillist.html#09141" id="i">
+<link rel="prev" href="msg09105.html" id="p">
+<link rel="next" href="msg09157.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09141.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleting+items+from+search+index+increases+disk+usage%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Deleting items from search index increases disk usage</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121101" rel="nofollow">Thu, 01 Nov 2012 13:32:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Jeremy,
+
+I was looking at the merge index code and I think the issue is that the
+method by which segments are chosen for compaction may be very slow to get
+to the larger segments.</pre><pre>
+
+1. Merge Index only schedules merging when a buffer is rolled-over to a
+segment.  This means there will _always_ be at least one small segment in
+the list of potential segments to merge.
+
+2. To determine which segments to merge the mean of all segment sizes is
+taken.
+
+Over time the mean will skew left of the bulk of the distribution.  This
+means most compactions will touch only recent, smaller segments and it will
+take many iterations before one of the larger ones is included.  To help
+verify this you could list all you segment sizes again and compare them
+with the last run.  My guess is you'll have about the same number of
+segments but the smallest one will have grown a bit.  It depends how much
+unique data you re-indexed.
+
+Depending on the distribution of your segment sizes I think it might be
+possible to reclaim some of this space via repeated compaction calls.  It
+turns out there is a way to manually invoke compaction.  It's just not easy
+to get too.  Try running the following gist on one of your nodes
+<a  rel="nofollow" href="https://gist.github.com/3996286">https://gist.github.com/3996286</a>.  Try running merge_index:compact over and
+over again and each time check for changes in the segment file sizes.
+
+
+-Z
+
+On Thu, Nov 1, 2012 at 11:25 AM, Jeremy Raymond &lt;jeraym...@gmail.com&gt; wrote:
+
+&gt; I reindexed a bunch of items that are still in the search index but no
+&gt; disk space was reclaimed. Is there any Riak console Erlang voodoo I
+&gt; can do to convince Riak Search that now would be a good time to
+&gt; compact the merge_index?
+&gt;
+&gt; --
+&gt; Jeremy
+&gt;
+&gt;
+&gt; On Tue, Oct 30, 2012 at 4:26 PM, Jeremy Raymond &lt;jeraym...@gmail.com&gt;
+&gt; wrote:
+&gt; &gt; I've posted the list of buffer files [1] and segment files [2].
+&gt; &gt;
+&gt; &gt; The current data set I have in Riak is static, so no new items are
+&gt; &gt; being written. So this looks like the reason as to why compaction
+&gt; &gt; isn't happening since there is no time based trigger on the merge
+&gt; &gt; index. To get compaction to kick in, I should be able to to just
+&gt; &gt; reindex (by reading and rewriting) some of the existing items in
+&gt; &gt; buckets that are still indexed? Earlier today I upgraded to Riak 1.2
+&gt; &gt; and ran a Search read repair [3] in an attempt to kick of compaction.
+&gt; &gt; Compaction didn't kick in, but instead disk consumption increased
+&gt; &gt; again. Should Search Repair trigger compaction or only writing objects
+&gt; &gt; to the KV store?
+&gt; &gt;
+&gt; &gt; [1]:<a  rel="nofollow" href="https://gist.github.com/3982718">https://gist.github.com/3982718</a>
+&gt; &gt; [2]:<a  rel="nofollow" href="https://gist.github.com/3982730">https://gist.github.com/3982730</a>
+&gt; &gt; [3]:
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/cookbooks/Repairing-Search-Indexes/#Running-a">http://docs.basho.com/riak/latest/cookbooks/Repairing-Search-Indexes/#Running-a</a>
+&gt; &gt; Repair
+&gt; &gt;
+&gt; &gt; --
+&gt; &gt; Jeremy
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Tue, Oct 30, 2012 at 3:47 PM, Ryan Zezeski &lt;rzeze...@basho.com&gt;
+&gt; wrote:
+&gt; &gt;&gt; find /var/lib/riak/merge_index -name 'buffer.*' | xargs ls -lah
+&gt; &gt;&gt;
+&gt; &gt;&gt; find /var/lib/riak/merge_index -name 'segment.*' | xargs ls -lah
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09105.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09141">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09141">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09157.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09063.html">Deleting items from search index increases disk usage</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09064.html">Re: Deleting items from search index increases di...</a></span> <span class="sender italic">Vladimir Shapovalov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09065.html">Re: Deleting items from search index increase...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09069.html">Re: Deleting items from search index incr...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09089.html">Re: Deleting items from search index ...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09090.html">Re: Deleting items from search i...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09105.html">Re: Deleting items from sear...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Deleting items from ...</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09157.html">Re: Deleting items from ...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09158.html">Re: Deleting items from ...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09160.html">Re: Deleting items from ...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09162.html">Re: Deleting items from ...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09163.html">Re: Deleting items from ...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09164.html">Re: Deleting items from ...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09203.html">Re: Deleting items from ...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09159.html">Re: Deleting items from ...</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Deleting items from search index increases disk usage">
+<input type="hidden" name="msgid" value="CACZcpenPceE-k=+7=-QDcH07uHgzGfsVU++fA_J4dwOpN=BHfw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09141.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleting+items+from+search+index+increases+disk+usage%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09105.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09157.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpenPceE-k=+7=-QDcH07uHgzGfsVU++fA_J4dwOpN=BHfw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

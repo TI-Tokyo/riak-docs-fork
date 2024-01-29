@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Consistent Riak (riak_ensemble) without Anti-entropy?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14272" id="c">
+<link rel="index" href="maillist.html#14272" id="i">
+<link rel="prev" href="msg14266.html" id="p">
+<link rel="next" href="msg14274.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14272.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Consistent+Riak+%5C%28riak_ensemble%5C%29+without+Anti%5C-entropy%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Consistent Riak (riak_ensemble) without Anti-entropy?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sargun+Dhillon%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sargun Dhillon</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140528" rel="nofollow">Wed, 28 May 2014 03:26:32 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>So, I noticed that if I don't have anti-entropy on, and I enable
+strongly consistent Riak, it doesn't work. Specifically, what happens
+is that riak_kv_ensembles sets up the ensembles, but the
+riak_ensemble_peer never gets past to all_sync state. It appears that
+this is because the riak_kv_ensemble_backend relies on anti-entropy to
+perform an exchange before it comes up. See here, from
+riak_kv/develop:</pre><pre>
+
+
+sync(Replies, State=#state{ensemble=_Ensemble, id=Id}) -&gt;
+    Peers0 = [{Idx, PeerId} || {PeerId={{kv,_PL,_N,Idx},_Node},_Reply}
+&lt;- Replies],
+    Peers = orddict:from_list(Peers0),
+    {{kv, PL, N, Idx}, _} = Id,
+    IndexN = {PL,N},
+    %% Sort to remove duplicates when changing ownership / forwarded response
+    Siblings0 = lists:usort([I || {{{kv,_PL,_N,I},_Node},_Reply} &lt;- Replies]),
+    %% Just in case, remove self from list
+    Siblings = Siblings0 -- [Idx],
+
+    case local_partition(Idx) of
+        true -&gt;
+            T0 = erlang:now(),
+            Pid = self(),
+            spawn_link(fun() -&gt;
+                               wait_for_sync(Idx, IndexN, Pid, T0,
+Siblings, Peers)
+                       end),
+            {async, State};
+        false -&gt;
+            {ok, State}
+    end.
+
+wait_for_sync(Idx, IndexN, Pid, T0, Siblings, Peers) -&gt;
+    Exchanges = riak_kv_entropy_info:exchanges(Idx, IndexN),
+    Recent = [OtherIdx || {OtherIdx, T1, _} &lt;- Exchanges,
+                          T1 &gt; T0],
+    lager:info(&quot;~p/~p: Exchanges: ~p~nT0: ~p~nRecent: ~p~nSibs: ~p&quot;,
+                [Idx, IndexN, Exchanges, T0, Recent, Siblings]),
+    Need = length(Siblings),
+    Finished = length(Recent),
+    Local = local_partition(Idx),
+    Complete = ((Siblings -- Recent) =:= []),
+    if not Local -&gt;
+            lager:info(&quot;Partition ownership changed. No need to sync.&quot;),
+            riak_ensemble_backend:sync_complete(Pid, []);
+       Complete -&gt;
+            lager:info(&quot;Complete ~b/~b :: ~p -&gt; ~p~n&quot;, [Finished,
+Need, Idx, Pid]),
+            SyncPeers = [orddict:fetch(PeerIdx, Peers) || PeerIdx &lt;- Siblings],
+            riak_ensemble_backend:sync_complete(Pid, SyncPeers);
+       true -&gt;
+            lager:info(&quot;Not yet ~b/~b :: ~p&quot;, [Finished, Need, Idx]),
+            timer:sleep(10000),
+            wait_for_sync(Idx, IndexN, Pid, T0, Siblings, Peers)
+    end.
+
+
+(I uncommented the debugging). If riak_kv_entropy_manager is not
+enabled, then riak_kv_entropy_info:exchanges will always be empty. Can
+we either (1) manually trigger AAE exchange upon noticing that strong
+consistency is enabled (I imagine you can do this by setting the mode
+to manual, and then queueing up the AAE jobs), (2) throw a warning to
+the user saying that they should enable AAE.
+
+-Sargun
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14266.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14272">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14272">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14274.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Consistent Riak (riak_ensemble) without Anti-entropy?</span> <span class="sender italic">Sargun Dhillon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14274.html">Re: Consistent Riak (riak_ensemble) without Anti-entro...</a></span> <span class="sender italic">Sargun Dhillon</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Consistent Riak (riak_ensemble) without Anti-entropy?">
+<input type="hidden" name="msgid" value="CAMp4zn_ZRsk44u6k9sG8YbFf_qA2PbV0jH5A_YH=mUV0NH9TaQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14272.html">
+<input type="submit" value=" Sargun Dhillon ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Consistent+Riak+%5C%28riak_ensemble%5C%29+without+Anti%5C-entropy%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14266.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14274.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMp4zn_ZRsk44u6k9sG8YbFf_qA2PbV0jH5A_YH=mUV0NH9TaQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

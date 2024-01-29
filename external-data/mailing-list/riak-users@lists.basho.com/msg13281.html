@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: May allow_mult cause DoS?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#13281" id="c">
+<link rel="index" href="mail5.html#13281" id="i">
+<link rel="prev" href="msg13280.html" id="p">
+<link rel="next" href="msg13289.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13281.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+May+allow_mult+cause+DoS%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: May allow_mult cause DoS?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Russell+Brown%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Russell Brown</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131218" rel="nofollow">Wed, 18 Dec 2013 00:31:26 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+Can you describe your use case a little? Maybe it would be easier for us to 
+help.</pre><pre>
+
+On 18 Dec 2013, at 04:32, Viable Nisei &lt;vsni...@gmail.com&gt; wrote:
+
+&gt; On Wed, Dec 18, 2013 at 8:32 AM, Erik Søe Sørensen &lt;e...@trifork.com&gt; wrote:
+&gt; It really is not a good idea to use siblings to represent 1-to-many 
+&gt; relations. That's not what it's intended for, nor what it's optimized for...
+&gt; Ok, understood.
+&gt;  
+&gt; Can you tell us exactly why you need Bitcask rather than LevelDB? 2i would 
+&gt; probably do it.
+&gt; 1) According to 
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/backups/#LevelDB-Backups">http://docs.basho.com/riak/latest/ops/running/backups/#LevelDB-Backups</a> , it's 
+&gt; real pain to implement backups with leveldb.
+&gt; 2) According to 
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/leveldb/">http://docs.basho.com/riak/latest/ops/advanced/backends/leveldb/</a> , reads may 
+&gt; be slower comparing to bitcask, it's critical for us
+&gt; 
+&gt; Otherwise, storing a list of items under each key could be a solution, 
+&gt; depending of course on the number of items per key. (But do perform conflict 
+&gt; resolution.)
+&gt; Why any conflict resolving is required? As far as I understood, with 
+&gt; allow_mult=true riak should just collect all the values written to key 
+&gt; without anything additional work? What design decision leads to exponential 
+&gt; slowdown and crashes when multiple values allowed for any single key?.. So, 
+&gt; what's the REAL purpose of allow_mult=true if it's bad idea to use it for 
+&gt; unlimited values per single key?
+
+The real purpose of allow_mult=true is so that writes are never dropped. In the 
+case where your application concurrently writes to the same key on two 
+different nodes, or on two partitioned nodes, Riak keeps both values. Other 
+data stores will lose one of the writes based on timestamp, serialise your 
+writes (slow) or simply refuse to accept one or more of them.
+
+It is the job of the client to aggregate those multiple writes into a single 
+value when it detects the conflict on read. Conflict resolution is required 
+because your data is opaque to Riak. Riak doesn’t know that you’re storing 
+lists of values, or JPEGs or JSON. It can’t possibly know how to resolve two 
+conflicting values unless it knows the semantics of the values. Riak _does_ 
+collect all the values written to a key, but it does so as a temporary measure, 
+it expects your application to resolve them to a single value. How many are you 
+writing per Key?
+
+Riak’s sweetspot is highly write available applications. If you have the time 
+read the Amazon Dynamo paper[1], as it explains the _problems_ Riak solves as 
+well as the way in which it solves them. If you don’t have these problems, 
+maybe Riak is not the right datastore for you. Solving these problems comes 
+with some developer complexity costs. You’ve run into one of them. We have many 
+customers who think the trade-off is worth it: that the high availability and 
+low-latency makes up for having eventual consistency.
+
+&gt; 
+&gt; Ok, documentation contains the following paragraph:
+&gt;  
+&gt; &gt; Sibling explosion occurs when an object rapidly collects siblings without 
+&gt; &gt; being reconciled. This can lead to a myriad of issues. Having an enormous 
+&gt; &gt; object in your node can cause reads of that object to crash the entire 
+&gt; &gt; node. Other issues are increased cluster latency as the object is 
+&gt; &gt; replicated and out of memory errors.
+&gt;  
+&gt; But there is no point if it related to allow_mult=false or both cases.
+
+Sorry, but I don’t understand what you mean by this statement. The point of 
+allow_mult=true is so that writes are not arbitrarily dropped. It allows Riak 
+nodes to continue to be available to take writes even if they can’t communicate 
+with each other. Have a look at Kyle Kingsbury’s Jepsen[2] post on Riak.
+
+&gt; 
+&gt; So, the only solution is leveldb+2i?
+
+Maybe. Or maybe just use the client as it is intended to resolve sibling values 
+and send that value and a vector clock back to Riak. Or maybe roll your own 
+indexes like in this blog post[3]. With Riak 2.0 there are a few data types 
+added to Riak that are not opaque. Maybe Riak’s Sets would suit your purpose 
+(depending on the size of your Set.)
+
+There is a wealth of data modelling experience at Basho and on this list. The 
+more information you give us about your problem, (rather than describing what 
+you perceive to be Riak’s shortcomings), the more likely you are to be able to 
+benefit from that experience.
+
+You’re fighting the database at the moment, rather than working with it. The 
+properties of Riak buy you some wonderful things (high availability, partition 
+tolerance, low latency) but you have to want / need those properties, and then 
+you have to accept that there is a data modelling / developer complexity price 
+to pay. We don’t think that price is too high. We have many customers who 
+agree. We’re always working to lower that price (see Strong Consistency, 
+Yokozuna, Data Types etc in Riak 2.0[4].)
+
+You seem to have had a very negative first experience of Riak (and Basho.) I 
+think that is because you misunderstand what it is for and how it should be 
+used. I'm very keen to fix that. If it turns out that Riak is just not for you, 
+that is fine too.
+
+In response to your earlier mail, I think Basho’s consulting costs sound 
+incredibly low. I think you got that answer because you reached out to Basho 
+through that channel, rather than ask the list. We’re still trying to track 
+down who you spoke to and when, if you could provide me details of that 
+conversation directly (rather than to the list) I’d be very grateful.
+
+I’m not sure if it is just a cultural / language thing, but you’re very 
+negative right now, and you sound like you're attacking Basho and Riak. I don’t 
+think that is warranted at this point as we’re just trying to help you figure 
+out if Riak is the datastore you want / need.
+
+Cheers
+
+Russell
+
+[1] <a  rel="nofollow" href="http://dl.acm.org/citation.cfm?id=1294281">http://dl.acm.org/citation.cfm?id=1294281</a>
+[2] <a  rel="nofollow" href="http://aphyr.com/posts/285-call-me-maybe-riak">http://aphyr.com/posts/285-call-me-maybe-riak</a>
+[3] <a  rel="nofollow" href="http://basho.com/index-for-fun-and-for-profit/">http://basho.com/index-for-fun-and-for-profit/</a>
+[4] <a  rel="nofollow" href="http://basho.com/technical-preview-of-riak-2-0/">http://basho.com/technical-preview-of-riak-2-0/</a>
+
+&gt; 
+&gt; 
+&gt; 
+&gt; On Wed, Dec 18, 2013 at 8:32 AM, Erik Søe Sørensen &lt;e...@trifork.com&gt; wrote:
+&gt; It really is not a good idea to use siblings to represent 1-to-many 
+&gt; relations. That's not what it's intended for, nor what it's optimized for...
+&gt; Can you tell us exactly why you need Bitcask rather than LevelDB? 2i would 
+&gt; probably do it.
+&gt; Otherwise, storing a list of items under each key could be a solution, 
+&gt; depending of course on the number of items per key. (But do perform conflict 
+&gt; resolution.)
+&gt; /Erik
+&gt; 
+&gt; 
+&gt; 
+&gt; -------- Oprindelig meddelelse --------
+&gt; Fra: Viable Nisei &lt;vsni...@gmail.com&gt;
+&gt; Dato:
+&gt; Til: riak-users@lists.basho.com
+&gt; Emne: May allow_mult cause DoS?
+&gt; 
+&gt; 
+&gt; Hi.
+&gt; 
+&gt; Recently we've described that something is going unexpectedly. We are using 
+&gt; Riak 1.4.2 with some buckets with allow_mult=true.
+&gt; We've tried our app under load then found that... concurrently writes into 
+&gt; bucket with allow_mult turning Riak into irresponsible slowpoke and even 
+&gt; crash it.
+&gt; 
+&gt; Core i3 with 4GB RAM performs only 20 writes/sec with 5 client threads 
+&gt; writing 20 short strings into 20 keys in bucket with allow_mult=true, 
+&gt; search=false. With 40 values per 40 keys it performs only 6 writes/sec. 60x60 
+&gt; cause riak crash?
+&gt; Throughput drops drastically. Ok, we've not chaged concurrency factor (5) and 
+&gt; increased our data set 4x, but why throughput drops?
+&gt; Ok, we increase our dataset linear, 20 strings * 20 keys, 40 strings*20 keys, 
+&gt;  60 strings*20 keys... Results will be same - exponential throughput drop 
+&gt; with crash at end.
+&gt; 
+&gt; Cluster of five Amazon EC2 cc2.8xlarge nodes becomes irresponsibly with 
+&gt; throughput 1-5 writes/sec with only 80-100 values per 1-10 keys.
+&gt; 
+&gt; So, we think it is very strange.
+&gt; 
+&gt; Here you can check our code sample (in java) reproducing this behavior: 
+&gt; <a  rel="nofollow" href="https://bitbucket.org/vsnisei/riak-allow_mult_wtf">https://bitbucket.org/vsnisei/riak-allow_mult_wtf</a>
+&gt; 
+&gt; So, we have asked Basho about this, but they said that &quot;we think SQLish&quot; and 
+&gt; asked us for $5k for 2-days consultation to resolve our problem.
+&gt; So, I've decided to ask here if we are really so stupid and not able to 
+&gt; understood some simple things or Basho didn't understood us correctly?..
+&gt; 
+&gt; Anyway, looks like that some DoS/DDoS attack approach utilizing this behavior 
+&gt; may be proposed. We should only know that some service/appliation/website is 
+&gt; using Riak with allow_mult buckets then provoke concurrent writes into them...
+&gt; 
+&gt; Actually our question to Basho was broader. Our application needs to 
+&gt; implement 1-many bindings. Riak allows the following approaches to simultate 
+&gt; such bindings, according to documentation:
+&gt; 
+&gt;  1.  Riak search - but we've found that it's VERY slow (20x performance drop 
+&gt; when search enabled, even for simple objects like {source_id: xxx, target_id: 
+&gt; yyy}, also we've found that search is not really scalable - adding new nodes 
+&gt; into cluster not increasing throughput, but even slows cluster down...
+&gt;  2.  secondary indexes. But, according to docs, they are working only on 
+&gt; LevelDb, but we need Bitcask
+&gt;  3.  Link walking. But, according to docs, it's &quot;rest only operation&quot; and in 
+&gt; java driver it's implemented as a hack
+&gt;  4.  allow_mult. But we've found that it's just a nightmare. So we told Basho 
+&gt; about this and given link to our example, but they didn't given us any 
+&gt; feedback
+&gt;  5.  Bucket keys enumeration. But, according to docs, this operation causes 
+&gt; full keys scan on each node and must not be used in production
+&gt;  6.  Mapred queries. Ok, we didn't tried them yet, maybe it's silver bullet, 
+&gt; really. But according to docs (and common sense) mapred causes full-scan (for 
+&gt; bucket at least. Or for all keys?) and it's operation with unpredictable 
+&gt; latency.
+&gt; 
+&gt; So, where we are wrong? Is everything ok with behavior I've described? Are we 
+&gt; misunderstood Riak completely and should pay $5k for some mind-expansion, or 
+&gt; there is no any hidden mystical knowledge and they will not say us anything 
+&gt; excepting approaches listed above?
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre>
+<p><strong><a href="msg13281/signature.asc" ><img src="../attachment.png" alt="Attachment:" width=27 height=28></a>
+<a href="msg13281/signature.asc" >signature.asc</a></strong><br>
+<em>Description:</em> Message signed with OpenPGP using GPGMail</p>
+<pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13280.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#13281">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail5.html#13281">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13289.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13268.html">May allow_mult cause DoS?</a></span> <span class="sender italic">Viable Nisei</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13270.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Reid Draper</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13273.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Brian Roach</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13277.html">RE: May allow_mult cause DoS?</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13280.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Viable Nisei</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: May allow_mult cause DoS?</span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13289.html">Fwd: May allow_mult cause DoS?</a></span> <span class="sender italic">Viable Nisei</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13292.html">SV: May allow_mult cause DoS?</a></span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13297.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Viable Nisei</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13298.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Andy Gross</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13302.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13307.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13312.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13313.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Andrew Stone</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13314.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">John Daily</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13315.html">Re: May allow_mult cause DoS?</a></span> <span class="sender italic">Jason Campbell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: May allow_mult cause DoS?">
+<input type="hidden" name="msgid" value="DFAFF9F6-E4D6-4FA3-9344-C8277E946932@me.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13281.html">
+<input type="submit" value=" Russell Brown ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+May+allow_mult+cause+DoS%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13280.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13289.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">DFAFF9F6-E4D6-4FA3-9344-C8277E946932@me.com</li>
+</ul>
+</div>
+</body>
+</html>

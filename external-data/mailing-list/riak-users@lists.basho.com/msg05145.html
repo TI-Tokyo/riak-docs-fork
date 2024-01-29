@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Details on new delete_mode setting introduced in 1.0.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#05145" id="c">
+<link rel="index" href="mail2.html#05145" id="i">
+<link rel="prev" href="msg05143.html" id="p">
+<link rel="next" href="msg05148.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05145.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Details+on+new+delete_mode+setting+introduced+in+1.0.0%22&amp;o=newest" rel="nofollow"><span itemprop="name">Details on new delete_mode setting introduced in 1.0.0</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111012" rel="nofollow">Wed, 12 Oct 2011 16:01:52 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Summary/tl;dr
+
+  Riak 1.0.0 has introduced more control over deletion with the delete_mode
+setting.</pre><pre>
+
+  If you plan to delete and recreate objects under the same key rapidly, and
+there is enough disk available to store tombstones, it is safest to set
+delete_mode to keep.
+
+  The default 3s delay for removing tombstones balances keeping the
+tombstone around long enough for any rapid delete/recreates, but unlike the
+keep mode it does remove the data.
+
+
+Riak keeps your objects available during failures by storing multiple copies
+of the data.  This redundancy makes deletion more complex than a single node
+database.  For example, Riak needs to ensure deletes issued while nodes are
+down get applied when the nodes recover, or resolve what happens if the
+network is partitioned and an object is deleted on one side but updated on
+the other side.
+
+Deletes in Riak are a two step process, first it writes a tombstone objects
+to the N replicas and only once all replicas have stored the tombstone are
+they removed.  If fallback nodes are in use, the tombstone will not be
+removed.  Riak will wait until the next time the object is accessed and
+successfully reads the same tombstone object from all primaries.  This
+scheme works well most of the time, but is not perfect and Basho still has
+some improvements planned.  As part of Riak 1.0 we've added a delete_mode
+setting to give more control over the deletion process while we complete
+that work.
+
+Explaining what delete_mode does requires more gory details.  When a client
+requests deletion of an object, internally riak performs a get/put against
+the object to write the tombstone and acknowledges the delete to the client
+allowing it to continue.  In the background Riak issues a second get
+operation to trigger tombstone removal.
+
+Whenever Riak gets an object, as part of a delete or not, it requests all
+replicas of the object from the current preference list (made up of owner
+nodes responsible for storing replicas of the object and fallback nodes if
+the owners are unavailable).  If any vnodes return out of date or
+conflicting objects out of date it will issue read repairs and stop.  If all
+replicas have the same object and it is a tombstone object and there are no
+fallbacks in the preference list then the get FSM issues the request to
+remove the tombstone permanently.
+
+Removing the tombstone object is the hard part of deletion.  To maintain
+it's availability properties, Riak relies on eventual consistency and
+deliberately does not synchronize updates to objects across replicas as one
+or more could fail during a request.  This means that there can be small
+variations in when the remove tombstone request is processed.  If the object
+is being updated (a get/put) by a client during the window between the
+tombstone-checking get deciding to remove the tombstones and the tombstone
+being removed on the nodes then one of two things will happen.  Get uses R
+to decide when it has enough objects, so if any of the first R responses
+include the tombstone object the response can include a vector clock to base
+the new object on that will supercede the tombstones.  If none of the first
+R of N requests contain the tombstone object, there is no versioning
+information to return to the client so a new object will be created with
+empty versioning information.
+
+The new delete_mode setting in the riak_kv section of app.config is for
+controlling what happens during the window between the get FSM deciding it
+can remove the object and it taking place.  If a delay is set, when the
+tomstone removal request is received, the tombstone is hashed and then
+checked after the delay to see if it has changed.  If it has not, the
+tombstone is removed.  If the hash has changed due to an update, the new
+object is left alone.  This is the default delete_mode with a delay of 3s.
+ Delayed deletes are implemented using timers on the vnodes, so setting long
+delays on systems with heavy delete activity will increase the memory
+footprint.
+
+Setting delete_mode to 'keep' disables tombstone removal.  This is useful
+for applications where the client may be disconnected for extended periods
+and keep local copies of objects that they will update on reconnection (for
+example mobile clients or multi-data center replication when the two sites
+will be disconnected for long periods of time).  It also protects against an
+edge case where an object is deleted and recreated on the owning nodes while
+a fallback is either down or awaiting handoff.
+
+There is also an 'immediate' delete_mode which preserves the old 0.14.2
+behavior of removing the tombstone as soon as the request is received.  Some
+unit tests for clients rely on the old behavior (e.g. the Python client) and
+expect the versioning information to be reset after the delete.  The 1.0
+HTTP, PBC and riak_client interfaces can now provide vclocks when tombstone
+objects are present so that a put will supercede them.
+
+Wrapping it up - the default delete_mode will work for most use cases with
+the option to override it when needed.  To
+change the setting add a {delete_mode, keep}, {delete_mode, immediate} or
+{delete_mode, DelayMsecs} to the riak_kv section of app.config (in
+/etc/riak, /opt/riak or etc/ depending on your platform).
+
+
+Jon Meredith
+Senior Software Engineer
+Basho Technologies
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05143.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#05145">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#05145">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05148.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Details on new delete_mode setting introduced in 1.0.0">
+<input type="hidden" name="msgid" value="CAGgQeSu5sfnaAiXcqBiW_0vQrbbd6ezFOMxdavZ734e_L1Sr4Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05145.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Details+on+new+delete_mode+setting+introduced+in+1.0.0%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05143.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05148.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGgQeSu5sfnaAiXcqBiW_0vQrbbd6ezFOMxdavZ734e_L1Sr4Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

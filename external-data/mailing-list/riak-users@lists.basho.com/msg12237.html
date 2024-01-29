@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: .net corrugatediron q. re: content types</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd10.html#12237" id="c">
+<link rel="index" href="mail10.html#12237" id="i">
+<link rel="prev" href="msg12235.html" id="p">
+<link rel="next" href="msg12240.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12237.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+.net+corrugatediron+q.+re%5C%3A+content+types%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: .net corrugatediron q. re: content types</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130911" rel="nofollow">Wed, 11 Sep 2013 13:21:12 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Not a problem. The root cause is this code:
+
+public RiakObject(string bucket, string key, object value)
+: this(bucket, key, value.ToJson(), RiakConstants.ContentTypes.
+ApplicationJson)</pre><pre>
+
+When you create without a content type, we make the assumption that you're
+saving JSON (rather foolishly, it turns out). CorrugatedIron runs down the
+path of converting your object to JSON and then, once you modify the
+content type, does the wrong thing.
+
+Internally, there's no object state stored in a RiakObject - we immediately
+convert your object to a byte array for saving to Riak. This could probably
+solved in a better way by having a RiakObject&lt;T&gt;, and be less confusing for
+you in the long run.
+
+In the mean time, you can do one of a few things:
+
+var ro = new RiakObject(bucket, key, testObj, RiakConstants.ContentTypes.
+ProtocolBuffers);
+
+*/* or */*
+var ro = new RiakObject(bucket, key);
+ro.ContentType = RiakConstants.ContentTypes.ProtocolBuffers;
+ro.SetObject(testObj);
+
+*/* or */*
+var ro = new RiakObject(bucket, key);
+ro.SetObject(testObj, RiakConstants.ContentTypes.ProtocolBuffers);
+
+
+
+---
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+MCITP: SQL Server 2008, MVP
+Cloudera Certified Developer for Apache Hadoop
+
+
+On Wed, Sep 11, 2013 at 12:19 PM, Alex Rice &lt;a...@mindlube.com&gt; wrote:
+
+&gt; Thanks again Jeremiah! And thanks for writing corrugatediron so far
+&gt; it's a real pleasure to work with this Riak client lib!
+&gt;
+&gt; On Wed, Sep 11, 2013 at 1:02 PM, Jeremiah Peschka
+&gt; &lt;jeremiah.pesc...@gmail.com&gt; wrote:
+&gt; &gt; Howdy Alex,
+&gt; &gt;
+&gt; &gt; That shouldn't be happening. I've created an issue and I'll check into
+&gt; it as
+&gt; &gt; soon as I get a chance. You can track the issue here
+&gt; &gt; <a  rel="nofollow" href="https://github.com/DistributedNonsense/CorrugatedIron/issues/171">https://github.com/DistributedNonsense/CorrugatedIron/issues/171</a>
+&gt; &gt;
+&gt; &gt; ---
+&gt; &gt; Jeremiah Peschka - Founder, Brent Ozar Unlimited
+&gt; &gt; MCITP: SQL Server 2008, MVP
+&gt; &gt; Cloudera Certified Developer for Apache Hadoop
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Wed, Sep 11, 2013 at 11:53 AM, Alex Rice &lt;a...@mindlube.com&gt; wrote:
+&gt; &gt;&gt;
+&gt; &gt;&gt; Is there a way to trick corrugatediron into serializing a protobuf
+&gt; &gt;&gt; class for me? I know I can serialize it to byte[] myself and Put that.
+&gt; &gt;&gt; But I thought setting the ContentType might do the trick, but it looks
+&gt; &gt;&gt; like it's getting saved as JSON instead. This might be a convenient
+&gt; &gt;&gt; feature to add.
+&gt; &gt;&gt;
+&gt; &gt;&gt; // create a proto-contract class
+&gt; &gt;&gt; (<a  rel="nofollow" href="https://code.google.com/p/protobuf-net/wiki/GettingStarted">https://code.google.com/p/protobuf-net/wiki/GettingStarted</a>)
+&gt; &gt;&gt; var testObj = new Person() {
+&gt; &gt;&gt;                     Id = 42,
+&gt; &gt;&gt;                     Name = &quot;alex&quot;,
+&gt; &gt;&gt;                     Address =  new Address() {
+&gt; &gt;&gt;                         Line1 = &quot;16 dusty road&quot;,
+&gt; &gt;&gt;                         Line2 = &quot;santa fe, nm 87508&quot;
+&gt; &gt;&gt; }};
+&gt; &gt;&gt; var riakObj = new RiakObject(&quot;test&quot;, &quot;key&quot;, testObj);
+&gt; &gt;&gt; riakObj.ContentType = RiakConstants.ContentTypes.ProtocolBuffers;
+&gt; &gt;&gt; db.Put( riakObj );
+&gt; &gt;&gt;
+&gt; &gt;&gt; _______________________________________________
+&gt; &gt;&gt; riak-users mailing list
+&gt; &gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12235.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd10.html#12237">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail10.html#12237">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12240.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12238.html">.net corrugatediron q. re: content types</a></span> <span class="sender italic">Alex Rice</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12239.html">Re: .net corrugatediron q. re: content types</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12235.html">Re: .net corrugatediron q. re: content types</a></span> <span class="sender italic">Alex Rice</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: .net corrugatediron q. re: content types</span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: .net corrugatediron q. re: content types">
+<input type="hidden" name="msgid" value="CACJEN2rpmmSEfzphx-pg1DNCCZyZmYe1oj+Vh3K73KF5ATkb-g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12237.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+.net+corrugatediron+q.+re%5C%3A+content+types%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12235.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12240.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACJEN2rpmmSEfzphx-pg1DNCCZyZmYe1oj+Vh3K73KF5ATkb-g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

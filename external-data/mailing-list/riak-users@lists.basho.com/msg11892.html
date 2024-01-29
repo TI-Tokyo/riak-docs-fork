@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>erlang go boom</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd12.html#11892" id="c">
+<link rel="index" href="mail12.html#11892" id="i">
+<link rel="prev" href="msg11891.html" id="p">
+<link rel="next" href="msg11898.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11892.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22erlang+go+boom%22&amp;o=newest" rel="nofollow"><span itemprop="name">erlang go boom</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Paul+Ingalls%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Paul Ingalls</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130805" rel="nofollow">Mon, 05 Aug 2013 12:52:59 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>As promised in previous email, I hit a fairly big problem over the weekend and 
+then reproduced it this morning and I was wondering if I could get some help.</pre><pre>
+
+Basically, I was running my code against our risk cluster and everything was 
+moving along just fine.  However, at some point Riak just seems to hit a wall.  
+I get to a certain scale of content, about 9-10 GB per node, and about half the 
+cluster gives up the ghost.
+
+I've done this twice from scratch now, the first time I thought maybe I was 
+trying to push too many transactions per second.  But the second time I reduced 
+the speed and changed some settings in the app.config that I thought would 
+reduce memory usage.  Ran it again, and 24 hrs later I still hit the wall 
+(almost the same place).
+
+So, I figure I'm still doing something wrong, I'm just not sure what.  I'm 
+obviously hitting some kind of heap issue, but I'm not sure what else I can do 
+about it.  I'm hoping there is something obvious I'm missing in my ignorance, 
+cuz at the moment I'm stuck...
+
+Some details:
+
+7 node cluster running 1.4
+each VM has 7GB RAM and 4 CPUs
+the data directory is on a RAID0 with 750GB of space
+128 partitions, levelDB backend
+using links and secondary indexes
+lots of buckets (over 10 million), a couple buckets have lots of keys (one was 
+around 6.6 million keys when it crashed, the other around 3.7 million). 
+Values are pretty small, almost all are just a few bytes.  There is one bucket, 
+the largest (6.6 million keys), with value sizes between 1-2k.
+
+primary custom app config settings:
+{kernel,
+           [
+               {inet_dist_listen_min, 6000},
+               {inet_dist_listen_max, 7999}
+           ]},
+
+{riak_core, [
+               {default_bucket_props, [
+                     {allow_mult, true},
+                     {r, 1},
+                     {w, 1},
+                     {dw, 1},
+                     {dw, 1}
+                    ]},
+              {ring_creation_size, 128},
+        ]},
+
+ {riak_kv, [
+            {storage_backend, riak_kv_eleveldb_backend},
+        ]}
+
+ {eleveldb, [
+             {max_open_files, 32}
+            ]},
+
+custom vm.args settings
++A 16 
+        
+
+Here is some of the error information I am seeing when it all goes boom:
+
+*************************************
+* On one of the nodes that crashes:
+************************************
+last lines of console.log
+-------------------
+2013-08-05 17:59:08.071 [info] 
+&lt;0.29251.556&gt;@riak_kv_exchange_fsm:key_exchange:206 Repaired 1 keys during 
+active anti-entropy exchange of 
+{468137243207554840987117797979434404733540892672,3} between 
+{479555224749202520035584085735030365824602865664,riak@riak001} and 
+{490973206290850199084050373490626326915664838656,riak@riak002}
+2013-08-05 18:01:10.234 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{riak_object,encode_maybe_binary,1}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,47828850},{mbuf_size,0},{stack_size,10},{old_heap_size,0},{heap_size,40978448}]
+2013-08-05 18:01:10.672 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.12133.557&gt; 
+[{initial_call,{riak_api_pb_server,init,1}},{almost_current_function,{riak_pb_kv_codec,'-encode_content_meta/3-lc$^0/1-1-',1}},{message_queue_len,0}]
+ 
+[{old_heap_block_size,0},{heap_block_size,47828850},{mbuf_size,0},{stack_size,45},{old_heap_size,0},{heap_size,40978360}]
+2013-08-05 18:01:12.993 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{dict,fold_bucket,3}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,59786060},{mbuf_size,0},{stack_size,50},{old_heap_size,0},{heap_size,40978626}]
+2013-08-05 18:01:13.816 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{dict,fold_bucket,3}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,59786060},{mbuf_size,0},{stack_size,50},{old_heap_size,0},{heap_size,40978626}]
+2013-08-05 18:01:13.819 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.12133.557&gt; 
+[{initial_call,{riak_api_pb_server,init,1}},{almost_current_function,{riak_kv_pb,pack,5}},{message_queue_len,0}]
+ 
+[{old_heap_block_size,0},{heap_block_size,59786060},{mbuf_size,0},{stack_size,200971},{old_heap_size,0},{heap_size,47627275}]
+2013-08-05 18:01:14.594 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{riak_object,encode_maybe_binary,1}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,116769640},{mbuf_size,0},{stack_size,49},{old_heap_size,0},{heap_size,81956796}]
+2013-08-05 18:01:15.729 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.12133.557&gt; 
+[{initial_call,{riak_api_pb_server,init,1}},{almost_current_function,{riak_kv_pb,encode,2}},{message_queue_len,0}]
+ 
+[{old_heap_block_size,0},{heap_block_size,74732575},{mbuf_size,0},{stack_size,81},{old_heap_size,0},{heap_size,42778355}]
+2013-08-05 18:01:15.878 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{riak_object,encode_maybe_binary,1}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,116769640},{mbuf_size,0},{stack_size,49},{old_heap_size,0},{heap_size,81956794}]
+2013-08-05 18:01:15.878 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{riak_object,encode_maybe_binary,1}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,116769640},{mbuf_size,0},{stack_size,41},{old_heap_size,0},{heap_size,81956788}]
+2013-08-05 18:01:15.878 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{riak_object,encode_maybe_binary,1}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,116769640},{mbuf_size,0},{stack_size,52},{old_heap_size,0},{heap_size,81956774}]
+2013-08-05 18:01:15.878 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.14832.557&gt; 
+[{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{riak_object,encode_maybe_binary,1}},{message_queue_len,1}]
+ 
+[{old_heap_block_size,0},{heap_block_size,116769640},{mbuf_size,0},{stack_size,52},{old_heap_size,0},{heap_size,81956791}]
+2013-08-05 18:01:15.880 [info] 
+&lt;0.83.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap 
+&lt;0.12133.557&gt; 
+[{initial_call,{riak_api_pb_server,init,1}},{almost_current_function,{lists,reverse,1}},{message_queue_len,0}]
+ 
+[{old_heap_block_size,0},{heap_block_size,74732575},{mbuf_size,0},{stack_size,71},{old_heap_size,0},{heap_size,69315695}]
+
+
+in erlang.log:
+----------------------
+===== ALIVE Mon Aug  5 17:56:26 UTC 2013
+Erlang has closed
+/home/fanzo/riak/rel/riak/bin/../lib/os_mon-2.2.9/priv/bin/memsup: Erlang has 
+closed.
+
+===== Mon Aug  5 18:13:22 UTC 2013
+^M
+Crash dump was written to: ./log/erl_crash.dump^M
+eheap_alloc: Cannot allocate 934157120 bytes of memory (of type &quot;heap&quot;).^M
+
+with this initial crash, nothing is written to crash.log or error.log.  There 
+is a big honking erl_crash.dump file though...
+
+*************************************
+* on the next node:
+*************************************
+last lines of console.log
+----------------------
+2013-08-05 17:49:02.789 [info] 
+&lt;0.3014.550&gt;@riak_kv_exchange_fsm:key_exchange:206 Repaired 1 keys during 
+active anti-entropy exchange of 
+{91343852333181432387730302044767688728495783936,3} between 
+{91343852333181432387730302044767688728495783936,riak@riak002} and 
+{114179815416476790484662877555959610910619729920,riak@riak004}
+2013-08-05 18:00:19.830 [info] &lt;0.61.0&gt; alarm_handler: 
+{set,{system_memory_high_watermark,[]}}
+2013-08-05 18:00:56.272 [info] 
+&lt;0.85.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor large_heap &lt;0.7460.0&gt; 
+[{initial_call,{riak_core_vnode,init,1}},{almost_current_function,{eleveldb,get,3}},{message_queue_len,6}]
+ 
+[{old_heap_block_size,0},{heap_block_size,59786060},{mbuf_size,0},{stack_size,43},{old_heap_size,0},{heap_size,40978885}]
+
+in erlang.log:
+----------------------
+===== ALIVE Mon Aug  5 17:56:55 UTC 2013
+/home/fanzo/riak/rel/riak/bin/../lib/os_mon-2.2.9/priv/bin/memsup: Erlang has 
+closed.Erlang has closed
+
+
+===== Mon Aug  5 18:13:33 UTC 2013
+^M
+Crash dump was written to: ./log/erl_crash.dump^M
+eheap_alloc: Cannot allocate 934157120 bytes of memory (of type &quot;heap&quot;).^M
+ 
+*************************************
+* on the next node:
+*************************************
+console.log looks similar to the first
+
+nothing was logged in erlang.log and there was no crash dump.  Looks like the 
+beam proc just crashed hard.
+
+
+*************************************
+* on the next node:
+*************************************
+last lines of console.log
+----------------------
+console.log looks similar to the first
+
+in erlang.log:
+----------------------
+===== Mon Aug  5 18:01:43 UTC 2013
+Erlang has closed
+/home/fanzo/riak/rel/riak/bin/../lib/os_mon-2.2.9/priv/bin/memsup: Erlang has 
+closed.
+^M
+Crash dump was written to: ./log/erl_crash.dump^M
+eheap_alloc: Cannot allocate 2280657000 bytes of memory (of type &quot;heap&quot;).^M
+
+
+If I try to start things back up, the nodes keep periodically crashing, usually 
+within a few minutes.  And I can't put any more data in without it blowing up...
+
+Any help would be appreciated.
+
+Paul Ingalls
+Founder &amp; CEO Fanzo
+p...@fanzo.me
+@paulingalls
+<a  rel="nofollow" href="http://www.linkedin.com/in/paulingalls">http://www.linkedin.com/in/paulingalls</a>
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11891.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd12.html#11892">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail12.html#11892">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11898.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">erlang go boom</span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11898.html">Re: erlang go boom</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11900.html">Re: erlang go boom</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11901.html">Re: erlang go boom</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11904.html">Re: erlang go boom</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11905.html">Re: erlang go boom</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11906.html">Re: erlang go boom</a></span> <span class="sender italic">Jeremy Ong</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11907.html">Re: erlang go boom</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li class="icons-email"><span class="subject"><a href="msg11909.html">Re: erlang go boom</a></span> <span class="sender italic">Paul Ingalls</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg11910.html">Re: erlang go boom</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="erlang go boom">
+<input type="hidden" name="msgid" value="79042683-544A-4E28-BF97-0A042FBC6D2D@fanzo.me">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11892.html">
+<input type="submit" value=" Paul Ingalls ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22erlang+go+boom%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11891.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11898.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">79042683-544A-4E28-BF97-0A042FBC6D2D@fanzo.me</li>
+</ul>
+</div>
+</body>
+</html>

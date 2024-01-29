@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Expected vs Actual Bucket Behavior</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00765" id="c">
+<link rel="index" href="maillist.html#00765" id="i">
+<link rel="prev" href="msg00764.html" id="p">
+<link rel="next" href="msg00766.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00765.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Expected+vs+Actual+Bucket+Behavior%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Expected vs Actual Bucket Behavior</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+D.+Rowell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John D. Rowell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100721" rel="nofollow">Wed, 21 Jul 2010 07:17:50 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Justin, I think we could address both 1) and 2) in another way. The &quot;real
+world&quot; need seems to be restricting the scope of costly operations like
+walking a huge list of keys. Either having distinct buckets or reliable
+lists of keys could solve the problem.</pre><pre>
+
+But simply looking up the (Dynamo) heritage for Riak shows that this is a
+solved problem in other platforms. For instance Amazon's S3 service does
+actual separation of keys per bucket (which is what improving Bitcask in the
+way you described will achieve) but also has a more subtle, and
+complementary solution: prefixes. When you search inside a bucket you can
+specify a key prefix that will serve as a filter.
+
+While I have no idea if their internal implementation of prefixes is
+efficient, I see no reason why we can't have the same functionality in Riak
+and guarantee it is efficient even in distributed cases. If keys are limited
+to some manageable length (say 255 char strings) they could be indexed into
+a distributed (only eventually consistent of course) ordered list or btree
+that could be efficiently queried for ranges. Then to the application writer
+it's just a matter of providing sane keys that will allows for scoping
+searchs in several ways (e.g. per year, per year+month, per lot, etc.)
+
+The suggestion above would not solve all indexing needs but would surely
+allow for the current ones to be refactored into cases that would be
+efficiently solvable.
+
+-jd
+
+2010/7/21 Justin Sheehy &lt;jus...@basho.com&gt;
+
+&gt; I think that we are all (myself included) getting two different issues
+&gt; a bit mixed up in this discussion:
+&gt;
+&gt; 1: storing an implicit index of keys in the Riak key/value store
+&gt;
+&gt; 2: making buckets separate in that a per-bucket operation's
+&gt; performance would not be affected by the content of other buckets
+&gt;
+&gt; The thread started out with a request for #2, but included a
+&gt; suggestion to do #1.  These are actually two different topics.
+&gt;
+&gt; The first issue, implicitly storing a big index of keys, is
+&gt; impractical in a distributed key/value storage system that has Riak's
+&gt; availability goals.  We are very unlikely to implement this as
+&gt; described in the near future.  However, we very much recognize that
+&gt; there are many different ways that people would like to find their
+&gt; data.  In that light, we are working on multiple different efforts
+&gt; that will use the Riak core to provide data storage with more than
+&gt; just &quot;simple&quot; key/value access.
+&gt;
+&gt; The second issue, of isolating buckets, is a much simpler design
+&gt; choice and is also a per-backend implementation detail.  We can create
+&gt; and provide an alternative bitcask adapter that does this.  It will be
+&gt; a real tradeoff: in exchange for buckets not impacting each other as
+&gt; much, the system will consume more filehandles, be a bit less
+&gt; efficient at rebalancing, and will generally make buckets no longer
+&gt; &quot;free&quot;.  This is a reasonable tradeoff in either direction for various
+&gt; applications, and I support making it available as a choice.  I have
+&gt; created a bugzilla entry to track it:
+&gt; <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=480">https://issues.basho.com/show_bug.cgi?id=480</a>
+&gt;
+&gt; I hope that this helps to clarify the issue.
+&gt;
+&gt; -Justin
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00764.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00765">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00765">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00766.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00749.html">Expected vs Actual Bucket Behavior</a></span> <span class="sender italic">Eric Filson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00754.html">Re: Expected vs Actual Bucket Behavior</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00756.html">Re: Expected vs Actual Bucket Behavior</a></span> <span class="sender italic">Eric Filson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00763.html">Re: Expected vs Actual Bucket Behavior</a></span> <span class="sender italic">Daniel Einspanjer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00764.html">Re: Expected vs Actual Bucket Beha...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Expected vs Actual Bucket...</span> <span class="sender italic">John D. Rowell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00766.html">Re: Expected vs Actual Bucket...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00767.html">Re: Expected vs Actual Bu...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg00769.html">Re: Expected vs Actual Bucket...</a></span> <span class="sender italic">Curtis Caravone</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00771.html">Re: Expected vs Actual Bucket...</a></span> <span class="sender italic">Jason J. W. Williams</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg00758.html">Re: Expected vs Actual Bucket Behavior</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg00757.html">Re: Expected vs Actual Bucket Behavior</a></span> <span class="sender italic">Christopher Villalobos</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Expected vs Actual Bucket Behavior">
+<input type="hidden" name="msgid" value="AANLkTikAftFCfSy4x1zTq7_1j6WVnOvpJ6eNVcfAPmsN@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00765.html">
+<input type="submit" value=" John D. Rowell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Expected+vs+Actual+Bucket+Behavior%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00764.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00766.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTikAftFCfSy4x1zTq7_1j6WVnOvpJ6eNVcfAPmsN@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

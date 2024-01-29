@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using withoutFetch with DomainBucket</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#10451" id="c">
+<link rel="index" href="maillist.html#10451" id="i">
+<link rel="prev" href="msg10380.html" id="p">
+<link rel="next" href="msg10368.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10451.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+withoutFetch+with+DomainBucket%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using withoutFetch with DomainBucket</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Daniel+Iwan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Daniel Iwan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130314" rel="nofollow">Thu, 14 Mar 2013 17:35:39 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Brian
+Thanks for your detailed response.
+
+Nothing detects whether there is a vclock or not. If there isn't one
+&gt; provided (the value is `null` in Java), then one isn't sent to Riak -
+&gt; it is not a requirement for a store operation for it to be present. If
+&gt; an object exists when such a store is performed and allow_multi=true
+&gt; for the bucket, then a sibling is created.
+&gt;</pre><pre>
+
+By detection I meant that when withoutFetch is used StoreObject would throw
+an exception
+if no RiakVClock annotation exist. I checked the code and it looks like
+getRiakVClock will not throw it
+and as you say VClock null will be used
+
+&gt;
+&gt; The .withoutFetch() method was added to the StoreObject as a requested
+&gt; feature. It is meant for when you are storing an object that was
+&gt; previously fetched from Riak and want to avoid doing another fetch. If
+&gt; that previous fetch returned nothing (the key was not found) then the
+&gt; vector clock will be null.
+&gt;
+
+I guess another use case would be storing an object if I'm sure key does
+not exist i.e. I can guarantee key uniqueness.
+For that usage I will use VClock field with null. In that caes if sibblings
+are created, each of them will have vtag generated,
+and  riak's java client VClock field is in fact vtag?
+
+According to what Sean Cribbs is saying, client sees only one vclock
+<a  rel="nofollow" href="http://markmail.org/message/n65vsfsqrjpduhwd#query:+page:1+mid:j6ob5r3dtq3nzgxo+state:results">http://markmail.org/message/n65vsfsqrjpduhwd#query:+page:1+mid:j6ob5r3dtq3nzgxo+state:results</a>
+
+Am I understanding that correctly?
+
+
+When talking about deleted keys ... unless you change the default
+&gt; `delete_mode` in Riak's app.config, you're not usually going to get a
+&gt; tombstone - they are reaped after 3s.  Unless either you do a fetch
+&gt; immediately following a delete, you're doing store operations without
+&gt; vclocks with allow_multi=true for the bucket (which is basically
+&gt; &quot;doing it wrong&quot;) immediately after a delete and a sibling gets
+&gt; created, or hit a very small window with multiple writers under heavy
+&gt; load where the read/write cycle interleaves with a delete and a
+&gt; tombstone sibling gets created.
+&gt;
+
+I was thinking about that 3rd case actually, where interleaved delete
+happens,
+or case where fetch is executed and another node does delete. 3s is plenty
+of time.
+I can imagine it would be fairly easy to reproduce that case.
+
+
+&gt; With that being said, yes, unless you set 'returnDeletedVClock(true)`
+&gt; they are silently discarded by the Java client and not passed to the
+&gt; Converter. If that has been set, the default JSONConverter will return
+&gt; a new instance of whatever POJO is being used (if possible - if
+&gt; there's not a default constructor it will throw an exception) and then
+&gt; set a @RiakTombstone annotated boolean field to `true` if one exists.
+&gt; It detects this by calling the .isDeleted() method of the returned
+&gt; IRiakObject.
+&gt;
+
+Understood. I think in case of custom converter I need to implement it
+myself in similar fashion i.e. using isDeleted()
+and setting it in my POJO when fromDomain() gets called.
+To handle deleted objects correctly (i.e. do not resurrect them) in in
+those corner cases mentioned above I assume I need to set
+returnDeletedVClock(true)
+and during sibbling resolving pick the one that has isDeleted equal true.
+At this point should I store it again with its vclock, or better abort
+store by using MutationWithCondition?
+I guess 2nd option is better since I want that key to remain 'deleted' and
+1st option would resurrect it?
+
+When I have a moment I'm willing to make changes for DomainBucket to
+support withoutFetch unless you have it on your plate already.
+But first I need to learn how to use git...
+
+Daniel
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10380.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#10451">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10451">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10368.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10366.html">Using withoutFetch with DomainBucket</a></span> <span class="sender italic">Daniel Iwan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10378.html">Re: Using withoutFetch with DomainBucket</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10379.html">Re: Using withoutFetch with DomainBucket</a></span> <span class="sender italic">Daniel Iwan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10380.html">Re: Using withoutFetch with DomainBucket</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using withoutFetch with DomainBucket</span> <span class="sender italic">Daniel Iwan</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using withoutFetch with DomainBucket">
+<input type="hidden" name="msgid" value="CANOWVA3cLhpazwtGO_EEwjNtJz5-1JW_BJwNhrR-xNTvzyzYWA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10451.html">
+<input type="submit" value=" Daniel Iwan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+withoutFetch+with+DomainBucket%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10380.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10368.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANOWVA3cLhpazwtGO_EEwjNtJz5-1JW_BJwNhrR-xNTvzyzYWA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

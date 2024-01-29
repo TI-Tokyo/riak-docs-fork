@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: 50-100 ops/sec on a 5 Node cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07843" id="c">
+<link rel="index" href="maillist.html#07843" id="i">
+<link rel="prev" href="msg07835.html" id="p">
+<link rel="next" href="msg07845.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07843.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+50%5C-100+ops%5C%2Fsec+on+a+5+Node+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: 50-100 ops/sec on a 5 Node cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Yousuf+Fauzan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Yousuf Fauzan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120629" rel="nofollow">Fri, 29 Jun 2012 12:56:45 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thats a very useful information. Thanks guys.
+
+I figured out the problem was with my data loading script. Plus, instead of
+going through ELB, I created a pool of connections for each node.</pre><pre>
+
+Now I am getting around 1k writes/sec. I think I could further improve this
+my using a more powerful machine for loading data (I am using small
+instance of EC2)
+
+Thanks all for your help.
+
+--
+Yousuf Fauzan
+<a  rel="nofollow" href="http://fauzism.com">http://fauzism.com</a>
+
+On Fri, Jun 29, 2012 at 10:25 PM, Mark Rose &lt;markr...@markrose.ca&gt; wrote:
+
+&gt; There are other reasons to avoid using an ELB for this purpose I'd like to
+&gt; add.
+&gt;
+&gt; ELB works by resolving a DNS name to an A record, so if the ELB instance
+&gt; goes down or has trouble, you will have trouble as well. This is also the
+&gt; source of the scaling up issue as it takes time for the DNS records on the
+&gt; client machines to expire and for new A records to be returned.
+&gt;
+&gt; Also, you have to pay per request, plus the bandwidth used. Not to mention
+&gt; the latency of client-&gt;elb-&gt;server instead of running a proxy on the local
+&gt; machine.
+&gt;
+&gt; Instead, I would recommend setting up HAProxy on every client machine, and
+&gt; configure HAProxy to connect to some or all of your nodes. It will react
+&gt; much faster to node status, plus you get useful reports and whatnot. It's
+&gt; also extremely efficient, using little CPU and memory.
+&gt;
+&gt; -Mark
+&gt;
+&gt;
+&gt; On Fri, Jun 29, 2012 at 12:28 PM, Sean O'Connor &lt;s...@focuslab.io&gt; wrote:
+&gt;
+&gt;&gt; There are a few things you probably want to look at in regard to how your
+&gt;&gt; using ELB.
+&gt;&gt;
+&gt;&gt; If your using the straight ELB offering (e.g. not part of a virtual
+&gt;&gt; private cloud), that's probably your problem.  This form of ELB was really
+&gt;&gt; only designed for routing traffic from outside the AWS network to servers
+&gt;&gt; within EC2.  Using it route traffic with the AWS tends to be very
+&gt;&gt; slow/throttled as your traffic has to go out to the public network and then
+&gt;&gt; back into the private AWS network.
+&gt;&gt;
+&gt;&gt; Recently (i.e. the last two or three weeks) Amazon announced a new
+&gt;&gt; version of ELB that you can use with virtual private cloud to route traffic
+&gt;&gt; between VPC networks.  I haven't tried it yet but in theory this should
+&gt;&gt; avoid many of the problems mentioned above.
+&gt;&gt;
+&gt;&gt; One last thing to be aware of with ELB is it can often take a while for
+&gt;&gt; an ELB instance to deal with spikes in capacity (e.g. load tests).  Under
+&gt;&gt; the covers ELB is basically as series of managed EC2 instances running a
+&gt;&gt; load balancer program.  When your capacity exceeds what one instance can
+&gt;&gt; handle, they'll spin up more instances but that takes time to happen.
+&gt;&gt;  Accordingly when doing load testing with ELB, you often need to &quot;prime&quot;
+&gt;&gt; the ELB by running test traffic for 10-15 minutes and then start recording
+&gt;&gt; your benchmark data.
+&gt;&gt;
+&gt;&gt; With the possible exception of the new VPC ELB offering, I would strongly
+&gt;&gt; recommend against using ELB to load balance traffic to your riak cluster.
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; Sean O'Connor
+&gt;&gt; CTO/Co-Founder
+&gt;&gt; (845)669-0883
+&gt;&gt; <a  rel="nofollow" href="http://focuslab.io">http://focuslab.io</a>
+&gt;&gt;
+&gt;&gt; On Thursday, June 28, 2012 at 4:03 PM, Ruslan Bukin wrote:
+&gt;&gt;
+&gt;&gt; On Tue, Jun 26, 2012 at 04:29:38PM +0530, Yousuf Fauzan wrote:
+&gt;&gt;
+&gt;&gt; Hello,
+&gt;&gt;
+&gt;&gt; Here is my setup of Riak 1.1.4
+&gt;&gt;
+&gt;&gt;  - 5 Nodes
+&gt;&gt; - ami-a29943cb (EC2 AMI)
+&gt;&gt; - m1.large (7.5GB Ram, 4 EC2 compute instances)
+&gt;&gt; - EBS storage
+&gt;&gt; - LevelDB backend
+&gt;&gt; - Python Client with Protobuf (on a separate machine)
+&gt;&gt;
+&gt;&gt; While loading data I am getting around 50 ops/sec.
+&gt;&gt;
+&gt;&gt; I tried running basho benchmark on the setup and it showed 100 ops/sec
+&gt;&gt; throughput.
+&gt;&gt;
+&gt;&gt; After talking to people or Riak IRC, I realized that upwards of 1.5K
+&gt;&gt; ops/sec is what I should be getting.
+&gt;&gt;
+&gt;&gt; Could anyone help me in figuring out what I am doing wrong?
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; are your riak nodes located in the same DC?
+&gt;&gt;
+&gt;&gt; -Ruslan
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07835.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07843">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07843">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07845.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07787.html">50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07782.html">50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07827.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Ruslan Bukin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07833.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Sean O'Connor</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07835.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Mark Rose</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: 50-100 ops/sec on a 5 Node clus...</span> <span class="sender italic">Yousuf Fauzan</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07845.html">Re: 50-100 ops/sec on a 5 Node clus...</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg07788.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07789.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Reid Draper</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07790.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07792.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07793.html">Re: 50-100 ops/sec on a 5 Node cluster</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: 50-100 ops/sec on a 5 Node cluster">
+<input type="hidden" name="msgid" value="CAKkeR+Ye2OPMBinHC0b-vTBGKMHE0uKm-ts_DctjhzqKz9CCig@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07843.html">
+<input type="submit" value=" Yousuf Fauzan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+50%5C-100+ops%5C%2Fsec+on+a+5+Node+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07835.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07845.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAKkeR+Ye2OPMBinHC0b-vTBGKMHE0uKm-ts_DctjhzqKz9CCig@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

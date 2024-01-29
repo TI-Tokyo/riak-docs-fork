@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: The power of the siblings....</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#05013" id="c">
+<link rel="index" href="maillist.html#05013" id="i">
+<link rel="prev" href="msg04994.html" id="p">
+<link rel="next" href="msg05027.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05013.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+The+power+of+the+siblings....%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: The power of the siblings....</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mike+Oxford%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mike Oxford</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111003" rel="nofollow">Mon, 03 Oct 2011 21:07:47 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>SSDs are an option, sure.  I have one in my laptop; we have a bunch
+of X25s on the way already for the servers.  Yes, they're good.  But
+IOPS is not the core issue since the whole thing can sit in RAM
+which is faster yet.  Disk-flush &quot;later&quot; isn't time critical.  Getting the
+data into the buckets is.</pre><pre>
+
+5k per second per key, over multiple concurrent writers (3-6 initially,
+possibly more later.) Pre-cache+flush doesn't work because you
+lose the interleave from the multiple writers.  NTP's resolution is only
+&quot;so good.&quot; :)
+
+The buckets can by cycled/sharded based on time, so slicing it into
+&quot;5 second buckets of children&quot; is possible but this is just a specialization
+of the sharding ideology.
+
+Point being: If it's basically used as an append-only-bucket (throw it
+all in, sort it out later) how painful, underneath, is the child resolution vs
+the traditional &quot;get it, write it&quot; and then dealing with children ANYWAY
+when you do get collisions (which, at 5kps, you ARE going to end up with.
+
+This was touched on that it uses lists underneath.  Given high-end modern
+hardware, (6 core CPUs, SSDs, etc.) ballpark, where would you guess the
+red-line is?  10k children? 25k? 100k?  I won't hold anyone to it, but if
+you say &quot;hell no, children are really expensive&quot; then I'll abort the idea
+right here compared to &quot;they're pretty efficient underneath, it might be
+doable.&quot;
+
+I'm familiar with all the HA/clustering &quot;normal stuff&quot; but I'm curious
+about Riak in particular because while Riak isn't built to be fast,
+I'm curious about how much load you can push a ring through before
+the underlying architecture stresses.
+
+I know Yammer was putting some load on theirs; something around 4k
+per sec over a few boxes but not to a single key.
+
+The big &quot;problem&quot; is that you have to have &quot;knowledge of the buckets&quot;
+to later correlate them. Listing buckets is expensive.  I don't want to
+hard-code bucket names into the application space if I can help it.
+Writing &quot;list of buckets&quot; to another key simply moves the bottleneck
+from one key to another.  Shifting buckets based on time works, but
+it's obnoxious to have to correlate at 10 second intervals ....
+8640 buckets worth of obnoxious.  Every day.  Much easier to sort a
+large dataset all at once from a single bucket.
+
+Assuming an entry size of 300 bytes that works out to around
+~130G per day, which will fit in RAM for the boxes.  Correlation can be
+done on separate boxes later.  GigE cards bonded, etc.
+
+Removing the hardware limitations, where are the guesses on where
+Riak itself will curl up in a corner, sob and not come out?
+
+If you had to do it, what suggestions would you all propose?
+(Yes, I know I could just memcache with backup writes to
+secondary/tertiary copies and flush later ... I'm interested in Riak.  :)
+
+TIA!
+
+-mox
+
+On Mon, Oct 3, 2011 at 9:11 AM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+&gt; Mike,
+&gt; I'd say you're going to be pushing the limits of Riak pretty hard given that
+&gt; fact that you're talking about 5k writes-pre-second on a _single_ key.  I
+&gt; hope you listen to Artur Bergman and run SSDs in your data center, heh [1].
+&gt;  My first thought would be to batch those writes locally for a given period
+&gt; of time and then flush to Riak.
+&gt; To your question, if you really have 5k/s then that's 300k siblings for one
+&gt; minute.  Given that Riak uses lists for siblings underneath I highly doubt
+&gt; this will be feasible.  Also, will there be many concurrent writers like
+&gt; this?  I.e. many keys being rapidly updated?
+&gt; -Ryan
+&gt; [1]: <a  rel="nofollow" href="http://www.youtube.com/watch?v=H7PJ1oeEyGg">http://www.youtube.com/watch?v=H7PJ1oeEyGg</a>
+&gt; On Mon, Sep 19, 2011 at 10:44 PM, Mike Oxford &lt;moxf...@gmail.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; High performance updates to a single bucket/key space where ordering
+&gt;&gt; isn't critical.  Say, 5k TPS into a single bucket/key.  Data is
+&gt;&gt; written out such that it can be ordered later.
+&gt;&gt;
+&gt;&gt; I'm aware of sharding/fragmenting/splitting and what not ... I'm
+&gt;&gt; looking purely at intra-bucket performance.  Yes, 5k is going to run
+&gt;&gt; into a lot of contention; that's the point.
+&gt;&gt;
+&gt;&gt; Options:
+&gt;&gt; 1)  Read old data, [NewData|Olddata] and write it back out, dealing
+&gt;&gt; with siblings as they arise, -or-
+&gt;&gt; 2)  Go full sibling explosion (read: force it) and resolve the whole
+&gt;&gt; thing at intervals, say, once per day, offline or on another system.
+&gt;&gt; The logistics of this are doable in my case, so let's not worry about
+&gt;&gt; them and just focus on raw TPS.
+&gt;&gt;
+&gt;&gt; #1 has more round trips and still has siblings to deal with.
+&gt;&gt; #2 takes up more space but you skip the pull/update/push in lieu of
+&gt;&gt; &quot;just push it, we'll deal with it later.&quot;
+&gt;&gt;
+&gt;&gt; Thoughts from those in the know?  How expensive, really, is forcing
+&gt;&gt; the explosion?  Has anyone done this (intentionally or not) and can
+&gt;&gt; share what they ran into with real data sets?
+&gt;&gt;
+&gt;&gt; Thanks!
+&gt;&gt;
+&gt;&gt; -mox
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04994.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#05013">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05013">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05027.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04789.html">The power of the siblings....</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04993.html">Re: The power of the siblings....</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04994.html">Re: The power of the siblings....</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: The power of the siblings....</span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05027.html">Re: The power of the siblings....</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05033.html">Re: The power of the siblings....</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05034.html">Re: The power of the siblings....</a></span> <span class="sender italic">Andy Skelton</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: The power of the siblings....">
+<input type="hidden" name="msgid" value="CADB2Lbg_xqEN8Eh1WEa9q4WujK6+Uq062awb1pU2YsDHN20F=Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05013.html">
+<input type="submit" value=" Mike Oxford ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+The+power+of+the+siblings....%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04994.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05027.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CADB2Lbg_xqEN8Eh1WEa9q4WujK6+Uq062awb1pU2YsDHN20F=Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

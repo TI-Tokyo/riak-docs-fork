@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: List keys and multiple buckets</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#05592" id="c">
+<link rel="index" href="mail2.html#05592" id="i">
+<link rel="prev" href="msg05591.html" id="p">
+<link rel="next" href="msg05587.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05592.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+List+keys+and+multiple+buckets%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: List keys and multiple buckets</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111115" rel="nofollow">Tue, 15 Nov 2011 11:11:57 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Izhar,
+
+Fredrik's suggestion for using 2i sounds like a good place to start and
+will keep your riak install as simple as possible.  If you name your keys
+as &lt;userid&gt;:&lt;subkey&gt; and store them in the same bucket, you can use 2I to
+retrieve ranges of primary keys as a range from &lt;userid&gt;: to &lt;userid&gt;;
+(using the colon/semicolon is just a trick to make the ranging work
+nicely).  2I queries do not work across buckets, and to use 2I you are
+currently restricted to eleveldb as a backend.</pre><pre>
+
+Here's a small example using the riak console - apologies for not having a
+small client library based snippet.  It creates 3 objects, two for user k1,
+one for user k2 and finds them using 2I on the primary key.
+
+(dev1@127.0.0.1)1&gt; {ok,C}=riak:local_client().
+{ok,{riak_client,'dev1@127.0.0.1',undefined}}
+(dev1@127.0.0.1)14&gt; C:put(riak_object:new(&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;k1:s1&quot;&gt;&gt;,&lt;&lt;&quot;key 1
+subkey 1&quot;&gt;&gt;)).
+ok
+(dev1@127.0.0.1)13&gt; C:put(riak_object:new(&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;k1:s2&quot;&gt;&gt;,&lt;&lt;&quot;key 1
+subkey 2&quot;&gt;&gt;)).
+ok
+(dev1@127.0.0.1)15&gt; C:put(riak_object:new(&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;k2:s1&quot;&gt;&gt;,&lt;&lt;&quot;key 2
+subkey 1&quot;&gt;&gt;)).
+ok
+(dev1@127.0.0.1)16&gt; C:get_index(&lt;&lt;&quot;b&quot;&gt;&gt;, {range, &lt;&lt;&quot;$key&quot;&gt;&gt;, &lt;&lt;&quot;k1:&quot;&gt;&gt;,
+&lt;&lt;&quot;k1;&quot;&gt;&gt;}).
+{ok,[&lt;&lt;&quot;k1:s1&quot;&gt;&gt;,&lt;&lt;&quot;k1:s2&quot;&gt;&gt;]}
+
+
+Here's a little more info on the million-bucket option.
+
+In 1.0, list_keys no longer blocks vnodes (unless you have async_vnodes
+disabled).
+
+As Kresten said, bucket properties are only stored in the ring once they
+are modified from the default.  Buckets that use the default properties do
+not take up space.  It is possible to modify the default bucket properties
+if you need to change it for all buckets by setting default_bucket_props in
+the riak_core section of app.config, but that does require more
+thought/testing when doing upgrades.
+
+It is up to the backend implementation to decide how to handle bucket/key
+splits.  Bitcask and eleveldb include the bucket as part of the key and
+stores all bucket/keys for a partition together, innostore creates a
+separate table so although it can restrict how many filehandles it uses
+performance would suffer due to constant open/closes of the table.
+
+For listing keys, bitcask will have to traverse all the keys (as internally
+it uses a hashtable for bucket/keys) but eleveldb stores them ordered so
+can do a quick retrieval (similar to how we do it with 2I).  So, If you
+don't override bucket properties then the eleveldb backend is the best
+choice, but 200M buckets is many orders of magnitude more than we have
+tested, so your mileage may vary.
+
+BR,  Jon
+
+
+On Tue, Nov 15, 2011 at 10:34 AM, Alexander Sicular &lt;sicul...@gmail.com&gt;wrote:
+
+&gt;  Refresh my memory, does leveldb open new files for each bucket? I'm
+&gt; thinking there may be some file descriptor penalty for this many buckets.
+&gt;
+&gt; Otherwise you could set your default bucket properties to what you would
+&gt; want for these user buckets and then change properties if need be for a
+&gt; handful of other buckets you may need in your application.
+&gt;
+&gt; Cheers,
+&gt;
+&gt;
+&gt; Alexander Sicular
+&gt; @siculars
+&gt; <a  rel="nofollow" href="http://sicuars.posterous.com">http://sicuars.posterous.com</a>
+&gt;
+&gt; On Tuesday, November 15, 2011 at 12:17 PM, Kresten Krab Thorup wrote:
+&gt;
+&gt;
+&gt; On Nov 15, 2011, at 5:07 PM, Izhar Ravid wrote:
+&gt;
+&gt; Assuming I wish to store user information for some 200M users, and create
+&gt; a bucket per user. Each user bucket will contain several dozen objects.
+&gt; - Will list-keys on such a user bucket be a reasonable action?
+&gt;
+&gt; When using leveldb as the backend, list-keys is isolated to a bucket. As
+&gt; far as I can see, list_keys is a &quot;blocking operation&quot; meaning that a vnode
+&gt; doing list_keys can not respond to other requests while it is processing.
+&gt; So; in this case ... using leveldb and ~dozens of keys per bucket it does
+&gt; sound reasonable.
+&gt;
+&gt; - Is list-keys isolated to a bucket?
+&gt; - Is it reasonable to expect Riak to hold 200M buckets?
+&gt;
+&gt; I'd say that it depends on your need to configure bucket properties.
+&gt;
+&gt; Riak stores bucket properties in &quot;the ring&quot;, which is a riak cluster's
+&gt; distributed state management.
+&gt;
+&gt; The ring is not designed to have 200M entries as far as I know; and if you
+&gt; need to set bucket properties then the ring needs to hold those values (if
+&gt; you use the default properties it requires no state).
+&gt;
+&gt; So, ... the answer is probably no in this case; 200M buckets is not
+&gt; reasonable, because you will likely eventually want to define properties
+&gt; for these buckets.
+&gt;
+&gt; Kresten
+&gt;
+&gt;
+&gt; Kind regards,
+&gt; Izhar.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&lt;riak-users@lists.basho.com&gt;
+&gt; &gt;
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+
+-- 
+Jon Meredith
+Platform Engineering Manager
+Basho Technologies, Inc.
+jmered...@basho.com
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05591.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#05592">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#05592">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05587.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05581.html">List keys and multiple buckets</a></span> <span class="sender italic">Izhar Ravid</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05582.html">RE: List keys and multiple buckets</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05584.html">Re: List keys and multiple buckets</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05585.html">Re: List keys and multiple buckets</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05591.html">RE: List keys and multiple buckets</a></span> <span class="sender italic">Izhar Ravid</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: List keys and multiple buckets</span> <span class="sender italic">Jon Meredith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: List keys and multiple buckets">
+<input type="hidden" name="msgid" value="CAGgQeSuMVUnuFXxaiyh7UnHyXTeWUw0SZLq6iWcan0dWORjfqA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05592.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+List+keys+and+multiple+buckets%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05591.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05587.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGgQeSuMVUnuFXxaiyh7UnHyXTeWUw0SZLq6iWcan0dWORjfqA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

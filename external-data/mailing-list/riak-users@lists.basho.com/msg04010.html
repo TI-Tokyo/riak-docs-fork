@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riaksearch performace when numFound is high</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04010" id="c">
+<link rel="index" href="maillist.html#04010" id="i">
+<link rel="prev" href="msg04003.html" id="p">
+<link rel="next" href="msg04018.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04010.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+performace+when+numFound+is+high%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riaksearch performace when numFound is high</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Greg+Pascale%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Greg Pascale</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110714" rel="nofollow">Thu, 14 Jul 2011 15:20:21 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Ryan,
+
+Yes we are using 14.2.</pre><pre>
+
+I think I get what you are saying about inline fields. It looks like it will
+fix some of our problems, but not all of them. If you'll indulge me in a
+little contrived example, I think I can explain what I mean.
+
+Let's say I'm implementing a simple twitter clone. In my system, tweets have
+a user, text, date and can be either public or private - so one might look
+like
+
+{
+    username: greg,
+    public: true,
+    text: &quot;I bought a new guitar!&quot;,
+    date: 07/14/11
+}
+
+Let's say that my service is popular - I have 100k users, each of whom has
+published exactly 100 tweets, and exactly half of the tweets are public, the
+rest are private. So I have 10 million tweets total and 5 million of them
+are public.
+
+Query 1: &quot;username:greg AND public:false&quot; - this finds all tweets by greg
+that are private. In this case &quot;username:greg&quot; matches 100 results and
+&quot;public:false&quot; matches 5 million. My tests have shown that the performance
+of this compound query will be roughly equivalent to the worse of the two
+(&quot;public:false&quot;) - so this query will be way too slow.
+However, since &quot;public&quot; values are nice and small, I can inline it for a big
+win.
+
+Query 2: &quot;text:guitar AND date:07/14/11&quot; - this finds all tweets from today
+that contain &quot;guitar&quot;. Suppose there are 100k tweets that contain &quot;guitar&quot;,
+but it's early in the day so there have only been 1k tweets in total on
+07/14/11. My result set is therefore no bigger than 1k (probably much
+smaller unless all my users bought new guitars today), but this query is
+still bounded by the &quot;text:guitar&quot; piece which matches 100k results. In this
+case, inlining date wouldn't help because it's not the slow part, and
+indexing on the text field isn't practical - it's too big.
+
+If you could follow that, am I understanding this correctly? In our system,
+we have some queries like #1 above, but since we support full text search,
+many like #2 as well. Do you have any suggestions for what we could do to
+make queries like #2 performant?
+
+Thanks,
+-Greg
+
+
+
+On Wed, Jul 13, 2011 at 7:19 PM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+
+&gt; Greg,
+&gt;
+&gt; I'm assuming you are using 14.2.
+&gt;
+&gt; 1) There is a bug in 14.2 that will cause a (potentially very fast growing)
+&gt; memory leak when using AND.  This is unfortunate, sorry.  The good news I
+&gt; have since patched it [1].
+&gt;
+&gt; 2) This is your best course of action, and you were so close but you've
+&gt; actually crossed your fields.  That is, the inline field should be the one
+&gt; that contains the more common term (i.e. the 'text' field).  So you should
+&gt; perform a range query on your date with a filter on the text inline field.
+&gt;  Obviously, the more terms in this field the more the index will inflate
+&gt; (space-wise), but if you can live with that then it should reduce your
+&gt; latency substantially (famous last words).  Please try this and get back to
+&gt; me.
+&gt;
+&gt; 3) That is a very well written article, props to the author.  However, I
+&gt; would leave this as a last resort.  Try what I mentioned in #2, and if
+&gt; that's not enough to get you by then let's brainstorm.
+&gt;
+&gt; [1]:
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak_search/commit/cd910c2519f94e9d7e8a8e21894db9d0eecdd5b4">https://github.com/basho/riak_search/commit/cd910c2519f94e9d7e8a8e21894db9d0eecdd5b4</a>
+&gt;
+&gt;
+&gt; On Wed, Jul 6, 2011 at 2:43 PM, Greg Pascale &lt;g...@clipboard.com&gt; wrote:
+&gt;
+&gt;&gt; Hi,
+&gt;&gt;
+&gt;&gt; I'm looking at ways to improve riaksearch queries that produce a lot of
+&gt;&gt; matches.
+&gt;&gt;
+&gt;&gt; In my use case, I only ever want the top 20 results for any query, and
+&gt;&gt; results should be ordered by date (which is encoded in the key). For
+&gt;&gt; searches with few matches (numFound &lt; ~1000), performance is great. For
+&gt;&gt; searches with more matches (numFound &gt; ~10000), performance starts to lag
+&gt;&gt; even though I only ever want the top 20. I assume this is because the system
+&gt;&gt; needs to fetch and sort all of the results to know what the top 20 are, but
+&gt;&gt; I'm hoping I can exploit the constraints of my use case in some way to
+&gt;&gt; increase performance. I've looked at the following approaches.
+&gt;&gt;
+&gt;&gt; 1) AND the &quot;text:&quot; term with a small date range (e.g. text:&lt;common word&gt;
+&gt;&gt; AND date:[&lt;yesterday to today&gt;]). This reduces the result set, but
+&gt;&gt; performance does not improve. At best, the performance is as good as simply
+&gt;&gt; doing the &quot;text:&lt;common word&gt;&quot; search without the date range, and in some
+&gt;&gt; cases worse.
+&gt;&gt;
+&gt;&gt; 2) Same as above, but make the date an inline field. From what I could
+&gt;&gt; find on the topic, it sounded like this is exactly what inline fields or
+&gt;&gt; for, but I was disappointed to discover it performed far worse than even the
+&gt;&gt; compound query above.
+&gt;&gt;
+&gt;&gt; 3) In this article &lt;<a  rel="nofollow" href="http://blog.inagist.com/searching-with-riaksearch">http://blog.inagist.com/searching-with-riaksearch</a>&gt;,
+&gt;&gt; which I was linked to from somewhere on the basho site, the author describes
+&gt;&gt; a technique in which he calls search_fold directly and stops after he's
+&gt;&gt; received enough results. He claims this is possible in his case because
+&gt;&gt; results are returned in key order, and he's chosen his keys to match the
+&gt;&gt; desired ordering of his results. My keys have the same property, as I'm
+&gt;&gt; already using the presort=key option. Is this behavior of search_fold a
+&gt;&gt; lucky side-effect, or is this actually guaranteed to work?
+&gt;&gt;
+&gt;&gt; Am I simply expecting too much of riaksearch here, or is there a way to
+&gt;&gt; make this work? If all else fails, I suppose I could divide my data into
+&gt;&gt; more buckets, but I'm hoping to avoid that as it would make querying much
+&gt;&gt; more complex.
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; -Greg
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04003.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04010">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04010">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04018.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03946.html">riaksearch performace when numFound is high</a></span> <span class="sender italic">Greg Pascale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04003.html">Re: riaksearch performace when numFound is high</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riaksearch performace when numFound is high</span> <span class="sender italic">Greg Pascale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04018.html">Re: riaksearch performace when numFound is high</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04021.html">Re: riaksearch performace when numFound is h...</a></span> <span class="sender italic">Greg Pascale</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riaksearch performace when numFound is high">
+<input type="hidden" name="msgid" value="CAKh0p8XTOmL6Ap_ECaCAWnZ+domFJtha2aoaQCW=OPELi60MtQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04010.html">
+<input type="submit" value=" Greg Pascale ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+performace+when+numFound+is+high%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04003.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04018.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAKh0p8XTOmL6Ap_ECaCAWnZ+domFJtha2aoaQCW=OPELi60MtQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: High volume data series storage and queries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04259" id="c">
+<link rel="index" href="maillist.html#04259" id="i">
+<link rel="prev" href="msg04258.html" id="p">
+<link rel="next" href="msg04263.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04259.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+volume+data+series+storage+and+queries%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: High volume data series storage and queries</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110808" rel="nofollow">Mon, 08 Aug 2011 12:33:29 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>It sounds like a potentially interesting use case.
+
+The questions that immediately enter my head are:
+* How much data do you currently have? 
+* How much data do you plan to have? 
+* Do you have a data retention policy? If so, what is it? How do you plan to 
+implement it?
+* What's the anticipated rate of growth per day? Week? Year?
+* What type of queries will you have? Is it a fixed set of queries? Is it a 
+decision support system?
+* What does your read to write ratio look like?</pre><pre>
+
+Your plan to support Riak with a hybrid system isn't that out of whack; it's 
+very doable. 
+
+You can certainly do the type of querying you've described through careful 
+choice of key names, sorting in memory, and only using the first N data points 
+in a given Map Reduce query result. The main reason to not perform range 
+queries in Riak is that they'll result in full key space scans across the Riak 
+cluster. If you're using bitcask as your backend then it's an in memory scan, 
+otherwise you're doing a much more costly scan from disk. And, since key names 
+are hashed as they are partitioned across the cluster, you're not going to get 
+the benefit of sequential disk scan performance like you might get with a 
+traditional database.
+
+The only thing that worries me is the phrase &quot;should grow more than what a 
+'vanilla' RDBMS would support&quot;. Are you thinking 1TB? 10TB? 50TB? 500TB? I'm 
+trying to get a handle on what size and performance characteristics you're 
+looking for before diving into how to look at your system vs. saying &quot;Hell if I 
+know, does someone else on the list have a good idea?&quot;
+
+---
+Jeremiah Peschka - Founder, Brent Ozar PLF, LLC
+Microsoft SQL Server MVP
+
+On Aug 8, 2011, at 11:21 AM, Paul O wrote:
+
+&gt; Hello Riak enthusiasts,
+&gt; 
+&gt; I am trying to design a solution for storing time series data coming from a 
+&gt; very large number of potential high-frequency sources.
+&gt; 
+&gt; I thought Riak could be of help, though based on what I read about it I can't 
+&gt; use it without some other layer on top of it.
+&gt; 
+&gt; The problem is I need to be able to do range queries over this data, by the 
+&gt; source. Hence, I want to be able to say &quot;give me the N first data points for 
+&gt; source S between time T1 and time T2.&quot;
+&gt; 
+&gt; I need to store this data for a rather long time, and the expected volume 
+&gt; should grow more than what a &quot;vanilla&quot; RDBMS would support.
+&gt; 
+&gt; Another thing to note is that I can restrict the number of data points to be 
+&gt; returned by a query, so no query would return more than MaxN data points.
+&gt; 
+&gt; I thought about doing this the following way:
+&gt; 
+&gt; 1. bundle date time series in batches of MaxN, to ensure that any query would 
+&gt; require reading at most two batches. The batches would be store inside Riak.
+&gt; 2. Store the start-time, end-time, size and Riak batch ID in a MySQL (or 
+&gt; PostgreSQL) DB.
+&gt; 
+&gt; My thinking is such a strategy would allow me to persist data in Riak and 
+&gt; linearly grow with the data, and the index would be kept in a RDBM for fast 
+&gt; range queries.
+&gt; 
+&gt; Does it sound sensible to use Riak this way? Does this make you 
+&gt; laugh/cry/shake your head in disbelief? Am I overlooking something from Riak 
+&gt; which would make all this much better?
+&gt; 
+&gt; Thanks and best regards,
+&gt; 
+&gt; Paul
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04258.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04259">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04259">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04263.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04258.html">High volume data series storage and queries</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: High volume data series storage and queries</span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04263.html">Re: High volume data series storage and queries</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04264.html">Re: High volume data series storage and que...</a></span> <span class="sender italic">Pablo Chacin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04267.html">Re: High volume data series storage and...</a></span> <span class="sender italic">Paul O</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04273.html">Re: High volume data series storage and...</a></span> <span class="sender italic">Pablo Chacin</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04265.html">Re: High volume data series storage and que...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04268.html">Re: High volume data series storage and...</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04279.html">Re: High volume data series storag...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04280.html">Re: High volume data series storag...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04281.html">Re: High volume data series st...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04282.html">Re: High volume data serie...</a></span> <span class="sender italic">Les Mikesell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: High volume data series storage and queries">
+<input type="hidden" name="msgid" value="65D2146B-A7AD-4A40-9591-036D51A44D7A@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04259.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+volume+data+series+storage+and+queries%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04258.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04263.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">65D2146B-A7AD-4A40-9591-036D51A44D7A@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

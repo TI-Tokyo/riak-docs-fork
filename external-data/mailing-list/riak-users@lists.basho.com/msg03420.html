@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak doesn't use consistent hashing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03420" id="c">
+<link rel="index" href="maillist.html#03420" id="i">
+<link rel="prev" href="msg03419.html" id="p">
+<link rel="next" href="msg03436.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03420.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+doesn%27t+use+consistent+hashing%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak doesn't use consistent hashing</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ben+Tilly%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ben Tilly</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110526" rel="nofollow">Thu, 26 May 2011 07:21:45 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Performance is fine.  However requests get a &quot;not found&quot; response for an
+extended period of time.  See
+<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-May/thread.html#4078for">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-May/thread.html#4078for</a>
+previous discussion of what sounds like the same issue.</pre><pre>
+
+On Thu, May 26, 2011 at 6:57 AM, Jonathan Langevin &lt;
+jlange...@loomlearning.com&gt; wrote:
+
+&gt; That sounds quite disconcerting. What happens to the performance of the
+&gt; cluster when this occurs?*
+&gt;
+&gt;  &lt;<a  rel="nofollow" href="http://www.loomlearning.com/">http://www.loomlearning.com/</a>&gt;
+&gt;  Jonathan Langevin
+&gt; Systems Administrator
+&gt; Loom Inc.
+&gt; Wilmington, NC: (910) 241-0433 - jlange...@loomlearning.com -
+&gt; www.loomlearning.com - Skype: intel352
+&gt; *
+&gt;
+&gt;
+&gt; On Thu, May 26, 2011 at 1:54 AM, Greg Nelson &lt;gro...@dropcam.com&gt; wrote:
+&gt;
+&gt;&gt;  I've been doing some digging through the details of how a node joins a
+&gt;&gt; cluster.  When you hear that Riak uses consistent hashing, you'd expect it
+&gt;&gt; to distribute keys to nodes by hashing keys onto the ring AND hashing nodes
+&gt;&gt; onto the ring.  Keys belong to the closest node on the ring, in the
+&gt;&gt; clockwise direction.  Add a node, it hashes onto the ring and takes over
+&gt;&gt; some keys.  Ordinarily the node would hash onto the ring in several places,
+&gt;&gt; to achieve better spread.  Some data (roughly 1 / #nodes) moves to the new
+&gt;&gt; node from each of the other nodes, and everything else stays the same.
+&gt;&gt;
+&gt;&gt; In what Amazon describes as operationally simpler (strategy 3 in the
+&gt;&gt; Dynamo paper), the ring is instead divided into equally-sized partitions.
+&gt;&gt;  Nodes are hashed onto the ring, and preflists are calculated by walking
+&gt;&gt; clockwise from a partition, skipping partitions on already visited nodes.
+&gt;&gt;  Riak does something similar: it divides the ring into equally-sized
+&gt;&gt; partitions, then nodes &quot;randomly&quot; claim partitions.  However, the skipping
+&gt;&gt; bit isn't part of Riak's preflist calculation.  Instead, nodes claim
+&gt;&gt; partitions in such a way as to be spaced out by target_n_val, to obviate the
+&gt;&gt; need for skipping.
+&gt;&gt;
+&gt;&gt; Now, getting back to what happens when a node joins.  The new node
+&gt;&gt; calculates a new ring state that maintains the target_n_val invariant, as
+&gt;&gt; well as trying to keep even spread of partitions per node.  The algorithm
+&gt;&gt; (default_choose_claim) is heuristic and greedy in nature, and recursively
+&gt;&gt; transfers partitions to the new node until optimal spread is achieved,
+&gt;&gt; maintaining target_n_val along the way.  But if -- during one of those
+&gt;&gt; recursive calls -- it can't meet the target_n_val, it will throw up its
+&gt;&gt; hands and completely re-do the whole ring (by calling claim_rebalance_n).
+&gt;&gt;  Striping the partitions across nodes, in a round-robin fashion.  When that
+&gt;&gt; happens, most of the data needs to be handed off between nodes.
+&gt;&gt;
+&gt;&gt; This happens a lot, with many ring sizes.  With ring_creation_size=128
+&gt;&gt; (i.e., 128 partitions), it will happen when adding node 9 (87.5% of data
+&gt;&gt; moves), adding node 12 (82%), adding node 15 (80%), adding node 19 (94%).
+&gt;&gt;  It happens with all ring sizes &gt;= 128 (256, 512, 1024, ...).  It appears
+&gt;&gt; that any ring_creation_size (64 by default) is safe for growing to 8 nodes
+&gt;&gt; or so.  But if you want to go beyond that...  A ring size of &gt;= 128 with
+&gt;&gt; more than 8 nodes doesn't seem all that unusual, surely someone has hit this
+&gt;&gt; before?  I've filed a bug report here:
+&gt;&gt; <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=1111">https://issues.basho.com/show_bug.cgi?id=1111</a>
+&gt;&gt;
+&gt;&gt; Anyway, this feels like a bit of a departure from consistent hashing.  In
+&gt;&gt; fact, could this not be replaced by normal hashing + a lookup table mapping
+&gt;&gt; intervals of the hash space to nodes?  And isn't that simply sharding?
+&gt;&gt;
+&gt;&gt; At any rate, I believe the claim algorithm can be improved to avoid those
+&gt;&gt; &quot;throw up hands and stripe everything&quot; scenarios.  In fact, here is such an
+&gt;&gt; implementation:  <a  rel="nofollow" href="https://github.com/basho/riak_core/pull/55">https://github.com/basho/riak_core/pull/55</a>.  It is still
+&gt;&gt; heuristic and greedy, but it seems to do a better job of avoiding re-stripe.
+&gt;&gt;  Test results are attached in a zip on the bug linked above.  I'd love to
+&gt;&gt; get the riak_core gurus at Basho to look at this and help validate it.  It
+&gt;&gt; probably could use some cleaning up, but I want to make sure there aren't
+&gt;&gt; other invariants or considerations I'm leaving out -- besides maintaining
+&gt;&gt; target_n_val, keeping optimal partition spread, and minimizing handoff
+&gt;&gt; between ring states.
+&gt;&gt;
+&gt;&gt; -Greg
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03419.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03420">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03420">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03436.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03413.html">Riak doesn't use consistent hashing</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03419.html">Re: Riak doesn't use consistent hashing</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak doesn't use consistent hashing</span> <span class="sender italic">Ben Tilly</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03436.html">Re: Riak doesn't use consistent hashing</a></span> <span class="sender italic">Greg Nelson</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak doesn't use consistent hashing">
+<input type="hidden" name="msgid" value="BANLkTinMQC06O7sN03g8C220xCmESdOsiQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03420.html">
+<input type="submit" value=" Ben Tilly ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+doesn%27t+use+consistent+hashing%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03419.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03436.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTinMQC06O7sN03g8C220xCmESdOsiQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

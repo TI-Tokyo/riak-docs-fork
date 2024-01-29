@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Open ticket for configurable R-value in MapReduce?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05941" id="c">
+<link rel="index" href="maillist.html#05941" id="i">
+<link rel="prev" href="msg05936.html" id="p">
+<link rel="next" href="msg05942.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05941.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Open+ticket+for+configurable+R%5C-value+in+MapReduce%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Open ticket for configurable R-value in MapReduce?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mark+Phillips%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mark Phillips</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111214" rel="nofollow">Wed, 14 Dec 2011 12:59:40 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Elias,
+
+On Mon, Dec 12, 2011 at 9:52 AM, Elias Levy &lt;fearsome.lucid...@gmail.com&gt; wrote:
+&gt; I went through the bug database and could not find any open ticket for
+&gt; having a configurable r-value in mapreduce.  Is there one that someone knows
+&gt; of?
+&gt;</pre><pre>
+
+There is nothing currently open for this afaik. That said, ways of
+doing/implementing it were discussed recently on the list. [1]
+
+&gt; It would seem like this is a major limitation of the system.  Currently MR
+&gt; works in a way that essentially results in an R-value of 1.  That makes MR
+&gt; unreliable if you loose a node or add new nodes to your cluster.  This is
+&gt; particularly painful, as MR is often used in lieu for a bulk fetch API, or
+&gt; when combined with Search or 2i to remove the additional round trip time
+&gt; that would be required without it.
+&gt;
+
+Hmmm. Perhaps I'm not following here, but I don't see how R=1 on M/R
+would make it unreliable in the face of node failure or node addition.
+Assuming you have at least three nodes (the Basho Recommended
+Minimum™) and standard defaults, you should have three copies of any
+key you're trying to use in a M/R job. If you lose one node (or one
+copy), you can still satisfy the R=1 requirement.
+
+&gt; We'd like to double the size of our cluster, but without dumping all of the
+&gt; data and reloading it after we'd added the the new nodes, which would take
+&gt; far too long even with the new nodes (bulk load API anyone?), this does not
+&gt; seem feasible.  It would result in 50% found found errors.  Even adding a
+&gt; single node seems unacceptable.
+&gt;
+
+We did some major work in Riak 1.x to ensure that node additions
+didn't result in 404's, and riak_pipe does some work to ensure that
+jobs are processed, too. More specifically:
+
+* riak_core will compute a new claim when a node is added, and then
+periodically ask a vnode to start handing off data as appropriate.
+Vnodes can choose not to handoff given its current state. In any case,
+whenever all vnode modules associated with an index (kv, pipe, search,
+etc) finish handoff, that's when the ownership is actually
+transferred. Otherwise, the prior owner remains in effect. Thus, a new
+node is not reflected as the owner of a partition until after it has
+all data associated with that partition.
+
+* riak_pipe has built in protection for this, too. In short, pipe has
+the smarts to ship jobs around to available vnodes when there is
+handoff happening in the cluster. Pipe vnodes migrate the workers
+they're running as soon as each one asks for its next input; current
+state and all outstanding queued items are transfered at that time.
+Pipe m/r fetches might still start happening on the new kv node before
+that node has all its data, but if that occurs you would get local
+notfounds, and retry on other vnodes in the preflist.  That said, if
+all preflists have been shuffled, and all are mid-transfer for a given
+key, then yes, you might ultimately end up not finding the value. And
+if you have data on this happening, we would love to see it. :)
+
+(h/t to Joseph Blomstedt and Bryan Fink for the explanations here.)
+
+So, doubling the size of you cluster shouldn't require much more than
+adding nodes via the normal methods. Spinning up a whole new cluster
+would be overkill.
+
+I'm curious - have you tested node addition? Where did that 50% error
+number come from? Also, what version of Riak are you running?
+
+Best.
+
+Mark
+
+[1] 
+<a  rel="nofollow" href="http://riak.markmail.org/search/?q=consistent%20map%2Freduce#query:consistent%20map%2Freduce+page:1+mid:sybkfhmlfidq2vj3+state:results">http://riak.markmail.org/search/?q=consistent%20map%2Freduce#query:consistent%20map%2Freduce+page:1+mid:sybkfhmlfidq2vj3+state:results</a>
+
+
+&gt; Elias Levy
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05936.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05941">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05941">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05942.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05917.html">Open ticket for configurable R-value in MapReduce?</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05936.html">Re: Open ticket for configurable R-value in MapReduce?</a></span> <span class="sender italic">Elias Levy</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Open ticket for configurable R-value in MapReduce?</span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05942.html">Re: Open ticket for configurable R-value in MapRedu...</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05945.html">Re: Open ticket for configurable R-value in Map...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Open ticket for configurable R-value in MapReduce?">
+<input type="hidden" name="msgid" value="CAE8zJQGhX8Zp__RVydDn-5MpAyTTNgP+myvuLV_jnHtR2+Yk_Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05941.html">
+<input type="submit" value=" Mark Phillips ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Open+ticket+for+configurable+R%5C-value+in+MapReduce%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05936.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05942.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAE8zJQGhX8Zp__RVydDn-5MpAyTTNgP+myvuLV_jnHtR2+Yk_Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

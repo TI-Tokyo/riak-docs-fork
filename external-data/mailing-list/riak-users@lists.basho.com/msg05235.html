@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Link walking and keep field</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05235" id="c">
+<link rel="index" href="maillist.html#05235" id="i">
+<link rel="prev" href="msg05234.html" id="p">
+<link rel="next" href="msg05182.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05235.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Link+walking+and+keep+field%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Link walking and keep field</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anton+Podviaznikov%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anton Podviaznikov</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111021" rel="nofollow">Fri, 21 Oct 2011 12:15:49 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+Thank you for your response. Ok, so I'll use URL-syntax for link walking.
+Another problem here. I'm using riak-js as client library. And in this
+library for link walking (method &quot;walk&quot;) M/R style used internally:
+<a  rel="nofollow" href="https://github.com/frank06/riak-js/blob/master/src/http_client.coffee#L79">https://github.com/frank06/riak-js/blob/master/src/http_client.coffee#L79</a></pre><pre>
+
+What should I do in such situation? Should I implemented another walk method
+and send pull request to Francisco Treacy?
+
+P.S. Could you please put this information in the official documentation (at
+least I didn't find it there)? Because it's confusing since 'keep' flag
+exists in both URL-syntax and M/R link phase and behavior is different. The
+only difference that was mentioned  - multipart response for link walking
+using URL-syntax.
+
+Best regards,
+Anton Podviaznikov
+
+On 21 October 2011 20:37, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+
+&gt; Anton,
+&gt;
+&gt; Sorry for the delay. Yes you can use MapReduce link-phases in a similar
+&gt; way, but unlike the link-walking resource, the objects pointed to in each
+&gt; phase will not be returned.  The way link-walking does its work is to split
+&gt; the URL into segments for each phase that has keep=true (1), then issue a
+&gt; MapReduce request for the traversal up to the first keep, then take the
+&gt; results of that and feed it to another that goes up to the next keep, and so
+&gt; on.  So your link-walking query is actually more like:
+&gt;
+&gt; [users/userid] -&gt; link(projects, _, 1) -&gt; map_value
+&gt; (results from previous) -&gt; link(parts, _, 1) -&gt; map_value
+&gt; (results from previous) -&gt; link(units, _, 1) -&gt; map_value
+&gt;
+&gt;
+&gt; On Mon, Oct 17, 2011 at 2:21 PM, Anton Podviaznikov &lt;
+&gt; podviazni...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; Hi,
+&gt;&gt;
+&gt;&gt; I had question about Link walking.
+&gt;&gt; I need to walk links in few levels and keep results from previous steps.
+&gt;&gt; I managed to achieve this using URL syntax
+&gt;&gt; /users/userid/projects,*,1/parts,*,1/units,*,*
+&gt;&gt; Here I find all user's projects than parts and finally units.
+&gt;&gt;
+&gt;&gt; However I couldn't achieve the same results using map-reduce and link
+&gt;&gt; phases.
+&gt;&gt;
+&gt;&gt; curl -X POST -H &quot;content-type: application/json&quot;
+&gt;&gt; <a  rel="nofollow" href="http://localhost:8098/mapred">http://localhost:8098/mapred</a> --data @-&lt;&lt;\EOF
+&gt;&gt; {&quot;inputs&quot;:[[&quot;users&quot;,&quot;userid&quot;]],&quot;query&quot;:[{&quot;link&quot;:{&quot;bucket&quot;:&quot;projects&quot;,&quot;keep&quot;:true}},{&quot;link&quot;:{&quot;bucket&quot;:&quot;parts&quot;,&quot;keep&quot;:true}},{&quot;link&quot;:{&quot;bucket&quot;:&quot;units&quot;}},{&quot;map&quot;:{&quot;language&quot;:&quot;javascript&quot;,&quot;source&quot;:&quot;function(v)
+&gt;&gt; { return [v]; }&quot;}}]}
+&gt;&gt; EOF
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I got full documents from last step but for projects and parts I got only
+&gt;&gt; bucket, key and tag (there was no document body and metadata).
+&gt;&gt;
+&gt;&gt; Is it some problem in map function? Any hints, advises?
+&gt;&gt;
+&gt;&gt; Best regards,
+&gt;&gt; Anton Podviaznikov
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+&gt;
+&gt;
+
+
+-- 
+Best regards,
+
+Anton Podviaznikov
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05234.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05235">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05235">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05182.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05180.html">Link walking and keep field</a></span> <span class="sender italic">Anton Podviaznikov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05234.html">Re: Link walking and keep field</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Link walking and keep field</span> <span class="sender italic">Anton Podviaznikov</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Link walking and keep field">
+<input type="hidden" name="msgid" value="CAELx_r1X_8OdVW==-PxzkneDJuketu8bT8cBwYKrFjkCyiz_wQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05235.html">
+<input type="submit" value=" Anton Podviaznikov ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Link+walking+and+keep+field%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05234.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05182.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAELx_r1X_8OdVW==-PxzkneDJuketu8bT8cBwYKrFjkCyiz_wQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

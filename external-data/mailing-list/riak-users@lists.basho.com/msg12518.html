@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: understanding optimistic concurrency in Riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd9.html#12518" id="c">
+<link rel="index" href="mail9.html#12518" id="i">
+<link rel="prev" href="msg12513.html" id="p">
+<link rel="next" href="msg12514.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12518.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+understanding+optimistic+concurrency+in+Riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: understanding optimistic concurrency in Riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131006" rel="nofollow">Sun, 06 Oct 2013 06:35:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Inline:
+
+---
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+MCITP: SQL Server 2008, MVP
+Cloudera Certified Developer for Apache Hadoop</pre><pre>
+
+
+On Thu, Oct 3, 2013 at 9:19 PM, Alex Rice &lt;a...@mindlube.com&gt; wrote:
+
+&gt; Just trying to paraphrase how I understand it from the Riak docs, plus
+&gt; helpful feedback from Jeremiah :) Please correct if I'm not really
+&gt; groking it!
+&gt;
+&gt; with allow_multi = false, the default setting
+&gt;
+&gt; - To achieve CAS* -ish behavior for updates, you can always send the
+&gt; vector clock with a Put. If it fails with a modified message, then you
+&gt; can retry on the client side. This is the  basic optimistic
+&gt; concurrency usage.
+&gt; - If you also set w = all on Puts then this is *almost* guaranteed to
+&gt; be a true global CAS operation.
+&gt; - The big exception mainly being extremely frequent writes for that
+&gt; key, plus some other edge cases.
+&gt;
+
+You'll get as close as you can with Riak to some kind of CAS behavior.
+Using if_not_modified for this behavior provides some limited guarantees,
+but nothing global. As Reid points out in [1], it's possible for two actors
+in your system to issue concurrent writes that both succeed while using
+if_not_modified.
+
+Basically, you can't really be sure about what's happening with this
+behavior. Example:
+
+UserA modifies their details and hits submit.
+Details are sent to ServerA.
+UserA spots a mistake, changes their zip code (this person is fast) and
+hits submit again.
+Details are sent to ServerB.
+
+There are a number of amusing situations where the write from ServerB can
+arrive at the same time as the write for ServerA and produce a result that
+you may not want to see. When you're using siblings, you can at least add
+additional information to the object you're persisting to help you resolve
+siblings.
+
+In busy systems, sibling resolution is the better option for dealing with
+updates because it will provide consistent behavior under load, when writes
+are being issued to different servers, and even when there is a partition
+in Riak.
+
+[1]: <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/if-not-modified-td4025937.html">http://riak-users.197444.n3.nabble.com/if-not-modified-td4025937.html</a>
+
+
+&gt;
+&gt; with allow_multi = true
+&gt;
+&gt; - You can still use the vector clock to get CAS-ish behavior as above.
+&gt; - You also have to resolve Sibings through client side logic each time you
+&gt; Get
+&gt; - It's *still* not guaranteed to be global CAS , there are special
+&gt; cases like hinted handoff, clock skew, gnarly stuff involving the
+&gt; speed of light etc.
+&gt;
+
+Yup, there's no way to get any kind of CAS type behavior out of Riak, but
+siblings are A-OK. I find them at lot easier to think about.
+
+
+&gt;
+&gt; * CAS = check and set
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12513.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd9.html#12518">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail9.html#12518">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12514.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12513.html">understanding optimistic concurrency in Riak</a></span> <span class="sender italic">Alex Rice</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: understanding optimistic concurrency in Riak</span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: understanding optimistic concurrency in Riak">
+<input type="hidden" name="msgid" value="CACJEN2rz-QuRtpZMy5mFFhBMw9tt4FzXaxDd2Ph+hY8qzAMSPg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12518.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+understanding+optimistic+concurrency+in+Riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12513.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12514.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACJEN2rz-QuRtpZMy5mFFhBMw9tt4FzXaxDd2Ph+hY8qzAMSPg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

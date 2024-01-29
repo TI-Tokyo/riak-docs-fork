@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Java client counter object</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#13509" id="c">
+<link rel="index" href="mail4.html#13509" id="i">
+<link rel="prev" href="msg13482.html" id="p">
+<link rel="next" href="msg13516.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13509.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Java+client+counter+object%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Java client counter object</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140128" rel="nofollow">Tue, 28 Jan 2014 03:29:25 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+
+</pre><tt>Following up on this question, is there a way to list (not multi-fetch, 
+</tt><tt>just list) the existing counters in a bucket?
+</tt><pre style="margin: 0em;"></pre><pre>
+
+Regards,
+
+Guido.
+
+On 24/01/14 22:01, Dave Rusek wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Guido,
+
+</pre><tt>I’m sorry, there are not currently any docs available. Rest assured 
+</tt><tt>they are a work in progress. In the meantime, please feel free to 
+</tt><tt>check-out the current pre-release [1]. The pre-release covers the low 
+</tt><tt>level API we have built on top of the PB interface. There is a start 
+</tt><tt>to a friendlier API in the develop branch of riak-java-client [2].
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If you would like to get started with the low level API to begin 
+</tt><tt>getting a feel for Riak datatypes, I have included a few snippets that 
+</tt><tt>will hopefully help. The counters (and the data structures in general) 
+</tt><tt>are implemented as two separate operations: Fetch and Update. Updating 
+</tt><tt>a counter that does not exist will create it and initialize it to the 
+</tt><tt>given value. Fetching a counter that has not had a value stored will 
+</tt><tt>return an empty value.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>While the low level API does not have convenience methods for 
+</tt><tt>getAndIncrement and the like, they can all be easily accomplished 
+</tt><tt>given fetch and update. It would clearly be easy for us to provide 
+</tt><tt>methods for these typical access patterns and in fact, it is something 
+</tt><tt>we are planning on doing.
+</tt><pre style="margin: 0em;">
+
+RiakCluster cluster = …
+BinaryValue bucket = …
+BinaryValue key = …
+BinaryValue type = ...
+
+fetch():
+
+DtFetchOperation get =
+new DtFetchOperation.Builder(bucket, key)
+.withBucketType(type)
+.build();
+
+DtFetchOperation.Response response = cluster.execute(get).get();
+
+long value;
+CrdtElement element = response.getCrdtElement();
+if (crdtElement.isCounter()) {
+value = element.getCounter().getValue();
+} else {
+...
+}
+
+update():
+
+DtUpdateOperation update =
+new DtUpdateOperation.Builder(bucket, key)
+.withBucketType(type)
+.withReturnBody(true)
+.withOp(new CounterOp(1)) // increment by 1
+.build();
+
+DtUpdateOperation.Response response = cluster.execute(update).get();
+
+long value;
+CrdtElement element = response.getCrdtElement();
+if (crdtElement.isCounter()) {
+value = element.getCounter().getValue();
+} else {
+...
+}
+
+getAndIncrement();
+
+long value = fetch();
+update(1);
+
+incrementAndGet():
+
+long value = update(1); // make sure withReturnBody == true
+
+[1] <a  rel="nofollow" href="https://github.com/basho/riak-java-client">https://github.com/basho/riak-java-client</a>
+[2]<a  rel="nofollow" href="https://github.com/basho/riak-java-client/tree/develop/src/main/java/com/basho/riak/client/operations">https://github.com/basho/riak-java-client/tree/develop/src/main/java/com/basho/riak/client/operations</a>
+
+--
+Dave Rusek
+Basho Technologies
+@davidjrusek
+
+</pre><tt>On January 24, 2014 at 8:41:07 AM, Guido Medina 
+</tt><tt>(guido.med...@temetra.com &lt;<a  rel="nofollow" href="mailto://guido.med...@temetra.com">mailto://guido.med...@temetra.com</a>&gt;) wrote:
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+Is there any small doc that could explain its usage a little bit:
+
+</pre><tt>From the Java perspective it would be nice if it point out its 
+</tt><tt>counter part methods with Atomic Integer like:
+</tt><pre style="margin: 0em;">
+
+  * How to create it? Does incrementing a counter will just create it
+    with zero as initial value and then increment it? What if you
+    need to know its value and then increment it before it is
+    created? (getAndIncrement)
+  * get()
+  * getAndIncrement()
+  * incrementAndGet()
+
+Regards,
+
+Guido.
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13482.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#13509">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#13509">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13516.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13476.html">Riak Java client counter object</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13482.html">Re: Riak Java client counter object</a></span> <span class="sender italic">Dave Rusek</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Java client counter object</span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13516.html">Re: Riak Java client counter object</a></span> <span class="sender italic">Dave Rusek</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Java client counter object">
+<input type="hidden" name="msgid" value="52E7945B.4040202@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13509.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Java+client+counter+object%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13482.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13516.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">52E7945B.4040202@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

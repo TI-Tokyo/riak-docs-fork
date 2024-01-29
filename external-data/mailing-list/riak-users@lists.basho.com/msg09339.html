@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: pseudo-atomic operations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09339" id="c">
+<link rel="index" href="maillist.html#09339" id="i">
+<link rel="prev" href="msg09338.html" id="p">
+<link rel="next" href="msg09340.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09339.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+pseudo%5C-atomic+operations%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: pseudo-atomic operations</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121118" rel="nofollow">Sun, 18 Nov 2012 06:26:24 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Chiming in on this as well -
+
+Using lock(username) will work as long as you have a centralized
+application server where all creates occur. As soon as you have two systems
+involved you can run into the same problems that you'd run into with Riak.
+Issuing a lock is, however, a great way to get started if you only plan on
+having a single web/app server in front of Riak for a while.</pre><pre>
+
+Once you get your application up and running you can take some time and
+research distributed lock servers for your username management.
+
+Or you can just take the easy route and push all user creates through a
+single server.
+
+---
+Jeremiah Peschka
+Founder, Brent Ozar Unlimited
+Microsoft SQL Server MVP
+
+
+
+On Sun, Nov 18, 2012 at 5:00 AM, Guido Medina &lt;guido.med...@temetra.com&gt;wrote:
+
+&gt;  Atomicity is always a delicate subject, but it could be resolved with
+&gt; either the following solutions:
+&gt;
+&gt;    1. Your application can have a re-entrant or synchronized lock: 
+&gt; *lock(username)
+&gt;    { create if not present then exit lock; if present then return to user
+&gt;    asking for another username }*
+&gt;    2. Or you could use standard SQL database with a dummy table with just
+&gt;    one column: username primary key, create and lock record on database, once
+&gt;    out of the lock you will know if create key in Riak or if return back to
+&gt;    user to ask for another user name.
+&gt;    3. A distributed lock manager:
+&gt;    <a  rel="nofollow" href="http://en.wikipedia.org/wiki/Distributed_lock_manager">http://en.wikipedia.org/wiki/Distributed_lock_manager</a>
+&gt;
+&gt; I would go for solution No. 1 if running on a single server or No. 3
+&gt; otherwise if you can implement it. Or you could start with solution No. 1
+&gt; and migrate to No. 3 as your data grows.
+&gt;
+&gt; HTH,
+&gt;
+&gt; Guido.
+&gt;
+&gt; On 18/11/12 03:58, Petrushka Petrushka wrote:
+&gt;
+&gt; Riak newbie here :)
+&gt;
+&gt;  I'm building an application that among other things includes a
+&gt; traditional Forum, kind of like phpBB.  I'm working on the data model and
+&gt; wondering how to guarantee the uniqueness of a username when a new user
+&gt; registers an account.
+&gt;
+&gt;  Of course, before saving a new username, I will first do a read to make
+&gt; sure the key ( username ) is not found.
+&gt;
+&gt;  But, what I'm worried about is what happens if in between the time of
+&gt; the read and the write, two separate users connected to different servers
+&gt; (possibly geographically apart) try to register a new user with the same
+&gt; username.
+&gt;
+&gt;  I see Riak has conflict resolution built in, but the default mechanisms
+&gt; appear to favor the most recent update.
+&gt;
+&gt;  I actually want the reverse, I want to favor the oldest update.
+&gt;
+&gt;  It seems I could accomplish this by the following:
+&gt;
+&gt;  a) Set  allow_mult=true
+&gt; b)  always pass in a timestamp
+&gt; c)  Sleep 1 second for good measure
+&gt; d) Do a read operation on the same key.  During conflicts, my client will
+&gt; see multiple siblings.  My client can choose the oldest timestamp and
+&gt; repost that one's X-Riak-Vclock to be the canonical one.
+&gt;
+&gt; Now all this being said I have a couple of other options.
+&gt;
+&gt;  - For these kinds of essentially ACID -like operations (of which this is
+&gt; really the only one I can think of in my whole application) I could use
+&gt; another database such as Redis.
+&gt;
+&gt;  - Assuming N-Value is the default of 3, I could set R=3 and W = 3 on
+&gt; Reads and Writes.  My understanding is that would help in some situations
+&gt; but still doesn't really solve this issue (in terms of an atomic lock if
+&gt; you will).
+&gt;
+&gt;  - Or, thinking about it more, the end user really won't have any idea
+&gt; that they were the first or not to reserve that username.  This whole thing
+&gt; is very edge case anyways, as 2 or more people would have
+&gt; to independently choose the same username that was available less than a
+&gt; second before.   I could just use Riak's default conflict resolution
+&gt; (possibly even last_write_wins=true).   They would never know that I am
+&gt; actually assigning the username to the most recent person, instead of first
+&gt; person.  It strikes me as a little bit unfair in a way :)  Really it is
+&gt; splitting hairs though.
+&gt;
+&gt;  But all this said I'd be curious on how people are handing these kinds
+&gt; of things and if I'm thinking about this issue in a reasonable manner.
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing 
+&gt; listriak-users@lists.basho.com<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09338.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09339">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09339">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09340.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09337.html">pseudo-atomic operations</a></span> <span class="sender italic">Petrushka Petrushka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09338.html">Re: pseudo-atomic operations</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: pseudo-atomic operations</span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg09340.html">Re: pseudo-atomic operations</a></span> <span class="sender italic">Petrushka Petrushka</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: pseudo-atomic operations">
+<input type="hidden" name="msgid" value="CACJEN2orcJ0N7wUcj9cYmY_xCJ8MwwQ50W2oRcpG40ZDTVRm1g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09339.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+pseudo%5C-atomic+operations%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09338.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09340.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACJEN2orcJ0N7wUcj9cYmY_xCJ8MwwQ50W2oRcpG40ZDTVRm1g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

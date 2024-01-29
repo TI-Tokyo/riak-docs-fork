@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Quickly deleting + recreating item in Riak deletes new item</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd14.html#11657" id="c">
+<link rel="index" href="mail13.html#11657" id="i">
+<link rel="prev" href="msg11648.html" id="p">
+<link rel="next" href="msg11527.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11657.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Quickly+deleting+%5C%2B+recreating+item+in+Riak+deletes+new+item%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Quickly deleting + recreating item in Riak deletes new item</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Dawson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Dawson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130720" rel="nofollow">Sat, 20 Jul 2013 23:30:37 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On July 19, 2013 02:11:10 PM Kelly McLaughlin wrote:
+&gt; Matthew,
+&gt; 
+&gt; I did some testing with your code and I was able to reproduce what you were
+&gt; seeing. I would occasionally see an error similar to the following:
+&gt; 
+&gt;     Failed to fetch item 460 err Object not found
+&gt; 
+&gt; This behavior is a result of the trade-offs of using an eventually
+&gt; consistent database like Riak. It is not the case that your inserts are
+&gt; failing to write or the data is being lost, but what is actually happening
+&gt; is that the quick read after writing with the default request options does
+&gt; not provide any guarantee that you will read your writes. So basically when
+&gt; you make the read, the replicas that are responding to your request have
+&gt; not seen the latest value yet and so you end up with &quot;Not Found&quot; as the
+&gt; response. If you did another read attempt for one of those objects reported
+&gt; missing, it would succeed because Riak's read-repair would have kicked in
+&gt; to make sure each replica has the value. To increase the likelihood of
+&gt; reading your writes you should set the optional request parameters pr and
+&gt; pw to ensure that all of the primary replicas are available prior to
+&gt; performing a read or write request. I altered your code to use those
+&gt; options and put the updates in a gist [1] (it's my first stab at Go so my
+&gt; changes may not be very idiomatic). Additionally I changed to riak driver
+&gt; so that NotFoundOk was false instead of true. With these changes I was able
+&gt; to run the test 50 times in a row with no errors where previously I would
+&gt; see at least one error every 10 iterations or so. Hope that helps.
+Kelly,</pre><pre>
+
+Thanks for looking into this.  I looked over the documentation and your 
+suggestions, and I think I have found a race causing my data loss.  
+
+I read what you wrote above, but I don't think this applies in this situation.  
+If I stop the program after it finds a missing element, but before it deletes 
+all the keys, I've found that any key it finds missing is also missing if I 
+look at it using Curl.  Also, I've looked at the returned headers, and both 
+&quot;X-Riak-Deleted: true&quot; and a vclock are returned, which suggests to me Riak 
+has actually deleted the data on purpose.  I've included sample output at [2].  
+(I used a newer version of my program in a gist[1]).  The updated program has 
+an extra flag, --quit_early=false , that exits before the deletion if a 
+problem was found during the fetch stage.
+
+Since your version did fix my issue as well, I played around with the various 
+settings.  I discovered to fix the issue, I only have to use an r value of 3 
+when first fetching the item to get a vclock for the insert operation.  As 
+long as that value is a 3, everything seems to work perfectly.  Adjusting the 
+other values (I didn't test pr, but I left all the cluster nodes running, so I 
+don't think it affects anything) produced zero change (including when w/rw/dw 
+were all set to 3, or r was set to 3 elsewhere).  You can try this using the 
+updated program[1] by passing &quot;-r=3&quot; to it.
+
+Using the above knowledge, I looked at whether vclocks were being returned for 
+the insert operation when keys went missing during the fetch stage.  In all 
+cases, vclocks were missing.  I also checked to see if there are any siblings 
+being generated (which I didn't think would be created), and some were 
+generated as well.  Looking at them, they contain one sibling containing the 
+key's deletion, and then my data (example in [2]).
+
+&gt;From those sets of facts, I'm guessing there is some race in Riak where either 
+the deletion or the creation gets committed first.  If the creation is 
+committed first, for some reason the deletion also deletes it.  I'm guessing 
+that it happens since the vclocks show the creation happening before the 
+deletion.  For some reason, when r=3 during the insert stage's fetch causes 
+Riak to commit the deletion cluster wide and the commit always appears to come 
+after.
+
+I think this is a bug, since the deletion shouldn't see the insert operation 
+as history.  Since Riak makes this mistakes, it is actually losing data.  I 
+don't think the siblings should be created created either (in the r=3 case, 
+they are not created), but that is easily handled.  If this is a bug, I'll 
+file it on Github (is the riak_kv project the correct place in this 
+situation?), or if this is expected behaviour I do have a workaround.
+
+
+A few other data points: I retried this using delete_mode = keep, and it fixed 
+this issue as well.  Using delete_mode=immediate made the issue more rare.  I 
+also find it happens almost everytime if you run it quickly, but if you give 
+Riak sometime to synchronize state, it does reduce the chance of seeing it.
+
+
+[1] <a  rel="nofollow" href="https://gist.github.com/MJDSys/6026486">https://gist.github.com/MJDSys/6026486</a>
+[2] <a  rel="nofollow" href="https://gist.github.com/MJDSys/420090505ebbe2e0241d">https://gist.github.com/MJDSys/420090505ebbe2e0241d</a>
+-- 
+Matthew</pre>
+<p><strong><a href="msg11657/smime.p7s" ><img src="../attachment.png" alt="Attachment:" width=27 height=28></a>
+<a href="msg11657/smime.p7s" >smime.p7s</a></strong><br>
+<em>Description:</em> S/MIME cryptographic signature</p>
+<pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11648.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd14.html#11657">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail13.html#11657">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11527.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11535.html">Re: Quickly deleting + recreating item in Riak delet...</a></span> <span class="sender italic">Matthew Dawson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11539.html">Re: Quickly deleting + recreating item in Riak d...</a></span> <span class="sender italic">Gabriel Littman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11543.html">Re: Quickly deleting + recreating item in Ri...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg11548.html">Re: Quickly deleting + recreating item in Ri...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li class="icons-email"><span class="subject"><a href="msg11549.html">Re: Quickly deleting + recreating item in Ri...</a></span> <span class="sender italic">Matthew Dawson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11553.html">Re: Quickly deleting + recreating item i...</a></span> <span class="sender italic">Gabriel Littman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11562.html">Re: Quickly deleting + recreating i...</a></span> <span class="sender italic">Matthew Dawson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11572.html">Re: Quickly deleting + recreati...</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg11578.html">Re: Quickly deleting + recreati...</a></span> <span class="sender italic">Matthew Dawson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg11648.html">Re: Quickly deleting + recreati...</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Quickly deleting + recreati...</span> <span class="sender italic">Matthew Dawson</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg11527.html">Re: Quickly deleting + recreating item in Riak deletes ne...</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11534.html">Re: Quickly deleting + recreating item in Riak delet...</a></span> <span class="sender italic">Matthew Dawson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Quickly deleting + recreating item in Riak deletes new item">
+<input type="hidden" name="msgid" value="2323820.d5fBnsAVHM@ring00">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11657.html">
+<input type="submit" value=" Matthew Dawson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Quickly+deleting+%5C%2B+recreating+item+in+Riak+deletes+new+item%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11648.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11527.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">2323820.d5fBnsAVHM@ring00</li>
+</ul>
+</div>
+</body>
+</html>

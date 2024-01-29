@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Facing java.net broken pipe issue while benchmarking java-PBClient	with YCSB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04182" id="c">
+<link rel="index" href="maillist.html#04182" id="i">
+<link rel="prev" href="msg04181.html" id="p">
+<link rel="next" href="msg04184.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04182.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Facing+java.net+broken+pipe+issue+while+benchmarking+java%5C-PBClient%09with+YCSB%22&amp;o=newest" rel="nofollow"><span itemprop="name">Facing java.net broken pipe issue while benchmarking java-PBClient	with YCSB</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22vijayakumar%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">vijayakumar</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110802" rel="nofollow">Tue, 02 Aug 2011 12:20:28 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I am trying to benchmark riak client with YCSB and I am getting the following
+exception while
+trying to fetch from riak client. Am I missing any tunable parameters in
+server or client settings?</pre><pre>
+
+Code snippet (method implementation for YCSB-DB):
+
+public int read(String table, String key, Set&lt;String&gt; fields,
+HashMap&amp;lt;String, String&amp;gt; result) {
+        ObjectInputStream ois = null;
+        int status = Error;
+        try {
+                RiakObject[] riakObjects = *riakclient.fetch(table, key,1)*;
+            ois = new ObjectInputStream(new
+ByteArrayInputStream(riakObjects[0].getValue().toByteArray()));
+            HashMap&amp;lt;String, String&amp;gt; values = (HashMap&amp;lt;String,
+String&amp;gt;) ois.readObject();
+            result.putAll(values);
+            status = Ok;
+        } catch (IOException e) {
+                e.printStackTrace(System.out);  
+            return status;
+        } catch (ClassNotFoundException e) {
+                e.printStackTrace(System.out);
+            return status;
+        } finally{
+                if(ois!=null){
+                        try{
+                                ois.close();
+                        }catch(Exception excep){
+                                excep.printStackTrace();
+                        }
+                }
+        }
+        return status;
+    }
+
+Exception thrown while running YCSB setup:
+
+java.net.SocketException: Broken pipe
+at java.net.SocketOutputStream.socketWrite0(Native Method)
+at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:92)
+at java.net.SocketOutputStream.write(SocketOutputStream.java:136)
+at java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:65)
+at java.io.BufferedOutputStream.flush(BufferedOutputStream.java:123)
+at java.io.DataOutputStream.flush(DataOutputStream.java:106)
+at com.basho.riak.pbc.RiakConnection.send(RiakConnection.java:68)
+at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:221)
+at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:210)
+at com.yahoo.ycsb.db.riak.RiakPBClient.read(RiakPBClient.java:63)
+at com.yahoo.ycsb.DBWrapper.read(DBWrapper.java:87)
+at
+com.apigee.kms.RequestTokenWorkLoad.doTransactionRead(RequestTokenWorkLoad.java:81)
+at
+com.yahoo.ycsb.workloads.CoreWorkload.doTransaction(CoreWorkload.java:372)
+at com.yahoo.ycsb.ClientThread.run(Client.java:235)
+java.io.EOFException
+at java.io.DataInputStream.readFully(DataInputStream.java:180)
+at java.io.DataInputStream.readFully(DataInputStream.java:152)
+at com.basho.riak.pbc.RiakConnection.receive(RiakConnection.java:89)
+at com.basho.riak.pbc.RiakClient.process_fetch_reply(RiakClient.java:251)
+at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:222)
+at com.basho.riak.pbc.RiakClient.fetch(RiakClient.java:210)
+at com.yahoo.ycsb.db.riak.RiakPBClient.read(RiakPBClient.java:63)
+at com.yahoo.ycsb.DBWrapper.read(DBWrapper.java:87)
+at
+com.apigee.kms.RequestTokenWorkLoad.doTransactionRead(RequestTokenWorkLoad.java:81)
+at
+com.yahoo.ycsb.workloads.CoreWorkload.doTransaction(CoreWorkload.java:372)
+at com.yahoo.ycsb.ClientThread.run(Client.java:235)
+
+--
+View this message in context: 
+<a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Facing-java-net-broken-pipe-issue-while-benchmarking-java-PBClient-with-YCSB-tp3219935p3219935.html">http://riak-users.197444.n3.nabble.com/Facing-java-net-broken-pipe-issue-while-benchmarking-java-PBClient-with-YCSB-tp3219935p3219935.html</a>
+Sent from the Riak Users mailing list archive at Nabble.com.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04181.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04182">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04182">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04184.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Facing java.net broken pipe issue while benchmarking java-PB...</span> <span class="sender italic">vijayakumar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04184.html">Re: Facing java.net broken pipe issue while benchmarkin...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04343.html">Re: Facing java.net broken pipe issue while benchma...</a></span> <span class="sender italic">vijayakumar</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Facing java.net broken pipe issue while benchmarking java-PBClient	with YCSB">
+<input type="hidden" name="msgid" value="1312312808103-3219935.post@n3.nabble.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04182.html">
+<input type="submit" value=" vijayakumar ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Facing+java.net+broken+pipe+issue+while+benchmarking+java%5C-PBClient%09with+YCSB%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04181.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04184.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1312312808103-3219935.post@n3.nabble.com</li>
+</ul>
+</div>
+</body>
+</html>

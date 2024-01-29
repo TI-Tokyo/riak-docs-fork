@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Data Replica algortihm</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd11.html#12092" id="c">
+<link rel="index" href="mail11.html#12092" id="i">
+<link rel="prev" href="msg12084.html" id="p">
+<link rel="next" href="msg12085.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12092.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Data+Replica+algortihm%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Data Replica algortihm</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Andrew+Thompson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Andrew Thompson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130819" rel="nofollow">Mon, 19 Aug 2013 16:16:53 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Mon, Aug 19, 2013 at 04:03:25PM -0300, João Machado wrote:
+&gt; Hi all,
+&gt; 
+&gt; Anyone knows how the algorithm responsible for choosing where the data
+&gt; replica is stored works?
+&gt; 
+&gt; Is possible to customise (or configure) it to ensure that the data will be
+&gt; in different physical nodes (or even physical racks) like Cassandra does?</pre><pre>
+
+Riak writes the replicas to the vnode to which the {bucket, key} hashes
+and the following N-1 vnodes.
+
+Riak uses target_n (which defaults to 4) to determine what the largest N
+expected is, it then tries to lay out the vnodes that no &lt;target_n&gt;
+sequence of vnodes are on the same physical nodes. Here's an example 4
+node cluster with the default target_n of 4:
+
+(dev1@127.0.0.1)5&gt; riak_core_ring:pretty_print(element(2,
+riak_core_ring_manager:get_my_ring()), [legend]).
+==================================== Nodes ====================================
+Node a: 16 ( 25.0%) dev1@127.0.0.1
+Node b: 16 ( 25.0%) dev2@127.0.0.1
+Node c: 16 ( 25.0%) dev3@127.0.0.1
+Node d: 16 ( 25.0%) dev4@127.0.0.1
+==================================== Ring ====================================
+abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|abcd|
+ok
+
+As you can see, there are no sequences where any 2 vnodes in a 4 vnode
+sequence are on the same machine. Now look at what happens when # of
+nodes &lt; target_n:
+
+==================================== Nodes ====================================
+Node a: 22 ( 34.4%) dev2@127.0.0.1
+Node b: 21 ( 32.8%) dev3@127.0.0.1
+Node c: 21 ( 32.8%) dev4@127.0.0.1
+==================================== Ring =====================================
+abca|bcab|cabc|abca|bcab|cabc|abca|bcab|cabc|abca|bcab|cabc|abca|bcab|cabc|abca|
+
+Oops, now we have nodes appearing twice in the list of every 4 vnodes.
+This is bad because it means that if you loose one node, and N=4, you
+have a chance to loose 2 of your replicas, instead of one.
+
+Rack awareness is something that is being worked on, but we don't have
+it just yet, but as long as you have more than target_n nodes, Riak will
+try pretty hard to balance your replicas across physical machines. This
+is also why we don't recommend riak clusters smaller than 5 nodes
+(satisfy target_n and one more machine so you can tolerate 2/5 machines
+being down).
+
+Andrew
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12084.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd11.html#12092">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail11.html#12092">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12085.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12083.html">Data Replica algortihm</a></span> <span class="sender italic">João Machado</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12084.html">Re: Data Replica algortihm</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Data Replica algortihm</span> <span class="sender italic">Andrew Thompson</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Data Replica algortihm">
+<input type="hidden" name="msgid" value="20130819231412.GR19389@hijacked.us">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12092.html">
+<input type="submit" value=" Andrew Thompson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Data+Replica+algortihm%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12084.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12085.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20130819231412.GR19389@hijacked.us</li>
+</ul>
+</div>
+</body>
+</html>

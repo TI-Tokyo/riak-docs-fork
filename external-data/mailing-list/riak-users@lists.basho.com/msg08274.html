@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Reasons for using gen_server to gather statictics with folsom</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08274" id="c">
+<link rel="index" href="maillist.html#08274" id="i">
+<link rel="prev" href="msg08273.html" id="p">
+<link rel="next" href="msg08261.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08274.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Reasons+for+using+gen_server+to+gather+statictics+with+folsom%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Reasons for using gen_server to gather statictics with folsom</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Zhemzhitsky+Sergey%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Zhemzhitsky Sergey</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120813" rel="nofollow">Mon, 13 Aug 2012 02:22:39 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Russell,
+
+Thanks for extremely helpful answer!</pre><pre>
+
+Now the taken decisions are much clearer.
+
+Best Regards,
+Sergey
+
+From: Russell Brown [<a  rel="nofollow" href="mailto:russel...@basho.com">mailto:russel...@basho.com</a>]
+Sent: Monday, August 13, 2012 12:27 PM
+To: Zhemzhitsky Sergey
+Cc: riak-users@lists.basho.com
+Subject: Re: Reasons for using gen_server to gather statictics with folsom
+
+Hi Sergey,
+First, sorry for missing your first post. I just didn't see it.
+
+I'll try and answer your questions.
+
+&gt; 1.       Why separate gen_servers (riak_api_stat, riak_core_stat, 
+&gt; riak_kv_stat) were used to gather statistics instead of the direct calls to 
+&gt; folsom_metrics through some more high-level api?
+
+Time. There will be a high-level api provided by riak-core, or folsom, soon. 
+The idea being that you declaratively register stats and riak-core will start 
+a/some processes for you and you just use the API to update stats. I started 
+work on this structure but didn't finish it in time for 1.2. It is what I am 
+working on next. I'll keep you posted. If you follow the existing model 
+hopefully porting to the new API will be relatively simple. Sorry for not 
+getting it solidified sooner. The reason for gen_servers, of course, is to cast 
+the calls to folsom rather than blocking on ets when doing critical Riak ops 
+like writing and reading data. There are a number of table ownership/crashing 
+issues in folsom, as well as a couple of race conditions. I'll be working with 
+Joe Williams of Boundary to resolve these and refactor folsom as part of my 
+ongoing stats work for Riak. Watch that repo to keep informed.
+
+&gt; 2.       What is the purpose of riak_core_stat_cache and what it is intended 
+&gt; to do?
+
+Calculating the histograms for stats is expensive. Especially when there are a 
+lot of readings. In some cases it can take a few seconds to calculate stats for 
+some metrics on a busy node. The cache is there for 2 reasons. 1. To only have 
+one process calculating stats at a time, so if multiple calls to get stats 
+happen at once, one process actually calculates and the rest are parked and 
+notified when the answer comes. 2. To actually cache the results so they're not 
+calculated more often than needed. There are stats gathered on how long it 
+takes to calculate stats, and the idea was to have the mean time to calculate 
+stats for an application to be the cache TTL. That is work still to be done.
+
+But in many ways the cache is there to support backwards compatibility for 
+Riak's /stats endpoint and the riak-admin commands. In future I'd rather expose 
+the folsom stats directly over REST and CLI so you can request only the stat 
+you want and not waste time calculating a load of stats you're not interested 
+in. This is the next, next thing I'll be working on.
+
+&gt; As far as I understand riak_core_stat_cache caches stats using ets, so I’m 
+&gt; wondering why statistics that is stored in ets is cached using ets?
+
+So why cache stats in ets that are already in ets: the cache is for groups of 
+stats that have had the _expensive_ calculations run on them already, folsom 
+stores the raw readings in ets.
+
+&gt; Is it correct that calls to folsom_metrics are done via gen_server to 
+&gt; decrease the possibility of losing ets tables that are bound to a concrete 
+&gt; process?
+
+Really calls are done via gen_server so that calls to folsom are cast. 
+Originally the code called folsom direct in process but bench marking showed 
+this to be slower and more damaging in the case of an error/crash in folsom. I 
+mention the ets ownership/crashing issues above. There is an example of one 
+here[1]. I'm going to work on refactoring folsom to have a more coherent 
+strategy of table ownership.
+
+I hope this helps, if I've missed anything please ask. The short term aim was 
+to stabilise stats in Riak and fix known issues, and I think I accomplished 
+that. Next is to better structure the code so that riak-core provides a stats 
+service.
+
+Cheers
+
+Russell
+
+[1] <a  rel="nofollow" href="https://github.com/boundary/folsom/issues/30">https://github.com/boundary/folsom/issues/30</a>
+
+
+On 13 Aug 2012, at 09:54, Zhemzhitsky Sergey wrote:
+
+
+Hi guys,
+
+Any updates on these questions?
+
+I’ve read the following blog entry 
+<a  rel="nofollow" href="http://basho.com/blog/technical/2012/07/02/folsom-backed-stats-riak-1-2/and">http://basho.com/blog/technical/2012/07/02/folsom-backed-stats-riak-1-2/and</a> 
+still haven’t found the answers.
+
+As far as I understand riak_core_stat_cache caches stats using ets, so I’m 
+wondering why statistics that is stored in ets is cached using ets?
+Is it correct that calls to folsom_metrics are done via gen_server to decrease 
+the possibility of losing ets tables that are bound to a concrete process?
+
+
+Best Regards,
+Sergey
+
+From: 
+riak-users-boun...@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>&gt; 
+[<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>] On Behalf Of Zhemzhitsky Sergey
+Sent: Friday, August 10, 2012 6:33 PM
+To: riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+Subject: Reasons for using gen_server to gather statictics with folsom
+
+Hi riak gurus,
+
+Recently riak 1.2 has been released that uses folsom library to gather 
+statistics.
+
+I’d like to use the same library (folsom) in my application so could you answer 
+the following questions:
+
+1.       Why separate gen_servers (riak_api_stat, riak_core_stat, riak_kv_stat) 
+were used to gather statistics instead of the direct calls to folsom_metrics 
+through some more high-level api?
+2.       What is the purpose of riak_core_stat_cache and what it is intended to 
+do?
+
+
+Best Regards,
+Sergey
+
+
+_______________________________________________________
+
+
+
+The information contained in this message may be privileged and conf idential 
+and protected from disclosure. If you are not the original intended recipient, 
+you are hereby notified that any review, retransmission, dissemination, or 
+other use of, or taking of any action in reliance upon, this information is 
+prohibited. If you have received this communication in error, please notify the 
+sender immediately by replying to this message and delete it from your 
+computer. Thank you for your cooperation. Troika Dialog, Russia.
+
+If you need assistance please contact our Contact Center (+7495) 258 0500 or go 
+to 
+www.troika.ru/eng/Contacts/system.wbp&lt;<a  rel="nofollow" href="http://www.troika.ru/eng/Contacts/system.wbp">http://www.troika.ru/eng/Contacts/system.wbp</a>&gt;
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08273.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08274">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08274">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08261.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08260.html">Reasons for using gen_server to gather statictics with ...</a></span> <span class="sender italic">Zhemzhitsky Sergey</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08272.html">RE: Reasons for using gen_server to gather statict...</a></span> <span class="sender italic">Zhemzhitsky Sergey</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08273.html">Re: Reasons for using gen_server to gather sta...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Reasons for using gen_server to gather...</span> <span class="sender italic">Zhemzhitsky Sergey</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Reasons for using gen_server to gather statictics with folsom">
+<input type="hidden" name="msgid" value="06139A918ACCA041BF46A0F36940C7FA46285118@exch-mbx1.msk.trd.ru">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08274.html">
+<input type="submit" value=" Zhemzhitsky Sergey ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Reasons+for+using+gen_server+to+gather+statictics+with+folsom%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08273.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08261.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">06139A918ACCA041BF46A0F36940C7FA46285118@exch-mbx1.msk.trd.ru</li>
+</ul>
+</div>
+</body>
+</html>

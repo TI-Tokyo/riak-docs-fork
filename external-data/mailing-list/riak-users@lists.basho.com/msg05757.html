@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: [lager] RFC on refactorings for a Graylog2 backend</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05757" id="c">
+<link rel="index" href="maillist.html#05757" id="i">
+<link rel="prev" href="msg05756.html" id="p">
+<link rel="next" href="msg05758.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05757.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%5Blager%5C%5D+RFC+on+refactorings+for+a+Graylog2+backend%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: [lager] RFC on refactorings for a Graylog2 backend</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Andrew+Thompson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Andrew Thompson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111128" rel="nofollow">Mon, 28 Nov 2011 10:35:06 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Mon, Nov 28, 2011 at 12:47:17PM -0500, Jason Wagner wrote:
+&gt; This is a very developer oriented question about Lager that I'm posting
+&gt; here because I didn't find a dedicated list.</pre><pre>
+
+Yes, it doesn't have a list. I'm not sure if it is worth rectifying that
+yet. Here should be fine for now.
+
+&gt; I'm working on a Graylog2 backend for Lager.  I'm sitting on a very basic
+&gt; plugin that does little more than post log messages to a graylog2 system
+&gt; that I'll push to github after I do some integration testing tonight.
+&gt; 
+&gt; However, there's a next step with the Graylog2 integration that would
+&gt; really leverage the power of both tools-- pushing Lager's trace attributes
+&gt; into Graylog2 user fields to really leverage the analytics that the newest
+&gt; versions of Graylog2 provide.  This would allow both pre-log trace
+&gt; filtering and after the fact trace analysis through Graylog2.
+&gt; 
+&gt; This would be a major change to the Lager internals and I wanted to solicit
+&gt; opinions on the changes.
+&gt; 
+&gt; *Proposed changes
+&gt; **Pass through all trace attributes*
+&gt; The backends need to receive all trace attributes, including default
+&gt; attributes such as line, file, function, pid, etc.  This would allow proper
+&gt; population of the graylog2 fields.
+&gt; 
+&gt; I would change this by removing the lager_transform:transform_statement's
+&gt; call of lager_util:check_traces so that all Traces got passed through.  I
+&gt; don't believe this would impact any backends except via sending them more
+&gt; payload in the event, but please correct me if I'm wrong.
+
+I've actually been considering doing this as well, for similar reasons.
+I don't see a problem with doing it.
+
+&gt; *Refactor message formatting*
+&gt; The formatting needs to be extracted and externalized from lager:log and
+&gt; lager:log_dest.  This is probably desirable, anyway, since it would be a
+&gt; very small step from this to have completely orthogonal format/sink
+&gt; separation, allowing for a user compromise between speed and flexibility in
+&gt; their log file formats.
+&gt; 
+&gt; I would create a behavior lager_message_formatter with one function that
+&gt; takes the trace attributes, the message, and returns an iolist for output.
+&gt; The current one would simply be:
+&gt; 
+&gt; format(Config,Trace,Format,Args) -&gt;
+&gt;       Pid=proplists:get_value(pid,Trace),
+&gt;      % etc for Module, Function, Line, Level
+&gt;       [[&quot;[&quot;, atom_to_list(Level), &quot;] &quot;],
+&gt;            io_lib:format(&quot;~p@~p:~p:~p &quot;, [Pid, Module, Function, Line]),
+&gt;            safe_format_chop(Format, Args, 4096)].
+&gt; 
+&gt; The backends would make this call rather than the lager:log or
+&gt; lager:log_dest.  This would allow for a configuration parameter on the
+&gt; backends to set which formatter they use, with a reasonable default, and
+&gt; different formats for each backend configuration.
+
+I think that might be overkill, but I suppose it's acceptable.
+
+&gt; 
+&gt; *Concerns*
+&gt; One drawback is that it significantly increases the size of the events,
+&gt; especially if there is concern about run-away tuples being sent.  I'm not
+&gt; sure how this would impact the performance in the long haul.
+&gt; 
+&gt; The formatting change also pushes some of the workload from the user
+&gt; process to the logging process.  This can be an advantage if the workloads
+&gt; aren't taxing the backend, but could penalize even simple logging
+&gt; statements if the backend gets swamped and can't format/process fast
+&gt; enough.  The potentially large messages have impact this as well.
+
+Technically, this won't happen because lager uses sync_notify, which
+means the log call blocks until all the backends have handled it.
+However, this *does* mean that long log formatting calls in the
+gen_event will probably cause logging calls to block *more*.
+
+What about doing the format string formatting in the calling process,
+*once*, and then just sending along the rest of the data (timestamp,
+callsite information, trace attributes, etc) with the output from doing
+the string formatting? That should be the meat of the formatting anyway,
+and I'd like to make sure we only do it once (we actually do it twice at
+the moment, if a trace matches).
+
+&gt; There are a couple ways to mitigate this-- additional checks on the log
+&gt; statement, separate format processes from write processes and pool the
+&gt; formatters, and other ideas that I wouldn't propose until I actually see
+&gt; the bottleneck.
+&gt; 
+&gt; *Request For Comments*
+&gt; Are these changes desirable in the direction of lager?
+&gt; 
+&gt; I've seen performance based changes in the recent history.  Is performance
+&gt; paramount over flexibility?  How do you currently measure performance?  Are
+&gt; any scripts,scenarios,etc available?
+&gt; 
+&gt; Any historical lessons that I might be unaware in the vicinity of things
+&gt; I'd be changing?
+
+I think overall this is the path Lager is going to have to tread.
+
+I'd rather balance Lager in the direction of flexibility and power over
+performance, but egregious bottlenecks shouldn't be tolerated if there's
+something that can be done to fix them. Lager is really about *safely*
+logging messages, making them easy to read and being operationally
+powerful. It already lags the competitors in performance, for the most
+part, because of things it does to further these goals.
+
+I have some simple performance testing code here:
+
+<a  rel="nofollow" href="https://github.com/Vagabond/logbench">https://github.com/Vagabond/logbench</a>
+
+But it's fairly unscientific right now, and needs some rewriting. I've
+also got a half-finished benchmark blogpost comparing lager to the
+alternatives, which also needs some rewriting.
+
+So the TLDR is; I think you're on the right path, go ahead and make the
+changes and I'll certainly review them for inclusion. If you don't I'll
+probably end up doing something similar anyway, but it'll take longer
+(I have other projects at basho to complete ATM).
+
+Andrew
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05756.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05757">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05757">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05758.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05756.html">[lager] RFC on refactorings for a Graylog2 backend</a></span> <span class="sender italic">Jason Wagner</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: [lager] RFC on refactorings for a Graylog2 backen...</span> <span class="sender italic">Andrew Thompson</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: [lager] RFC on refactorings for a Graylog2 backend">
+<input type="hidden" name="msgid" value="20111128183458.GA16133@hijacked.us">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05757.html">
+<input type="submit" value=" Andrew Thompson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%5Blager%5C%5D+RFC+on+refactorings+for+a+Graylog2+backend%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05756.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05758.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20111128183458.GA16133@hijacked.us</li>
+</ul>
+</div>
+</body>
+</html>

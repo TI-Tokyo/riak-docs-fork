@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Issues with capacity planning pages on wiki</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03391" id="c">
+<link rel="index" href="maillist.html#03391" id="i">
+<link rel="prev" href="msg03389.html" id="p">
+<link rel="next" href="msg03392.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03391.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Issues+with+capacity+planning+pages+on+wiki%22&amp;o=newest" rel="nofollow"><span itemprop="name">Issues with capacity planning pages on wiki</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anthony+Molinaro%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anthony Molinaro</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110523" rel="nofollow">Mon, 23 May 2011 20:39:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+Hi,
+
+  As I'm about to dramatically increase our riak investment by putting
+lots more data into it.  I figured I might try to run through the
+capacity planning on the wiki.</pre><pre>
+
+Since my current setup is fairly small and manageable I decided to try
+to see how accurately the capacity planning matches what I see.
+
+So first reality
+
+  A: Number of Machine    : 8
+  B: Memory per Machine   : 24 GB
+  C: Length of Bucket Name: 10 bytes
+  D: Length of Keys       : 36 bytes
+  E: Length of Values     : 36 bytes
+  F: Replication Factor   : 3
+  G: Number of Keys       : 183915891
+  H: Disk Space used      : 341898018816 bytes (341 GB)
+  I: RAM                  : 70536691712 bytes (70 GB)
+
+  G was calculated using riak_kv_bitcask_backend:key_counts/0 for
+    each bitcask on a node, summing, then dividing by 3
+  H was calculated with 'du -sk /var/lib/riak/bitcask/ | cut -f1', summing
+    and multiplying by 1024
+  I was caluclated with 'ps -U riak -o vsz h', summing and multiplying
+    by 1024
+
+Now from entering A-G on the Bitcask-Capacity-Planning page I get
+
+  Total Key Space: 34.9 GB
+  Node Count : 3 (7 GB Storage per Node)
+
+in the first section and
+
+  Key Overhead: 73 Bytes (22 Byte Overhead)
+  Total Documents: 1,010,580,541
+  Total Disk Used: 102 GB of Disk Space
+
+Also when using the Cluster Capacity Planning page I get
+
+  (static bitcask per key overhead
+   + estimated average bucket+key length in bytes)
+   * estimate total number of keys
+   * n_val
+   = Approximate RAM Needed for Bitcask
+
+So plugging in values
+
+  ( 22 + 10 + 36 ) * 183915891 * 3 = 37518841696 = 34.9 GB
+
+and
+
+  Disk = Estimated Total Objects * Average Object Size * n_val
+  Disk = 183915891 * 36 * 3 = 19862916228 = 18.49 GB
+
+So either the equations are drastically wrong or my calculations are.  I find
+it very suspect that the equation for the amount of disk includes zero
+overhead when reading the bitcask paper it seems like each entry consists
+of
+
+  CRC, timestamp, keysz, valsz, key, value
+
+Well anyway, there's obviously something off, as I end up with the following
+
+      Bitcask-Capacity-Planning     Cluster-Capacity-Planning   Reality
+RAM            34.9 GB                        34.9 GB             70 GB
+Disk          102 GB                          18.49 GB           341 GB
+
+So it looks to me like the numbers for RAM are about 1/2 of actual and
+the number for Disk are completely off, they are different depending on
+which page you look at on the wiki and vastly underestimate reality.
+
+I'm hoping someone from basho can clarify so I can really determine
+capacity.
+
+Thanks,
+
+-Anthony
+
+-- 
+------------------------------------------------------------------------
+Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03389.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03391">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03391">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03392.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Issues with capacity planning pages on wiki</span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03392.html">Re: Issues with capacity planning pages on wiki</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03393.html">Re: Issues with capacity planning pages on wiki</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03394.html">Re: Issues with capacity planning pages on ...</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03398.html">Re: Issues with capacity planning pages...</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03402.html">Re: Issues with capacity planning ...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03403.html">Re: Issues with capacity plann...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03404.html">Re: Issues with capacity p...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03405.html">Re: Issues with capacity p...</a></span> <span class="sender italic">Mark Phillips</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03406.html">Re: Issues with capacity plann...</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03411.html">Re: Issues with capacity p...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Issues with capacity planning pages on wiki">
+<input type="hidden" name="msgid" value="20110524033901.GA67556@alumni.caltech.edu">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03391.html">
+<input type="submit" value=" Anthony Molinaro ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Issues+with+capacity+planning+pages+on+wiki%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03389.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03392.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20110524033901.GA67556@alumni.caltech.edu</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: question about java client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd12.html#11821" id="c">
+<link rel="index" href="mail12.html#11821" id="i">
+<link rel="prev" href="msg11820.html" id="p">
+<link rel="next" href="msg11822.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11821.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+question+about+java+client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: question about java client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Brian+Roach%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Roach</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130730" rel="nofollow">Tue, 30 Jul 2013 14:35:47 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Paul,
+
+The annotated fields are not included in the Serialization using the
+JSONConverter (at least, not in the current version of the client; I
+think I did some fixes around that way back in like v1.0.7). If they
+are, you've got something odd going on in your domain object.</pre><pre>
+
+Here's a (very basic) example:
+
+public class App3
+{
+
+    public static void main(String[] args) throws RiakException
+    {
+        IRiakClient client = RiakFactory.pbcClient();
+        Bucket b = client.fetchBucket(&quot;test_bucket&quot;).execute();
+
+        MyPojo mp = new MyPojo();
+        mp.key = &quot;key0&quot;;
+        mp.value = &quot;This is my value&quot;;
+
+        Set&lt;RiakLink&gt; links = new HashSet&lt;RiakLink&gt;();
+        for (int i = 1; i &lt; 4; i++)
+        {
+            RiakLink link = new RiakLink(&quot;test_bucket&quot;, &quot;key&quot; + i, &quot;myLinkTag&quot;);
+            links.add(link);
+        }
+        mp.links = links;
+        b.store(mp).execute();
+
+        mp = b.fetch(&quot;key0&quot;, MyPojo.class).execute();
+
+        System.out.println(mp.key);
+        System.out.println(mp.value);
+        for (RiakLink link : mp.links)
+        {
+            System.out.println(link.getKey());
+        }
+
+        client.shutdown();
+    }
+
+}
+
+class MyPojo
+{
+    public @RiakKey String key;
+    public @RiakLinks Collection&lt;RiakLink&gt; links;
+    public String value;
+
+}
+
+-----------------------
+That outputs:
+
+key0
+This is my value
+key2
+key3
+key1
+
+Checking it with curl shows it as it should be:
+
+roach$ curl -v localhost:8098/buckets/test_bucket/keys/key0
+* About to connect() to localhost port 8098 (#0)
+*   Trying ::1... Connection refused
+*   Trying 127.0.0.1... connected
+* Connected to localhost (127.0.0.1) port 8098 (#0)
+&gt; GET /buckets/test_bucket/keys/key0 HTTP/1.1
+&gt; User-Agent: curl/7.21.4 (universal-apple-darwin11.0) libcurl/7.21.4 
+&gt; OpenSSL/0.9.8x zlib/1.2.5
+&gt; Host: localhost:8098
+&gt; Accept: */*
+&gt;
+&lt; HTTP/1.1 200 OK
+&lt; X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fga+nNWUwZTInMfK4Lcq5zRfFgA=
+&lt; Vary: Accept-Encoding
+&lt; Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+&lt; Link: &lt;/buckets/test_bucket/keys/key1&gt;; riaktag=&quot;myLinkTag&quot;,
+&lt;/buckets/test_bucket/keys/key3&gt;; riaktag=&quot;myLinkTag&quot;,
+&lt;/buckets/test_bucket/keys/key2&gt;; riaktag=&quot;myLinkTag&quot;,
+&lt;/buckets/test_bucket&gt;; rel=&quot;up&quot;
+&lt; Last-Modified: Tue, 30 Jul 2013 21:21:18 GMT
+&lt; ETag: &quot;1ikpRECrH40O93LxiTmnKz&quot;
+&lt; Date: Tue, 30 Jul 2013 21:21:57 GMT
+&lt; Content-Type: application/json; charset=UTF-8
+&lt; Content-Length: 28
+&lt;
+* Connection #0 to host localhost left intact
+* Closing connection #0
+{&quot;value&quot;:&quot;This is my value&quot;}
+
+
+
+On Tue, Jul 30, 2013 at 2:38 PM, Paul Ingalls &lt;p...@fanzo.me&gt; wrote:
+&gt; Hey Brian,
+&gt;
+&gt; After a bit of messing around, I'm now dropping objects into the correct
+&gt; bucket using the links annotation.  However,  I am noticing that the json is
+&gt; including the metadata from the domain object, i.e. things tagged with
+&gt; @RiakKey, @RiakIndex or @RiakLinks.  I was under the impression this data
+&gt; would be left out.  I wouldn't care a whole lot, but when I'm getting data
+&gt; back in via a fetch, the JSONConverter is crashing saying it doesn't know
+&gt; how to convert the RiakLink object since there isn't an appropriate
+&gt; constructor for it.
+&gt;
+&gt; Do I need to specifically @JsonIgnore fields tagged with one of the Riak
+&gt; tags?
+&gt;
+&gt; Thanks!
+&gt;
+&gt; Paul
+&gt;
+&gt;
+&gt; Paul Ingalls
+&gt; Founder &amp; CEO Fanzo
+&gt; p...@fanzo.me
+&gt; @paulingalls
+&gt; <a  rel="nofollow" href="http://www.linkedin.com/in/paulingalls">http://www.linkedin.com/in/paulingalls</a>
+&gt;
+&gt;
+&gt;
+&gt; On Jul 30, 2013, at 11:20 AM, Paul Ingalls &lt;p...@fanzo.me&gt; wrote:
+&gt;
+&gt; Ok, thats perfect.  I totally missed the annotation for links…
+&gt;
+&gt; Will give that a shot…
+&gt;
+&gt; Thanks!
+&gt;
+&gt; Paul Ingalls
+&gt; Founder &amp; CEO Fanzo
+&gt; p...@fanzo.me
+&gt; @paulingalls
+&gt; <a  rel="nofollow" href="http://www.linkedin.com/in/paulingalls">http://www.linkedin.com/in/paulingalls</a>
+&gt;
+&gt;
+&gt;
+&gt; On Jul 30, 2013, at 11:16 AM, Brian Roach &lt;ro...@basho.com&gt; wrote:
+&gt;
+&gt; Paul,
+&gt;
+&gt; I'm not quite sure I understand what you're asking.
+&gt;
+&gt; If you do a fetch and have siblings each one is converted to your
+&gt; domain object using the Converter and then passed as a Collection to
+&gt; the ConflictResolver. Each sibling is going to include its links
+&gt; and/or indexes as long as the Converter is injecting them into the
+&gt; domain object and you can resolve them in the ConflictResolver.
+&gt;
+&gt; The default JSONConverter, for example, injects them into your domain
+&gt; object via annotations from the com.basho.riak.client.convert[1]
+&gt; package.
+&gt;
+&gt; Thanks,
+&gt; Brian Roach
+&gt;
+&gt; <a  rel="nofollow" href="http://basho.github.io/riak-java-client/1.4.0/com/basho/riak/client/convert/package-summary.html">http://basho.github.io/riak-java-client/1.4.0/com/basho/riak/client/convert/package-summary.html</a>
+&gt;
+&gt;
+&gt; On Tue, Jul 30, 2013 at 11:41 AM, Paul Ingalls &lt;p...@fanzo.me&gt; wrote:
+&gt;
+&gt; Newbie with Riak, and looking at the java client.
+&gt;
+&gt; Specifically, I've been digging into the domain mapping apis.  Looking into
+&gt; the code, it appears to me that, if I'm using links a bunch or even
+&gt; secondary indexes, that I could lose some data during the conflict
+&gt; resolution phase.  I see where links and other relevant user data gets
+&gt; cached during the conversion phase from the fetch and then patched back in
+&gt; during the conversion phase for the store.  However, it doesn't look like
+&gt; you have the opportunity during the resolution phase to merge metadata.
+&gt; Should I focus on using the raw client, or am I missing something?
+&gt;
+&gt; Thanks!
+&gt;
+&gt; Paul
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; Paul Ingalls
+&gt; Founder &amp; CEO Fanzo
+&gt; p...@fanzo.me
+&gt; @paulingalls
+&gt; <a  rel="nofollow" href="http://www.linkedin.com/in/paulingalls">http://www.linkedin.com/in/paulingalls</a>
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11820.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd12.html#11821">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail12.html#11821">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11822.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11814.html">question about java client</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11815.html">Re: question about java client</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11816.html">Re: question about java client</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11820.html">Re: question about java client</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: question about java client</span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11822.html">Re: question about java client</a></span> <span class="sender italic">Paul Ingalls</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11823.html">Re: question about java client</a></span> <span class="sender italic">Brian Roach</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: question about java client">
+<input type="hidden" name="msgid" value="CAM+FMBvTyEFmqzWvsKpJRm=+bZFOCAxu90O2DqMv_SNP0cw1dQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11821.html">
+<input type="submit" value=" Brian Roach ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+question+about+java+client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11820.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11822.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAM+FMBvTyEFmqzWvsKpJRm=+bZFOCAxu90O2DqMv_SNP0cw1dQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

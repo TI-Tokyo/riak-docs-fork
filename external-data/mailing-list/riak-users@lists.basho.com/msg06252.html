@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Absolute consistency</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06252" id="c">
+<link rel="index" href="maillist.html#06252" id="i">
+<link rel="prev" href="msg06241.html" id="p">
+<link rel="next" href="msg06254.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06252.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Absolute consistency</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120111" rel="nofollow">Wed, 11 Jan 2012 19:15:10 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>If ElasticSearch is a better fit, then using ElasticSearch is the
+right thing to do. The whole &quot;NoSQL movement&quot; is really about choice.
+At scale there will never be a single solution that is best for
+everyone.  Riak is intentionally focused on high availability,
+reliability, and fault-tolerance. If you have critical data and/or
+care most about optimizing for &quot;it just works&quot; (even during a server
+failure, even at 2 AM), then Riak is likely the best choice. If other
+priorities dominate, then you may want to look elsewhere.</pre><pre>
+
+Riak is based on Dynamo. Dynamo is an eventually consistent system
+that embraces sloppy quorums and hinted handoff. In terms of CAP, it
+is an AP system rather than a CP system. And, by embracing sloppy
+quorums, Riak/Dynamo takes AP to its limit by optimizing for &quot;always
+writable&quot; over &quot;read-your-own writes&quot; consistency. In comparison,
+Project Voldemort is another Dynamo inspired system that chooses to go
+with strict quorums. This provides RYOW eventual consistency, but
+leads to lower availability guarantees during failures/partitions.
+
+For Riak 1.0, we introduced PW/PR. The intention behind PW/PR was to
+add support for strict quorums. Requests with R/W settings would use
+the standard sloppy quorum logic, requests with PR/PW would use strict
+quorum logic. As Jon mentioned in his earlier email, the current
+implementation that went into 1.0 turns out to have a corner case were
+strict quorums aren't enforced. Addressing this corner case and
+strengthening the guarantees of PW/PR are &quot;on the list&quot;.
+
+To illustrate sloppy vs strict, consider a 5-node cluster: A/B/C/D/E.
+And a W=Quorum/N=3 write request is issued on a key that is owned by
+nodes A/B/C. However, nodes B and C are currently offline.
+
+With sloppy quorums/hinted handoff, Riak will re-route the requests
+meant for B/C to nodes D/E. This allows the write to succeed with the
+guarantee of having 3-replicas in the cluster. In the future, D will
+eventually handoff it's replica back to B whenever it comes online,
+and E will do the same to C. This is hinted handoff.
+
+With strict quorums (ie. PW=Quorum), the desired behavior is to only
+send requests to the primary nodes. Since B/C are down, only A would
+respond, and therefore the write would fail because it did not fulfill
+the requested replica requirement. Again, in the current
+implementation, there are cases where this is not guaranteed and a
+request may be sent to a fallback node. This leads to the behavior
+discussed earlier.
+
+Of course, even if we had perfect PW/PR semantics, Riak still only
+gives you a limited form of &quot;read your own writes&quot; consistency. The
+labels &quot;absolute consistency&quot;, &quot;strong consistency&quot; or even &quot;atomic
+operation&quot; are vague when discussing distributed systems with multiple
+clients.
+
+Some thoughts to ponder:
+
+1. Do you allow multiple clients to write to Riak at the same time?
+With concurrent writers, &quot;atomic&quot; can mean multiple things. Do you
+want linearizability? Do you want one writer to fail? Is optimistic
+concurrency control or MVCC your solution? You could route everything
+though a single writer, but then you introduce a
+single-point-of-failure (SPOF). Adding an SPOF in-front of a highly
+available system is non-ideal. Or, perhaps a single writer with leader
+election / failover?
+
+2. What about write failure? In Riak, a write failure does not mean
+the value won't later show-up in a read. If you issue a PW=3 write, it
+may fail because it succeeded to write to 1 replica, but not the other
+2. However, the 1-replica that does have the value will eventually
+propagate it to the other 2 replicas through read repair. Thus, you
+may eventually read the failed-to-write value. Of course, the write
+could have failed to all 3 replicas in which case you won't ever read
+it. Which type of failure was it? You don't know, because actual
+failure and &quot;didn't reply before I responded to the client&quot; are
+indistinguishable without something similar to a 2-phase commit. Does
+your client handle this case? Perhaps just re-issues writes until they
+succeed? What if your client dies while re-issuing requests, is the
+value lost? What consistency guarantees do you want to provide in this
+scenario?
+
+In general, distributed consistency is non-trivial. Even master/slave
+systems have choices to make. Synchronous vs asynchronous replication.
+ElasticSearch is synchronous (at least to secondary RAM), while
+MongoDB is asynchronous. If you have multiple slaves, what consistency
+guarantees are there between all of them? If the master crashes during
+a write that was replicated to some but not all slaves, is it possible
+to get different values on a read if different subset of slaves crash
+as well? For the strongest replication guarantees, you end up with
+protocols with higher latency and lower availability guarantees. It's
+always a tradeoff game.
+
+As an aside, around March 2010, I started to investigate strong
+consistency in Riak. Part of that work lead to an implementation of
+riak_zab (<a  rel="nofollow" href="http://github.com/jtuple/riak_zab">http://github.com/jtuple/riak_zab</a>), an atomic, 2-phase
+commit protocol built on riak_core that I released last year. I have
+unreleased code that provided a strongly consistent riak_kv layer
+(riakual) on top of riak_zab. This was one of many possible ways to
+add stronger guarantees to Riak.
+
+As Jon mentioned, stronger consistency is a research area for 2012.
+While CAP dictates that you can't have C/A/P at once, there's no
+reason you can't have a product that provides both AP requests and CP
+requests. Perhaps there will be more to discuss on that point later on
+this year.
+
+The main take-away of this long email is that providing different
+guarantees in the presence of node failures and network partitions is
+a non-trivial problem.  If the goal is high-availability and no SPOF,
+the problem is even more challenging.  I would recommend against
+anyone trying to implementing client-side strong consistency on-top of
+Riak, unless you understand the scope of the problem and are
+intentionally limiting yourself to a subset of strong consistency (eg.
+&quot;assume writes always succeed&quot;, &quot;assume only one writer always&quot;, etc).
+Or, if you understand how you would do so, leverage something like
+Zookeeper to provide consistent replicated state that is backed by
+Riak. (That's essentially what riakual/riak_zab did). Or, better yet,
+look at how you can reformulate your problem to work in an eventually
+consistent system. Less coordination will always provide faster, more
+predictable performance. Options like statebox, knockbox, and
+meangirls can help with certain problem domains:
+<a  rel="nofollow" href="https://github.com/mochi/statebox">https://github.com/mochi/statebox</a>
+<a  rel="nofollow" href="http://reiddraper.com/introducing-knockbox/">http://reiddraper.com/introducing-knockbox/</a>
+<a  rel="nofollow" href="https://github.com/aphyr/meangirls">https://github.com/aphyr/meangirls</a>
+
+Finally, if you truly need atomic, strong consistency, today and not
+tomorrow then consider other options. Seriously, if Riak isn't the
+right fit, &quot;Don't use my database&quot;:
+<a  rel="nofollow" href="http://www.slideshare.net/BashoTechnologies/basho-and-riak-at-goto-stockholm-dont-use-my-database">http://www.slideshare.net/BashoTechnologies/basho-and-riak-at-goto-stockholm-dont-use-my-database</a>
+
+If you do look at other options, take the time to truly understand the
+guarantees provided. What does atomic, multi-master replication mean
+for a given product?  What failure conditions can it tolerate? Can you
+ever lose data under rare, but not necessarily uncommon scenarios? If
+you're unsure, ask questions. It's not about good or bad. Different
+products have different guarantees.  The goal is to ensure that
+whatever features/guarantees you need for your project are provided by
+the choice you decide upon.
+
+-Joe
+@jtuple
+
+
+On Wed, Jan 11, 2012 at 11:07 AM, Les Mikesell &lt;lesmikes...@gmail.com&gt; wrote:
+&gt; On Wed, Jan 11, 2012 at 10:56 AM, Vishal Shah &lt;gold...@gmail.com&gt; wrote:
+&gt;&gt; To add to Ian's comment, for me personally, this specific characteristic is
+&gt;&gt; in fact a very important distinguishing feature of Riak vs other scalable KV
+&gt;&gt; systems. To me, this is what separates
+&gt;
+&gt; Yes, but it makes it unusable for anything that requires atomic
+&gt; operations.  A group here just went with elasticsearch - partly
+&gt; because of the full lucene indexer and range queries, but mostly
+&gt; because they wanted redundant data feeds and an atomic operation to
+&gt; reject duplicates.  And as a nice side effect, you can run a
+&gt; client-only node that doesn't store data on the same box with the
+&gt; application so you don't need to go through a separate load balancer
+&gt; to deal with failures of the node the app is configured to use.
+&gt;
+&gt; --
+&gt;  Les Mikesell
+&gt;    lesmikes...@gmail.com
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06241.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06252">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06252">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06254.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06145.html">Re: Absolute consistency</a></span> <span class="sender italic">Tim Robinson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06152.html">Re: Absolute consistency</a></span> <span class="sender italic">Thomas Bakketun</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06217.html">Re: Absolute consistency</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06231.html">Re: Absolute consistency</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06232.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06233.html">Re: Absolute consistency</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06234.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06236.html">Re: Absolute consistency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06237.html">Re: Absolute consistency</a></span> <span class="sender italic">Vishal Shah</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06241.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Absolute consistency</span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06254.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06240.html">Re: Absolute consistency</a></span> <span class="sender italic">Les Mikesell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Absolute consistency">
+<input type="hidden" name="msgid" value="CANvk2KQFF6qqDxXG_JW-P7P6O9uzS0bSDZo-1a0NdNhcrwAtmw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06252.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Absolute+consistency%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06241.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06254.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KQFF6qqDxXG_JW-P7P6O9uzS0bSDZo-1a0NdNhcrwAtmw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

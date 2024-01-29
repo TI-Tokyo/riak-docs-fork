@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak sizing considerations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06423" id="c">
+<link rel="index" href="maillist.html#06423" id="i">
+<link rel="prev" href="msg06417.html" id="p">
+<link rel="next" href="msg06418.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06423.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+sizing+considerations%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak sizing considerations</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sebastian+Gerlach%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sebastian Gerlach</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120126" rel="nofollow">Thu, 26 Jan 2012 03:59:16 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Ian,
+
+thanks for your reply. First, thank's a lot for explain the read process
+in riak. It helps a lot.</pre><pre>
+
+For the benchmarks i use 4 Server:
+
+        CPU: 1x Intel(R) Xeon(R) CPU X5670 @ 2.93GHz
+        RAM: 16 GB
+        NET: 1 GBit interface
+
+I believe that a cluster can perform over 500 requests per second
+depending on the key/value size and the N_VAL.
+
+In my case i have an N_VAL=3 with the default configuration of riak. I
+only play around with the r and w property of the bucket.
+
+I use curl as client and the HTTP-API of riak. I run different
+benchmarks. Like one client make the requests to one node or 4 clients
+request all 4 nodes.
+
+In all tests the CPU and RAM wasn't the limit. Also i/o dons't seem to
+be a problem. The bottleneck at this time is my network.
+
+With a value size of 648 KB and a 1 GBit interface you have a physical
+limitation.
+
+In theory an 1 GBit interface can serve 128 MByte/sec. My Images have a
+size of 648 KByte. If i use an Apache or Squid to serve them i can
+theoretically get 128 MByte / 648 KByte = 200 Images/sec. With riak the
+calculation looks like the following: 128 MByte / ( 4 * 648 KByte) = 50
+Images/sec. The &quot;4 *&quot; result from N_VAL=3. The coordinator has to read 3
+copys and send one.
+
+In theory i can serve the requests parallel or in a row. The limiting
+factor should be the bandwidth. In my calculations i use only 50% of the
+available bandwidth.
+
+Best regards
+Sebastian
+
+On 01/25/2012 11:23 PM, Ian Plosker wrote:
+&gt; Sebastian,
+&gt; 
+&gt; With all requests, Riak will attempt to read or write to all replicas 
+&gt; regardless of the specified r or w value. The r and w values affect how many 
+&gt; reads from or writes to partitions must be completed before the operation is 
+&gt; considered successful.
+&gt; 
+&gt; As a result, the get (read) and put (write) handlers outlive the client 
+&gt; request. They will continue to wait for either all vnodes 
+&gt; (replicas/partitions) to respond or for the 60 timeout to elapse. As such, 
+&gt; network traffic after a large number of reads with r=1 shouldn't be 
+&gt; surprising, the request handlers are continuing to await responses from 
+&gt; vnodes who are working through their request queues.
+&gt; 
+&gt; On modest hardware, I've seen Riak clusters perform multiples of 500 ops per 
+&gt; second. I'm curious, what are you using to perform your benchmark? Does it 
+&gt; perform requests in parallel? Are requests being made to all nodes in the 
+&gt; cluster or just one? To find your maximum throughput, you should experiment 
+&gt; with various ratios of parallel request per node.
+&gt; 
+&gt; Hope that helps.  
+&gt; 
+&gt; --  
+&gt; Ian Plosker &lt;i...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies
+&gt; 
+&gt; 
+&gt; On Tuesday, January 24, 2012 at 5:21 AM, Sebastian Gerlach wrote:
+&gt; 
+&gt;&gt; Dear Riak-Users,
+&gt;&gt;  
+&gt;&gt; we consider to save a large amount (50000000) of binary Data (Images) in
+&gt;&gt; a riak cluster. Each image has a size of 648 KB. We want to store 3
+&gt;&gt; copy's of each image.
+&gt;&gt;  
+&gt;&gt; In this case i need to store 50000000 * 648 KB * 3 = 90.5 TB Data. This
+&gt;&gt; calculation didn't include any overhead for reorganisation and other stuff.
+&gt;&gt;  
+&gt;&gt; On the other hand is the network. I run some benchmarks on a 4 node
+&gt;&gt; cluster. Each with a 1 Gbps interface. In addition to the benchmarks
+&gt;&gt; I've made some calculations.
+&gt;&gt;  
+&gt;&gt; Some information for the benchmark:
+&gt;&gt; - I use the same interface for clustercommunication and benchmarking.
+&gt;&gt; - I use the riak http api interface
+&gt;&gt; - time curl -s
+&gt;&gt; HTTP://interface:8098/buckets/test-01/keys/[10001-20000].jpg &gt; /dev/null
+&gt;&gt;  
+&gt;&gt; In theory, a 1 Gbps interface provides 125 MB per second. In my
+&gt;&gt; calculation i only use 50 percent of the theoretically available
+&gt;&gt; bandwidth. This fit very well to my benchmarks.
+&gt;&gt;  
+&gt;&gt; I try a while with the '{&quot;props&quot;:{&quot;r&quot;:X}}'.
+&gt;&gt;  
+&gt;&gt; Calculation “r=2”
+&gt;&gt; available bandwidth = 62.5 MB per second / (3*648 KB) = 33 requests per
+&gt;&gt; second per node = 132 requests per second over the cluster.
+&gt;&gt;  
+&gt;&gt; Calculation “r=1”
+&gt;&gt; available bandwidth = 62.5 MB per second / (2*648 KB) = 50 requests per
+&gt;&gt; second per node = 200 requests per second over the cluster.
+&gt;&gt;  
+&gt;&gt; In this second case i see some strange effects in the network. My send
+&gt;&gt; and received queues grow verry fast. And after finishing the benchmark
+&gt;&gt; there is a while a lot of traffic between the riak nodes.
+&gt;&gt;  
+&gt;&gt; Does anyone have experience with these data sets and can give a few
+&gt;&gt; hints at a possible setup? The goal is to processed at least 500
+&gt;&gt; requests per second.
+&gt;&gt;  
+&gt;&gt; Some other points in my considerations are the time required for a
+&gt;&gt; reorganization after a new node are added to the cluster or a node has
+&gt;&gt; been replaced.
+&gt;&gt;  
+&gt;&gt; Many thanks for your reply and your attention.
+&gt;&gt;  
+&gt;&gt; Kind regards
+&gt;&gt; Sebastian
+&gt;&gt;  
+&gt;&gt;  
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com (<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>)
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06417.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06423">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06423">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06418.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06386.html">riak sizing considerations</a></span> <span class="sender italic">Sebastian Gerlach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06387.html">How to write a record with no key</a></span> <span class="sender italic">Carl</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06388.html">Re: How to write a record with no key</a></span> <span class="sender italic">Dan Reverri</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06417.html">Re: riak sizing considerations</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak sizing considerations</span> <span class="sender italic">Sebastian Gerlach</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06418.html">Re: riak sizing considerations</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06424.html">Re: riak sizing considerations</a></span> <span class="sender italic">Sebastian Gerlach</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak sizing considerations">
+<input type="hidden" name="msgid" value="4F2140AD.6070308@immonet.de">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06423.html">
+<input type="submit" value=" Sebastian Gerlach ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+sizing+considerations%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06417.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06418.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4F2140AD.6070308@immonet.de</li>
+</ul>
+</div>
+</body>
+</html>

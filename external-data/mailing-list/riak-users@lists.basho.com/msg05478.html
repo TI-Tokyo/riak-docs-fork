@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: erlang precommit hook error</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05478" id="c">
+<link rel="index" href="maillist.html#05478" id="i">
+<link rel="prev" href="msg05477.html" id="p">
+<link rel="next" href="msg05481.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05478.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+erlang+precommit+hook+error%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: erlang precommit hook error</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Hal+Eisen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Hal Eisen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111108" rel="nofollow">Tue, 08 Nov 2011 10:04:04 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sorry, typo in code.  the mangle function is actually:
+
+mangle(X) -&gt;
+    crypto:start(),
+    {_, Tokens} = lists:partition(fun(Arg) -&gt; lists:member(Arg, 
+mangle:stopwords()) end, string:tokens(riak_object:get_value(X), &quot; &quot;)),
+    riak_object:update_value(X, lists:flatten(lists:map(fun(Arg) -&gt; 
+crypto:md5(Arg) end, Tokens))),
+    riak_object:apply_updates(X).</pre><pre>
+
+In other words, I fixed the module reference.
+
+Hal
+
+On Tue, Nov 08, 2011 at 09:59:26AM -0800, Hal Eisen wrote:
+&gt; Hello again.  I have given up on using the JavaScript precommit hook
+&gt; because I could not find anything which did not produce timeouts under
+&gt; the load for my application.
+&gt; 
+&gt; So, I have ported my hook to Erlang.  Alas, I'm not getting very far.
+&gt; I've installed my hook in /etc/riak/erl/hooks.erl.  The code looks
+&gt; like this:
+&gt; 
+&gt; -module(haleisen).
+&gt; -export([stopwords/0, mangle/1]).
+&gt; stopwords() -&gt;
+&gt; [&quot;a&quot;,&quot;able&quot;,&quot;about&quot;,&quot;across&quot;,&quot;after&quot;,&quot;all&quot;,&quot;almost&quot;,&quot;also&quot;,&quot;am&quot;,&quot;among&quot;,&quot;an&quot;,&quot;and&quot;,&quot;any&quot;,&quot;are&quot;,&quot;as&quot;,&quot;at&quot;,&quot;be&quot;,&quot;because&quot;,&quot;been&quot;,&quot;but&quot;,&quot;by&quot;,&quot;can&quot;,&quot;cannot&quot;,&quot;could&quot;,&quot;dear&quot;,&quot;did&quot;,&quot;do&quot;,&quot;does&quot;,&quot;either&quot;,&quot;else&quot;,&quot;ever&quot;,&quot;every&quot;,&quot;for&quot;,&quot;from&quot;,&quot;get&quot;,&quot;got&quot;,&quot;had&quot;,&quot;has&quot;,&quot;have&quot;,&quot;he&quot;,&quot;her&quot;,&quot;hers&quot;,&quot;him&quot;,&quot;his&quot;,&quot;how&quot;,&quot;however&quot;,&quot;i&quot;,&quot;if&quot;,&quot;in&quot;,&quot;into&quot;,&quot;is&quot;,&quot;it&quot;,&quot;its&quot;,&quot;just&quot;,&quot;least&quot;,&quot;let&quot;,&quot;like&quot;,&quot;likely&quot;,&quot;may&quot;,&quot;me&quot;,&quot;might&quot;,&quot;most&quot;,&quot;must&quot;,&quot;my&quot;,&quot;neither&quot;,&quot;no&quot;,&quot;nor&quot;,&quot;not&quot;,&quot;of&quot;,&quot;off&quot;,&quot;often&quot;,&quot;on&quot;,&quot;only&quot;,&quot;or&quot;,&quot;other&quot;,&quot;our&quot;,&quot;own&quot;,&quot;rather&quot;,&quot;said&quot;,&quot;say&quot;,&quot;says&quot;,&quot;she&quot;,&quot;should&quot;,&quot;since&quot;,&quot;so&quot;,&quot;some&quot;,&quot;than&quot;,&quot;that&quot;,&quot;the&quot;,&quot;their&quot;,&quot;them&quot;,&quot;then&quot;,&quot;there&quot;,&quot;these&quot;,&quot;they&quot;,&quot;this&quot;,&quot;tis&quot;,&quot;to&quot;,&quot;too&quot;,&quot;twas&quot;,&quot;us&quot;,&quot;wants&quot;,&quot;was&quot;,&quot;we&quot;,&quot;were&quot;,&quot;what&quot;,&quot;when&quot;,&quot;where&quot;,&quot;which&quot;,&quot;while&quot;,&quot;who&quot;,&quot;whom&quot;,&quot;why&quot;,&quot;will&quot;,&quot;with&quot;,&quot;would&quot;,&quot;yet&quot;,&quot;you&quot;,&quot;your&quot;].
+&gt; mangle(X) -&gt;
+&gt;     crypto:start(),
+&gt;     {_, Tokens} = lists:partition(fun(Arg) -&gt; lists:member(Arg, 
+&gt; ask:stopwords()) end, string:tokens(riak_object:get_value(X), &quot; &quot;)),
+&gt;     riak_object:update_value(X, lists:flatten(lists:map(fun(Arg) -&gt; 
+&gt; crypto:md5(Arg) end, Tokens))),
+&gt;     riak_object:apply_updates(X).
+&gt; 
+&gt; I originally tested the code in the Erlang repl, using a plain string
+&gt; instead of riak_object:get_value, and it worked perfectly.
+&gt; 
+&gt; I installed my hook into a test bucket:
+&gt; bash$ curl <a  rel="nofollow" href="http://127.0.0.1:8098/riak/test-hook">http://127.0.0.1:8098/riak/test-hook</a>
+&gt; {&quot;props&quot;:{&quot;allow_mult&quot;:false,&quot;basic_quorum&quot;:false,&quot;big_vclock&quot;:50,&quot;chash_keyfun&quot;:{&quot;mod&quot;:&quot;riak_core_util&quot;,&quot;fun&quot;:&quot;chash_std_keyfun&quot;},&quot;dw&quot;:&quot;quorum&quot;,&quot;last_write_wins&quot;:false,&quot;linkfun&quot;:{&quot;mod&quot;:&quot;riak_kv_wm_link_walker&quot;,&quot;fun&quot;:&quot;mapreduce_linkfun&quot;},&quot;n_val&quot;:3,&quot;name&quot;:&quot;test-with&quot;,&quot;notfound_ok&quot;:true,&quot;old_vclock&quot;:86400,&quot;postcommit&quot;:[],&quot;pr&quot;:0,&quot;precommit&quot;:[{&quot;mod&quot;:&quot;haleisen&quot;,&quot;fun&quot;:&quot;mangle&quot;}],&quot;pw&quot;:0,&quot;r&quot;:&quot;quorum&quot;,&quot;rw&quot;:&quot;quorum&quot;,&quot;small_vclock&quot;:10,&quot;w&quot;:&quot;quorum&quot;,&quot;young_vclock&quot;:20}}
+&gt; 
+&gt; When I try to insert a key into this bucket, I get:
+&gt; Error:
+&gt; {precommit_fail,{hook_crashed,{haleisen,mangle,error,undef}}}
+&gt; 
+&gt; Any help would be appreciated.
+&gt; 
+&gt; Thanks,
+&gt; Hal
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05477.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05478">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05478">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05481.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05477.html">erlang precommit hook error</a></span> <span class="sender italic">Hal Eisen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: erlang precommit hook error</span> <span class="sender italic">Hal Eisen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05481.html">Re: erlang precommit hook error</a></span> <span class="sender italic">Hal Eisen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05532.html">Re: erlang precommit hook error</a></span> <span class="sender italic">Joseph Lambert</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05535.html">Re: erlang precommit hook error</a></span> <span class="sender italic">Hal Eisen</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: erlang precommit hook error">
+<input type="hidden" name="msgid" value="20111108180126.GB16071@volcano.builtonlinux.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05478.html">
+<input type="submit" value=" Hal Eisen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+erlang+precommit+hook+error%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05477.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05481.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20111108180126.GB16071@volcano.builtonlinux.com</li>
+</ul>
+</div>
+</body>
+</html>

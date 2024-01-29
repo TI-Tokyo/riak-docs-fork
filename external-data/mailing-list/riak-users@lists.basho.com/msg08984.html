@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak search - creating many indexes for one inserted object</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08984" id="c">
+<link rel="index" href="maillist.html#08984" id="i">
+<link rel="prev" href="msg08855.html" id="p">
+<link rel="next" href="msg09025.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08984.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+search+%5C-+creating+many+indexes+for+one+inserted+object%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak search - creating many indexes for one inserted object</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121019" rel="nofollow">Fri, 19 Oct 2012 09:21:53 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Pawel,
+
+On Tue, Oct 9, 2012 at 5:21 PM, kamiseq &lt;kami...@gmail.com&gt; wrote:</pre><pre>
+
+&gt; hi all,
+&gt;
+&gt; right now we are using solr as search index and we are inserting data
+&gt; manually. so there is nothing to stop us from creating many indexes
+&gt; (sort of views) on same entity, aggregate data and so on.
+&gt; can something like that be achieved with riak search??
+&gt;
+
+Just to be sure I understand you.  When you say &quot;many indexes&quot; do you mean
+something like writing to multiple Solr cores?  If so, no, Riak Search
+cannot do that.  It writes to an index named after the bucket you have the
+hook on.
+
+
+&gt; I think that commit hooks are good point to start with but as I read
+&gt; search index is kept in different format than bucket data and I would
+&gt; love to still use solr-like api to search the index.
+&gt;
+
+Yes, Riak Search stores index data in a backend called Merged Index.  Riak
+Search has a Solr _like_ interface but it lacks many features, and doesn't
+have the same semantics or performance characteristics.
+
+There is a new project underway called Yokozuna which tightly integrates
+Riak and Solr.  If you like Solr then keep an eye on this.  I'm looking for
+people who want to prototype on it so if that interests you please email me
+directly.
+
+<a  rel="nofollow" href="https://github.com/rzezeski/yokozuna">https://github.com/rzezeski/yokozuna</a>
+
+
+&gt; example
+&gt;
+&gt; I have two entities cars and parking_lots, each car references parking
+&gt; lot it belongs to.
+&gt; when I create/update/delete car object I would like to not only update
+&gt; car index (so I can search by car type, name, number plates, etc) but
+&gt; also update parking index to easily check how many cars given lot has
+&gt; (plus search lots by cars, or search cars with given property).
+&gt;
+
+Why have a separate index at all?  Is it not good enough to have just the
+car index.  Each doc would have a 'parking_lot_s' field.
+
+&quot;How many cars a given lot has&quot; -- would be numFound on q=parking_lot_s:foo.
+
+&quot;Search lots by cars&quot; -- I'm guessing you mean something like &quot;tell me what
+lots have cars like this&quot;, sounds like a facet on 'parking_lot_s', right?
+
+&quot;Search cars with a given property&quot; -- like the last query but no facet.
+
+
+&gt; probably all this can be achieved in many other ways. I can imagine
+&gt; storing array of direct references in parking object and update this
+&gt; object when car object also changed. but this way I need to issue two
+&gt; asynchronous write request with no guaranties that both will be
+&gt; persisted.
+&gt;
+
+Yes.  This is a problem with two Solr cores as well.  I'm not sure if this
+is a toy example but I don't see the need for 2 indexes.  I potentially see
+2 buckets: 'cars' and 'lots'.  But that doesn't mean it has to be two
+indexes.  Does that make sense?
+
+-Z
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08855.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08984">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08984">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09025.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08855.html">riak search - creating many indexes for one inserted object</a></span> <span class="sender italic">kamiseq</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak search - creating many indexes for one inserted...</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09025.html">Re: riak search - creating many indexes for one inse...</a></span> <span class="sender italic">kamiseq</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak search - creating many indexes for one inserted object">
+<input type="hidden" name="msgid" value="CACZcpemEKZJ3J44eOWh8MgtO97Br40aO_tqa8uE6-4usUZS6ZA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08984.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+search+%5C-+creating+many+indexes+for+one+inserted+object%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08855.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09025.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpemEKZJ3J44eOWh8MgtO97Br40aO_tqa8uE6-4usUZS6ZA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

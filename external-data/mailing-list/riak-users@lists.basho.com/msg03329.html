@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>forked riaksearch for better perf</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03329" id="c">
+<link rel="index" href="maillist.html#03329" id="i">
+<link rel="prev" href="msg03326.html" id="p">
+<link rel="next" href="msg03332.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03329.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22forked+riaksearch+for+better+perf%22&amp;o=newest" rel="nofollow"><span itemprop="name">forked riaksearch for better perf</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Gary+William+Flake%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Gary William Flake</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110513" rel="nofollow">Fri, 13 May 2011 09:09:24 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Our team has a fork of the riaksearch source that we believe adds a very simple 
+but highly desirable improvement.  We've reached out to Basho directly with the 
+idea but, as they say, code talks.  The fork can be found at 
+<a  rel="nofollow" href="https://github.com/gpascale/riak_search">https://github.com/gpascale/riak_search</a> and we will be issuing a pull request 
+today for it.  Moreover, we have a single line fork of riak-js as well located 
+at <a  rel="nofollow" href="https://github.com/gpascale/riak-js">https://github.com/gpascale/riak-js</a>.</pre><pre>
+
+In our use case, we need to access documents from a search index in time based 
+order (not relevance).  Moreover, we need to paginate over these results.  As 
+some of you know, bug 867 - <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=867">https://issues.basho.com/show_bug.cgi?id=867</a> - 
+prevents sort, start, and rows from being correctly applied.  The current 
+blessed work around is to write a M/R job to handle it.  We found, however, 
+that the degradation in performance for having to do a M/R for each query was 
+problematic.
+
+For very typical scenarios where you need to jump to a slice of results that 
+are ordered by something besides relevance, we are seeing a 10-100x performance 
+gain per query within our fork.  We believe the technique we've implemented can 
+be used in several other examples.  For example:
+
+1. You need a bucket to act like an enormous container or queue.  With our fork 
+you can quickly ask for the most (or least) recent N items, process them, then 
+remove them.
+
+2. Your data is hierarchical (like employees in a company) and you need search 
+results to be ordered by seniority within the hierarchy. 
+
+3. You are building a twitter clone and you want search of tweets to show the 
+most recent.
+
+4. Your data has a &quot;natural&quot; order such as price or amount that is always 
+preferred to TFIDF based relevance.
+
+If you have one of these scenarios, I would encourage you to read further.  In 
+the rest of this note I'll explain (A) why bug 867 is a show stopper for you, 
+(B) a representation hack that you can use to speed up your M/R calls if you 
+want to work around this with the current builds of riaksearch, and (C) show 
+you how to use our fork to see the most significant performance gains.
+
+(A). Bug 867
+
+Suppose you have a query that will normally return 300 results.  You desire the 
+results to be ordered by a key within your results.  Moreover, you want the 
+middle 100 results after the sort has been applied.  The semantics of the SOLR 
+API for riaksearch are such that start=100&amp;rows=100&amp;sort=KEY is supposed to do 
+the job.
+
+Bug 867 prevents this from working because riaksearch performs the slice and 
+sort in the wrong order, yielding you 100 results, but the 100 that are in the 
+middle of the results if they are sorted by relevance and THEN reordered by KEY 
+afterwards.
+
+Fixing this bug is non-trivial because the most straightforward implementation 
+requires one to retrieve all of the documents in order to perform the sort by 
+KEY, whereas the relevance sort only needs the information in the the index.
+
+The work around for this issue is to do something like the following (shown in 
+riak-js):
+
+&gt; db.addSearch(bucketName, query)
+&gt;     .map('Riak.mapValuesJson')
+&gt;     .reduce('Riak.reduceSort', 'function(a,b){return a.key-b.key;}')
+&gt;     .reduce('Riak.reduceSlice', [start, start + count])
+&gt;     .run(callback);
+
+Here, you are seeding a M/R phase with the search results, pulling out the 
+records for all results, doing the sort as a reduce with your own comparison 
+function, then doing the slice.
+
+For a query that returns a few thousand results, you can expect such a M/R job 
+to take a couple of seconds on typical hardware, which is hardly acceptable for 
+interactive applications.
+
+
+(B). A representation hack
+
+The M/R phase above suffers in that it has to retrieve the documents for all 
+valid results, not just the ones that are part of the final sliced result set.
+
+We can improve upon this by putting our sort key as a prefix to the document 
+ID.  Care must be taken to properly pad the keys so that they are of fixed 
+length.  Moreover, you'll want your synthetic document keys to have something 
+unique as well.  We set our document iDs to be the time stamp of object 
+creation (properly padded) plus a GUID.  Thus, each document is unique, but 
+sorts over keys do what we want.  With this change, we can rewrite the above 
+M/R to:
+
+&gt; db.addSearch(bucketName, query)
+&gt;     .map('function (v) { return [v.key]; }')
+&gt;     .reduce('Riak.reduceSort', 'function(a,b){return (a)-(b)}')
+&gt;     .reduce('Riak.reduceSlice', [start, start + count])
+&gt;     .run(callback);
+
+
+The difference is that our new map() does not pull out all of the documents.  
+Instead, this M/R completes with with a list of documents that are in the final 
+result (which we may still need to retrieve for our application).
+
+We typically see 3-10x performance gains over the previous method, but this is 
+highly dependent on typical result sizes as well as typical document sizes.
+
+
+(C).  Our fork of Riak search.
+
+The change we've introduced today takes the idea behind these synthetic keys, 
+but puts all of the work back into the search core, thereby eliminating the M/R.
+
+Where the search core performs a sort by relevance (prior to doing the slice 
+specified by the SOLR arguments), we replace this with a sort by key.  That's 
+the entire essence of the change.
+
+By avoiding the M/R in it's entirety, we now often see performance gains of 
+3-10x over the previous method and, therefore, 10-100x gains over the most 
+simplistic approach described first.
+
+We've also introduced an option called &quot;presort&quot; which can be be set to &quot;key&quot; 
+or &quot;score&quot;.  The former triggers our new behavior.  The latter preserves the 
+original behavior.  Leaving the option unspecified is the same as setting it to 
+&quot;score&quot;, so our fork should not introduce any breaking changes.
+
+
+Anyhow, these have turned out to be essential changes for us, which is why we 
+wanted to make them available to others.
+
+Best,
+-- GWF
+
+Founder, Clipboard, Inc.
+ 
+
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03326.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03329">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03329">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03332.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="forked riaksearch for better perf">
+<input type="hidden" name="msgid" value="84D94588-2660-4040-BEF2-70DAD42DDE0F@flake.org">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03329.html">
+<input type="submit" value=" Gary William Flake ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22forked+riaksearch+for+better+perf%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03326.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03332.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">84D94588-2660-4040-BEF2-70DAD42DDE0F@flake.org</li>
+</ul>
+</div>
+</body>
+</html>

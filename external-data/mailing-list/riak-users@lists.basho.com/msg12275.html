@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Deleting data from bitcask backend</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd10.html#12275" id="c">
+<link rel="index" href="mail10.html#12275" id="i">
+<link rel="prev" href="msg12274.html" id="p">
+<link rel="next" href="msg12276.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12275.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleting+data+from+bitcask+backend%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Deleting data from bitcask backend</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Evan+Vigil%5C-McClanahan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Evan Vigil-McClanahan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130916" rel="nofollow">Mon, 16 Sep 2013 12:13:53 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>riak-admin vnode-status can be used to get information about the
+number of bitcask files, their fragmentation and dead bytes, but since
+it uses a lot of blocking vnode commands, it can spike latencies, so
+should only be used off-peak.</pre><pre>
+
+On Mon, Sep 16, 2013 at 7:36 AM, Alex Moore &lt;amo...@basho.com&gt; wrote:
+&gt; Hi Charl,
+&gt;
+&gt; The problem is that even though documents seem to no longer be
+&gt; available (doing a GET on a deleted document returns an expected 404)
+&gt; the disk usage is not seeming reducing much and has currently been at
+&gt; ~80% utilisation across all nodes for almost a week.
+&gt;
+&gt; When you delete a document, a tombstone record is written to bitcask, and
+&gt; the reference to the key is removed from memory (which is why you get
+&gt; 404's).  The old entry isn't actually removed until the next bitcask merge.
+&gt;
+&gt; At first I though the large amount of deletes being performed might be
+&gt; causing fragmentation of the merge index so I've been regularly
+&gt; running forced compaction as documented here:
+&gt; <a  rel="nofollow" href="https://gist.github.com/rzezeski/3996286">https://gist.github.com/rzezeski/3996286</a>.
+&gt;
+&gt; That merge index is for Riak Search, not bitcask.
+&gt;
+&gt; There are ways of forcing a merge, but let's double check your settings/logs
+&gt; first. Can you send me your app.config and a console.log from one of your
+&gt; nodes?
+&gt;
+&gt; Thanks,
+&gt; Alex
+&gt;
+&gt;  --
+&gt; Alex Moore
+&gt; Sent with Airmail
+&gt;
+&gt; On September 16, 2013 at 4:43:07 AM, Charl Matthee (ch...@ntrippy.net)
+&gt; wrote:
+&gt;
+&gt; Hi,
+&gt;
+&gt; We have a 8-node riak v1.4.0 cluster writing data to bitcask backends.
+&gt;
+&gt; We've recently started running out of disk across all nodes and so
+&gt; implemented a 30-day sliding window data retention policy. This policy
+&gt; is enforced by a go app that concurrently deletes documents outside
+&gt; the window.
+&gt;
+&gt; The problem is that even though documents seem to no longer be
+&gt; available (doing a GET on a deleted document returns an expected 404)
+&gt; the disk usage is not seeming reducing much and has currently been at
+&gt; ~80% utilisation across all nodes for almost a week.
+&gt;
+&gt; At first I though the large amount of deletes being performed might be
+&gt; causing fragmentation of the merge index so I've been regularly
+&gt; running forced compaction as documented here:
+&gt; <a  rel="nofollow" href="https://gist.github.com/rzezeski/3996286">https://gist.github.com/rzezeski/3996286</a>.
+&gt;
+&gt; This has helped somewhat but I suspect it has reached the limits of
+&gt; what can be done so I wonder if there is not further fragmentation
+&gt; elsewhere that is not being compacted.
+&gt;
+&gt; Could this be an issue? How can I tell whether merge indexes or
+&gt; something else needs compaction/attention?
+&gt;
+&gt; Our nodes were initially configured to run with the default settings
+&gt; for the bitcask backend but when this all started I switched to the
+&gt; following to try and see if I can trigger compaction more frequently:
+&gt;
+&gt; {bitcask, [
+&gt; %% Configure how Bitcask writes data to disk.
+&gt; %% erlang: Erlang's built-in file API
+&gt; %% nif: Direct calls to the POSIX C API
+&gt; %%
+&gt; %% The NIF mode provides higher throughput for certain
+&gt; %% workloads, but has the potential to negatively impact
+&gt; %% the Erlang VM, leading to higher worst-case latencies
+&gt; %% and possible throughput collapse.
+&gt; {io_mode, erlang},
+&gt;
+&gt; {data_root, &quot;/var/lib/riak/bitcask&quot;},
+&gt;
+&gt; {frag_merge_trigger, 40}, %% trigger merge if
+&gt; framentation is &gt; 40% default is 60%
+&gt; {dead_bytes_merge_trigger, 67108864}, %% trigger if dead
+&gt; bytes for keys &gt; 64MB default is 512MB
+&gt; {frag_threshold, 20}, %% framentation &gt;= 20% default is 40
+&gt; {dead_bytes_threshold, 67108864} %% trigger if dead bytes
+&gt; for data &gt; 64MB default is 128MB
+&gt; ]},
+&gt;
+&gt; From my observations this change did not make much of a difference.
+&gt;
+&gt; The data we're inserting is hierarchical JSON data that roughly falls
+&gt; into the following size (in bytes) profile:
+&gt;
+&gt; Max: 10320
+&gt; Min: 1981
+&gt; Avg: 3707
+&gt; Med: 2905
+&gt;
+&gt; --
+&gt; Ciao
+&gt;
+&gt; Charl
+&gt;
+&gt; &quot;I will either find a way, or make one.&quot; -- Hannibal
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12274.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd10.html#12275">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail10.html#12275">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12276.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12273.html">Deleting data from bitcask backend</a></span> <span class="sender italic">Charl Matthee</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12274.html">Re: Deleting data from bitcask backend</a></span> <span class="sender italic">Alex Moore</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Deleting data from bitcask backend</span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12276.html">Re: Deleting data from bitcask backend</a></span> <span class="sender italic">Alex Moore</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12366.html">Re: Deleting data from bitcask back...</a></span> <span class="sender italic">Brian Sparrow</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Deleting data from bitcask backend">
+<input type="hidden" name="msgid" value="CAN9Z=ziz5+ZbCx=a3e-v9eXMANdE+OAAGmDTvOWW5+aniaBmiQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12275.html">
+<input type="submit" value=" Evan Vigil-McClanahan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleting+data+from+bitcask+backend%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12274.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12276.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAN9Z=ziz5+ZbCx=a3e-v9eXMANdE+OAAGmDTvOWW5+aniaBmiQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

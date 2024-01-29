@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: 2i performance questions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07704" id="c">
+<link rel="index" href="maillist.html#07704" id="i">
+<link rel="prev" href="msg07702.html" id="p">
+<link rel="next" href="msg07694.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07704.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+2i+performance+questions%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: 2i performance questions</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Tom+Burdick%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Tom Burdick</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120618" rel="nofollow">Mon, 18 Jun 2012 09:08:48 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Ryan,
+
+I appreciate the response and look forward to seeing 2i rock harder
+than ever before with all the changes you guys are pushing in.</pre><pre>
+
+I did make a mistake in my benchmark, and in reality it was closer to
+70 req/s that I was getting across my concurrent erlang benchmark
+workers.
+
+HTTP got me in to the 350 - 400 req/s range which is significantly
+better, using ab -n 1000 -c 10
+
+Looking forward to seeing 2i be very fast!
+
+-Tom
+
+On Mon, Jun 18, 2012 at 9:26 AM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+&gt; Hi Tom, response inline.
+&gt;
+&gt; On Thu, Jun 14, 2012 at 3:29 PM, Tom Burdick &lt;thomas.burd...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt;
+&gt;&gt; retrieve_by_client(Db, Key) when is_binary(Key) -&gt;
+&gt;&gt;    {ok, BKeys} = riakc_pb_socket:get_index(Db, ?bucket,
+&gt;&gt; &lt;&lt;&quot;client_id_bin&quot;&gt;&gt;, Key),
+&gt;&gt;    lists:map(fun([_Bucket, Key0]) -&gt;
+&gt;&gt;        Key0
+&gt;&gt;    end, BKeys).
+&gt;&gt;
+&gt;&gt; What I've noticed while benchmarking the put is that that is actually
+&gt;&gt; quite fast and I can do that
+&gt;&gt; at a pretty high rate even on my devrel setup, like 1000 puts/sec.
+&gt;&gt;
+&gt;&gt; However when doing retrieve_by_client at most I've seen 20
+&gt;&gt; get_indexes/sec with latencies all over the place from a few
+&gt;&gt; milliseconds up to a few seconds.
+&gt;
+&gt; I notice you're using the Erlang PB client.  This is the client we
+&gt; recommend but a current shortfall of it re 2i is that it unnecessarily
+&gt; uses map/reduce to collate the results.
+&gt;
+&gt; Bryan Find recently made some changes to Pipe, the system behind
+&gt; map/reduce, that should improve latencies for queries that match
+&gt; &quot;larger&quot; result sets.  How large I'm not sure, but the larger the
+&gt; result set the more of an improvement you'll see is what I'm told.
+&gt;
+&gt; Sean Cribbs recently made some change to our protobuffs server that
+&gt; will allow direct querying of 2i without the use of map/reduce.  IMO
+&gt; this should greatly reduce your latencies.  However, the various
+&gt; clients still need to be modified to take advantage of this.  I defer
+&gt; to Sean on when that might be done.
+&gt;
+&gt; In the meantime you could try changing your query code to use the HTTP
+&gt; interface and see if that brings you better latency.
+&gt;
+&gt; Oh, I just remember, Matthew Von-Maszewski has made some amazing
+&gt; strides in our branch of leveldb in terms of
+&gt; latency/throughput/robustness and that should result in trickle-down
+&gt; improvements as well.
+&gt;
+&gt; All these changes, with the exception of the client modifications,
+&gt; should be coming with our next release, 1.2.
+&gt;
+&gt;&gt;
+&gt;&gt; I'm tempted to fire up fprof on Client:get_index just to see whats up
+&gt;&gt; but I'm a bit scared at what I might see there :-)
+&gt;
+&gt; Feel free to fprof, my guess is most of the time will be spent in
+&gt; map/reduce related code.  The other place 2i spends a majority of it's
+&gt; time is sext decoding.
+&gt;
+&gt; -Z
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07702.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07704">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07704">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07694.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07693.html">2i performance questions</a></span> <span class="sender italic">Tom Burdick</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07702.html">Re: 2i performance questions</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: 2i performance questions</span> <span class="sender italic">Tom Burdick</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: 2i performance questions">
+<input type="hidden" name="msgid" value="CALf_jdcKeuZoqbybtv4d6tsDXmu4DZoWEOWw5RmiH5sYrv=V=A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07704.html">
+<input type="submit" value=" Tom Burdick ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+2i+performance+questions%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07702.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07694.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CALf_jdcKeuZoqbybtv4d6tsDXmu4DZoWEOWw5RmiH5sYrv=V=A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

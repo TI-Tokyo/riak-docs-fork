@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Timeouts in Riak Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05574" id="c">
+<link rel="index" href="maillist.html#05574" id="i">
+<link rel="prev" href="msg05513.html" id="p">
+<link rel="next" href="msg05514.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05574.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Timeouts+in+Riak+Search%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Timeouts in Riak Search</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111114" rel="nofollow">Mon, 14 Nov 2011 06:19:44 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Spike,
+
+I think the reason the query is timing out is because of some other failure
+that is occurring.  In your error gist there is a supervisor report @
+19:16:07 about a riak_pipe_vnode_worker dying.  There isn't much in the way
+of explanation, just &quot;fitting_died.&quot;  Unfortunately, it looks like pipe
+just swallows the reason the fitting died [1].  The next supervisor report
+(for riak_core_vode_sup) actually occurred _before_ the previous one
+according to the timestamp (@ 19:14:27).  It looks as if the ETS table
+riak_core_node_watcher doesn't exist which would be a sign that it's owning
+process crashed at some point.  The question is what caused the
+riak_core_vnode_watcher to crash?  Do you have any other errors in your
+crash/error.log that might help shed some light on this?</pre><pre>
+
+In summary, I believe the search timeout is a symptom of something else.
+
+-Ryan
+
+[1]:
+<a  rel="nofollow" href="https://github.com/basho/riak_pipe/blob/master/src/riak_pipe_vnode.erl#L625">https://github.com/basho/riak_pipe/blob/master/src/riak_pipe_vnode.erl#L625</a>
+
+On Wed, Nov 9, 2011 at 2:46 PM, Spike Gronim &lt;sp...@wavii.com&gt; wrote:
+
+&gt; Hello,
+&gt;
+&gt; My Riak search cluster is timing out very often. I am indexing text
+&gt; content extracted from web pages containing news articles. My articles
+&gt; range in size from a few KB to tens of KB.  I have put about 4.4 million
+&gt; articles into Riak for an average article size of 15 KB. The keys are MD5
+&gt; ASCII hex hashes and the values are JSON. When I set this system up I
+&gt; loaded it with 1GB or so of data and played with the search system.
+&gt; Everything was kosher, it responded quickly and the search relevance was
+&gt; fine. Now that I've imported 100x as much data I am getting timeouts. For
+&gt; example the query &quot;steve jobs died&quot; times out. When I put in extremely
+&gt; specific conjunctive queries like &quot;+steve +jobs +died +cupertino +apple&quot; I
+&gt; get no results but it runs quickly. While the system is running a query
+&gt; that will time out I see the coordinator Riak node consuming between one
+&gt; and two cores worth of CPU.
+&gt;
+&gt; How can I configure Riak to stop timing out searches? I am open to
+&gt; changing my schema and query pattern if that's what I need to do.
+&gt;
+&gt; app.config - <a  rel="nofollow" href="https://gist.github.com/1352608">https://gist.github.com/1352608</a>
+&gt; schema - <a  rel="nofollow" href="https://gist.github.com/1352616">https://gist.github.com/1352616</a>
+&gt; selected errors - <a  rel="nofollow" href="https://gist.github.com/1c0976ced0f05ef0d5d6">https://gist.github.com/1c0976ced0f05ef0d5d6</a>
+&gt;
+&gt; Nodes in the cluster: 4
+&gt; Hardware: EC2 m1.large with two disks in a RAID-0 on /mnt
+&gt; Operating system: Linux ip-XXXX 2.6.38-11-virtual #50-Ubuntu SMP Mon Sep
+&gt; 12 21:51:23 UTC 2011 x86_64 x86_64 x86_64 GNU/Linux
+&gt; Disk space consumed:
+&gt;
+&gt; 66G  /mnt/riak/leveldb
+&gt; 36G  /mnt/riak/merge_index
+&gt;
+&gt; Disk space available: 800G
+&gt;
+&gt;
+&gt; Spike Gronim
+&gt; sp...@wavii.com
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05513.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05574">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05574">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05514.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05513.html">Timeouts in Riak Search</a></span> <span class="sender italic">Spike Gronim</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Timeouts in Riak Search</span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Timeouts in Riak Search">
+<input type="hidden" name="msgid" value="CACZcpenBD2=rKgAE174rLSzVqFzthVrLA1Gy6sW5HmWSCKeNxw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05574.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Timeouts+in+Riak+Search%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05513.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05514.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpenBD2=rKgAE174rLSzVqFzthVrLA1Gy6sW5HmWSCKeNxw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

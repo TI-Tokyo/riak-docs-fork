@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: A first encounter with Riak/Riak-search - not getting it to work.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01852" id="c">
+<link rel="index" href="maillist.html#01852" id="i">
+<link rel="prev" href="msg01851.html" id="p">
+<link rel="next" href="msg01853.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01852.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+first+encounter+with+Riak%5C%2FRiak%5C-search+%5C-+not+getting+it+to+work.%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: A first encounter with Riak/Riak-search - not getting it to work.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rusty+Klophaus%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rusty Klophaus</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101229" rel="nofollow">Wed, 29 Dec 2010 07:57:59 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We worked through this on IRC, but to summarize:
+
+It looks like the 403's were caused by a misformatted curl command. The
+steps below make it work:</pre><pre>
+
+# Install the bucket hook.
+bin/search-cmd install my_bucket
+
+# Index the document in the bucket. Assumes the XML document is in
+document.xml
+
+curl -X POST -H &quot;content-type:application/xml&quot;
+<a  rel="nofollow" href="http://localhost:8098/riak/my_bucket/my_object">http://localhost:8098/riak/my_bucket/my_object</a> --data-binary @document.xml
+
+
+# Run the query.
+
+bin/search-cmd search my_bucket &quot;Event_EntityRef:nur&quot;
+
+
+Regarding the perceived query wackiness, this was caused because the
+document had been indexed with content-type text/plain, ignoring the XML
+structure. As a result, the entire document was tokenized and stuffed into
+the default field (the &quot;value&quot; field).
+
+
+Further compounding the issue is the fact that the default analyzer
+tokenizes by 1) splitting on any whitespace or punctuation, 2) lowercasing
+all tokens, and 3) throwing out any tokens smaller than three characters.
+This has been a repeated cause of confusion, and as a result the next
+version of Search will use the Whitespace analyzer by default. (The
+whitespace analyzer simply tokenizes based on spaces/tabs/newlines but
+leaves everything else alone.)
+
+
+Best,
+
+Rusty
+
+
+On Wed, Dec 29, 2010 at 10:01 AM, Sven Johansson
+&lt;johansson.s...@gmail.com&gt;wrote:
+
+&gt; I am putting together an application prototype for a client that needs to
+&gt; store vast amounts of historical data.
+&gt; The data is supposed to be delivered to this application as XML, and these
+&gt; documents needs to be searchable
+&gt; based on certain field values in these documents.
+&gt;
+&gt; After reading up on Riak, and riak-search more specifically, I found that
+&gt; it seemed like a very good match given
+&gt; that it is supposed to be able to understand and index XML documents out of
+&gt; the box.
+&gt; (In the end, I'm expecting to find that it's a more efficient solution to
+&gt; using a custom index &amp; analyzer factory, but
+&gt; from what I can make of the docs in the Basho wiki the out of the
+&gt; box-behaviour should suffice for the prototype).
+&gt;
+&gt; However, things are not going as smooth as one would expect.
+&gt; As soon as I enable an index through the precommit-hook on a bucket, I am
+&gt; getting a 403 response back
+&gt; for any PUT or POST operation that does not use the content type
+&gt; &quot;text/plain&quot;.
+&gt; This seems a bit off to me that riak-search is able to introspect both
+&gt; application/xml and application/json, but
+&gt; will not accept content declared to be of these MIME types.
+&gt; I am getting errors
+&gt;
+&gt; Having accepted this for the time being, I have gone ahead to import some
+&gt; test documents into riak-search and
+&gt; attempt to query the index.
+&gt;
+&gt; This is the format of my test documents:
+&gt;
+&gt; &lt;?xml version=&quot;1.0&quot;?&gt;
+&gt; &lt;Event&gt;
+&gt;   &lt;EntityRef&gt;NUR-X5-199-456&lt;/EntityRef&gt;
+&gt;   &lt;Nodes&gt;
+&gt;     &lt;NodeRef&gt;NN-CUST-7278&lt;/NodeRef&gt;
+&gt;     &lt;NodeRef&gt;NN-CUST-9619&lt;/NodeRef&gt;
+&gt;     &lt;NodeRef&gt;NN-CUST-699&lt;/NodeRef&gt;
+&gt;     &lt;NodeRef&gt;NN-CUST-8184&lt;/NodeRef&gt;
+&gt;     &lt;NodeRef&gt;NN-SYS-2383&lt;/NodeRef&gt;
+&gt;    &lt;/Nodes&gt;
+&gt; &lt;/Event&gt;
+&gt;
+&gt; Querying the index with q=EntityRef will give me all of the results back,
+&gt; as expected.
+&gt; However, attempting to use actual values to search, like so:
+&gt; q=EntityRef:NUR-X5-199-456
+&gt; gives me nothing.
+&gt;
+&gt; I have also stored the sample XML from the wiki in the same bucket, and yes
+&gt; - a query for
+&gt; q=name:Alyssa%20P.%20Hacker does indeed return _that_ document.
+&gt;
+&gt; I am completely new to Riak, so what I know I've learned through this
+&gt; experiment and reading up
+&gt; on the wiki (which, alas, does not indulge in detail), which has left me
+&gt; with having to do some
+&gt; guesswork to get me this far.
+&gt;
+&gt; Any feedback &amp; help on what I might be doing wrong, would be greatly
+&gt; appreciated.
+&gt;
+&gt; Thanks / Sven
+&gt;
+&gt; --
+&gt; Sven Johansson
+&gt; Phone: +46704966945
+&gt; Twitter: @svjson
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01851.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01852">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01852">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01853.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01851.html">A first encounter with Riak/Riak-search - not getting it to...</a></span> <span class="sender italic">Sven Johansson</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: A first encounter with Riak/Riak-search - not gett...</span> <span class="sender italic">Rusty Klophaus</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: A first encounter with Riak/Riak-search - not getting it to work.">
+<input type="hidden" name="msgid" value="AANLkTimQKoiGrOgn4nuOEpmpKiW4xvX_myyrO_Bq0ziQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01852.html">
+<input type="submit" value=" Rusty Klophaus ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+first+encounter+with+Riak%5C%2FRiak%5C-search+%5C-+not+getting+it+to+work.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01851.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01853.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTimQKoiGrOgn4nuOEpmpKiW4xvX_myyrO_Bq0ziQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

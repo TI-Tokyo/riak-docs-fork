@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Timeout on Streaming all keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#13156" id="c">
+<link rel="index" href="mail6.html#13156" id="i">
+<link rel="prev" href="msg13155.html" id="p">
+<link rel="next" href="msg13117.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13156.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Timeout+on+Streaming+all+keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Timeout on Streaming all keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131205" rel="nofollow">Thu, 05 Dec 2013 13:12:20 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>Assuming your backend is on LevelDB, have you try streaming the special 
+</tt><tt>bucket 2i index? We stream millions of keys using specific 2i indexes, 
+</tt><tt>if you didn't create any 2i index on your bucket, you can still fetch 
+</tt><tt>that special key, and per key you can fetch it one by one while 
+</tt><tt>iterating over your 2i index.
+</tt><pre style="margin: 0em;">
+
+Sample code (Needs Riak Java client 1.4+ and Riak 1.4+):</pre><pre>
+
+</pre><tt>/for (IndexEntry entry : 
+</tt><tt>bucket.fetchIndex(BucketIndex.index).executeStreaming()) {//
+</tt><pre style="margin: 0em;">
+//
+   // Then you fetch the key like this://
+//   IRiakObject obj=bucket.fetch(entry.getObjectKey()).execute();//
+//
+</pre><tt>   // Or you could do the fetch and process operation using an 
+</tt><tt>ExecutorService.//
+</tt><pre style="margin: 0em;">
+//  Future&lt;Whatever&gt; future=executorService.submit(new Callable&lt;Whatever&gt;//
+//     public Whatever call(){
+///IRiakObject obj=bucket.fetch(entry.getObjectKey()).execute();//
+        .......
+        return new Whatever OR null if Void
+/     }
+//////);//
+//}/
+
+HTH,
+
+Guido.
+
+On 05/12/13 18:46, Alexander Sicular wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>Shimon, chevreh, re-architect your app. Make like a key that has 
+</tt><tt>pointers to all of a given days keys or something like that and 
+</tt><tt>iterate over those.
+</tt><pre style="margin: 0em;">
+
+If the sign says don't feed the animals, don't feed the animals.
+
+Shalom v simcha,
+-Alexander Sicular
+
+@siculars
+
+</pre><tt>On Nov 28, 2013, at 7:00 AM, Shimon Benattar &lt;shim...@gmail.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:shim...@gmail.com">mailto:shim...@gmail.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Riak users,
+
+
+</pre><tt>Unfortunately for me I need to implement the get all keys method in 
+</tt><tt>our system (I know it is not recommended)
+</tt><pre style="margin: 0em;">
+
+
+</pre><tt>I am developing classes with the Java Api and using the streaming 
+</tt><tt>option as following
+</tt><pre style="margin: 0em;">
+
+
+StreamingOperation&lt;String&gt; keys = riakBucket.keys();
+
+while (keys.hasNext()) {
+
+final String next = keys.next();
+
+out.write(next);
+
+out.newLine();
+
+}
+
+riakBucket.keys().cancel();
+
+
+</pre><tt>My problem here is that for a simple class I inserted in Riak, after 
+</tt><tt>~4.7 million keys I am getting a timeout from Riak.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Is there any way to configure the read operation timeout or to 
+</tt><tt>somehow catch the timeout and continue to receive the next keys (Can 
+</tt><tt>I somehow bulk read the keys)?
+</tt><pre style="margin: 0em;">
+
+
+Thanks,
+
+
+Shimon
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13155.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#13156">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#13156">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13117.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13116.html">Timeout on Streaming all keys</a></span> <span class="sender italic">Shimon Benattar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13154.html">Re: Timeout on Streaming all keys</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13178.html">Re: Timeout on Streaming all keys</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13179.html">Re: Timeout on Streaming all keys</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13181.html">2i indices vs. links vs. map vs. ??</a></span> <span class="sender italic">Ralf Kohrt</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13155.html">Re: Timeout on Streaming all keys</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Timeout on Streaming all keys</span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Timeout on Streaming all keys">
+<input type="hidden" name="msgid" value="52A0EBF3.3090106@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13156.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Timeout+on+Streaming+all+keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13155.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13117.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">52A0EBF3.3090106@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

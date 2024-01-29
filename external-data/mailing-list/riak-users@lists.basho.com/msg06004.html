@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: How to change existing data from one back-end to another</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06004" id="c">
+<link rel="index" href="maillist.html#06004" id="i">
+<link rel="prev" href="msg05925.html" id="p">
+<link rel="next" href="msg06045.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06004.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+change+existing+data+from+one+back%5C-end+to+another%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: How to change existing data from one back-end to another</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Markus+Silpala%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Markus Silpala</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111219" rel="nofollow">Mon, 19 Dec 2011 17:59:23 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Ryan,
+
+That's actually quite a relief that Riak doesn't automagically convert;
+that would be been a frightening volume of work to keep so well hidden!</pre><pre>
+
+For that Option #1 when you describe doing a &quot;restore,&quot; are you referring
+to the &quot;riak-admin backup&quot; and &quot;riak-admin restore&quot;? The reason I ask is
+that we've been avoiding the use of riak-admin backup because (IIRC) it
+didn't properly back up search index files (or something along those
+lines). Has that issue been resolved now to where we can and should rely on
+riak-admin to do our backups even if we use riak-search?
+
+(Or did I just pick up the wrong pipe this morning before remembering that
+issue with the old riaksearch-admin?)
+
+Thanks again,
+
+-Markus
+
+On Mon, Dec 12, 2011 at 4:29 PM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+
+&gt; Markus,
+&gt;
+&gt; Riak will _not_ automatically convert the data for you.  If you change the
+&gt; backend and bounce the node that node will no longer see the data and it
+&gt; has no notion of converting data from another backend.  Remember, you are
+&gt; simply changing a value in the config file.  Riak is not aware that you
+&gt; were once using another backend and that your intention is to migrate the
+&gt; data.  Riak does not pretend to be smart in that regard and that's probably
+&gt; a good thing as some people may change backends with the intention of _not_
+&gt; migrating data. What would happen is that the one node would be using a new
+&gt; backend with no data while the other nodes would still be using the old
+&gt; backend with it's current data.  As data is read Riak would notice the
+&gt; missing data on the new backend and performed read repair.  You could take
+&gt; advantage of this and &quot;migrate&quot; data by performing a streaming list keys +
+&gt; GET to read repair all data.  However, down that road lies madness.
+&gt;
+&gt; I see two ways to go about this:
+&gt;
+&gt; 1) Do a rolling backup/stop/change config/start/restore.
+&gt;
+&gt; 2) Join new nodes using new backend, let claim and handoffs move data
+&gt; over, then leave nodes using old backend.
+&gt;
+&gt; I like the first method because it doesn't require join/leave which can
+&gt; cause massive partition shifts with the current default claim algorithm.
+&gt;  The second method is easier to execute but requires at least one
+&gt; additional machine and use of the new claim algorithm.
+&gt;
+&gt; There is an outstanding pull request for 2i/multi back-end support [1].
+&gt;
+&gt; -Ryan
+&gt;
+&gt; [1]: <a  rel="nofollow" href="https://github.com/basho/riak_kv/pull/258">https://github.com/basho/riak_kv/pull/258</a>
+&gt;
+&gt; On Mon, Dec 12, 2011 at 12:19 PM, Markus Silpala &lt;msilp...@gmail.com&gt;wrote:
+&gt;
+&gt;&gt; Greetings again.
+&gt;&gt;
+&gt;&gt; Another likely-quick question after my weekend of doco-diving: is there
+&gt;&gt; any trick or are there any steps needed to change an existing cluster from
+&gt;&gt; one back-end to another? Judging by the wiki page for the Multi 
+&gt;&gt; back-end&lt;<a  rel="nofollow" href="http://wiki.basho.com/Multi.html">http://wiki.basho.com/Multi.html</a>&gt; it
+&gt;&gt; would appear that one just changes the app.config or PUTs a change to
+&gt;&gt; bucket properties, bounces the node, and riak converts all existing data
+&gt;&gt; automatically. Is it really that simple?
+&gt;&gt;
+&gt;
+&gt;&gt; Are there any considerations around rolling updates vs taking downtime to
+&gt;&gt; update the whole cluster? Any concern about large data sets during the
+&gt;&gt; conversion? Is the node available during the conversion? Any gotchas around
+&gt;&gt; when 2i actually becomes usable in the updated bucket?
+&gt;&gt;
+&gt;&gt; Okay—only the first question was likely to be quick. :-)
+&gt;&gt;
+&gt;&gt; For us it's really unfortunate that we can't use 2i through a Multi
+&gt;&gt; back-end. We don't use either today. We may want to use Multi to cause
+&gt;&gt; certain buckets to expire their data sooner than the rest; but we very
+&gt;&gt; likely want to adopt 2i for certain cases where buckets are related and
+&gt;&gt; other cases where a simple equality- or range-based search will be needed.
+&gt;&gt; Choosing between the two is a real bummer.
+&gt;&gt;
+&gt;&gt; Is 2i support through Multi in the plan for future releases?
+&gt;&gt;
+&gt;&gt; Thanks again,
+&gt;&gt;
+&gt;&gt; -Markus
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05925.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06004">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06004">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06045.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05916.html">How to change existing data from one back-end to another</a></span> <span class="sender italic">Markus Silpala</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05925.html">Re: How to change existing data from one back-end to a...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: How to change existing data from one back-end ...</span> <span class="sender italic">Markus Silpala</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06045.html">Re: How to change existing data from one back-...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: How to change existing data from one back-end to another">
+<input type="hidden" name="msgid" value="CAEBw58nhOG71axoezi2hHFNk4jmgD2mo4NqXDJmbjEGUc4G9RA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06004.html">
+<input type="submit" value=" Markus Silpala ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+change+existing+data+from+one+back%5C-end+to+another%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05925.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06045.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEBw58nhOG71axoezi2hHFNk4jmgD2mo4NqXDJmbjEGUc4G9RA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

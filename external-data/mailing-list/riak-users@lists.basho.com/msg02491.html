@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Inconsistent data when a node goes down</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02491" id="c">
+<link rel="index" href="maillist.html#02491" id="i">
+<link rel="prev" href="msg02487.html" id="p">
+<link rel="next" href="msg02492.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02491.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Inconsistent+data+when+a+node+goes+down%22&amp;o=newest" rel="nofollow"><span itemprop="name">Inconsistent data when a node goes down</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Luca+Spiller%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Luca Spiller</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110228" rel="nofollow">Mon, 28 Feb 2011 10:29:48 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi all,
+
+I've come across some issues while testing what happens when failures happen
+on our system, for example a machine failing. One of the (slightly scary)
+issues I have come across is for a short while when a Riak node goes down,
+data that is read from another node isn't always consistent. I have written
+a small test script to demonstrate this issue:</pre><pre>
+
+<a  rel="nofollow" href="https://gist.github.com/847749">https://gist.github.com/847749</a>
+
+Halfway through I switch off a node; here are the results:
+
+Deleted 0
+Wrote 100 454551
+1298916758: 100 454551
+1298916759: 100 454551
+1298916760: 100 454551
+1298916761: 100 454551
+1298916762: 100 454551
+1298916762: 100 454551
+1298916763: 100 454551
+1298916764: 100 454551  (Shutdown around here)
+1298916765: 100 454551
+1298916766: 99 460532
+1298916767: 91 412241
+1298916768: 100 454551
+1298916769: 100 454551
+1298916770: 100 454551
+1298916771: 100 454551
+1298916772: 100 454551
+1298916773: 100 454551
+1298916774: 100 454551
+1298916775: 100 454551
+1298916776: 100 454551
+1298916777: 100 454551
+^C1298916777: 100 454551
+Deleted 100
+
+Slightly more scary is that it appears to sometimes read old (deleted) data:
+
+Deleted 0
+Wrote 100 495792
+1298916784: 100 495792
+1298916785: 100 495792
+1298916786: 100 495792
+1298916786: 100 495792  (Shutdown around here)
+1298916787: 100 495792
+1298916788: 100 487322
+1298916789: 100 495792
+1298916790: 100 495792
+1298916791: 100 495792
+1298916792: 100 495792
+1298916793: 100 495792
+1298916794: 100 495792
+1298916795: 100 495792
+^C1298916796: 100 495792
+1298916797: 100 495792
+Deleted 100
+
+This is using the Ripple library (0.8.3) talking directly to the local node,
+however I believe the same problem is happening when using the Erlang PBC
+library. This problem seems to be exacerbated when there are larger amounts
+of data being stored in Riak, and the eventual consistency takes longer to
+occur.
+
+I am quite puzzled as to why this is happening, I could kind of understand
+if data went missing, but the eventual consistency is what puzzles me, I
+only have two nodes, so why does the data eventually sort itself out?
+Secondly why does this still happen even with W and DW set to 3
+(I originally had the script using the default values, but thought I would
+try this)?
+
+Both of the nodes are running Riak 0.14.0, here are the relavent configs:
+
+<a  rel="nofollow" href="https://gist.github.com/847756">https://gist.github.com/847756</a>
+
+Apologies if I am just doing something stupid, it has been a rather long day
+:)
+
+Regards,
+
+Luca Spiller
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02487.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02491">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02491">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02492.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Inconsistent data when a node goes down</span> <span class="sender italic">Luca Spiller</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02492.html">Re: Inconsistent data when a node goes down</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02493.html">Re: Inconsistent data when a node goes down</a></span> <span class="sender italic">Dan Reverri</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Inconsistent data when a node goes down">
+<input type="hidden" name="msgid" value="AANLkTikWLnPtHYEKnVmne_D7N9Tb+9LbMYkJerfYuv7R@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02491.html">
+<input type="submit" value=" Luca Spiller ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Inconsistent+data+when+a+node+goes+down%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02487.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02492.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTikWLnPtHYEKnVmne_D7N9Tb+9LbMYkJerfYuv7R@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

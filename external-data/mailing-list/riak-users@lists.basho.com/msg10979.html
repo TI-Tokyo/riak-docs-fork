@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: the optimal value of the ring_creation_size</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10979" id="c">
+<link rel="index" href="maillist.html#10979" id="i">
+<link rel="prev" href="msg10978.html" id="p">
+<link rel="next" href="msg10981.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10979.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+the+optimal+value+of+the+ring_creation_size%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: the optimal value of the ring_creation_size</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Cribbs%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Cribbs</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130425" rel="nofollow">Thu, 25 Apr 2013 15:38:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Minor correction to Dmitri's calcuation: the size of the covering set of
+vnodes is RingSize / NVal, or 64 / 3 ~= 22 for the default configuration.
+ That said, it is still what one would consider &quot;spammy&quot; and should be done
+with caution.</pre><pre>
+
+
+On Thu, Apr 25, 2013 at 11:10 PM, Dev Vasantharajan &lt;d...@sourcebits.com&gt;wrote:
+
+&gt; Speaking of ring resizing, this SO answer from Dmitri could also be good
+&gt; reference (if you ever wanna go there).
+&gt;
+&gt;
+&gt; <a  rel="nofollow" href="http://stackoverflow.com/questions/14685236/migrating-riak-data-when-ring-size-changes">http://stackoverflow.com/questions/14685236/migrating-riak-data-when-ring-size-changes</a>
+&gt;
+&gt;
+&gt; On Fri, Apr 26, 2013 at 12:04 AM, Dmitri Zagidulin 
+&gt; &lt;dzagidu...@basho.com&gt;wrote:
+&gt;
+&gt;&gt; Tom,
+&gt;&gt;
+&gt;&gt; Just to emphasize Joe's comment -- 512 should be the _maximum_ you want
+&gt;&gt; to use as your ring size with leveldb/multi backend. But you should
+&gt;&gt; probably use a smaller size, unless your cluster is going to have several
+&gt;&gt; dozen nodes.
+&gt;&gt;
+&gt;&gt; The recommended rule of thumb with ring size is &quot;~10 vnodes to a physical
+&gt;&gt; machine&quot;. Meaning, if you have a 5 node cluster (and it's going to stay at
+&gt;&gt; 5 nodes and not scale that much), using a ring size of 64 is perfectly fine
+&gt;&gt; (since each node is going to have 12 to 13 vnodes on it ( 64 / 5) ).
+&gt;&gt;
+&gt;&gt; Say you scale that cluster to 10 nodes, and keep the 64 ring size. Here,
+&gt;&gt; each machine is going to be running 6 to 7 virtual nodes on it (64/10), and
+&gt;&gt; will probably be under-utilized, in terms of hardware resources.
+&gt;&gt; Whereas if you select a ring size of 128 for that 10 node cluster, you're
+&gt;&gt; back to the 12-13 vnodes per machine range.
+&gt;&gt;
+&gt;&gt; On the other hand, if you have a 5 node cluster with a ring size of 512,
+&gt;&gt; each machine will be responsible for around 100 vnodes, so unless your
+&gt;&gt; servers are very powerful, they're going to compete with each other for
+&gt;&gt; resources (ram, cpu, etc) and be overwhelmed. Also, keep in mind, that
+&gt;&gt; Secondary Index (2i) queries get slower the bigger your ring size is (since
+&gt;&gt; 2i uses &quot;covering&quot; queries -- each request has to contact half of all the
+&gt;&gt; vnodes, so it matters whether it has to contact around 32 vnodes (for ring
+&gt;&gt; size 64) or 256 (for 512)).
+&gt;&gt;
+&gt;&gt; So in short, most small to medium sized clusters out there use 128 or 256
+&gt;&gt; ring sizes. If you _know_ you're not going to scale past 7-9 nodes, it's
+&gt;&gt; safe to go with 64. If you know you're going to scale to a giant cluster of
+&gt;&gt; 50 nodes or some such, use 512 (though at that point, you should
+&gt;&gt; re-evaluate your use of Secondary Indexes).
+&gt;&gt;
+&gt;&gt; Last thought - migrating to a different ring size is a big pain, although
+&gt;&gt; it's doable. (You basically have to resort to logical backup tools --
+&gt;&gt; export all your data from the old cluster to disk, and then import it all
+&gt;&gt; to the new cluster).
+&gt;&gt;
+&gt;&gt; Dmitri
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Mon, Apr 22, 2013 at 5:30 PM, Tom Zeng &lt;t...@intridea.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Ok thanks Joe.  We plan to switch to the Multi backend, so will use 512.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Mon, Apr 22, 2013 at 5:17 PM, Joe Caswell &lt;jcasw...@basho.com&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Tom,
+&gt;&gt;&gt;&gt;   There is no hard and fast rule for the &quot;best value.&quot;  The optimal
+&gt;&gt;&gt;&gt; value for your situation will need to take into account the physical
+&gt;&gt;&gt;&gt; resources available both in your starting cluster as well as your planned
+&gt;&gt;&gt;&gt; end-state cluster.  If you plan to use secondary indexing, the maximum
+&gt;&gt;&gt;&gt; ring_creation_size you should consider is 512.
+&gt;&gt;&gt;&gt;   There will be a separate concurrent vnode_proxy process for each
+&gt;&gt;&gt;&gt; vnode, and a process for each backend for each vnode.  Each backend will
+&gt;&gt;&gt;&gt; need open file handles and RAM for caching objects.  The backend
+&gt;&gt;&gt;&gt; configuration section of the docs should help plan your backed settings
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/1.3.1/tutorials/choosing-a-backend/">http://docs.basho.com/riak/1.3.1/tutorials/choosing-a-backend/</a>
+&gt;&gt;&gt;&gt;   Your planning must also include failure scenarios.  If any of your
+&gt;&gt;&gt;&gt; nodes crash, the surviving nodes will each start more vnodes to cover the
+&gt;&gt;&gt;&gt; missing node(s).   The 10 vnodes per node recommendation is to ensure that
+&gt;&gt;&gt;&gt; the vnodes from any single failed node can be divided among enough
+&gt;&gt;&gt;&gt; surviving nodes to not leave one node handling significantly more load than
+&gt;&gt;&gt;&gt; the other, but this also is not a hard and fast rule.
+&gt;&gt;&gt;&gt; At this time changing number of partitions in the ring does require a
+&gt;&gt;&gt;&gt; complete rebuild of the cluster,  we do have dynamic ring sizing on the
+&gt;&gt;&gt;&gt; product roadmap, but there is no release date set for that feature.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Joe Caswell
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; From: Tom Zeng &lt;t...@intridea.com&gt;
+&gt;&gt;&gt;&gt; Date: Sunday, April 21, 2013 9:38 PM
+&gt;&gt;&gt;&gt; To: &lt;riak-users@lists.basho.com&gt;
+&gt;&gt;&gt;&gt; Subject: the optimal value of the ring_creation_size
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Hi,
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I am wondering what's the best value for ring_creation_size, the
+&gt;&gt;&gt;&gt; default is 64. According to the docs 64 will work for a cluster of no more
+&gt;&gt;&gt;&gt; than 6 nodes (64 /10), and ring_creation_size of 128 will allow cluster of
+&gt;&gt;&gt;&gt; up to 12 mode.  I am wondering what kind of overhead of is associated with
+&gt;&gt;&gt;&gt; a large ring_creation_size.  Since changing the ring_creation_size will
+&gt;&gt;&gt;&gt; result in rebuilding the cluster(destuctive), would a larger value make
+&gt;&gt;&gt;&gt; more sense and allow scaling by adding more nodes?
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt;&gt; Tom
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt; Tom Zeng
+&gt;&gt;&gt;&gt; Director of Engineering
+&gt;&gt;&gt;&gt; Intridea, Inc. | www.intridea.com
+&gt;&gt;&gt;&gt; t...@intridea.com
+&gt;&gt;&gt;&gt; (o) 888.968.4332 x519
+&gt;&gt;&gt;&gt; (c) 240-643-8728
+&gt;&gt;&gt;&gt;  _______________________________________________ riak-users mailing
+&gt;&gt;&gt;&gt; list riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; *Dev Kanchen *|*  *Solution Architect
+&gt; *Sourcebits*
+&gt;
+&gt; *Bangalore* | San Francisco | Wroclaw | Connecticut | Atlanta
+&gt; M: +91 96111 07106
+&gt; GTalk ID: d...@sourcebits.com | Skype ID: dev.kanchen
+&gt;
+&gt; Disclaimer:This email and any attachments are sent in strictest confidence
+&gt; for the sole use of the addressee and may contain legally privileged,
+&gt; confidential, and proprietary data. If you are not the intended recipient,
+&gt; please advise the sender by replying promptly to this email and then delete
+&gt; and destroy this email and any attachments without any further use, copying
+&gt; or forwarding.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+
+-- 
+Sean Cribbs &lt;s...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10978.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10979">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10979">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10981.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10946.html">the optimal value of the ring_creation_size</a></span> <span class="sender italic">Tom Zeng</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10951.html">Re: the optimal value of the ring_creation_size</a></span> <span class="sender italic">Joe Caswell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10952.html">Re: the optimal value of the ring_creation_size</a></span> <span class="sender italic">Tom Zeng</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10975.html">Re: the optimal value of the ring_creation_...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10978.html">Re: the optimal value of the ring_creat...</a></span> <span class="sender italic">Dev Vasantharajan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: the optimal value of the ring_...</span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10981.html">Re: the optimal value of the r...</a></span> <span class="sender italic">Tom Zeng</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: the optimal value of the ring_creation_size">
+<input type="hidden" name="msgid" value="CAHsw=e2P1gThd9uYYW8piAXdH1FaR62ODwTn0cKdJ-0KpDNT3g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10979.html">
+<input type="submit" value=" Sean Cribbs ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+the+optimal+value+of+the+ring_creation_size%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10978.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10981.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHsw=e2P1gThd9uYYW8piAXdH1FaR62ODwTn0cKdJ-0KpDNT3g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Durable writes and parallel reads</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05441" id="c">
+<link rel="index" href="maillist.html#05441" id="i">
+<link rel="prev" href="msg05439.html" id="p">
+<link rel="next" href="msg05399.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05441.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Durable+writes+and+parallel+reads%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Durable writes and parallel reads</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Erik+S%C3%B8e+S%C3%B8rensen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Erik Søe Sørensen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111104" rel="nofollow">Fri, 04 Nov 2011 06:40:35 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+(inline replies)
+
+On 04-11-2011 00:21, Jon Meredith wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Erik,</pre><pre>
+
+Apologies it's taken so long to get back to you.
+</pre></blockquote><pre style="margin: 0em;">
+No worries; a few days is not long to wait for a clear and complete answer.
+(Besides, the theme *was* latency... ;-) )
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Durable writes:
+</pre><tt>  You're interpreting it correctly.  DW means that the storage backend 
+</tt><tt>has accepted the write.  As the backends are pluggable and 
+</tt><tt>configurable so that affects what durable means.  For bitcask you can 
+</tt><tt>control the sync strategy and there are similar controls for innodb. 
+</tt><tt> For the memory backend there is no durable write.  With hindsight it 
+</tt><tt>would have been better to have used something like accepted write (AW) 
+</tt><tt>and write (W) rather than W/DW, but we're fairly stuck with it now.
+</tt></blockquote><tt>I agree - naming is important though.  I'm afraid I'm guilty of 
+</tt><tt>propagating my initial misconceptions of the semantics of DW, which were 
+</tt><tt>mostly due to how I though it &quot;must be&quot;...
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Could you perhaps clarify on the Basho wiki that &quot;commit to durable 
+</tt><tt>storage&quot; means that the backend has received the data, but that whether 
+</tt><tt>this means that the data have also been persisted is up to the backend 
+</tt><tt>in question - that the data might still be in the hands of software, 
+</tt><tt>rather than hardware?
+</tt><pre style="margin: 0em;">
+(e.g. at <a  rel="nofollow" href="http://wiki.basho.com/Basic-Riak-API-Operations.html">http://wiki.basho.com/Basic-Riak-API-Operations.html</a>)
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt> Combining writes/acceptance is a very interesting idea going forward, 
+</tt><tt>but doesn't fit well with the sync nature of the backend API we have 
+</tt><tt>currently.
+</tt></blockquote><pre style="margin: 0em;">
+No, I understand that.
+
+</pre><tt>Even so, I'll hazard the following suggestion as to how a 
+</tt><tt>backwards-compatible API change might be:
+</tt><pre style="margin: 0em;">
+
+   To the present put/5 signature:
+   -spec put(riak_object:bucket(), riak_object:key(), [index_spec()],
+   binary(), state()) -&gt;
+                     {ok, state()} |
+                     {error, term(), state()}.
+   add the return option
+                     {ok, state(), buffered | persisted}
+   and add a flushing function:
+   -spec persist(state()) -&gt;
+                     {ok, state()}.
+
+   This function is only ever called if put() returns {ok, _, buffered}.
+
+</pre><tt>With this change, if riak_kv_vnode ever receives an {ok, _, buffered} 
+</tt><tt>return value, it can set up a persist timer.
+</tt><tt>(I say riak_kv_vnode, but in the first iteration it could in principle 
+</tt><tt>just be a wrapper backend.)
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Parallel reads:
+</pre><tt>  With 1.0.0 we've introduced a thread pool to increase the 
+</tt><tt>concurrency vnodes can use for listing keys.  I'd like to improve on 
+</tt><tt>read concurrency.  The current architecture ensures that a key is only 
+</tt><tt>updated by a single thread which makes writing backend drivers 
+</tt><tt>simpler.  We either need to add support to the k/v vnode to ensure the 
+</tt><tt>property is true when being updated in parallel or change the backend 
+</tt><tt>drivers to be tolerant of it.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The performance numbers are interesting.  How many vnodes were you 
+</tt><tt>simulating?
+</tt></blockquote><tt>For the 30-45% numbers, I had three &quot;vnodes&quot;, each accessing a separate 
+</tt><tt>1GB+ file.
+</tt><pre style="margin: 0em;">
+
+Elaborating a bit:
+</pre><tt>Results from a Ubuntu Linux (2.6.32) laptop - note that results are 
+</tt><tt>rather I/O scheduler dependent:
+</tt><pre style="margin: 0em;">
+
+   /---- Scheduler=CFQ  (&quot;Completely fair queueing&quot;)
+   serial                        :  24.7593 seconds total
+   serial_sorted                 :  16.5154 seconds total // 50% tp
+   improvement
+   parallel                      :  24.5351 seconds total//  1% tp
+   improvement
+   // Note: performance seems to be hindered by the &quot;Fair&quot; part of the
+   scheduling algorithm,
+   // which tries to give separate processes equal bandwidth to the disk.
+
+   /---- Scheduler=Anticipatory
+   serial                        :  24.7583 seconds total
+   serial_sorted                 :  16.3723 seconds total // 51% tp
+   improvement
+   parallel                      :  19.3194 seconds total // 28% tp
+   improvement
+
+   /---- Scheduler=Deadline
+   serial                        :  21.7606 seconds total
+   serial_sorted                 :  17.5556 seconds total // 24% tp
+   improvement
+   parallel                      :  16.3663 seconds total// 33% tp
+   improvement
+
+   /---- Scheduler=Noop
+   serial                        :  21.7646 seconds total
+   serial_sorted                 :  17.4545 seconds total// 25% tp
+   improvement
+   parallel                      :  15.7670 seconds total// 38% tp
+   improvement
+
+</pre><tt>These are from a single-run test; I note that the 'parallel' numbers are 
+</tt><tt>in the lower end of the range I quoted.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Test code is attached. (Much of the code isn't used, as there was a bit 
+</tt><tt>of exploration involved.)
+</tt><pre style="margin: 0em;">
+The above results were produced by running
+
+   parread:multi_vnode_test_main([&quot;/tmp/erk1G&quot;,&quot;/tmp/erk1Gb&quot;,&quot;/tmp/erk1Gc&quot;]).
+
+</pre><tt>where the erkXX are separate files of each 1GB. (Each is used by one 
+</tt><tt>&quot;vnode&quot;, so this is a 3-vnode-test.)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The &quot;clear_disk_cache_for_testing_purposes&quot; script is of course system 
+</tt><tt>dependent; this one needs to be suid root (or the test program run as 
+</tt><tt>root, but don't do that unless you have reviewed the code well).
+</tt><pre style="margin: 0em;">
+
+/Erik
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Jon.
+
+</pre><tt>On Mon, Oct 31, 2011 at 10:38 AM, Erik Søe Sørensen &lt;e...@trifork.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:e...@trifork.com">mailto:e...@trifork.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    The following is a couple of questions (and suggestions) regarding the
+    technical sides of Riak performance and reliability.
+
+    The questions have been prompted by reading Riak source code and by
+    discussions within our company.
+
+    I suppose the common thread here is &quot;latency hiding&quot;...
+
+    Durable Writes.
+    ---------------
+    The default for bitcask's 'sync_strategy' setting is not to flush
+    to disk explicitly at all.
+
+    This means that a 'Durable Write' isn't actually durable; the
+    difference between 'W' and 'DW' replies is whether the write has
+    made it past Riak, to the OS - but not through the OS and down to
+    disk.
+
+    Is this correct?
+
+    What I'd have expected, as a reaonably-performing alternative, is
+    that Riak would flush periodically - say, after at most W_flush
+    writes or MS_flush milliseconds, and send 'dw' replies for all of
+    the relevant requests (those written since last flush) at once
+    after the flush has been completed.
+    This would combine 'real' DW semantics with reasonable performance
+    (and is how I have handled a similar problem; my conceptions about
+    what is right and proper may of course be influenced by my own
+    coding history...).
+
+    (For kicks, MS_flush might even be dynamically determined by how
+    long the flush operations tend to take; the typical value of a
+    flush duration, multiplied by a small constant, would probably be
+    a fitting value.)
+
+
+    Parallel Reads.
+    ---------------
+    Within a vnode, bitcask read operations happen in serial.
+    Is there any reason for reads not happening in parallel?
+
+    For map/reduce operations, in particular, I imagine this might
+    make a difference, by giving the OS the opportunity to schedule
+    disk accesses so as to reduce seek time.
+
+    (Unless of course Riak itself reorders the keys before reading,
+    but I don't believe this is the case - especially since the order
+    would depend on the backend: for bitcask, by time; for innostore,
+    by key order, for instance.)
+
+    Of course, if each host has multiple vnodes, there will be some
+    parallellity even with serialized  reads within each bitcask.
+
+    Regards,
+    Erik Søe Sørensen
+
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+
+--
+Jon Meredith
+Platform Engineering Manager
+Basho Technologies, Inc.
+jmered...@basho.com &lt;<a  rel="nofollow" href="mailto:jmered...@basho.com">mailto:jmered...@basho.com</a>&gt;
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>#!/bin/bash
+echo 3 | sudo tee /proc/sys/vm/drop_caches || echo &quot;ERROR: $?&quot; &gt;&amp;2
+</pre><pre>-module(parread).
+-compile(export_all).
+
+%%% To use this test, you need a script called
+%%%   clear_disk_cache_for_testing_purposes
+%%% which clears the disk caches so that all reads are actual disk reads.
+
+multi_vnode_test_main(FileNames) -&gt;
+    BlockSize = 1024,
+    N = 1000,
+    TestFuns = [{serial, fun test/3},
+		{serial_sorted, fun stest/3},
+		{parallel, fun p2test/3}],
+    R = [begin
+	     io:format(&quot;Trying ~s...\n&quot;, [Name]),
+	     clear_disk_cache(),
+	     Before = os:timestamp(),
+	     multi_vnode_test(TestFun, FileNames,  BlockSize, N),
+	     After = os:timestamp(),
+	     {Name, timer:now_diff(After, Before) * 1.0e-6}
+	 end
+	 || {Name,TestFun} &lt;- TestFuns],
+    [io:format(&quot;~-30s: ~8.4f seconds total\n&quot;, [Name,TotalSecs])
+     || {Name, TotalSecs} &lt;- R],
+    ok.
+
+clear_disk_cache() -&gt;
+    os:cmd(&quot;./clear_disk_cache_for_testing_purposes&quot;).
+
+
+%%====================
+test2(FileName, BlockSize, N, P) -&gt;
+    [spawn(fun() -&gt;
+		   {A,B,C} = now(),
+		   random:seed(A,B,C),
+		   io:format(&quot;~p\n&quot;, [test(FileName, BlockSize, N)])
+	   end)
+	   || _ &lt;- lists:seq(1,P)].		  
+
+rtest2(FileName, BlockSize, N, P) -&gt;
+    [spawn(fun() -&gt;
+		   {A,B,C} = now(),
+		   random:seed(A,B,C),
+		   io:format(&quot;~p\n&quot;, [rtest(FileName, BlockSize, N)])
+	   end)
+	   || _ &lt;- lists:seq(1,P)].		  
+
+p2test2(FileName, BlockSize, N, P) -&gt;
+    [spawn(fun() -&gt;
+		   {A,B,C} = now(),
+		   random:seed(A,B,C),
+		   io:format(&quot;~p\n&quot;, [p2test(FileName, BlockSize, N)])
+	   end)
+	   || _ &lt;- lists:seq(1,P)].
+
+multi_vnode_test(TestFun, FileNames, BlockSize, N) -&gt;
+    R = parmap(fun(FileName) -&gt;
+		       {A,B,C} = now(),
+		       random:seed(A,B,C),
+		       TestFun(FileName, BlockSize, N)
+	       end,
+	       FileNames),
+    R.
+    
+
+parmap(Fun, Args) -&gt;
+    Parent = self(),
+    Pids = [spawn(fun() -&gt; Parent ! {self(), Fun(A)} end) || A &lt;- Args],
+    Res = [receive {P,R} -&gt; R end || P &lt;- Pids],
+    io:format(&quot;parmap(~p,~p) -&gt;\n  ~p\n&quot;, [Fun, Args, Res]),
+    Res.
+    
+
+%%====================
+test(FileName, BlockSize, N) -&gt; % Test sync. non-raw reads.
+    test(FileName, BlockSize, N, fun loop/3, [], sync_non_raw).
+
+rtest(FileName, BlockSize, N) -&gt; % Test sync. raw reads.
+    test(FileName, BlockSize, N, fun loop/3, [raw], sync_raw).
+
+ptest(FileName, BlockSize, N) -&gt; % Test async. non-raw reads.
+    test(FileName, BlockSize, N, fun ploop/3, [], async_non_raw).
+
+stest(FileName, BlockSize, N) -&gt; % Test async. non-raw reads.
+    test(FileName, BlockSize, N, fun sloop/3, [], async_non_raw).
+
+gtest(FileName, BlockSize, N) -&gt; % Test async. non-raw reads.
+    test(FileName, BlockSize, N, fun gloop/3, [], grouped).
+
+test(FileName, BlockSize, N, LoopFun, OpenOpts, Tag) -&gt;
+    {ok, Fd} = file:open(FileName, [read, binary | OpenOpts]),
+    {ok, Sz} = file:position(Fd, eof),
+    Reqs = request_set(Sz-BlockSize, N),
+
+    Before = os:timestamp(),
+    LoopFun(Fd, BlockSize, Reqs),
+    After = os:timestamp(),
+
+    file:close(Fd),
+    Elapsed = timer:now_diff(After,Before),
+    {result, Tag, Elapsed / 1.0e6, float(Elapsed) / N}.
+
+p2test(FileName, BlockSize, N) -&gt; % Test async. non-raw reads.
+    test_by_filename(FileName, BlockSize, N, fun p2loop/3, [], parallel_by_filename).
+
+test_by_filename(FileName, BlockSize, N, LoopFun, OpenOpts, Tag) -&gt;
+    {ok, Fd} = file:open(FileName, [read, binary | OpenOpts]),
+    {ok, Sz} = file:position(Fd, eof),
+    Reqs = request_set(Sz-BlockSize, N),
+
+    Before = os:timestamp(),
+    LoopFun(FileName, BlockSize, Reqs),
+    After = os:timestamp(),
+
+    file:close(Fd),
+    Elapsed = timer:now_diff(After,Before),
+    {result, Tag, Elapsed / 1.0e6, float(Elapsed) / N}.
+
+%%==========
+sloop(Fd, BlockSize, Reqs) -&gt;
+    loop(Fd, BlockSize, lists:sort(Reqs)).
+
+loop(_Fd, _BlockSize, []) -&gt; ok;
+loop(Fd, BlockSize, [Pos|Rest]) -&gt;
+    read_block_synchronously(Fd, Pos, BlockSize),
+    loop(Fd, BlockSize, Rest).
+
+%%==========
+gloop(_Fd, _BlockSize, []) -&gt; ok;
+gloop(Fd, BlockSize, Reqs) -&gt;
+    {Group, Rest} = try lists:split(50, Reqs)
+		    catch error:badarg -&gt; {Reqs, []}
+		    end,
+    read_block_group(Fd, [{Pos, BlockSize} || Pos &lt;- Group]),
+    gloop(Fd, BlockSize, Rest).
+
+%%==========
+ploop(Fd, BlockSize, Reqs) -&gt;
+    ploop(Fd, BlockSize, 0, Reqs).
+
+ploop(_Fd, _BlockSize, 0, []) -&gt; ok;
+ploop(Fd, BlockSize, Outstanding, []) -&gt;
+    wait_for_outstanding(),
+    ploop(Fd, BlockSize, Outstanding-1, []);
+ploop(Fd, BlockSize, Outstanding, [Pos|Rest]=Reqs) -&gt;
+    if Outstanding &gt;= 50 -&gt;
+	    %% No slots free.
+	    wait_for_outstanding(),
+	    ploop(Fd, BlockSize, Outstanding-1, Reqs);
+       true -&gt;
+	    read_block_asynchronously(Fd, Pos, BlockSize),
+	    ploop(Fd, BlockSize, Outstanding+1, Rest)
+    end.
+
+%%==========
+p2loop(Filename, BlockSize, Reqs) -&gt;
+    p2loop(Filename, BlockSize, 0, Reqs).
+
+p2loop(_Filename, _BlockSize, 0, []) -&gt; ok;
+p2loop(Filename, BlockSize, Outstanding, []) -&gt;
+    wait_for_outstanding(),
+    p2loop(Filename, BlockSize, Outstanding-1, []);
+p2loop(Filename, BlockSize, Outstanding, [Pos|Rest]=Reqs) -&gt;
+    if Outstanding &gt;= 50 -&gt;
+	    %% No slots free.
+	    wait_for_outstanding(),
+	    p2loop(Filename, BlockSize, Outstanding-1, Reqs);
+       true -&gt;
+	    read_block_asynchronously_from_filename(Filename, Pos, BlockSize),
+	    p2loop(Filename, BlockSize, Outstanding+1, Rest)
+    end.
+
+%%==========
+request_set(StartLimit, N) -&gt;
+    [random:uniform(StartLimit) || _ &lt;- lists:seq(1,N)].
+
+read_block_synchronously(Fd, Pos, BlockSize) -&gt;
+    {ok, _Data} = file:pread(Fd, Pos, BlockSize).
+
+read_block_group(Fd, Group) -&gt;
+    io:format(&quot;DB| group size: ~p\n&quot;, [length(Group)]),
+    {ok, _Datas} = file:pread(Fd, Group).
+
+read_block_asynchronously(Fd, Pos, BlockSize) -&gt;
+    Owner = self(),
+    Pid = spawn(fun() -&gt;
+%%  			io:format(&quot;DB| started: ~p @ ~p\n&quot;, [self(), Pos]),
+			try file:pread(Fd, Pos, BlockSize)
+			of {ok, Data} -&gt;
+%% 				io:format(&quot;DB| done: ~p @ ~p\n&quot;, [self(), Pos]),
+				Owner ! {read_done, self(), Data};
+			   Error1 -&gt; io:format(&quot;DB| error: ~p ::  ~p\n&quot;, [self(), Error1])
+			catch _:Error -&gt;
+				io:format(&quot;DB| error: ~p ::  ~p\n&quot;, [self(), Error])
+			end
+		end),
+    Pid.
+
+read_block_asynchronously_from_filename(FileName, Pos, BlockSize) -&gt;
+    Owner = self(),
+    Pid = spawn(fun() -&gt;
+			{ok, Fd} = file:open(FileName, [read, binary, raw]),
+%%  			io:format(&quot;DB| started: ~p @ ~p\n&quot;, [self(), Pos]),
+			try file:pread(Fd, Pos, BlockSize)
+			of {ok, Data} -&gt;
+%% 				io:format(&quot;DB| done: ~p @ ~p\n&quot;, [self(), Pos]),
+				Owner ! {read_done, self(), Data};
+			   Error1 -&gt; io:format(&quot;DB| error: ~p ::  ~p\n&quot;, [self(), Error1])
+			catch _:Error -&gt;
+				io:format(&quot;DB| error: ~p ::  ~p\n&quot;, [self(), Error])
+			end
+		end),
+    Pid.
+
+wait_for_outstanding() -&gt;
+    receive {read_done, _Ref, _Data} -&gt; ok
+    after 5000 -&gt; error(timeout)
+    end.
+  
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05439.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05441">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05441">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05399.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05388.html">Durable writes and parallel reads</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05408.html">Re: Durable writes and parallel reads</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05439.html">Re: Durable writes and parallel reads</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Durable writes and parallel reads</span> <span class="sender italic">Erik Søe Sørensen</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Durable writes and parallel reads">
+<input type="hidden" name="msgid" value="4EB3EB43.2060902@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05441.html">
+<input type="submit" value=" Erik Søe Sørensen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Durable+writes+and+parallel+reads%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05439.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05399.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4EB3EB43.2060902@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Endless AAE keys repairing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14502" id="c">
+<link rel="index" href="maillist.html#14502" id="i">
+<link rel="prev" href="msg14501.html" id="p">
+<link rel="next" href="msg14504.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14502.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Endless+AAE+keys+repairing%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Endless AAE keys repairing</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140717" rel="nofollow">Thu, 17 Jul 2014 05:43:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+On Jul 17, 2014, at 4:30 AM, Daniil Churikov &lt;ddo...@gmail.com&gt; wrote:</pre><pre>
+
+&gt; Hello, In our test env we have 3 nodes riak 1.4.8-1 cluster on debians. 
+&gt; According to logs: 2014-07-17 02:48:03.748 [info] 
+&gt; &lt;0.10542.85&gt;@riak_kv_exchange_fsm:key_exchange:206 Repaired 1 keys during 
+&gt; active anti-entropy exchange of 
+&gt; {936274486415109681974235595958868809467081785344,3} between 
+&gt; {936274486415109681974235595958868809467081785344,'riak@10.3.13.96'} and 
+&gt; {981946412581700398168100746981252653831329677312,'riak@10.3.13.96'} Messages 
+&gt; like this constantly appears, there is not so much load on this test cluster 
+&gt; and I expected that eventually everything will be fixed, but this messages 
+&gt; keep coming from day to day. In the past we had several issues with one of 
+&gt; the cluster participants and as a result we did enabled AAE to fix it. What 
+&gt; could be possble the reason of this? 
+
+This is probably caused by regular puts.  When AAE performs an exchange it 
+takes snapshots of each tree in a concurrent manner.  This means that a 
+snapshot could occur while replicas for a given object are still in flight.  
+For example:
+
+1. User writes object O.
+2. Coordinator sends O to 3 partitions A, B, and C.
+3. Partition A accepts O and updates hash tree.
+4. Entropy manager on node which own partition A decides to perform an exchange 
+between A and B.
+5. Snapshot is taken of hash tree for A.
+6. Snapshot is taken of hash tree for B.
+7. Partition B accepts O and updates hash tree (but the update is not reflected 
+in the snapshot just taken)
+8. Partition C accepts O and updates hash tree.
+9. Exchange between A &amp; B determines object is missing on B and performs a read 
+repair.
+10. Read repair notices that object O exists on all three partitions and there 
+is nothing to be done.
+
+The higher the load the more keys that could be included in one snapshot but 
+not the other.  I would say that any time your cluster is accepting writes it 
+might be normal to see a handful of keys getting “repaired”.  But if you see, 
+say, more than 10 (especially if there are 0 outstanding writes) then that is 
+probably a sign of real repair.
+
+-Z
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14501.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14502">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14502">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14504.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14501.html">Endless AAE keys repairing</a></span> <span class="sender italic">Daniil Churikov</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Endless AAE keys repairing</span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Endless AAE keys repairing">
+<input type="hidden" name="msgid" value="63CC5D94-3073-4237-A203-B76EDE99CD89@zinascii.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14502.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Endless+AAE+keys+repairing%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14501.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14504.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">63CC5D94-3073-4237-A203-B76EDE99CD89@zinascii.com</li>
+</ul>
+</div>
+</body>
+</html>

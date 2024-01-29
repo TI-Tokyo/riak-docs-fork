@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Clustering Changes in 1.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04660" id="c">
+<link rel="index" href="maillist.html#04660" id="i">
+<link rel="prev" href="msg04659.html" id="p">
+<link rel="next" href="msg04596.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04660.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Clustering+Changes+in+1.0%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Clustering Changes in 1.0</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110911" rel="nofollow">Sun, 11 Sep 2011 14:06:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>&gt; Let's say I have N=3, R=2.  Is the situation in the above paragraph possible
+&gt; because hypothetically the new node joining the ring could claim 2 of the 3
+&gt; vnodes that hold replicas of a certain document?  So when I do a read with a
+&gt; R=2, 2 of the 3 replicas are now in vnodes claimed by new physical node but
+&gt; it doesn't have the data yet, so my read fails?</pre><pre>
+
+Basically yes. A new node joining the cluster causes vnodes to be
+reassigned, and you could end up with 2+ or more vnodes/replicas owned
+by a node other than the original owner.
+
+To be clear, it's not likely that those two vnodes/replicas were both
+reassigned to the new joining node. There is logic in Riak that tries
+to maintain the spread of vnode ownership such that replicas are on
+separate nodes. While there are some corner cases where that could
+happen, it's not common and isn't the likely issue here. The more
+likely case is that one vnode was reassigned to the new node, and
+another vnode was reassigned to some other existing node in the
+cluster. The current claim logic in Riak does not only reassign vnodes
+to newly joining nodes, it may also shuffle around other nodes in the
+ring in order to maintain certain ring invariants (specifically, the
+vnodes on different nodes goal previously mentioned).
+
+As an aside, the existing claim logic is not as elegant as I'd like,
+and cases where multiple replicas are reassigned happen a lot more
+frequently that they should. This is why this not_found issue was
+encountered by many people -- reassigning 2+ replicas is not a
+hypothetical case, it happens fairly regularly. While the new
+clustering approach fixes the not_found issues, it is still &quot;on the
+list&quot; to improve the claim logic to ensure better replica placement
+and less reassignment during node addition/removal. There's an
+outstanding claim logic pull-request from the guys at Dropcam that
+I'll be looking into this week to see how well it solves this issue.
+
+-Joe
+
+On Sun, Sep 11, 2011 at 2:21 PM, Jeff Pollard &lt;jeff.poll...@gmail.com&gt; wrote:
+&gt; Joe,
+&gt; Thanks for the explanation it's super helpful.  Everything made complete
+&gt; sense, but I wanted to double check my understanding on one paragraph:
+&gt;&gt;
+&gt;&gt; Given how 0.14.2 would immediately reassign partition ownership
+&gt;&gt; before actually transferring the data, it was entirely possible to have 2
+&gt;&gt; or more replicas temporarily in the not_found state even if there was actual
+&gt;&gt; data for the item somewhere in the cluster (the old partition owner).
+&gt;
+&gt; Let's say I have N=3, R=2.  Is the situation in the above paragraph possible
+&gt; because hypothetically the new node joining the ring could claim 2 of the 3
+&gt; vnodes that hold replicas of a certain document?  So when I do a read with a
+&gt; R=2, 2 of the 3 replicas are now in vnodes claimed by new physical node but
+&gt; it doesn't have the data yet, so my read fails?
+&gt; On Sun, Sep 11, 2011 at 11:25 AM, Joseph Blomstedt &lt;j...@basho.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; Given how 0.14.2 would immediately reassign partition ownership before
+&gt;&gt; actually transferring the data, it was entirely possible to have 2 or
+&gt;&gt; more replicas temporarily in the not_found state even if there was
+&gt;&gt; actual data for the item somewhere in the cluster (the old partition
+&gt;&gt; owner).
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04659.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04660">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04660">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04596.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04647.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04656.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04658.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Matt Ranney</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04611.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04626.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04634.html">SV: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04639.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Jeff Pollard</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04640.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04655.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04659.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Jeff Pollard</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Clustering Changes in ...</span> <span class="sender italic">Joseph Blomstedt</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Clustering Changes in 1.0">
+<input type="hidden" name="msgid" value="CANvk2KQBEnqcrEXGkZMBgOdkj1ikSxYes8hW9V8ScOJQvMME6Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04660.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Clustering+Changes+in+1.0%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04659.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04596.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KQBEnqcrEXGkZMBgOdkj1ikSxYes8hW9V8ScOJQvMME6Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

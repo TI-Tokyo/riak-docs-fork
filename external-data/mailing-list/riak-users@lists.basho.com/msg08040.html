@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Best way of versioning POJOs/'schemas'</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08040" id="c">
+<link rel="index" href="maillist.html#08040" id="i">
+<link rel="prev" href="msg08038.html" id="p">
+<link rel="next" href="msg08039.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08040.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Best+way+of+versioning+POJOs%5C%2F%27schemas%27%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Best way of versioning POJOs/'schemas'</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rune+Skou+Larsen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rune Skou Larsen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120724" rel="nofollow">Tue, 24 Jul 2012 06:39:42 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Tim!
+
+</pre><tt>You're probably refering to Kresten's talk &quot;Riak on Drugs&quot;, where he 
+</tt><tt>mentions schema evolution using read repair. Being on the same project, 
+</tt><tt>allow me to elaborate.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>To my knowledge, there is no schema evolution strategy defined by either 
+</tt><tt>JSON or Protocol Buffers when dealing with distributed data. I.e. how to 
+</tt><tt>declare schema versions, and upgrade data in distributed data stores.
+</tt><tt>An XML Schema can specify a version attribute, or put different versions 
+</tt><tt>of a schema into different namespaces, which include dates or version 
+</tt><tt>numbers. But you probably don't want to use XML Schema for a number of 
+</tt><tt>reasons.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Protocol buffers provides a schema (.proto file), which can be compiled 
+</tt><tt>into serialization code for a plethora of languages. Including java, 
+</tt><tt>which we use in the health care system that we make for the Danish 
+</tt><tt>government. PB tries to be pragmatic about schema changes, which is nice 
+</tt><tt>- especially compared to the dreadful XML schemas and WSDL. You can add 
+</tt><tt>a new optional field to your .proto file, and still deserialize old data 
+</tt><tt>into the new schema. PB will barf if you deserialize fields not known in 
+</tt><tt>your .proto, or if &quot;required&quot; fields are missing (we make all PB fields 
+</tt><tt>&quot;optional&quot; to avoid this.)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You might as well use JSON or some other schema-defined serialization 
+</tt><tt>format. PB is very space efficient and fast to (de)serialize. On the 
+</tt><tt>other hand, JSON is easier to work with when it comes to Riak Map Reduce 
+</tt><tt>jobs. Using the schema evolution process below, you can even start out 
+</tt><tt>using JSON and then upgrade to for instance PB.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>As Kresten mentions, we want to upgrade data to new schema versions 
+</tt><tt>using read repair. Our thoughts on how to do this, is to store either a 
+</tt><tt>header in the binary data or a metadata field on the Riak object with an 
+</tt><tt>id to the schema, specifying how the binary data was serialized. This 
+</tt><tt>schema id is read by the client, which determines if a newer schema 
+</tt><tt>version exists, converts the data to the new version and stores the data 
+</tt><tt>back.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Since we upgrade clients one at a time with no downtime, the entire 
+</tt><tt>change procedure would be something like this:
+</tt><pre style="margin: 0em;">
+
+1) Make new schema version.
+</pre><tt>2) Upgrade all clients - one at a time - so they can read the new schema 
+</tt><tt>version, but still save data in the old version.
+</tt><pre style="margin: 0em;">
+3) Enable clients to save data en the new schema version.
+
+</pre><tt>Data formatted in deprecated schemas, can be seen as a sort of entropy - 
+</tt><tt>something you want to remove to achieve consistency - and to make your 
+</tt><tt>clients simpler. Before we remove client support for the old schema 
+</tt><tt>version, we need to make sure that all data has been upgraded, so we 
+</tt><tt>need to rewrite the objects, that were not read repaired by normal daily 
+</tt><tt>operations. We would probably do this using a java batch job, which was 
+</tt><tt>fed all the keys.
+</tt><pre style="margin: 0em;">
+
+4) Repair remaining keys.
+5) Remove client support for old version schema.
+
+
+
+</pre><tt>If you like DomainBucket, which is part of the IRiak java client, you 
+</tt><tt>can still use it and have you java model in PB or whatever. Put you 
+</tt><tt>serialization code into a Converter like this:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>        Converter&lt;PersonAggregate&gt; personSerializer = new 
+</tt><tt>Converter&lt;PersonAggregate&gt;() {
+</tt><pre style="margin: 0em;">
+
+            @Override
+</pre><tt>            public IRiakObject fromDomain(PersonAggregate 
+</tt><tt>personAggregate, VClock vClock) throws ConversionException {
+</tt><pre style="margin: 0em;">
+                String bucket = &quot;person&quot;;
+                String key = personAggregate.getKey();
+</pre><tt>                byte[] bytes = personAggregate.getBytes(); // Serialize 
+</tt><tt>to bytes using PB or whatever
+</tt><tt>                return RiakObjectBuilder.newBuilder(bucket, 
+</tt><tt>key).withValue(bytes).build();
+</tt><pre style="margin: 0em;">
+            }
+
+            @Override
+</pre><tt>            public PersonAggregate toDomain(IRiakObject riakObject) 
+</tt><tt>throws ConversionException {
+</tt><pre style="margin: 0em;">
+                byte[] bytes = riakObject.getValue();
+</pre><tt>                return PersonAggregate.deserialize(riakObjectValue); // 
+</tt><tt>Deserialize to java
+</tt><pre style="margin: 0em;">
+            }
+        };
+
+</pre><tt>        DomainBucket&lt;PersonAggregate&gt; personBucket = new 
+</tt><tt>DomainBucketBuilder&lt;PersonAggregate&gt;(personBucket, 
+</tt><tt>PersonAggregate.class).withConverter().build();
+</tt><pre style="margin: 0em;">
+
+
+
+- Rune
+
+</pre><tt>PS: I like the flexibility of your aggregate-root java model, and 
+</tt><tt>believe it will serialize nicely and efficiently into an Riak object.
+</tt><pre style="margin: 0em;">
+
+--
+
+Best regards / Venlig hilsen
+
+*Rune Skou Larsen*
+Trifork Public A/S / Team Riak
+Margrethepladsen 4, 8000 Århus C, Denmark
+Phone: +45 3160 2497    Skype: runeskoularsen   twitter: @RuneSkouLarsen
+
+
+
+On 24-07-2012 08:49, Tim Pedersen wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi All,
+
+</pre><tt>I'm working on a Riak-based Java project that involves creating a 
+</tt><tt>central repository of data (in Riak) aggregated from a number of other 
+</tt><tt>databases (SQL). Right now the approach I'm taking is to build a set 
+</tt><tt>of 'aggregate-root' style Java classes (e.g. a Person) that has lots 
+</tt><tt>of aggregate/list classes hanging off it (e.g. KnownAddresses, 
+</tt><tt>Offences, Charges, etc).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I'm using the Java client and am currently simply relying on the 
+</tt><tt>out-of-the-box DomainBuckets and POJO/Jackson/JSON serialisation when 
+</tt><tt>storing and retrieving these objects in Riak.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>This app is likely to undergo (re)development over the next few years 
+</tt><tt>- with plenty of changes to the Java class 'schemas', and thus a need 
+</tt><tt>to deal with different versions of java classes over time.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>From what I can see the standard DomainBucket/JSON deserialisation 
+</tt><tt>relies on the target class not changing (is this right?)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I watched a video with Kresten Krab Thorup talking about the work with 
+</tt><tt>the Danish Health dept; in his talk he mentioned they used Protocol 
+</tt><tt>Buffers with a line about this enabling them to deal with versions?? 
+</tt><tt>I'm a n00b wrt Protocol Buffers - is this perhaps the way we should be 
+</tt><tt>handling serialisation and versioning - instead of DomainBuckets??
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Has anyone else tackled the problem of versioning of 
+</tt><tt>schemas/classes/POJOs? What approaches have you taken (and did it work)?
+</tt><pre style="margin: 0em;">
+
+Cheers,
+
+Tim
+
+
+---------------------------------------------------------------------------------
+Tim Pedersen
+
+Senior Developer
+Information Technology Services
+Department of Police and Emergency Management
+
+47 Liverpool St, Hobart, Tasmania, 7000
+
+Phone 03 6230 2465
+Mobile 0428 336 670
+</pre><tt>Email tim.peder...@police.tas.gov.au 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:tim.peder...@police.tas.gov.au">mailto:tim.peder...@police.tas.gov.au</a>&gt;
+</tt><pre style="margin: 0em;">
+----------------------------------------------------------------------------------
+
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08038.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08040">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08040">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08039.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08038.html">Best way of versioning POJOs/'schemas'</a></span> <span class="sender italic">Tim Pedersen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Best way of versioning POJOs/'schemas'</span> <span class="sender italic">Rune Skou Larsen</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Best way of versioning POJOs/'schemas'">
+<input type="hidden" name="msgid" value="500EA4EC.4020709@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08040.html">
+<input type="submit" value=" Rune Skou Larsen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Best+way+of+versioning+POJOs%5C%2F%27schemas%27%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08038.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08039.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">500EA4EC.4020709@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Fwd: LevelDB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08345" id="c">
+<link rel="index" href="maillist.html#08345" id="i">
+<link rel="prev" href="msg08337.html" id="p">
+<link rel="next" href="msg08347.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08345.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+LevelDB%22&amp;o=newest" rel="nofollow"><span itemprop="name">Fwd: LevelDB</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120821" rel="nofollow">Tue, 21 Aug 2012 14:34:05 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I was in the Riak 1.2 webinar earlier today and asked a leveldb question about 
+insertion order and durability vs. bitcask's WOL architecture. Joe was not able 
+to get to my question then but took the time to write me a detailed answer. 
+Great engineers at Basho taking time to answer questions is a great thing. 
+Thanks Joe!</pre><pre>
+
+-Alexander Sicular
+
+@siculars
+
+Begin forwarded message:
+
+&gt; From: Joseph Blomstedt &lt;j...@basho.com&gt;
+&gt; Subject: LevelDB
+&gt; Date: August 21, 2012 3:45:45 PM EDT
+&gt; To: sicul...@gmail.com
+&gt; 
+&gt; Alexander,
+&gt; 
+&gt; I noticed your LevelDB question in the webinar as Reem was closing
+&gt; things out, so I figured I'd follow up via email.
+&gt; 
+&gt; As you know, Bitcask maintains a strict set of write-logs and an
+&gt; in-memory hash table that maps keys to (file, offset). Pretty
+&gt; straightforward. Compaction is a separate thing that happens based on
+&gt; independent triggers.
+&gt; 
+&gt; LevelDB is rather different. LevelDB does maintain a WAL, but it's
+&gt; short-lived and only for crash recovery. LevelDB writes to the WAL,
+&gt; but also keeps the object in an in-memory write buffer (configurable
+&gt; size, increased in Riak 1.2 by 10x from Riak 1.1). After the buffer
+&gt; becomes full, LevelDB writes the data to disk as a Level-0 SST (data
+&gt; in sorted order + sorted index at the end of the file).
+&gt; 
+&gt; There can be multiple Level-0 SSTs. To read a key, LevelDB looks at
+&gt; the index in each SST starting from newest file to oldest. For
+&gt; performance, there's an LRU cache of indexes so you're not always
+&gt; hitting disk. LevelDB now also includes bloom filters (used in Riak
+&gt; 1.2) to make it easier to skip non-interesting SSTs.
+&gt; 
+&gt; To make things more efficient, LevelDB does compaction/merging in a
+&gt; background thread. A set of Level-0 files will be selected and merged
+&gt; together into a larger Level-1 file. The format is the same, but the
+&gt; file is now larger and includes the data from multiple Level-0 files.
+&gt; The original Level-0 files are then removed. Likewise, Level-1 files
+&gt; are merged into Level-2 files, and Level-2 into Level-3, etc. Each
+&gt; Level having larger files with a greater chunk of adjacent, sorted
+&gt; data.
+&gt; 
+&gt; To read, you check newest to oldest on Level 0, then Level 1, then Level 2, 
+&gt; etc.
+&gt; 
+&gt; While compaction is a background thing, LevelDB limits the number of
+&gt; Level-0 files you can have. If you hit the limit, LevelDB will block
+&gt; writes until files have been merged into Level-1. With a single
+&gt; compaction thread, it was easy to max out LevelDB in Riak 1.1, and
+&gt; these stalls were fairly frequent and hurt 95% and up latencies, as
+&gt; well as greatly hurt throughput. Our change to use multiple compaction
+&gt; threads has greatly improved the how quickly compaction occurs, and
+&gt; writes rarely (if ever) end up stalling. To further improve things,
+&gt; there's the adaptive write throttling that I mentioned that will slow
+&gt; down writes (increased latency) in order to ensure compaction isn't
+&gt; heavily affected and remains ahead of write traffic -- thus, further
+&gt; preventing stalls. Net effect is somewhat higher latency and lower
+&gt; throughput that is more consistent (ie. 95%+ are tighter around
+&gt; average latency).
+&gt; 
+&gt; I hope this answers your question.
+&gt; 
+&gt; -Joe
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08337.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08345">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08345">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08347.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Fwd: LevelDB</span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08347.html">Re: LevelDB</a></span> <span class="sender italic">David Yu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08348.html">Re: LevelDB</a></span> <span class="sender italic">Matthew Tovbin</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Fwd: LevelDB">
+<input type="hidden" name="msgid" value="C33A1F25-C1AC-4141-A68C-8DC9FE04F83D@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08345.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+LevelDB%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08337.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08347.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">C33A1F25-C1AC-4141-A68C-8DC9FE04F83D@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Bigger data than disk space?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10437" id="c">
+<link rel="index" href="maillist.html#10437" id="i">
+<link rel="prev" href="msg10436.html" id="p">
+<link rel="next" href="msg10438.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10437.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Bigger+data+than+disk+space%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Bigger data than disk space?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kevin+Burton%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kevin Burton</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130314" rel="nofollow">Thu, 14 Mar 2013 13:57:35 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>So that is what I am missing. If each vnode keeps an entire copy of my data
+and I have 4 physical node then there are 16 vnodes per physical node. That
+would mean I have the data replicated 16 times per physical node. 10 GB
+turns into 160GB etc. Right? So wont I run out of disk space?</pre><pre>
+
+ 
+
+From: Alexander Sicular [<a  rel="nofollow" href="mailto:sicul...@gmail.com">mailto:sicul...@gmail.com</a>] 
+Sent: Thursday, March 14, 2013 3:51 PM
+To: Kevin Burton
+Cc: riak-users@lists.basho.com
+Subject: Re: Bigger data than disk space?
+
+ 
+
+Each vnode keeps _an entire copy_ of your data. There is no striping, which
+I think you are conflating with RAID. Default replication (also configured
+in etc/app.config) is set to three. In which case, three entire copies of
+your data are kept on three different vnodes and if you indeed have five
+physical nodes in your cluster you are guaranteed to have each of those
+three vnodes on different physical machines.
+
+
+-Alexander Sicular
+
+ 
+
+@siculars
+
+ 
+
+On Mar 14, 2013, at 4:42 PM, &quot;Kevin Burton&quot; &lt;rkevinbur...@charter.net&gt;
+wrote:
+
+
+
+
+
+Thank you. Let me get it straight. I have a 4 node cluster (4 physical
+machines). If I have not made any changes to the ring size then I have 16
+(64/4) vnodes. Each physical node stores the actual data (the value) of
+about ¼ of the data size. So when querying the data with a key given the
+number of vnodes it can be determined which physical machine the data is on.
+There must be enough redundancy built in so that if one or more of the
+physical machines go down the remaining physical machines can reconstruct
+the values lost by the lost vnodes. Correct so far? Now where does
+replication some in? The documentation indicates that there are 3 copies of
+the data (default) made. How is this changed and how can this replication of
+the data be taken advantage of?
+
+ 
+
+From: Alexander Sicular [<a  rel="nofollow" href="mailto:sicul...@gmail.com">mailto:sicul...@gmail.com</a>] 
+Sent: Thursday, March 14, 2013 3:28 PM
+To: Kevin Burton
+Cc: riak-users@lists.basho.com
+Subject: Re: Bigger data than disk space?
+
+ 
+
+Hi Kevin,
+
+ 
+
+The Riak distribution model is not based on &quot;buckets&quot; but rather the hash of
+the bucket/key combination. That hash (and associated data) is then
+allocated against a &quot;vnode&quot;. A vnode, in turn, is one of n where n is the
+ring_creation_size (default is 64, modify in etc/app.config). Each physical
+machine in a Riak cluster claims an equal share of the ring. For example, a
+cluster with five machines (the recommended minimum for a production
+cluster) and the default ring_creation_size will have 64/5 vnodes per
+physical machine (not sure if they round down or up but all machines will
+have about the same number of vnodes). What you would do to make more data
+available is either add a machine to the cluster whose available disk space
+is equal or greater than the cluster member with the least amount of total
+space or increase the space on all machines already in the cluster.
+
+ 
+
+tl;dr add a machine to your cluster.
+
+ 
+
+
+-Alexander Sicular
+
+ 
+
+@siculars
+
+ 
+
+On Mar 14, 2013, at 3:41 PM, Kevin Burton &lt;
+&lt;<a  rel="nofollow" href="mailto:rkevinbur...@charter.net">mailto:rkevinbur...@charter.net</a>&gt; rkevinbur...@charter.net&gt; wrote:
+
+
+
+
+
+
+I am relatively new to Riak so forgive me if this has been asked before. I
+have a very thin understanding of a Riak cluster and understand somewhat
+about replication. In planning I foresee a time when the amount of data
+exceeds the disk space that is available to a single node. What facilities
+are there to essentially split a bucket across several servers? How is
+this handled?
+
+_______________________________________________
+riak-users mailing list
+ &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt; riak-users@lists.basho.com
+ &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+ 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10436.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10437">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10437">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10438.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10433.html">Bigger data than disk space?</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10434.html">Re: Bigger data than disk space?</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10435.html">RE: Bigger data than disk space?</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10436.html">Re: Bigger data than disk space?</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Bigger data than disk space?</span> <span class="sender italic">Kevin Burton</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10438.html">Re: Bigger data than disk space?</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10439.html">RE: Bigger data than disk spac...</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10441.html">Re: Bigger data than disk ...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10442.html">RE: Bigger data than disk ...</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10443.html">RE: Bigger data than disk ...</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10445.html">Re: Bigger data than disk ...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10446.html">Re: Bigger data than disk ...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Bigger data than disk space?">
+<input type="hidden" name="msgid" value="01e001ce20f6$56fbf6c0$04f3e440$@charter.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10437.html">
+<input type="submit" value=" Kevin Burton ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Bigger+data+than+disk+space%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10436.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10438.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">01e001ce20f6$56fbf6c0$04f3e440$@charter.net</li>
+</ul>
+</div>
+</body>
+</html>

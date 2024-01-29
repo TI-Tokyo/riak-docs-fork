@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Collecting unique index values</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06509" id="c">
+<link rel="index" href="maillist.html#06509" id="i">
+<link rel="prev" href="msg06505.html" id="p">
+<link rel="next" href="msg06494.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06509.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Collecting+unique+index+values%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Collecting unique index values</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120202" rel="nofollow">Thu, 02 Feb 2012 12:40:04 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sorry, I misunderstood you.  Yes, a range over the flavor index which you
+know to include all flavors will work.  You can also use the undocumented
+$bucket feature to get all keys in a specific bucket, e.g.</pre><pre>
+
+<a  rel="nofollow" href="http://localhost:8098/buckets/test/index/$bucket/$bucket">http://localhost:8098/buckets/test/index/$bucket/$bucket</a>
+
+riakc_pb_socket:get_index(Pid, &lt;&lt;&quot;test&quot;&gt;&gt;, &lt;&lt;&quot;$bucket&quot;&gt;&gt;, &lt;&lt;&quot;$bucket&quot;&gt;&gt;)
+
+This will traverse the minimal amount of data required to build the key
+list.  You still need to get the value (or just the metadata since that's
+where indexes are kept) since this only gives you the keys.  I would use
+the query as input to map/reduce to build the distinct list.
+
+On Thu, Feb 2, 2012 at 1:23 PM, Carl &lt;asyn...@hotmail.com&gt; wrote:
+
+&gt;  Actually it is even easier than that.  I am not trying to make a
+&gt; histogram.  I just need to find out what the various flavors are.  The
+&gt; flavors are not predefined - they are attributes of the data records - so I
+&gt; can't ask for them specifically as in your second suggestion.   The SQL
+&gt; equivalent would be something like:
+&gt;    SELECT DISTINCT FLAVOR FROM BUCKET
+&gt; I am just looking for a faster way to do it that does not slow down if
+&gt; there a lot of *other* buckets in the whole db.
+&gt;
+&gt; Since new records are added rarely, and in batches, it it not outrageous
+&gt; to have to sweep through the flavor index at that time to regenerate the
+&gt; summary information.   By using a range query, the impact on the database
+&gt; should be less than if I got all the keys from the bucket, shouldn't it?
+&gt; Because indexes are specific to one bucket as I understand it.
+&gt;
+&gt;
+&gt; On 2/2/2012 9:40 AM, Ryan Zezeski wrote:
+&gt;
+&gt; Carl,
+&gt;
+&gt;  There is currently no GROUP BY or aggregate function support for Riak
+&gt; indexes.  I think range query fed into map/reduce is a good option.
+&gt;  Another option is to run a 2i term query for each flavor.  Although, I
+&gt; would make sure to measure both.  Also, since you are storing the histogram
+&gt; in a meta-object that the application will read you don't have to worry
+&gt; about the query runtime affecting your application directly.
+&gt;
+&gt;  -Ryan
+&gt;
+&gt; On Wed, Feb 1, 2012 at 5:23 PM, Carl &lt;asyn...@hotmail.com&gt; wrote:
+&gt;
+&gt;&gt; I have a bucket containing about 1,000 records.  These records are
+&gt;&gt; indexed on a property let's call &quot;flavor&quot;.  There are only about 10
+&gt;&gt; different flavors.
+&gt;&gt;
+&gt;&gt; Is there a way I could query the flavor_bin index to discover what these
+&gt;&gt; unique values are?  The brute-force method would be a map-reduce doing a
+&gt;&gt; range query on 'flavor_bin' from 'AAAA' to 'zzzz' and then boiling that
+&gt;&gt; down to the unique values in the reduce phase.  But that would have to
+&gt;&gt; retrieve every record in the bucket.
+&gt;&gt;
+&gt;&gt; Is there some meta-data about the index I could query more efficiently
+&gt;&gt; to do this?
+&gt;&gt;
+&gt;&gt; This is not something I would need to do very often, and I would store
+&gt;&gt; the resulting list in one record for actual use by the application.
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06505.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06509">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06509">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06494.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06493.html">Collecting unique index values</a></span> <span class="sender italic">Carl</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06497.html">Re: Collecting unique index values</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06505.html">Re: Collecting unique index values</a></span> <span class="sender italic">Carl</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Collecting unique index values</span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Collecting unique index values">
+<input type="hidden" name="msgid" value="CACZcpe=fuKXhXN85jFg9y_LRoh1wU421mf5STUvT_TddRZ-hHA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06509.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Collecting+unique+index+values%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06505.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06494.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpe=fuKXhXN85jFg9y_LRoh1wU421mf5STUvT_TddRZ-hHA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

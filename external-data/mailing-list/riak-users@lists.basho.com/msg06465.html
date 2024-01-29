@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: efficient fetching of values falling in a key range</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06465" id="c">
+<link rel="index" href="maillist.html#06465" id="i">
+<link rel="prev" href="msg06463.html" id="p">
+<link rel="next" href="msg06466.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06465.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+efficient+fetching+of+values+falling+in+a+key+range%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: efficient fetching of values falling in a key range</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Russell+Brown%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Russell Brown</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120130" rel="nofollow">Mon, 30 Jan 2012 13:07:38 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+On 30 Jan 2012, at 20:07, Dietrich Featherston wrote:
+
+&gt; Yeah I had something that I thought would work then ran into some assumptions 
+&gt; about handling of the existing bin / int query types. Started to introduce a 
+&gt; higher level Index type that a generic RangeQuery could operate on rather 
+&gt; than playing the combinatorics game with the existing AbstractRangeQuery 
+&gt; subclasses. Got hairy enough that it's probably a good idea to let someone 
+&gt; who has ownership over the codebase do this.</pre><pre>
+
+Just pushed a branch for this[1]: turned out to be really easy, a KeyIndex is 
+just a BinIndex with no suffix. You use it like this
+
+    val keys = 
+bucket.fetchIndex(KeyIndex.index).from(startKey).to(endKey).execute();
+
+Sorry that it is not going to be any use to you, but thanks for the spur to add 
+it!
+
+&gt; 
+&gt; In the end I'm not sure if I'll even be able to use the key range queries. 
+&gt; Problem is that this only fetches the keys but what I really need is to fetch 
+&gt; the values behind these keys. Doesn't look like there is a riak operation 
+&gt; that maps onto a leveldb seek + scan in each of the partitions to pull a 
+&gt; range of values.
+&gt; 
+
+No, no there isn't.
+
+[1] 
+<a  rel="nofollow" href="https://github.com/basho/riak-java-client/commit/8398f902c3db285b4217ad267800dc93f9ec96c7">https://github.com/basho/riak-java-client/commit/8398f902c3db285b4217ad267800dc93f9ec96c7</a>
+
+&gt; 
+&gt; On Mon, Jan 30, 2012 at 11:54 AM, Russell Brown &lt;russell.br...@me.com&gt; wrote:
+&gt; Hi Dietrich,
+&gt; I'm actually doing it now. If you had a look at it you'll see it is a bit of 
+&gt; mess, what with the Query types and Index types and all that. I'm happy to 
+&gt; keep going and finish. 
+&gt; 
+&gt; Cheers
+&gt; 
+&gt; Russell
+&gt; 
+&gt; On 30 Jan 2012, at 18:58, Dietrich Featherston wrote:
+&gt; 
+&gt;&gt; Hey Russel. Any thoughts on when you'd get around to pushing to master? 
+&gt;&gt; Since I'm actively working on this I'm happy to add KeyIndex to the RJC and 
+&gt;&gt; send a pull request if that would be quicker.
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Mon, Jan 30, 2012 at 10:51 AM, Dietrich Featherston &lt;d...@d2fn.com&gt; wrote:
+&gt;&gt; That's perfect thanks. I think I was presuming that the name of the 
+&gt;&gt; underlying index was $key_bin so this didn't cross my mind. Definitely agree 
+&gt;&gt; with having a separated typed KeyIndex rather than changing how BinIndex or 
+&gt;&gt; IntIndex work.
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; D
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Mon, Jan 30, 2012 at 10:41 AM, Russell Brown &lt;russell.br...@me.com&gt; wrote:
+&gt;&gt; 
+&gt;&gt; On 30 Jan 2012, at 18:12, Dietrich Featherston wrote:
+&gt;&gt; 
+&gt;&gt;&gt; I'm using a leveldb-backed riak 1.0.2 and looking for some suggestions to 
+&gt;&gt;&gt; fetch a block of data by key range. I have control over the keys and all 
+&gt;&gt;&gt; reads out of this setup will involve at minimum a key range. It seems that 
+&gt;&gt;&gt; if leveldb is an ideal candidate for this kind of access pattern so long as 
+&gt;&gt;&gt; I'm able to take advantage of that in the APIs exposed by riak.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; First thought is to use the built-in $key index to do a query for the keys 
+&gt;&gt;&gt; falling in a range, then fetch the underlying objects (either directly or 
+&gt;&gt;&gt; via a map job). Doesn't look like this is yielding any results for a range 
+&gt;&gt;&gt; known to contain data, however.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Doing something like the following in the Java API yields no data
+&gt;&gt;&gt; 
+&gt;&gt;&gt; val keys = 
+&gt;&gt;&gt; bucket.fetchIndex(BinIndex.named(&quot;$key&quot;)).from(startKey).to(endKey).execute();
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Whereas the same question phrased as a keyfilter map job does yield data
+&gt;&gt;&gt; 
+&gt;&gt;&gt;     riak.mapReduce(query)
+&gt;&gt;&gt;       .addKeyFilter(new BetweenFilter(startKey, endKey))
+&gt;&gt;&gt;       .addMapPhase(new NamedErlangFunction(&quot;riak_kv_mapreduce&quot;, 
+&gt;&gt;&gt; &quot;map_object_value&quot;), true)
+&gt;&gt;&gt;       .execute() 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Perhaps there is something I need to do to make sure the $key index is 
+&gt;&gt;&gt; built other than using the leveldb backend, but I couldn't find any 
+&gt;&gt;&gt; evidence of that in the docs.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Does this seem like a reasonable approach? If so, any thoughts on how I 
+&gt;&gt;&gt; might be reading the key index incorrectly?
+&gt;&gt; 
+&gt;&gt; It is a bug/oversight in the RJC, when you do BinIndex.named(&quot;$key&quot;), you'll 
+&gt;&gt; get an index called &quot;$key_bin&quot;, which isn't the name of the index you want. 
+&gt;&gt; I'll raise a bug for it and get a patch out. I think the best bet is to have 
+&gt;&gt; a tagged type (KeyIndex ?) rather than change the way that BinIndex/IntIndex 
+&gt;&gt; work. Sound ok?
+&gt;&gt; 
+&gt;&gt; Cheers
+&gt;&gt; 
+&gt;&gt; Russell
+&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt; D
+&gt;&gt;&gt; 
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06463.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06465">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06465">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06466.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06459.html">efficient fetching of values falling in a key range</a></span> <span class="sender italic">Dietrich Featherston</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06461.html">Re: efficient fetching of values falling in a ke...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06462.html">Re: efficient fetching of values falling in ...</a></span> <span class="sender italic">Dietrich Featherston</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06463.html">Re: efficient fetching of values falling...</a></span> <span class="sender italic">Dietrich Featherston</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: efficient fetching of values fal...</span> <span class="sender italic">Russell Brown</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: efficient fetching of values falling in a key range">
+<input type="hidden" name="msgid" value="381FDEC3-21B3-48F8-A525-41AF6D1AB4AC@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06465.html">
+<input type="submit" value=" Russell Brown ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+efficient+fetching+of+values+falling+in+a+key+range%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06463.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06466.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">381FDEC3-21B3-48F8-A525-41AF6D1AB4AC@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

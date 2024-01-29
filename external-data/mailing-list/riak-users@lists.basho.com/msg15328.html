@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Nodes Crashing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15328" id="c">
+<link rel="index" href="maillist.html#15328" id="i">
+<link rel="prev" href="msg15326.html" id="p">
+<link rel="next" href="msg15331.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15328.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Nodes+Crashing%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Nodes Crashing</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20141206" rel="nofollow">Sat, 06 Dec 2014 07:00:40 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Satish,
+
+I do NOT recommend adding a sixth node before the other five are stable again.  
+There was another customer that did that recently and things just got worse due 
+to the vnode handoff actions to the sixth node.</pre><pre>
+
+I do recommend one or both of the following:
+
+- disable active anti-entropy in app.config, {anti_entropy, {off, []}}.  Then 
+restart all nodes.  We quickly replaced 1.4.7 due to an bug in the active 
+anti-entropy.  I do not know the details of the bug.  But no one had seen a 
+crash from it.  However, you may be seeing a long term problem due to that same 
+bug.  The anti-entropy feature in 1.4.7 is not really protecting your data 
+anyway.  It might as well be disabled until you are ready to upgrade.
+
+- further reduce the max_open_files parameter simply to get memory stable:  use 
+75 instead of the recent 150.  You must restart all nodes after making the 
+change in app.config.
+
+
+I will need to solicit support from others at Basho if the two workarounds 
+above do not stabilize the cluster.  
+
+Matthew
+
+On Dec 5, 2014, at 5:54 PM, ender &lt;extr...@gmail.com&gt; wrote:
+
+&gt; Would adding a 6th node mean each node would use less memory as  a stopgap 
+&gt; measure?
+&gt; 
+&gt; On Fri, Dec 5, 2014 at 2:20 PM, ender &lt;extr...@gmail.com&gt; wrote:
+&gt; Hey Matthew it just crashed again.  This time I got the syslog and leveldb 
+&gt; logs right away.
+&gt; 
+&gt; 
+&gt; 
+&gt; On Fri, Dec 5, 2014 at 11:43 AM, Matthew Von-Maszewski &lt;matth...@basho.com&gt; 
+&gt; wrote:
+&gt; Satish,
+&gt; 
+&gt; Here is a key line from /var/log/messages:
+&gt; 
+&gt; Dec  5 06:52:43 ip-10-196-72-106 kernel: [26881589.804401] beam.smp invoked 
+&gt; oom-killer: gfp_mask=0x201da, order=0, oom_adj=0, oom_score_adj=0
+&gt; 
+&gt; The log entry does NOT match the timestamps of the crash.log and error.log 
+&gt; below.  But that is ok.  The operating system killed off Riak.  There would 
+&gt; have be no notification in the Riak log's of the operating system's actions.
+&gt; 
+&gt; The fact that the out of memory monitor, oom-killer, killed Riak further 
+&gt; supports the change to max_open_files.  I recommend we now wait to see if the 
+&gt; problem occurs again.
+&gt; 
+&gt; 
+&gt; Matthew
+&gt; 
+&gt; 
+&gt; On Dec 5, 2014, at 2:35 PM, ender &lt;extr...@gmail.com&gt; wrote:
+&gt; 
+&gt;&gt; Hey Matthew,
+&gt;&gt; 
+&gt;&gt; The crash occurred around 3:00am:
+&gt;&gt; 
+&gt;&gt; -rw-rw-r-- 1 riak riak    920 Dec  5 03:01 crash.log
+&gt;&gt; -rw-rw-r-- 1 riak riak    617 Dec  5 03:01 error.log
+&gt;&gt; 
+&gt;&gt; I have attached the syslog that covers that time.  I also went ahead and 
+&gt;&gt; changed max_open_files in app.config to to 150 from 315.
+&gt;&gt; 
+&gt;&gt; Satish
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Fri, Dec 5, 2014 at 11:29 AM, Matthew Von-Maszewski &lt;matth...@basho.com&gt; 
+&gt;&gt; wrote:
+&gt;&gt; Satish,
+&gt;&gt; 
+&gt;&gt; The &quot;key&quot; system log varies by Linux platform.  Yes, /var/log/messages may 
+&gt;&gt; hold some key clues.  Again, be sure the file covers the time of a crash.
+&gt;&gt; 
+&gt;&gt; Matthew
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Dec 5, 2014, at 1:29 PM, ender &lt;extr...@gmail.com&gt; wrote:
+&gt;&gt; 
+&gt;&gt;&gt; Hey Matthew,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; I see a /var/log/messages file, but no syslog or system.log etc.  Is it the 
+&gt;&gt;&gt; messages file you want?
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Satish
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; On Fri, Dec 5, 2014 at 10:06 AM, Matthew Von-Maszewski &lt;matth...@basho.com&gt; 
+&gt;&gt;&gt; wrote:
+&gt;&gt;&gt; Satish,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; I find nothing compelling in the log or the app.config.  Therefore I have 
+&gt;&gt;&gt; two additional suggestions/requests:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; - lower max_open_files in app.config to to 150 from 315.  There was one 
+&gt;&gt;&gt; other customer report regarding the limit not properly stopping out of 
+&gt;&gt;&gt; memory (OOM) conditions.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; - try to locate a /var/log/syslog* file from a node that contains the time 
+&gt;&gt;&gt; of the crash.  There may be helpful information there.  Please send that 
+&gt;&gt;&gt; along.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Unrelated to this crash … 1.4.7 has a known bug in its active anti-entropy 
+&gt;&gt;&gt; (AAE) logic.  This bug is NOT known to cause a crash.  The bug does cause 
+&gt;&gt;&gt; AAE to be unreliable for data restoration.  The proper steps for upgrading 
+&gt;&gt;&gt; to the current release (1.4.12) are:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; -- across the entire cluster
+&gt;&gt;&gt; - disable anti_entropy in app.config on all nodes: {anti_entropy, {off, []}}
+&gt;&gt;&gt; - perform a rolling restart of all nodes … AAE is now disabled in the 
+&gt;&gt;&gt; cluster 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; -- on each node
+&gt;&gt;&gt; - stop the node
+&gt;&gt;&gt; - remove (erase all files and directories) /vol/lib/riak/anti_entropy
+&gt;&gt;&gt; - update Riak to the new software revision
+&gt;&gt;&gt; - start the node again
+&gt;&gt;&gt; 
+&gt;&gt;&gt; -- across the entire cluster
+&gt;&gt;&gt; - enable anti_entropy in app.config on all nodes: {anti_entropy, {on, []}}
+&gt;&gt;&gt; - perform a rolling restart of all nodes … AAE is now enabled in the 
+&gt;&gt;&gt; cluster 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; The nodes will start rebuilding the AAE hash data.  Suggest you perform the 
+&gt;&gt;&gt; last rolling restart during a low utilization time of your cluster.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Matthew
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; On Dec 5, 2014, at 11:02 AM, ender &lt;extr...@gmail.com&gt; wrote:
+&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; Hi Matthew,
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; Riak version: 1.4.7
+&gt;&gt;&gt;&gt; 5 Nodes in cluster
+&gt;&gt;&gt;&gt; RAM: 30GB
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; The leveldb logs are attached.
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; On Thu, Dec 4, 2014 at 1:34 PM, Matthew Von-Maszewski &lt;matth...@basho.com&gt; 
+&gt;&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;&gt; Satish,
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; Some questions:
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; - what version of Riak are you running?  logs suggest 1.4.7
+&gt;&gt;&gt;&gt; - how many nodes in your cluster?
+&gt;&gt;&gt;&gt; - what is the physical memory (RAM size) of each node?
+&gt;&gt;&gt;&gt; - would you send the leveldb LOG  files from one of the crashed servers:
+&gt;&gt;&gt;&gt;     tar -czf satish_LOG.tgz /vol/lib/riak/leveldb/*/LOG*
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; Matthew
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; On Dec 4, 2014, at 4:02 PM, ender &lt;extr...@gmail.com&gt; wrote:
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; &gt; My RIak installation has been running successfully for about a year.  
+&gt;&gt;&gt;&gt; &gt; This week nodes suddenly started randomly crashing.  The machines have 
+&gt;&gt;&gt;&gt; &gt; plenty of memory and free disk space, and looking in the ring directory 
+&gt;&gt;&gt;&gt; &gt; nothing appears to amiss:
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; [ec2-user@ip-10-196-72-247 ~]$ ls -l /vol/lib/riak/ring
+&gt;&gt;&gt;&gt; &gt; total 80
+&gt;&gt;&gt;&gt; &gt; -rw-rw-r-- 1 riak riak 17829 Nov 29 19:42 
+&gt;&gt;&gt;&gt; &gt; riak_core_ring.default.20141129194225
+&gt;&gt;&gt;&gt; &gt; -rw-rw-r-- 1 riak riak 17829 Dec  3 19:07 
+&gt;&gt;&gt;&gt; &gt; riak_core_ring.default.20141203190748
+&gt;&gt;&gt;&gt; &gt; -rw-rw-r-- 1 riak riak 17829 Dec  4 16:29 
+&gt;&gt;&gt;&gt; &gt; riak_core_ring.default.20141204162956
+&gt;&gt;&gt;&gt; &gt; -rw-rw-r-- 1 riak riak 17847 Dec  4 20:45 
+&gt;&gt;&gt;&gt; &gt; riak_core_ring.default.20141204204548
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; [ec2-user@ip-10-196-72-247 ~]$ du -h /vol/lib/riak/ring
+&gt;&gt;&gt;&gt; &gt; 84K   /vol/lib/riak/ring
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; I have attached a tarball with the app.config file plus all the logs 
+&gt;&gt;&gt;&gt; &gt; from the node at the time of the crash.  Any help much appreciated!
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; Satish
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; &lt;riak-crash-data.tar.gz&gt;_______________________________________________
+&gt;&gt;&gt;&gt; &gt; riak-users mailing list
+&gt;&gt;&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; &lt;satish_LOG.tgz&gt;
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; &lt;messages&gt;
+&gt; 
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15326.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15328">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15328">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15331.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15323.html">Riak Nodes Crashing</a></span> <span class="sender italic">ender</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15324.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15325.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15326.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Nodes Crashing</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15331.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15332.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Nodes Crashing">
+<input type="hidden" name="msgid" value="DA3A5A14-0648-48FE-89E9-A04653F65A73@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15328.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Nodes+Crashing%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15326.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15331.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">DA3A5A14-0648-48FE-89E9-A04653F65A73@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

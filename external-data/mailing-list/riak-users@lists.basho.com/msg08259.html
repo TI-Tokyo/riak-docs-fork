@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: multi-get (yet again)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08259" id="c">
+<link rel="index" href="maillist.html#08259" id="i">
+<link rel="prev" href="msg08258.html" id="p">
+<link rel="next" href="msg08237.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08259.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+multi%5C-get+%5C%28yet+again%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: multi-get (yet again)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Parnell+Springmeyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Parnell Springmeyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120810" rel="nofollow">Fri, 10 Aug 2012 07:31:34 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm interested in this, I'll fork the repo and see what I can get added in 
+there.</pre><pre>
+
+On Aug 10, 2012, at 7:52 AM, Bryan Fink wrote:
+
+&gt; On Thu, Aug 9, 2012 at 5:11 AM, Kresten Krab Thorup &lt;k...@trifork.com&gt; wrote:
+&gt;&gt; The only issue with this approach is AFAIK that M/R effectively runs with 
+&gt;&gt; R=1, i.e. it doesn't ensure that a value is consistent across replicas.
+&gt;&gt; 
+&gt;&gt; IMHO riak_kv_mapreduce should have a map_get_object_value, which does a 
+&gt;&gt; proper RiakClient:get, i.e. something like this: [will be slower, but will 
+&gt;&gt; honour the bucket's default R value].
+&gt; 
+&gt; I recently realized that this would be a fairly small and easy thing
+&gt; to do since MR has been ported to Riak Pipe. I'm frying other fish at
+&gt; the moment, but if any of your are interested, read on.
+&gt; 
+&gt; In Riak Pipe, an MR &quot;map&quot; phase is broken into two steps: &quot;get&quot; and
+&gt; &quot;transform&quot;. The &quot;get&quot; phase is what reads the value from Riak. It is
+&gt; currently implemented in riak_kv_pipe_get, in the riak_kv application.
+&gt; 
+&gt; If you read riak_kv_pipe_get.erl, you'll see that all of the fetching
+&gt; logic is in the process/3 function. Modifying this code to do a
+&gt; regular riak_client:get instead of talking directly to a single vnode
+&gt; should be easy.
+&gt; 
+&gt; We would like to keep the existing implementation as the default, at
+&gt; least for now. So, my suggestion would be to add the new behavior as
+&gt; an option, with flags to control it. This could be accomplished either
+&gt; by modifying riak_kv_pipe_get to look for a flag in its argument, or
+&gt; by modifying riak_kv_mrc_pipe to use a new fitting instead of
+&gt; riak_kv_pipe_get.
+&gt; 
+&gt; With either modification, you'll want to also change riak_kv_mrc_pipe
+&gt; to pass the map arguments through to the &quot;get&quot; fitting. These
+&gt; arguments are the only place available to external clients to specify
+&gt; any of the R-value tuning parameters. Yes, that means a map function
+&gt; implementation will have to ignore them, but hopefully that's not
+&gt; insurmountable. See the reduce_batch_size and reduce_phase_only_1
+&gt; optional &quot;reduce&quot; phase arguments for examples on how to do this.
+&gt; 
+&gt; There are probably other ways to fit this kind of fetching behavior in
+&gt; as well. While Kresten's map-function implementation is good, I think
+&gt; this behavior is useful in more cases than resolving a
+&gt; notfound. Hopefully what I've written above is enough to get one or
+&gt; more of you started down a path.
+&gt; 
+&gt; Cheers,
+&gt; Bryan
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre>
+<p><strong><a href="msg08259/signature.asc" ><img src="../attachment.png" alt="Attachment:" width=27 height=28></a>
+<a href="msg08259/signature.asc" >signature.asc</a></strong><br>
+<em>Description:</em> Message signed with OpenPGP using GPGMail</p>
+<pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08258.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08259">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08259">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08237.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08232.html">multi-get (yet again)</a></span> <span class="sender italic">Jeremy Dunck</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08234.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Parnell Springmeyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08236.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08258.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: multi-get (yet again)</span> <span class="sender italic">Parnell Springmeyer</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08237.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Eric Moritz</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: multi-get (yet again)">
+<input type="hidden" name="msgid" value="46E36B37-E83B-43C1-8136-6D0BCAC230BE@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08259.html">
+<input type="submit" value=" Parnell Springmeyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+multi%5C-get+%5C%28yet+again%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08258.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08237.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">46E36B37-E83B-43C1-8136-6D0BCAC230BE@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

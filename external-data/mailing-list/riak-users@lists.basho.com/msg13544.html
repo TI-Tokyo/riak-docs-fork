@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: last_write_wins</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#13544" id="c">
+<link rel="index" href="mail4.html#13544" id="i">
+<link rel="prev" href="msg13541.html" id="p">
+<link rel="next" href="msg13545.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13544.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+last_write_wins%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: last_write_wins</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jason+Campbell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jason Campbell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140130" rel="nofollow">Thu, 30 Jan 2014 13:50:15 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm not sure Riak is the best fit for this.  Riak is great for applications 
+where it is the source of data, and has very strong consistency when used in 
+this way.  You are using it as a cache, where Riak will be significantly slower 
+than other cache solutions.  Especially since you say that each worker will 
+have a set of documents it is responsible for.  Something like a local memcache 
+or redis would likely suit this use case just as well, but do it much faster 
+with less overhead.</pre><pre>
+
+Riak will guarantee 3 writes to disk (by default), where something like 
+memcache or redis will stay in memory, and if local, won't have network latency 
+either.  In the worst case where a node goes offline, the real data can be 
+pulled from the backend again, so it isn't a big deal.  It will also simplify 
+your application, because node.js can always request from cache and not worry 
+about the speed, instead of maintaining it's own cache layer.
+
+I'm as happy as the next person on this list to see Riak being used for all 
+sorts of uses, but I believe in the right tool for the right job.  Unless there 
+is something I don't understand, Riak is probably the wrong tool.  It will 
+work, but there is other software that will work much better.
+
+I hope this helps,
+Jason Campbell
+
+----- Original Message -----
+From: &quot;Edgar Veiga&quot; &lt;edgarmve...@gmail.com&gt;
+To: &quot;Russell Brown&quot; &lt;russell.br...@me.com&gt;
+Cc: &quot;riak-users&quot; &lt;riak-users@lists.basho.com&gt;
+Sent: Friday, 31 January, 2014 3:20:42 AM
+Subject: Re: last_write_wins
+
+
+
+I'll try to explain this the best I can, although it's a simples architecture 
+I'm not describing it in my native language :) 
+
+
+I have a set of node.js workers (64 for now) that serve as a cache/middleware 
+layer for a dozen of php applications. Each worker deals with a set of 
+documents (it's not a distributed cache system). Each worker updates the 
+documents in memory, and tags them as dirty (just like OS file cache), and from 
+time to time (for now, it's a 5 seconds window interval), a persister module 
+will deal with the persistence of those dirty documents to riak. 
+If the document isn't in memory, it will be fetched from riak. 
+
+
+If you want document X, you need to ask to the corresponding worker dealing 
+with it. Two different workers, don't deal with the same document. 
+That way we can guarantee that there will be no concurrent writes to riak. 
+
+
+Best Regards, 
+
+
+
+
+
+
+
+On 30 January 2014 10:46, Russell Brown &lt; russell.br...@me.com &gt; wrote: 
+
+
+
+
+
+
+
+On 30 Jan 2014, at 10:37, Edgar Veiga &lt; edgarmve...@gmail.com &gt; wrote: 
+
+
+
+Also, 
+
+
+Using last_write_wins = true, do I need to always send the vclock while on a 
+PUT request? In the official documention it says that riak will look only at 
+the timestamp of the requests. 
+
+
+Ok, from what you’ve said it sounds like you are always wanting to replace what 
+is at a key with the new information you are putting. If that is the case, then 
+you have the perfect use case for LWW=true. And indeed, you do not need to pass 
+a vclock with your put request. And it sounds like there is no need for you to 
+fetch-before-put since that is only to get context /resolve siblings. Curious 
+about your use case if you can share more. 
+
+
+Cheers 
+
+
+Russell 
+
+
+
+
+
+
+
+
+
+
+Best regards, 
+
+
+
+On 29 January 2014 10:29, Edgar Veiga &lt; edgarmve...@gmail.com &gt; wrote: 
+
+
+
+Hi Russel, 
+
+
+No, it doesn't depend. It's always a new value. 
+
+
+Best regards 
+
+
+
+
+
+On 29 January 2014 10:10, Russell Brown &lt; russell.br...@me.com &gt; wrote: 
+
+
+
+
+
+
+
+On 29 Jan 2014, at 09:57, Edgar Veiga &lt; edgarmve...@gmail.com &gt; wrote: 
+
+
+
+tl;dr 
+
+
+If I guarantee that the same key is only written with a 5 second interval, is 
+last_write_wins=true profitable? 
+
+It depends. Does the value you write depend in anyway on the value you read, or 
+is it always that you are just getting a totally new value that replaces what 
+is in Riak (regardless what is in Riak)? 
+
+
+
+
+
+
+
+
+On 27 January 2014 23:25, Edgar Veiga &lt; edgarmve...@gmail.com &gt; wrote: 
+
+
+
+Hi there everyone! 
+
+
+I would like to know, if my current application is a good use case to set 
+last_write_wins to true. 
+
+
+Basically I have a cluster of node.js workers reading and writing to riak. Each 
+node.js worker is responsible for a set of keys, so I can guarantee some kind 
+of non distributed cache... 
+The real deal here is that the writing operation is not run evertime an object 
+is changed but each 5 seconds in a &quot;batch insertion/update&quot; style. This brings 
+the guarantee that the same object cannot be write to riak at the same time, 
+not event at the same seconds, there's always a 5 second window between each 
+insertion/update. 
+
+
+That said, is it profitable to me if I set last_write_wins to true? I've been 
+facing some massive writting delays under high loads and it would be nice if I 
+have some kind of way to tune riak. 
+
+
+Thanks a lot and keep up the good work! 
+
+
+_______________________________________________ 
+riak-users mailing list 
+riak-users@lists.basho.com 
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+
+
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13541.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#13544">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#13544">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13545.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13522.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13523.html">Re: last_write_wins</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13524.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13536.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13537.html">Re: last_write_wins</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13538.html">Re: last_write_wins</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13539.html">Re: last_write_wins</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13540.html">Re: last_write_wins</a></span> <span class="sender italic">Guido Medina</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13553.html">Re: last_write_wins</a></span> <span class="sender italic">John Daily</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13541.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: last_write_wins</span> <span class="sender italic">Jason Campbell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13545.html">Re: last_write_wins</a></span> <span class="sender italic">Eric Redmond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13546.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13547.html">Re: last_write_wins</a></span> <span class="sender italic">Eric Redmond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13548.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13549.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13550.html">Re: last_write_wins</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13551.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: last_write_wins">
+<input type="hidden" name="msgid" value="9030601.1625.1391118493037.JavaMail.Jason@JasonWin8">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13544.html">
+<input type="submit" value=" Jason Campbell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+last_write_wins%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13541.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13545.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">9030601.1625.1391118493037.JavaMail.Jason@JasonWin8</li>
+</ul>
+</div>
+</body>
+</html>

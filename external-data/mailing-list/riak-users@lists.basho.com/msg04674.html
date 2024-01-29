@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Misbehaving bucket</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04674" id="c">
+<link rel="index" href="maillist.html#04674" id="i">
+<link rel="prev" href="msg04673.html" id="p">
+<link rel="next" href="msg04675.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04674.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Misbehaving+bucket%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Misbehaving bucket</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremy+Raymond%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremy Raymond</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110912" rel="nofollow">Mon, 12 Sep 2011 11:23:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I did riakc_pb_socket:list_keys/2 which completes quickly, then fetched each
+object individually by the key using riakc_pb_socket:get/3 which was slow.</pre><pre>
+
+The bucket uses the default settings (see below), allow_mult=false, using a
+single bitcask backend.
+
+I came across this problem because one of the Riak nodes was reporting via
+Nagios to be short of disk space. Investigating I found that
+/var/lib/riak/bitcask was taking up about 24GB of disk. This much disk usage
+was crazy big, since there's probably less than 100MB of data I'm storing in
+Riak. Since my original email I've deleted all item in the misbehaving
+bucket (it took several tries as the read slowness/CPU usage
+also appeared on delete operations). The bitcask folder is now 44MB in size
+(down from 24GB!). I've repopulated the data in the bucket now storing 157
+items. Things seem to be back to normal for this bucket.
+
+Perhaps I inadvertently pushed something large into the bucket, but each of
+the items I put in there was only about 3K in size - this doesn't seem
+likely to me.
+
+
+Bucket Properties:
+{&quot;props&quot;:{&quot;name&quot;:&quot;suite_diff&quot;,&quot;n_val&quot;:3,&quot;allow_mult&quot;:false,&quot;last_write_wins&quot;:false,&quot;precommit&quot;:[],&quot;postcommit&quot;:[],&quot;chash_keyfun&quot;:{&quot;mod&quot;:&quot;riak_core_util&quot;,&quot;fun&quot;:&quot;chash_std_keyfun&quot;},&quot;linkfun&quot;:{&quot;mod&quot;:&quot;riak_kv_wm_link_walker&quot;,&quot;fun&quot;:&quot;mapreduce_linkfun&quot;},&quot;old_vclock&quot;:86400,&quot;young_vclock&quot;:20,&quot;big_vclock&quot;:50,&quot;small_vclock&quot;:10,&quot;r&quot;:&quot;quorum&quot;,&quot;w&quot;:&quot;quorum&quot;,&quot;dw&quot;:&quot;quorum&quot;,&quot;rw&quot;:&quot;quorum&quot;}}
+
+- Jeremy
+
+
+On Mon, Sep 12, 2011 at 1:43 PM, Daniel Reverri &lt;d...@basho.com&gt; wrote:
+
+&gt; Hi Jeremy
+&gt;
+&gt; Are you doing a full bucket query or retrieving individual objects?
+&gt;
+&gt; Is your bucket configured to allow siblings (allow_mult=true)? Do the
+&gt; objects being retrieved have many siblings?
+&gt;
+&gt; Are you using multiple backends?
+&gt;
+&gt; Thanks
+&gt; Dan
+&gt;
+&gt; Sent from my iPhone
+&gt;
+&gt; On Sep 12, 2011, at 10:13 AM, Jeremy Raymond &lt;jeraym...@gmail.com&gt; wrote:
+&gt;
+&gt; &gt; Hello,
+&gt; &gt;
+&gt; &gt; I have a bucket with about 70 items in it the Keys look like this
+&gt; &lt;&lt;&quot;1294549200_UbEu1topckAFu2UYy3spr8AG5lc&quot;&gt;&gt; and the values are about 2.8K
+&gt; of JSON. For some reason operations on data in this bucket are extremely
+&gt; slow. It takes between 5 - 10 seconds to read a value of of the bucket by
+&gt; it's key using the Erlang protobuf client. When I do the reads the CPU of
+&gt; the node I'm connecting to spikes using up 100% usage on the Riak beam
+&gt; process.
+&gt; &gt;
+&gt; &gt; I can read data out of any of the other 9 buckets in the system some of
+&gt; which have a lot more items in them (one as &gt; 16k items) and the operations
+&gt; are super fast.
+&gt; &gt;
+&gt; &gt; There are no errors in the sasl-error.log files and everything looks
+&gt; normal in the erlang.log files. Any ideas on what may cause a bucket to
+&gt; churn like this?
+&gt; &gt;
+&gt; &gt; - Jeremy
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04673.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04674">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04674">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04675.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04672.html">Misbehaving bucket</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04673.html">Re: Misbehaving bucket</a></span> <span class="sender italic">Daniel Reverri</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Misbehaving bucket</span> <span class="sender italic">Jeremy Raymond</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Misbehaving bucket">
+<input type="hidden" name="msgid" value="CAE_i+t_XrcqGBFzcpN2cJjwOwdn38YavMA820hh04UVivSonbA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04674.html">
+<input type="submit" value=" Jeremy Raymond ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Misbehaving+bucket%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04673.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04675.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAE_i+t_XrcqGBFzcpN2cJjwOwdn38YavMA820hh04UVivSonbA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

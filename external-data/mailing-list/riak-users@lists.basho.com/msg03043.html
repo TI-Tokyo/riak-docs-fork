@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Large ring_creation_size</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03043" id="c">
+<link rel="index" href="maillist.html#03043" id="i">
+<link rel="prev" href="msg03039.html" id="p">
+<link rel="next" href="msg03050.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03043.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Large+ring_creation_size%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Large ring_creation_size</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110414" rel="nofollow">Thu, 14 Apr 2011 11:01:09 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Greg,
+
+I played with this a little last night and this morning and I can reproduce
+the behavior you are seeing - my two nodes ate more than a combined 15gig of
+memory with 16384 partitions and were promptly killed by the O/S.</pre><pre>
+
+I haven't had a chance to analyze yet, so this is pure speculation. I
+suspect that implementations of functions for calculating partition owners,
+preference lists and which partitions to take when nodes join perform
+acceptably for the &lt;= 1024 partition case but blow up in some way beyond
+that. I was hoping that 4096 would work for you, but it sounds like that has
+problems too.
+
+I'm finishing up some high priority work at the moment but will investigate
+as time permits.
+
+Jon
+
+On Thu, Apr 14, 2011 at 11:48 AM, Greg Nelson &lt;gro...@dropcam.com&gt; wrote:
+
+&gt;  We have a exact idea of the amount of data we'll be storing, and the
+&gt; kinds of machines we'll be storing them on.  The simple math of (total data
+&gt; we'll be storing 6 months from now) / (total capacity of a single node) *
+&gt; (number of duplicates of each datum we'd like to store for redundancy) gives
+&gt; us a number a concrete number of machines we'll need, whether we're using
+&gt; Riak or something else...
+&gt;
+&gt; However, that's a little off track from the question I'm trying to answer.
+&gt;  Which is:
+&gt;
+&gt; Why is it when I start two nodes with a large-ish ring_creation_size -- as
+&gt; soon as I join the second node to the first, CPU and memory usage of both
+&gt; nodes goes through the roof?  No data stored yet.  This even happens with a
+&gt; ring_creation_size I wouldn't consider huge, like 4096.
+&gt;
+&gt; So that is the small configuration I'm starting with and that is the limit
+&gt; I'm hitting.
+&gt;
+&gt; I realize that the feasibility of building out a single 1000 node cluster
+&gt; is a larger question.  But I can tell you we'll get there; having to shard
+&gt; across 10 100-node clusters is an option.  Regardless, I'd like to have an
+&gt; understanding of what the resource overhead of each vnode is...
+&gt;
+&gt; On Thursday, April 14, 2011 at 6:38 AM, Sean Cribbs wrote:
+&gt;
+&gt; Good points, Dave.
+&gt;
+&gt; Also, it's worth mentioning that we've seen that many customers and
+&gt; open-source users think they will need many more nodes than they actually
+&gt; do. Many are able to start with 5 nodes and are happy for quite a while.
+&gt;  The only way to tell what you actually need is to start with a baseline
+&gt; configuration and simulate some percentage above your current load.  Once
+&gt; you've figured out what size that initial cluster is, start with (number of
+&gt; nodes) * 50 as the ring_creation_size (rounded to the nearest power of 2 of
+&gt; course).  This gives you a growth factor of about 5 before you need to
+&gt; consider changing.
+&gt;
+&gt; As well, there's some ops &quot;common sense&quot; that says the lifetime of any
+&gt; single architecture is 18 months or less.  That doesn't necessarily mean
+&gt; that you'll be building a new cluster with a larger ring size in 18 months,
+&gt; but just that your needs will be different at that time and are hard to
+&gt; predict.  Plan for now, worry about the 1000 node cluster when you actually
+&gt; need it.
+&gt;
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;
+&gt; On Apr 14, 2011, at 9:09 AM, Dave Barnes wrote:
+&gt;
+&gt; Sorry I feel compelled to chime in.
+&gt;
+&gt; Maybe you could assess your physical node limits and start with a small
+&gt; configuration, then increase  it and increase it until you hit a limit.
+&gt;
+&gt; Work small to large.
+&gt;
+&gt; Once you find the pain point, lets us know what resource ran out.
+&gt;
+&gt; You will learn a lot along the way on how your servers behave and we'll
+&gt; discover a lot when you share the results.
+&gt;
+&gt; Thanks for digging in,
+&gt;
+&gt; Dave
+&gt;
+&gt; On Wed, Apr 13, 2011 at 5:11 PM, Greg Nelson &lt;gro...@dropcam.com&gt; wrote:
+&gt;
+&gt;  Ok, how about in this case I described?  It runs out of memory with a
+&gt; single pair of nodes...
+&gt;
+&gt; (Or did you mean there's a connection between each pair of vnodes?)
+&gt;
+&gt; On Wednesday, April 13, 2011 at 1:56 PM, Jon Meredith wrote:
+&gt;
+&gt; Hi Greg et al,
+&gt;
+&gt; As you say largest known is not largest possible.  Internally within Basho,
+&gt; the largest cluster we've experimented with so far had 50 nodes.
+&gt;
+&gt; Going beyond that it's speculation from me about pain points.
+&gt;
+&gt; 1) It is true that you need enough file descriptors to start up all
+&gt; partitions when a node restarts - Riak checks if there is any handoff data
+&gt; pending for each partition.  We have work scheduled to address that in the
+&gt; medium term. The plan is to only spin up partitions the node owns and any
+&gt; that have been started as fallbacks that handoff has not completed for.
+&gt; Until that work is done you will need a high ulimit with large ring sizes.
+&gt;
+&gt; 2) It is also true that Erlang runs a fully connected network, so there
+&gt; will be connections between each node pair in the cluster.  We haven't
+&gt; determined the point at which it becomes a problem.
+&gt;
+&gt; So it looks like you'll be pushing the known limits.  Basho will do our
+&gt; very best to help overcome any obstacles as you encounter them.
+&gt;
+&gt; Jon Meredith
+&gt; Basho Technologies.
+&gt;
+&gt; On Wed, Apr 13, 2011 at 1:41 PM, Greg Nelson &lt;gro...@dropcam.com&gt; wrote:
+&gt;
+&gt;  The largest known riak cluster != the largest possible riak cluster.  ;-)
+&gt;
+&gt; The inter node communication of the cluster depends on the data set and
+&gt; usage pattern, doesn't it?  Or is there some constant overhead that tops out
+&gt; at a few hundred nodes?  I should point out that we'll have big data, but
+&gt; not a huge number of keys.
+&gt;
+&gt; The number of vnodes in the cluster should be equal to the
+&gt; ring_creation_size under normal circumstances, shouldn't it?  So when I have
+&gt; a one node cluster, that node is running ring_creation_size vnodes...  File
+&gt; descriptors probably isn't a problem -- these machines won't be doing
+&gt; anything else, and the limits are set to 65536.
+&gt;
+&gt; Thinking about the internode communication you mentioned, that's probably
+&gt; where the resource hog is..  socket buffers, etc.
+&gt;
+&gt; Anyway, I'd also love to hear more from basho.  :)
+&gt;
+&gt; On Wednesday, April 13, 2011 at 12:33 PM, sicul...@gmail.com wrote:
+&gt;
+&gt; Ill just chime in and say that this is not practical for a few reasons. The
+&gt; largest known riak cluster has like 50 or 60 nodes. Afaik, inter node
+&gt; communication of erlang clusters top out at a few hundred nodes. I'm also
+&gt; under the impression that each physical node has to have enough file
+&gt; descriptors to accommodate every virtual node in the cluster.
+&gt;
+&gt; I'd love to hear more from basho.
+&gt;
+&gt; -alexander
+&gt;
+&gt;
+&gt; Sent from my Verizon Wireless BlackBerry
+&gt;
+&gt; -----Original Message-----
+&gt; From: Greg Nelson &lt;gro...@dropcam.com&gt;
+&gt; Sender: riak-users-boun...@lists.basho.com
+&gt; Date: Wed, 13 Apr 2011 12:13:34
+&gt; To: &lt;riak-users@lists.basho.com&gt;
+&gt; Subject: Large ring_creation_size
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03039.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03043">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03043">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03050.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03009.html">Large ring_creation_size</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03011.html">Re: Large ring_creation_size</a></span> <span class="sender italic">siculars</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03012.html">Re: Large ring_creation_size</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03013.html">Re: Large ring_creation_size</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03014.html">Re: Large ring_creation_size</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03015.html">Re: Large ring_creation_size</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03023.html">Re: Large ring_creation_size</a></span> <span class="sender italic">Dave Barnes</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03024.html">Re: Large ring_creation_size</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03039.html">Re: Large ring_creation_siz...</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Large ring_creation_siz...</span> <span class="sender italic">Jon Meredith</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03050.html">Re: Large ring_creation_siz...</a></span> <span class="sender italic">Dave Barnes</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03098.html">Re: Large ring_creation_siz...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03105.html">Re: Large ring_creation_siz...</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03106.html">Re: Large ring_creation_siz...</a></span> <span class="sender italic">Jon Meredith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Large ring_creation_size">
+<input type="hidden" name="msgid" value="BANLkTinx-n2GXubS26_XUm2tm2pGSKD4Vw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03043.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Large+ring_creation_size%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03039.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03050.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTinx-n2GXubS26_XUm2tm2pGSKD4Vw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

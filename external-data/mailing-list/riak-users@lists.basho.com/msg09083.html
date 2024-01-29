@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Using riak as a `Comment` Store - Slow results</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09083" id="c">
+<link rel="index" href="maillist.html#09083" id="i">
+<link rel="prev" href="msg09082.html" id="p">
+<link rel="next" href="msg09084.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09083.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Using+riak+as+a+%60Comment%60+Store+%5C-+Slow+results%22&amp;o=newest" rel="nofollow"><span itemprop="name">Using riak as a `Comment` Store - Slow results</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Herman+Junge%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Herman Junge</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121030" rel="nofollow">Tue, 30 Oct 2012 10:05:28 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi list.
+
+</pre><tt>I am doing a research on using riak as a solution to store comments. 
+</tt><tt>Unfortunately my results were far from favorable. I will develop the 
+</tt><tt>architecture I used, schemas chosen, steps taken and results; Hoping to 
+</tt><tt>get feedbackboth from basho or any experienced user on what to do to 
+</tt><tt>improve these times, or wheter to discard riak as a store for comments.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+1.The problem
+
+</pre><tt>Store comments. Given a _parent_url_ (which could be a blog post, 
+</tt><tt>animage, anything with an url), group its comments.
+</tt><pre style="margin: 0em;">
+
+
+2. Architecture
+
+
+2.1. Riak Database
+
+</pre><tt>Used a joyent cloud and setup 4 SmartOS machines with 1024 MB RAM each. 
+</tt><tt>They have riak preinstalled.
+</tt><pre style="margin: 0em;">
+
+
+2.2. Client Application
+
+</pre><tt>Application built in node.js, used expressJS framework 
+</tt><tt>(<a  rel="nofollow" href="https://github.com/visionmedia/express">https://github.com/visionmedia/express</a>) to respond HTTP requests 
+</tt><tt>(specifically PUT and GET). The Riak library is node_riak 
+</tt><tt>(<a  rel="nofollow" href="https://github.com/mranney/node_riak">https://github.com/mranney/node_riak</a>), which has been `tested in 
+</tt><tt>combat` by its creators in voxer.
+</tt><pre style="margin: 0em;">
+
+
+</pre><tt>The client application runs in another machine in the joyent cloud, this 
+</tt><tt>machine an ubuntu 12.04with 1024 MB RAM.
+</tt><pre style="margin: 0em;">
+
+
+3. Schemas Chosen
+
+</pre><tt>I went with a very simple schema: Since the comments are grouped by 
+</tt><tt>_parent_url_. I'm using parent_url as a key, its value being an array of 
+</tt><tt>the comments in json.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>An example for a key is: 
+</tt><tt>&lt;server_url&gt;/riak/parent_url/http%3A%2F%2Fpath%2Fto%2Fmy%2Fsite%2Ffile.html
+</tt><pre style="margin: 0em;">
+
+An example for avalue is:
+
+{ &quot;comments&quot;  :
+  [
+    { &quot;date&quot;    : &quot;'2012-10-30T14:50:11.898Z&quot;
+</pre><tt>    , &quot;text&quot;    : &quot;Lorem ipsum dolor sit amet, consectetur adipiscing 
+</tt><tt>elit.&quot;
+</tt><pre style="margin: 0em;">
+    , &quot;author&quot;  : &quot;John Doe&quot;
+    }
+  , { &quot;date&quot;    : &quot;'2012-10-30T14:50:11.898Z&quot;
+</pre><tt>    , &quot;text&quot;    : &quot;Lorem ipsum dolor sit amet, consectetur adipiscing 
+</tt><tt>elit.&quot;
+</tt><pre style="margin: 0em;">
+    , &quot;author&quot;  : &quot;John Doe&quot;
+    }
+  , { &quot;date&quot;    : &quot;'2012-10-30T14:50:11.898Z&quot;
+</pre><tt>    , &quot;text&quot;    : &quot;Lorem ipsum dolor sit amet, consectetur adipiscing 
+</tt><tt>elit.&quot;
+</tt><pre style="margin: 0em;">
+    , &quot;author&quot;  : &quot;John Doe&quot;
+    }
+  ]
+}
+
+4. Steps Taken
+
+4.1. Client API:
+
+My Client API tooks two requests:
+
+* PUT /comment
+* GET /comments/:parent_url?offset=&lt;offset&gt;&amp;limit=&lt;limit&gt;
+
+4.1.1 PUT /comment
+
+</pre><tt>Stores a comment in the parent_url given inside the request. I use the 
+</tt><tt>node_riak's method `client.modify()`, which `GET`'s the parent_url value 
+</tt><tt>to take its value, then apply the mutation (given by the library user, 
+</tt><tt>in this case is just pushing the json value of the comment in the 
+</tt><tt>array), then, `PUT`'s its new value on the parent_url key.
+</tt><pre style="margin: 0em;">
+
+4.1.2 GET /comments/:parent_url?offset=&lt;offset&gt;&amp;limit=&lt;limit&gt;
+
+</pre><tt>GETS the comments from a parent_url given, starting from &lt;offset&gt; to 
+</tt><tt>&lt;limit&gt;.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Internally I just issue a `GET` to riak, the controller of my client 
+</tt><tt>does the offset, limit extraction.
+</tt><pre style="margin: 0em;">
+
+4.2. The Stress Test
+
+</pre><tt>Issued a new joyent machine (an Ubuntu 12.04 with 1024 MB RAM) just to 
+</tt><tt>make `ab` stress tests.
+</tt><pre style="margin: 0em;">
+
+I done six tests:
+
+API method  nº of requests  concurrency
+PUT (*1)  10,000  5
+PUT (*1)  10,000  50
+PUT (*1)  10,000  500
+GET (*2)  10,000  5
+GET (*2)  10,000  50
+GET (*2)  10,000  500
+
+(*1) PUT /comment
+</pre><tt>(*2) GET 
+</tt><tt>comments/http%3A%2F%2Fpath%2Fto%2Fmy%2Fsite%2F1111.html?offset=25&amp;limit=20
+</tt><pre style="margin: 0em;">
+
+
+5. Results
+
+The following tables show the results I got on each test:
+
+PUT
+10000 5
+
+
+
+50% 116
+65% 142
+70% 161
+85% 177
+90% 274
+95% 486
+98% 751
+99% 1165
+100%  1065
+
+PUT
+10000 50
+
+
+
+50% 1879
+65% 1990
+70% 2068
+85% 2124
+90% 2364
+95% 2734
+98% 4062
+99% 4591
+100%  11258
+
+PUT
+10000 500
+
+
+
+50% 20876
+65% 21491
+70% 21919
+85% 22202
+90% 23136
+95% 23914
+98% 25036
+99% 25835
+100%  29611
+
+  GET
+  10000
+
+
+
+50% 68
+65% 75
+70% 80
+85% 83
+90% 94
+95% 107
+98% 145
+99% 475
+100%  535
+
+  GET
+  10000
+
+
+
+50% 631
+65% 673
+70% 701
+85% 719
+90% 783
+95% 913
+98% 1054
+99% 1099
+100%  1265
+
+  GET
+  10000
+
+
+
+50% 6363
+65% 6636
+70% 6820
+85% 6934
+90% 7218
+95% 7442
+98% 7691
+99% 7836
+100%  8435
+
+
+6. Conclusion
+
+</pre><tt>At first sight, I'm getting very unfavorable results (compared with one 
+</tt><tt>table MySQL unconfigured under the very same requests). So I'm 
+</tt><tt>requesting from feedback from you:
+</tt><pre style="margin: 0em;">
+
+a) ¿Is it a good idea to use Riak as a comment store?
+
+</pre><tt>b) Are these times expected? (in other words, where I am making a big 
+</tt><tt>mistake)?
+</tt><pre style="margin: 0em;">
+
+Regards,
+
+Herman Junge
+@hermanjunge
+
+
+
+
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09082.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09083">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09083">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09084.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09082.html">Using riak as a `Comment` Store - Slow results</a></span> <span class="sender italic">Herman Junge</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Using riak as a `Comment` Store - Slow results</span> <span class="sender italic">Herman Junge</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09084.html">Re: Using riak as a `Comment` Store - Slow results</a></span> <span class="sender italic">Alex Thompson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Using riak as a `Comment` Store - Slow results">
+<input type="hidden" name="msgid" value="508FF1F7.3040801@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09083.html">
+<input type="submit" value=" Herman Junge ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Using+riak+as+a+%60Comment%60+Store+%5C-+Slow+results%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09082.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09084.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">508FF1F7.3040801@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

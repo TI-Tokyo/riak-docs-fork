@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: High volume data series storage and queries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04314" id="c">
+<link rel="index" href="maillist.html#04314" id="i">
+<link rel="prev" href="msg04313.html" id="p">
+<link rel="next" href="msg04317.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04314.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+volume+data+series+storage+and+queries%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: High volume data series storage and queries</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ciprian+Dorin+Craciun%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ciprian Dorin Craciun</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110810" rel="nofollow">Wed, 10 Aug 2011 06:14:42 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Wed, Aug 10, 2011 at 04:44, Paul O &lt;pco...@gmail.com&gt; wrote:
+&gt;&gt;    I wouldn't store the &quot;data files&quot; inside the embedded DB, but the
+&gt;&gt; actual raw readings.
+&gt;
+&gt; While this would be tempting how would you see something like that? A huge
+&gt; db by source? As I said previously, in many cases this would involve a DB
+&gt; with around 1 billion records. In fact many such DBs used all at the same
+&gt; time and I can constrain the queries so as to never have to consider the
+&gt; full amount of data. It seems to me that I'd be giving up a good chance for
+&gt; optimization (as premature and evil be it) by storing all data points. And
+&gt; if you're suggesting one DB per batch, the batches would be relatively
+&gt; reduced in size, wouldn't that create its own set of problems for the DB
+&gt; library (opening many files, closing them, etc.) when I can reduce the final
+&gt; range query to a sequential traversal of at most 3 x MaxN records?
+&gt; Regards,
+&gt; Paul
+&gt;
+    I'm also merging your other reply, as it's related with that.
+&gt;
+On Wed, Aug 10, 2011 at 04:38, Paul O &lt;pco...@gmail.com&gt; wrote:
+&gt; Jeremiah, with all the feedback indicating Riak to not be such a straight
+&gt; fit for the problem even accepting batching compromises, I'll have to
+&gt; strongly reconsider RDBMs solutions, though they come with their own
+&gt; tradeoffs, as discussed here today. How about storing data using innostore
+&gt; instead of bitcask, would this be a &quot;best of both worlds&quot; situation?
+&gt; Thanks for these and the previous valuable comments, again,
+&gt; Paul</pre><pre>
+
+
+    So the first problem I see with any solution would be the 1
+billion records. I would try to find an alternative solution for
+&quot;historical-data&quot;, like dumping it in flat files, and just keeping in
+the database recent data. By recent I don't have a specific timeframe
+in mind, but whatever you determine it works in your particular case.
+
+    Now about the solution: I'm not proposing any batching or
+partitioning based on either timestamp or source; neither as
+individual files on the file system or stored inside the database as
+opaque values.
+
+    Instead I suggest to just put every data point in the same &quot;table&quot;
+or &quot;database&quot; as described below:
+    * the first requirement for the embedded database is to support
+lexicographically sorted keys and cursors which can be pointed to
+start from a particular (or greater) key;
+    * the key of the record would be the binary representation of the
+source id padded with 0's to an exact length, concatenated with the
+timestamp which follows the same rules;
+
+    Now about your concerns about executing range queries without
+considering the whole data is already solved by the database which
+doesn't need to look at the whole data but only search for the first
+data point matching your query. Actually behind scenes it does
+something similar -- but even better -- than what you're proposing
+with the MaxN records opaque value.
+
+    Furthermore, to back my claims I've put on Github the old code
+which I've used to benchmark different databases -- Riak or other
+key-value stores are not included except BerkeleyDB, but I've included
+others like Hypertable which could be a good choice -- at the
+following address (you can easily extend the &quot;framework&quot; to include
+new backends):
+        <a  rel="nofollow" href="https://github.com/cipriancraciun/sds-benchmark">https://github.com/cipriancraciun/sds-benchmark</a>
+
+    Also there is a &quot;so-called&quot; report I've put up at that time in the
+same place at -- the second link is the content of the wkipage and
+there are also images which GitHub doesn't display in the page:
+        <a  rel="nofollow" href="https://github.com/cipriancraciun/sds-benchmark/tree/master/results">https://github.com/cipriancraciun/sds-benchmark/tree/master/results</a>
+        
+<a  rel="nofollow" href="https://github.com/cipriancraciun/sds-benchmark/blob/master/results/results.mediawiki">https://github.com/cipriancraciun/sds-benchmark/blob/master/results/results.mediawiki</a>
+
+    For the record we've tested up to 100m records on some
+data-stores, but on some other (like PostgreSQL and MySQL we've
+stopped at 10 million as the insertion rate dropped tremendously).
+
+    My conclusion from this experiment was: any database which is
+backed by a tree-like data structure (almost all use B trees or
+derivate) will get to a grinding halt in insert speed if the
+clustering keys (clientid + timpstamp in this case) don't exhibit any
+kind of locality (as is your case). See the quote from my report:
+~~~~
+* this section applies to Postgres and SQLite, as MonetDB behaved Ok;
+* it seems that the initial insert speed is good for the first couple
+million records;
+* as the data accumulates and new inserts are done, the indices start
+to be rewritten, and consume the entire disk bandwidth; (the initial
+good speed is due the fact that the indices fit into the RAM memory;)
+* if the inserts are done without any indices defined, the insert
+speed is incredible (600k in the case of Postgres), but the scan speed
+is under 100;
+* maybe, it is possible, that this behavior is specific to any
+database which uses trees (like BerkeleyDB?);
+~~~~
+
+    Hope this helps you,
+    Ciprian.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04313.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04314">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04314">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04317.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04284.html">Re: High volume data serie...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04311.html">Re: High volume data serie...</a></span> <span class="sender italic">Paul O</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04315.html">Re: High volume data serie...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04316.html">Re: High volume data serie...</a></span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04318.html">Re: High volume data serie...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04310.html">Re: High volume data series st...</a></span> <span class="sender italic">Paul O</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04260.html">Re: High volume data series storage and queries</a></span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04266.html">Re: High volume data series storage and queries</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04304.html">Re: High volume data series storage and que...</a></span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04313.html">Re: High volume data series storage and...</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: High volume data series storage...</span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04317.html">Re: High volume data series st...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04320.html">Re: High volume data serie...</a></span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04321.html">Re: High volume data serie...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04345.html">Re: High volume data series st...</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04348.html">Re: High volume data serie...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: High volume data series storage and queries">
+<input type="hidden" name="msgid" value="CA+Tk8fzN_UvicjpYxhsasAau657e+bK-w=xTNyX-Pzh2J7KiFA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04314.html">
+<input type="submit" value=" Ciprian Dorin Craciun ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+volume+data+series+storage+and+queries%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04313.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04317.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+Tk8fzN_UvicjpYxhsasAau657e+bK-w=xTNyX-Pzh2J7KiFA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

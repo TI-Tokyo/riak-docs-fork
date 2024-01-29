@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Java Client and clobber update</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15492" id="c">
+<link rel="index" href="maillist.html#15492" id="i">
+<link rel="prev" href="msg15491.html" id="p">
+<link rel="next" href="msg15493.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15492.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Java+Client+and+clobber+update%22&amp;o=newest" rel="nofollow"><span itemprop="name">Java Client and clobber update</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Cosmin+Marginean%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Cosmin Marginean</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150114" rel="nofollow">Wed, 14 Jan 2015 12:40:53 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I’m doing a fairly “by the book” clobber update (store and fetch below work 
+fine) on an entity using the Java client. I’m seeing an error that happens at 
+type-inference time within the Riak Java client. I’m pasting below the exact 
+test that I’m using to generate this, as well as the stacktrace. Please let me 
+know if I’m missing something or if it’s a known bug.</pre><pre>
+
+Thank you
+Cosmin
+
+@Test
+public void testRiakUpdate() throws Exception {
+RiakNode node = new 
+RiakNode.Builder().withRemoteAddress(&quot;192.168.168.2&quot;).withRemotePort(8087).build();
+RiakCluster cluster = new RiakCluster.Builder(node).build();
+cluster.start();
+RiakClient client = new RiakClient(cluster);
+
+SomeEntity entity = new SomeEntity();
+entity.setName(&quot;John Doe&quot;);
+entity.setDescription(&quot;Some Description&quot;);
+Location location = new Location(new Namespace(&quot;bucket&quot;), &quot;entity-key&quot;);
+
+// Store
+StoreValue storeOp = new 
+StoreValue.Builder(entity).withLocation(location).build();
+client.execute(storeOp);
+
+// Fetch
+FetchValue fetchOp = new FetchValue.Builder(location).build();
+entity = client.execute(fetchOp).getValue(SomeEntity.class);
+
+// Update
+entity.setName(&quot;New name&quot;);
+UpdateValue updateOp = new UpdateValue.Builder(location)
+.withFetchOption(FetchValue.Option.DELETED_VCLOCK, true)
+.withUpdate(UpdateValue.Update.clobberUpdate(entity))
+.build();
+client.execute(updateOp).getValue(SomeEntity.class);
+}
+
+private static class SomeEntity {
+private String name;
+private String description;
+
+public String getName() {
+return name;
+}
+
+public void setName(String name) {
+this.name = name;
+}
+
+public String getDescription() {
+return description;
+}
+
+public void setDescription(String description) {
+this.description = description;
+}
+}
+
+
+
+java.lang.ClassCastException: 
+sun.reflect.generics.reflectiveObjects.TypeVariableImpl cannot be cast to 
+java.lang.Class at 
+com.basho.riak.client.api.commands.kv.UpdateValue$1.handle(UpdateValue.java:149)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.api.commands.ListenableFuture.notifyListeners(ListenableFuture.java:78)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.api.commands.CoreFutureAdapter.handle(CoreFutureAdapter.java:120)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.FutureOperation.fireListeners(FutureOperation.java:131)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.FutureOperation.setResponse(FutureOperation.java:170)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.RiakNode.onSuccess(RiakNode.java:823) 
+~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.netty.RiakResponseHandler.channelRead(RiakResponseHandler.java:58)
+ ~[riak-client-2.0.0.jar:na] at 
+io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:155)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.handler.codec.ByteToMessageCodec.channelRead(ByteToMessageCodec.java:108)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:785)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:116)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:494) 
+[netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:461)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:378) 
+[netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:350) 
+[netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:101)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+java.lang.Thread.run(Thread.java:745) [na:1.8.0_05] 20:34:13.390 
+[nioEventLoopGroup-2-1] DEBUG c.b.riak.client.core.FutureOperation - 
+IllegalStateException; required: [CREATED, WRITTEN, RETRY] current: COMPLETE 
+20:34:13.391 [nioEventLoopGroup-2-1] WARN i.n.channel.DefaultChannelPipeline - 
+An exception was thrown by a user handler's exceptionCaught() method while 
+handling the following exception: java.lang.ClassCastException: 
+sun.reflect.generics.reflectiveObjects.TypeVariableImpl cannot be cast to 
+java.lang.Class at 
+com.basho.riak.client.api.commands.kv.UpdateValue$1.handle(UpdateValue.java:149)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.api.commands.ListenableFuture.notifyListeners(ListenableFuture.java:78)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.api.commands.CoreFutureAdapter.handle(CoreFutureAdapter.java:120)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.FutureOperation.fireListeners(FutureOperation.java:131)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.FutureOperation.setResponse(FutureOperation.java:170)
+ ~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.RiakNode.onSuccess(RiakNode.java:823) 
+~[riak-client-2.0.0.jar:na] at 
+com.basho.riak.client.core.netty.RiakResponseHandler.channelRead(RiakResponseHandler.java:58)
+ ~[riak-client-2.0.0.jar:na] at 
+io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:155)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.handler.codec.ByteToMessageCodec.channelRead(ByteToMessageCodec.java:108)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:785)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:116)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:494) 
+[netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:461)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:378) 
+[netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:350) 
+[netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:101)
+ [netty-all-4.0.17.Final.jar:4.0.17.Final] at 
+java.lang.Thread.run(Thread.java:745) [na:1.8.0_05]  
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15491.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15492">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15492">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15493.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Java Client and clobber update</span> <span class="sender italic">Cosmin Marginean</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15493.html">Re: Java Client and clobber update</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15494.html">Re: Java Client and clobber update</a></span> <span class="sender italic">Cosmin Marginean</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Java Client and clobber update">
+<input type="hidden" name="msgid" value="59D90383EE8C4CC8BCAA01FA28C32664@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15492.html">
+<input type="submit" value=" Cosmin Marginean ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Java+Client+and+clobber+update%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15491.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15493.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">59D90383EE8C4CC8BCAA01FA28C32664@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

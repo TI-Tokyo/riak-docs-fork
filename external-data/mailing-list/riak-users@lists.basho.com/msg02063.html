@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Getting all the Keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02063" id="c">
+<link rel="index" href="maillist.html#02063" id="i">
+<link rel="prev" href="msg02062.html" id="p">
+<link rel="next" href="msg02064.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02063.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Getting+all+the+Keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Getting all the Keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110122" rel="nofollow">Sat, 22 Jan 2011 12:21:34 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>I don't think it is a flaw at all. Rather I am of the opinion that  
+</tt><tt>riak was never meant to do the things we are all talking about in this  
+</tt><tt>thread.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>When I need to do these things I specifically use redis because, as  
+</tt><tt>noted, it has tremendous support for specific data structures. When I  
+</tt><tt>need to enumerate keys or mutate counters I use redis and periodically  
+</tt><tt>dump those values to riak. I'll write a post or somethin about it.  
+</tt><tt>Also, use redis if you wanna do these things.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>I'll drop a phat tangent and just mention that I watched @rk's talk at  
+</tt><tt>Qcon SF 2010 the other day and am kinda crushing on how they  
+</tt><tt>implemented distributed counters in cassandra (mainlined in 0.7.1 me  
+</tt><tt>thinks) which, imho, is so choice for a riak implementation it isn't  
+</tt><tt>even funny. It was like pow pow in da face and my face got melted.
+</tt><pre style="margin: 0em;">
+
+@siculars on twitter
+<a  rel="nofollow" href="http://siculars.posterous.com">http://siculars.posterous.com</a>
+
+Sent from my iPhone
+
+On Jan 22, 2011, at 14:45, Gary William Flake &lt;g...@flake.org&gt; wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>This is a really big pain point for me as well and -- at the risk of  
+</tt><tt>prematurely being overly critical of Riak's overall design -- I  
+</tt><tt>think it points to a major flaw of Riak in its current state.
+</tt><pre style="margin: 0em;">
+
+Let me explain....
+
+</pre><tt>Riak is bad at enumerating keys.  We know that. I am happy to manage  
+</tt><tt>a list of keys myself.  Fine.  How do I do that in Riak?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Well, the obvious solution is to have a special object that you  
+</tt><tt>maintain that is a list of the keys that you need.  So, each time  
+</tt><tt>you insert a new object, you effectively append a new key to the end  
+</tt><tt>of a list, that is itself a value to a special index key.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>But what is an append in Riak?  The only way to implement a list  
+</tt><tt>append is to:
+</tt><pre style="margin: 0em;">
+
+1. read in the entire value of your list object.
+2. append to this list at the application layer.
+3. reinsert the new value back into the list.
+
+</pre><tt>This is a horrible solution for at least three reasons.  First,  
+</tt><tt>inserting N new keys and maintaining your own list is now O(N*N)  
+</tt><tt>runtime complexity because each append has to do I/O proportional to  
+</tt><tt>the size of the entire list for each append.  Second, this operation  
+</tt><tt>should be happening entirely at the data layer and not between the  
+</tt><tt>data and app layer.  Third, it introduces write contentions in that  
+</tt><tt>two clients may try to append at approximately the same time, giving  
+</tt><tt>you a list that is now inconsistent.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The conclusion for me is that you can't efficiently enumerate keys  
+</tt><tt>with Riak even if you roll your own key index with Riak (in anything  
+</tt><tt>close to an ideal way).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>To overcome this problem, Riak desperately needs to either maintain  
+</tt><tt>its own key index efficiently, or it needs to support atomic  
+</tt><tt>mutations on values.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>For an example of the latter approach, see Redis which I think  
+</tt><tt>handles this beautifully.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>In the end, you may need to think about redesigning your data model  
+</tt><tt>so that there never is a need to enumerate keys.  I am trying this  
+</tt><tt>and I use a combination of:
+</tt><pre style="margin: 0em;">
+
+1. Standard KV approaches,
+2. Riak search for being able to enumerate some records in order,
+3. Transactions logs stored in a special bucket,
+</pre><tt>4. Batched M/R phases on the Transaction logs to avoid write  
+</tt><tt>contention, and
+</tt><pre style="margin: 0em;">
+5. Batched rebuilding of &quot;views&quot; in a view bucket.
+
+</pre><tt>Given that Riak search is loudly proclaimed as being beta, this  
+</tt><tt>makes me fairly anxious.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I am very close to not needing to enumerate keys the bad way now.   
+</tt><tt>However, I would have killed for an atomic mutator like Redis.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>BTW, I would love for someone from Basho to disabuse me of my  
+</tt><tt>conclusions in this note.
+</tt><pre style="margin: 0em;">
+
+-- GWF
+
+
+
+
+
+
+
+</pre><tt>On Sat, Jan 22, 2011 at 10:40 AM, Alexander Staubo &lt;li...@purefiction.net 
+</tt><tt>&gt; wrote:
+</tt><tt>On Sat, Jan 22, 2011 at 19:34, Alexander Staubo  
+</tt><tt>&lt;li...@purefiction.net&gt; wrote:
+</tt><pre style="margin: 0em;">
+&gt; On Sat, Jan 22, 2011 at 18:23, Thomas Burdick
+&gt; &lt;tburd...@wrightwoodtech.com&gt; wrote:
+</pre><tt>&gt;&gt; So really whats the solution to just having a list of like 50k  
+</tt><tt>keys that can
+</tt><tt>&gt;&gt; quickly be appended to without taking seconds to then retrieve  
+</tt><tt>later on. Or
+</tt><tt>&gt;&gt; is this just not a valid use case for riak at all? That would  
+</tt><tt>suck cause
+</tt><pre style="margin: 0em;">
+&gt;&gt; again, I really like the notion of an AP oriented database!
+&gt;
+&gt; I have been struggling with the same issue. You may want to look at
+&gt; Cassandra, which handles sequential key range traversal very well.
+&gt; Riak also has a problem with buckets sharing the same data storage
+</pre><tt>&gt; (buckets are essentially just a way to namespace keys), so if you  
+</tt><tt>have
+</tt><tt>&gt; two buckets and fill up one of them, then enumerating the keys of  
+</tt><tt>the
+</tt><pre style="margin: 0em;">
+&gt; empty bucket will take a long time even though it
+
+I accidentally &quot;Send&quot;. Again: I have been struggling with the same
+issue. You may want to look at Cassandra, which handles sequential key
+range traversal very well. Riak also has a problem with buckets
+sharing the same data storage (buckets are essentially just a way to
+namespace keys), so if you have two buckets and fill up one of them,
+then enumerating the keys of the empty bucket will take a long time
+even though it's empty. Cassandra does not have a problem with this,
+since Cassandra's keyspaces are separate data structures. I like Riak,
+but it only works well with single-key/linked traversal, not this kind
+of bucket-wide processing.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02062.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02063">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02063">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02064.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02054.html">Getting all the Keys</a></span> <span class="sender italic">Thomas Burdick</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02055.html">Re: Getting all the Keys</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02057.html">Re: Getting all the Keys</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02058.html">Re: Getting all the Keys</a></span> <span class="sender italic">Thomas Burdick</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02059.html">Re: Getting all the Keys</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02060.html">Re: Getting all the Keys</a></span> <span class="sender italic">Alexander Staubo</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02061.html">Re: Getting all the Keys</a></span> <span class="sender italic">Alexander Staubo</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02062.html">Re: Getting all the Keys</a></span> <span class="sender italic">Gary William Flake</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Getting all the Keys</span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02064.html">Re: Getting all the Keys</a></span> <span class="sender italic">Justin Sheehy</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02065.html">Re: Getting all the Keys</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02066.html">Re: Getting all the Keys</a></span> <span class="sender italic">Thomas Burdick</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02070.html">Re: Getting all the Keys</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02071.html">Re: Getting all the Keys</a></span> <span class="sender italic">Thomas Burdick</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02072.html">Re: Getting all the Keys</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02076.html">Re: Getting all the Keys</a></span> <span class="sender italic">Eric Moritz</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02078.html">Re: Getting all the Keys</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02081.html">Re: Getting all the Keys</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02082.html">Re: Getting all the Keys</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Getting all the Keys">
+<input type="hidden" name="msgid" value="D76C9A51-7755-478C-A69B-1683B5F67DCE@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02063.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Getting+all+the+Keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02062.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02064.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D76C9A51-7755-478C-A69B-1683B5F67DCE@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Nodes Crashing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15325" id="c">
+<link rel="index" href="maillist.html#15325" id="i">
+<link rel="prev" href="msg15324.html" id="p">
+<link rel="next" href="msg15326.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15325.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Nodes+Crashing%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Nodes Crashing</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20141205" rel="nofollow">Fri, 05 Dec 2014 10:08:33 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Satish,
+
+I find nothing compelling in the log or the app.config.  Therefore I have two 
+additional suggestions/requests:</pre><pre>
+
+- lower max_open_files in app.config to to 150 from 315.  There was one other 
+customer report regarding the limit not properly stopping out of memory (OOM) 
+conditions.
+
+- try to locate a /var/log/syslog* file from a node that contains the time of 
+the crash.  There may be helpful information there.  Please send that along.
+
+
+Unrelated to this crash … 1.4.7 has a known bug in its active anti-entropy 
+(AAE) logic.  This bug is NOT known to cause a crash.  The bug does cause AAE 
+to be unreliable for data restoration.  The proper steps for upgrading to the 
+current release (1.4.12) are:
+
+-- across the entire cluster
+- disable anti_entropy in app.config on all nodes: {anti_entropy, {off, []}}
+- perform a rolling restart of all nodes … AAE is now disabled in the cluster 
+
+-- on each node
+- stop the node
+- remove (erase all files and directories) /vol/lib/riak/anti_entropy
+- update Riak to the new software revision
+- start the node again
+
+-- across the entire cluster
+- enable anti_entropy in app.config on all nodes: {anti_entropy, {on, []}}
+- perform a rolling restart of all nodes … AAE is now enabled in the cluster 
+
+The nodes will start rebuilding the AAE hash data.  Suggest you perform the 
+last rolling restart during a low utilization time of your cluster.
+
+
+Matthew
+
+
+On Dec 5, 2014, at 11:02 AM, ender &lt;extr...@gmail.com&gt; wrote:
+
+&gt; Hi Matthew,
+&gt; 
+&gt; Riak version: 1.4.7
+&gt; 5 Nodes in cluster
+&gt; RAM: 30GB
+&gt; 
+&gt; The leveldb logs are attached.
+&gt; 
+&gt; 
+&gt; 
+&gt; On Thu, Dec 4, 2014 at 1:34 PM, Matthew Von-Maszewski &lt;matth...@basho.com&gt; 
+&gt; wrote:
+&gt; Satish,
+&gt; 
+&gt; Some questions:
+&gt; 
+&gt; - what version of Riak are you running?  logs suggest 1.4.7
+&gt; - how many nodes in your cluster?
+&gt; - what is the physical memory (RAM size) of each node?
+&gt; - would you send the leveldb LOG  files from one of the crashed servers:
+&gt;     tar -czf satish_LOG.tgz /vol/lib/riak/leveldb/*/LOG*
+&gt; 
+&gt; 
+&gt; Matthew
+&gt; 
+&gt; On Dec 4, 2014, at 4:02 PM, ender &lt;extr...@gmail.com&gt; wrote:
+&gt; 
+&gt; &gt; My RIak installation has been running successfully for about a year.  This 
+&gt; &gt; week nodes suddenly started randomly crashing.  The machines have plenty of 
+&gt; &gt; memory and free disk space, and looking in the ring directory nothing 
+&gt; &gt; appears to amiss:
+&gt; &gt;
+&gt; &gt; [ec2-user@ip-10-196-72-247 ~]$ ls -l /vol/lib/riak/ring
+&gt; &gt; total 80
+&gt; &gt; -rw-rw-r-- 1 riak riak 17829 Nov 29 19:42 
+&gt; &gt; riak_core_ring.default.20141129194225
+&gt; &gt; -rw-rw-r-- 1 riak riak 17829 Dec  3 19:07 
+&gt; &gt; riak_core_ring.default.20141203190748
+&gt; &gt; -rw-rw-r-- 1 riak riak 17829 Dec  4 16:29 
+&gt; &gt; riak_core_ring.default.20141204162956
+&gt; &gt; -rw-rw-r-- 1 riak riak 17847 Dec  4 20:45 
+&gt; &gt; riak_core_ring.default.20141204204548
+&gt; &gt;
+&gt; &gt; [ec2-user@ip-10-196-72-247 ~]$ du -h /vol/lib/riak/ring
+&gt; &gt; 84K   /vol/lib/riak/ring
+&gt; &gt;
+&gt; &gt; I have attached a tarball with the app.config file plus all the logs from 
+&gt; &gt; the node at the time of the crash.  Any help much appreciated!
+&gt; &gt;
+&gt; &gt; Satish
+&gt; &gt;
+&gt; &gt; &lt;riak-crash-data.tar.gz&gt;_______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; &lt;satish_LOG.tgz&gt;
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15324.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15325">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15325">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15326.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15323.html">Riak Nodes Crashing</a></span> <span class="sender italic">ender</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15324.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Nodes Crashing</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15326.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15328.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15331.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15332.html">Re: Riak Nodes Crashing</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Nodes Crashing">
+<input type="hidden" name="msgid" value="AB2D6DB6-4DB4-4CBB-A7E9-146D25567448@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15325.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Nodes+Crashing%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15324.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15326.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AB2D6DB6-4DB4-4CBB-A7E9-146D25567448@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

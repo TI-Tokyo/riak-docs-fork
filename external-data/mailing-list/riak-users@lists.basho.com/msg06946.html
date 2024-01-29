@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Slow performance on getting via 2i</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06946" id="c">
+<link rel="index" href="maillist.html#06946" id="i">
+<link rel="prev" href="msg06942.html" id="p">
+<link rel="next" href="msg06999.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06946.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+performance+on+getting+via+2i%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Slow performance on getting via 2i</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Russell+Brown%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Russell Brown</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120313" rel="nofollow">Tue, 13 Mar 2012 07:05:21 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Daniel,
+Sorry for the slow reply.
+
+On 12 Mar 2012, at 11:36, ivenhov wrote:</pre><pre>
+
+&gt; Excuse my doubel-posting and replying to my own thread.
+&gt; I found this in PBClientAdapter class in fetchIndex method
+&gt; 
+&gt;        final MapReduce mr = new IndexMapReduce(this, indexQuery);
+&gt; 
+&gt;        mr.addReducePhase(NamedErlangFunction.REDUCE_IDENTITY,
+&gt; Args.REDUCE_PHASE_ONLY_1);
+&gt;        // only return the key, to match the http rest api
+&gt;        mr.addReducePhase(new JSSourceFunction(&quot;function(v) { return
+&gt; v.map(function(e) { return e[1]; }); }&quot;), Args.REDUCE_PHASE_ONLY_1);
+&gt; 
+&gt; This means it uses map reduce and JavaScript for protocol buffers.
+&gt; Would that be the reason of slow performance with thousands of keys?
+&gt; In my case it more performant to list all the keys than do 2i query.
+
+You can measure if this *is* the problem if you are using Riak 1.1.*+ as an 
+index MapReduce no longer requires a reduce identity call in Riak 1.1 onwards. 
+Using the java client you can create an Index MapReduce without the reduce 
+phases:
+
+    IndexQuery = new BinIndexQuery(BinIndex.named(&quot;idx_key&quot;), BUCKET_NAME, 
+filter.toString());
+    client.mapReduce(indexQuery).execute();
+
+Your result will be a list of bucket/key pairs (different from the HTTP API's 
+list of keys.) If that executes faster the problem is with the reduce phases, 
+you could even try with just the first reduce phase, and then try with the 
+second to discover if the JS phase is the issue.
+
+The reason for the extra JS reduce phase was a (perhaps poor?) choice I made. 
+In order to provide parity between the HTTP and PB API I made the choice to 
+have the PB call return a list of Keys only (like the HTTP API.) I guess I 
+could have iterated on the client to reformat the result, or had Jackson do it, 
+or even just returned different output between the APIs…it is a hard choice and 
+really the problem is that Riak has a special API for HTTP returning results in 
+one format, and requires a MapReduce to get at indexes over protocol buffers.
+
+Please let me know if executing an index MapReduce without reduce phases 
+performs more in line with your expectations.
+
+Cheers
+
+Russell
+
+&gt; 
+&gt; I'm using java client 1.0.4 and riak cluster 1.1.1
+&gt; Any feedback appreciated.
+&gt; 
+&gt; Daniel
+&gt; 
+&gt; --
+&gt; View this message in context: 
+&gt; <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Slow-performance-on-getting-via-2i-tp3812664p3818984.html">http://riak-users.197444.n3.nabble.com/Slow-performance-on-getting-via-2i-tp3812664p3818984.html</a>
+&gt; Sent from the Riak Users mailing list archive at Nabble.com.
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06942.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06946">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06946">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06999.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06924.html">Slow performance on getting via 2i</a></span> <span class="sender italic">ivenhov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06925.html">Slow performance on getting via 2i</a></span> <span class="sender italic">ivenhov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06942.html">Re: Slow performance on getting via 2i</a></span> <span class="sender italic">ivenhov</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Slow performance on getting via 2i</span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06999.html">Re: Slow performance on getting via 2i</a></span> <span class="sender italic">ivenhov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07000.html">Re: Slow performance on getting via 2i</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07001.html">Re: Slow performance on getting vi...</a></span> <span class="sender italic">Paul Barry</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Slow performance on getting via 2i">
+<input type="hidden" name="msgid" value="C43A7838-14CF-4873-8E41-21F68F4AB0DF@me.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06946.html">
+<input type="submit" value=" Russell Brown ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+performance+on+getting+via+2i%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06942.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06999.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">C43A7838-14CF-4873-8E41-21F68F4AB0DF@me.com</li>
+</ul>
+</div>
+</body>
+</html>

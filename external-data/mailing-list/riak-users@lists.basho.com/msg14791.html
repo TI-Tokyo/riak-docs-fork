@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Issues with garbage collection on RiakCS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14791" id="c">
+<link rel="index" href="maillist.html#14791" id="i">
+<link rel="prev" href="msg14724.html" id="p">
+<link rel="next" href="msg14718.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14791.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Issues+with+garbage+collection+on+RiakCS%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Issues with garbage collection on RiakCS</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alex+Berghage%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alex Berghage</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140822" rel="nofollow">Fri, 22 Aug 2014 10:55:50 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi David &amp; Raina,
+
+I took a look over your configuration files — depending on the level of
+disk use you're at, GC may in fact be working correctly. The areas you can
+look to in order to tune the speed at which disk space is reclaimed are the
+garbage collector's leeway_seconds, and Riak's Bitcask backend merge
+settings.</pre><pre>
+
+Riak CS stores objects spread across multiple parts in the backing Riak
+cluster, with the mapping between CS objects and Riak object blocks being
+maintained by a &quot;Manifest&quot; object — effectively a list of blocks + some
+metadata. When you issue a delete for an object via the S3 API to CS, that
+object's manifest is written to a separate Riak bucket to wait for garbage
+collection, where it waits for a preset leeway period. This leeway period
+allows any reads currently in progress from that object at the time of
+deletion to complete before its data is removed from the backing store. On
+this cluster, that leeway is currently set to 24 hours. Once the leeway
+period for the object has expired, it becomes eligible for deletion by the
+periodic garbage collection process in Riak CS.
+
+The Garbage Collector is a periodic process that runs on one Riak CS node,
+making queries to the Riak cluster and issuing deletions for data blocks
+and manifests that correspond to CS objects which have been deleted. It
+does this by running a secondary index query over the garbage collection
+bucket to collect manifests which have already made it through the above
+process, and whose leeway time has elapsed. GC then sequentially issues
+deletions for each of the data blocks listed in each of the manifests
+collected for deletion. This process happens on a configurable period, set
+to 15 minutes in this cluster. When large amounts of data are deleted at
+once it can take some time for this garbage collection process to work
+through the backlog of data blocks that require deletion — when this is the
+case it can be difficult to gauge the garbage collector's progress in
+issuing deletions. Once this process is completed, for a given CS object,
+the manifest is deleted as well and the deletion process is finished from
+Riak CS' perspective.
+
+These deletions, as they arrive to the backing Riak cluster, are recorded
+as tombstone objects. From here we'll focus on the path that Riak CS data
+blocks take to become free space, as they typically consume orders of
+magnitude more space than the metadata. Data blocks are stored in a backend
+called Bitcask, which uses a periodic process known as &quot;Merging&quot; to
+consolidate data files and collapse deleted objects. Which data files to
+merge, and when, is dictated by thresholds for the total amount of dead
+data that's acceptable per file, and the ratio of dead data to live. In a
+typical installation, with deletions spread out over time, merging is not a
+particularly lengthy process and is done regularly. When deletions are
+batched up, creating a lot of work per merge, it can take in the
+neighborhood of 50-90 minutes to complete a merge, at the outside. More
+importantly, however, these merges require an amount of space on disk
+that's roughly to the size of the partition being merged to safely
+construct new datafiles. For this reason, merging is done one partition at
+a time (per node). You can check what that size threshold is for your
+deployment with `du -sh /var/vcap/store/riak/rel/lib/bitcask/*`, according
+to your configuration files, and you can can configure these merge
+thresholds using the tuning options described here
+&lt;<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask">http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask</a>&gt;
+ (
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask">http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask</a>
+).
+
+Beyond this tuning, if you believe garbage collection is itself failing to
+keep up with the deletion load on your cluster I recommend upgrading to
+Riak 1.4.10 and CS 1.5. Riak CS 1.5 allows for greater parallelism in the
+GC process, which should accelerate its rate of progress, and there have
+been a number of performance improvements and bugfixes in the Riak releases
+leading up to 1.4.10 from which you may benefit. Please take a look at the
+Riak &lt;<a  rel="nofollow" href="https://github.com/basho/riak/blob/1.4/RELEASE-NOTES.md">https://github.com/basho/riak/blob/1.4/RELEASE-NOTES.md</a>&gt; and CS
+&lt;<a  rel="nofollow" href="http://docs.basho.com/riakcs/latest/cookbooks/Riak-CS-Release-Notes/">http://docs.basho.com/riakcs/latest/cookbooks/Riak-CS-Release-Notes/</a>&gt;
+release notes for a full list. I'd also suggest monitoring your CS logs for
+&quot;Garbage collection completed&quot; events, which indicate that GC has finished
+a run, or errors/crashes including the string `riak_cs_gc_d` which indicate
+the garbage collection daemon is being prevented from completing a batch.
+You may also have some success adjusting the following timeouts in your
+Riak CS app.config:
+
+{riakc, [
+            {get_index_call_timeout, 300000},
+            {get_index_timeout, 300000},
+            {mapred_timeout, 300000}
+    ]},
+
+I've included a quick summary of these timeouts' function below:
+
+get_index_*: Sets a 5-minute calculation period for work to be performed by
+the garbage collection process Riak CS uses to query Riak for deleted data.
+This is a prophylactic measure meant to prevent timeout problems should the
+user with high usage begin rapidly deleting that data.
+mapred_timeout: Sets a 5-minute calculation period for the map/reduce jobs
+Riak CS runs against Riak, which should ease the process for users with
+large amounts of usage.
+
+Best,
+Alex Berghage
+
+
+&gt; On Mon, Aug 18, 2014 at 10:34 AM, David Sabeti &lt;dsab...@pivotal.io&gt; wrote:
+&gt; &gt; Hi all,
+&gt; &gt;
+&gt; &gt; Our team at Cloud Foundry is building a RiakCS service for CF users and
+&gt; one
+&gt; &gt; of our deployments is seeing an issue with deleting objects from the
+&gt; &gt; blobstore.
+&gt; &gt;
+&gt; &gt; We were seeing that our disk usage was approaching 100%, so we deleted
+&gt; some
+&gt; &gt; of the stale objects in the blobstore using s3cmd. If we run `s3cmd du`,
+&gt; it
+&gt; &gt; seems that we successfully freed up space, but when we ran `df` inside
+&gt; the
+&gt; &gt; RiakCS host, we still saw that our disk usage was close to 100%.
+&gt; &gt;
+&gt; &gt; We understand now that Riak will remove deleted keys asynchronously, but
+&gt; we
+&gt; &gt; haven't succeeded in configuring GC so that it is more responsive to
+&gt; &gt; deletions, despite having tried tweaking several parameters. On Friday,
+&gt; we
+&gt; &gt; uploaded several files and deleted them, hoping to see that they were
+&gt; gone
+&gt; &gt; from the disk on Monday. When we came back after the weekend, we saw that
+&gt; &gt; garbage collection still had not occurred. If it helps, you can look at
+&gt; our
+&gt; &gt; configuration for Riak and RiakCS.
+&gt; &gt;
+&gt; &gt; Has anyone else encountered this issue, where garbage collection appears
+&gt; to
+&gt; &gt; never occur? Would be great to get help configuring RiakCS so that GC
+&gt; &gt; happens more often. Maybe there is a way to run GC manually when disk is
+&gt; &gt; filling up?
+&gt; &gt;
+&gt; &gt; Thanks,
+&gt; &gt; David &amp; Raina
+&gt; &gt; CF Services Team
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14724.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14791">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14791">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14718.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14712.html">Issues with garbage collection on RiakCS</a></span> <span class="sender italic">David Sabeti</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14724.html">Re: Issues with garbage collection on RiakCS</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Issues with garbage collection on RiakCS</span> <span class="sender italic">Alex Berghage</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Issues with garbage collection on RiakCS">
+<input type="hidden" name="msgid" value="CAByh3abfdguE9TJ9fxqwJMijExh7A1U6nTy-dtqiwZwz0zbE_A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14791.html">
+<input type="submit" value=" Alex Berghage ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Issues+with+garbage+collection+on+RiakCS%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14724.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14718.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAByh3abfdguE9TJ9fxqwJMijExh7A1U6nTy-dtqiwZwz0zbE_A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

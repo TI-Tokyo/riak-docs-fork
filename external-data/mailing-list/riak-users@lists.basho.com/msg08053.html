@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Request queue issue with riakc_pb_socket</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08053" id="c">
+<link rel="index" href="maillist.html#08053" id="i">
+<link rel="prev" href="msg08041.html" id="p">
+<link rel="next" href="msg08164.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08053.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Request+queue+issue+with+riakc_pb_socket%22&amp;o=newest" rel="nofollow"><span itemprop="name">Request queue issue with riakc_pb_socket</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Julian%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Julian</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120724" rel="nofollow">Tue, 24 Jul 2012 17:48:05 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I'm using riakc_pb_socket to queue up several requests and rely on the
+built-in queueing, which should hopefully eventually service all requests.
+However I have a scenario in which a couple processes that queue a request
+are never terminating the call on the socket...even though a request issued
+subsequently gets through.</pre><pre>
+
+I have one process which quickly spawns 7 processes, each of which will
+call riakc_pb_socket:search. 6 of these requests should return 0 results
+quickly. 1 returns 85000 results. What I see happen frequently (but not
+always) is that 4 of the requests with 0 results will complete. Then the
+long request with all the results eventually completes ( I set a high
+enough timeout value). After this, the 2 other requests never seem to get
+executed.
+
+-record(state, {riak_conn,
+       ...}).
+
+handle_info({add_platform, PlatformBin}, State) -&gt;
+...
+    erlang:spawn(?MODULE, populate_instance, [PlatformBin, State]),
+...
+
+populate_instance(InstanceBin, State) -&gt;
+    error_logger:info_msg(binary_to_list(InstanceBin) ++ &quot; about to wait&quot;),
+    MapredResult = riakc_pb_socket:search(State#state.riak_conn,
+                      InstanceBin,
+                      &quot;type:account&quot;,
+                      [{map, {jsanon, &lt;&lt;&quot;
+function(v, keyData, arg) {
+    var o = JSON.parse(v.values[0].data);
+    var p = {...}; // I'm transforming the object
+    return [JSON.stringify(p)]
+}&quot;&gt;&gt; }, none, true }],
+                      90000), % timeout
+    error_logger:info_msg(binary_to_list(InstanceBin) ++ &quot; done waiting&quot;),
+
+    .... process MapredResult ...
+
+
+In the log I get 7 lines from populate_instance like this:
+1c837b206ff37939892740206c8eb4f0f897b282 about to wait
+
+Then I get 4 lines like this:
+1c837b206ff37939892740206c8eb4f0f897b282 done waiting
+
+Then it gets to the 5th one with a lot of results. Eventually:
+a65796222ea26bb7b355bf140dbd5b72e81efee1 done waiting
+
+Then no more. The remaining 2 processes in riakc_pb_socket:search never
+seem to print &quot;... done waiting&quot;.
+
+Suppose I sneak in a request to add a platform:
+list_to_pid(&quot;&lt;0.120.0&gt;&quot;) ! {add_platform, &lt;&lt;&quot;aaa&quot;&gt;&gt;}.
+
+I see in the log that it goes through:
+aaa about to wait
+aaa done waiting
+
+...so it seems like my 2 processes will never finish.
+
+Any ideas? It seems like it should be fine to pass State to different
+processes, since the connection is just a pid. The queue is sitting in the
+socket process and should be fine.
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08041.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08053">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08053">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08164.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Request queue issue with riakc_pb_socket</span> <span class="sender italic">Julian</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08164.html">Re: Request queue issue with riakc_pb_socket</a></span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Request queue issue with riakc_pb_socket">
+<input type="hidden" name="msgid" value="CALELmfJciL+0SFg4G-=vt-MKBPOA=DNvANMqQnUb1sEgMeCPtA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08053.html">
+<input type="submit" value=" Julian ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Request+queue+issue+with+riakc_pb_socket%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08041.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08164.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CALELmfJciL+0SFg4G-=vt-MKBPOA=DNvANMqQnUb1sEgMeCPtA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

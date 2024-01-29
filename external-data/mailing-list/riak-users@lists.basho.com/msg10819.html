@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Measuring Riak disk usage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10819" id="c">
+<link rel="index" href="maillist.html#10819" id="i">
+<link rel="prev" href="msg10818.html" id="p">
+<link rel="next" href="msg10821.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10819.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Measuring+Riak+disk+usage%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Measuring Riak disk usage</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130410" rel="nofollow">Wed, 10 Apr 2013 06:23:46 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Greetings Ben,
+
+Also, leveldb stores data in &quot;levels&quot;.  The very first storage level and the 
+runtime data recovery log are not compressed.</pre><pre>
+
+That said, I agree with Tom that you are most likely seeing Riak store 3 copies 
+of your data versus only one for mongodb.  It is possible to dumb down Riak so 
+that it is closer to mongodb:
+
+1.  in app.config, look for the riak_core options, add the following line:
+
+          {default_bucket_props, [{n_val,1}]},
+
+This will default the system to only storing one copy of your data.
+
+
+2. if you are using Riak 1.3, again in app.config, look for the riak_kv options:
+
+    change this
+
+       {anti_entropy, {on, []}},
+
+    to
+
+      {anti_entropy, {off, []}},
+
+This will disable Riak's automatic detection and correction of data loss / 
+corruption.  The feature requires an added 1 to 2% data on disk.
+
+
+Matthew
+
+
+
+On Apr 10, 2013, at 9:01 AM, Tom Santero &lt;tsant...@basho.com&gt; wrote:
+
+&gt; Hi Ben,
+&gt; 
+&gt; First, allow me to welcome to the list! Stick around, I think you'll like it 
+&gt; here. :)
+&gt; 
+&gt; How many nodes of Riak are you running vs how many nodes of Mongo?
+&gt; 
+&gt; How much more disk space did Riak take?
+&gt; 
+&gt; Riak is designed to run as a cluster of several nodes, utilizing replication 
+&gt; to provide resiliency and high-availability during partial failure. By 
+&gt; default Riak stores three replicas of every object you persist. If you are 
+&gt; only running a single node of Riak for your testing purposes, I suspect this 
+&gt; may explain the significant divergence you're seeing when compared to the 
+&gt; disk space used vs a single mongo, as each replica in Riak is being stored to 
+&gt; the same disk.
+&gt; 
+&gt; Also, Snappy is optimizes for speed over disk utility, which will have a 
+&gt; negligible impact on total disk usage when compared to other compression 
+&gt; libraries such as zlib, etc. That said, for sufficiently large JSON files I 
+&gt; know that BSON's prefixes can add significant overhead to object sizes such 
+&gt; that BSON is actually heavier than the JSON it represents. What is the 
+&gt; average size of the documents you're seeking to store?
+&gt; 
+&gt; Could you tell us a bit more about what you're trying to achieve with both 
+&gt; Riak and Mongo, respectfully?
+&gt; 
+&gt; Tom
+&gt; 
+&gt; On Wed, Apr 10, 2013 at 12:39 AM, Ben McCann &lt;b...@benmccann.com&gt; wrote:
+&gt; Hi, 
+&gt; 
+&gt; I'm currently storing data in MongoDB and would like to evaluate Riak as an 
+&gt; alternative. Riak is appealing to me because LevelDB uses Snappy, so I would 
+&gt; expect it to take less disk space to store my data set than MongoDB which 
+&gt; does not use compression. However, when I benchmarked it by inserting a few 
+&gt; hundred thousand JSON records into each datastore, Riak in fact took far more 
+&gt; disk space. I'm wondering if there's something I might be missing here as a 
+&gt; newcomer to Riak. E.g. I checked the disk space used by running &quot;du -ch 
+&gt; /var/lib/riak/leveldb&quot;. Is this perhaps not a good way to check disk space 
+&gt; usage because perhaps Riak/LevelDB preallocates files? (I know MongoDB does 
+&gt; this and has a built-in db.collection.stats command to provide true disk 
+&gt; usage information). Are there any other reasons why Riak might be taking more 
+&gt; space or anything I could have screwed up? 
+&gt; 
+&gt; Thanks, 
+&gt; Ben 
+&gt; 
+&gt; -- 
+&gt; about.me/benmccann 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10818.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10819">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10819">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10821.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10815.html">Measuring Riak disk usage</a></span> <span class="sender italic">Ben McCann</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10818.html">Re: Measuring Riak disk usage</a></span> <span class="sender italic">Tom Santero</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Measuring Riak disk usage</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10821.html">Re: Measuring Riak disk usage</a></span> <span class="sender italic">Ben McCann</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10824.html">Re: Measuring Riak disk usage</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10826.html">Re: Measuring Riak disk usage</a></span> <span class="sender italic">Ben McCann</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10827.html">Re: Measuring Riak disk us...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10828.html">Re: Measuring Riak disk us...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10829.html">Re: Measuring Riak dis...</a></span> <span class="sender italic">Reid Draper</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10830.html">Re: Measuring Riak dis...</a></span> <span class="sender italic">Ben McCann</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10831.html">Re: Measuring Riak dis...</a></span> <span class="sender italic">Paul Wagner</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10833.html">Re: Measuring Riak dis...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10822.html">Measuring Riak disk usage</a></span> <span class="sender italic">chengas123</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Measuring Riak disk usage">
+<input type="hidden" name="msgid" value="2366E54F-48D3-4A2C-A320-1B8CD5C321E1@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10819.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Measuring+Riak+disk+usage%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10818.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10821.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">2366E54F-48D3-4A2C-A320-1B8CD5C321E1@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

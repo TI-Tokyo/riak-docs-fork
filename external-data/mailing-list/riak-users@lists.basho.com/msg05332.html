@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Difference between 2I and Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#05332" id="c">
+<link rel="index" href="mail2.html#05332" id="i">
+<link rel="prev" href="msg05324.html" id="p">
+<link rel="next" href="msg05322.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05332.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Difference+between+2I+and+Search%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Difference between 2I and Search</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111027" rel="nofollow">Thu, 27 Oct 2011 10:58:52 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Kresten, all great questions.  I've attempted to give an answer to all
+inline.  I focused on Search since that's what I know best.  I'll leave 2I
+clarifications to Rusty.</pre><pre>
+
+On Wed, Oct 26, 2011 at 11:42 AM, Kresten Krab Thorup &lt;k...@trifork.com&gt;wrote:
+
+&gt; Perhaps as follow-up FAQ-style questions, you could also answer these
+&gt; questions:
+&gt;
+&gt; 1. What is the typical execution profile of 2i vs solr queries?  Do all
+&gt; queries go to all nodes in the cluster, or does it depend on the query?  I
+&gt; imagine that range-queries need to go to all vnodes, whereas simple
+&gt; &quot;prop=value&quot; queries may be more directly to a node holding the given index.
+&gt;
+
+First, I want to introduce Riak vernacular &quot;coverage&quot; to mean an operation
+that must query a covering set of partitions.  That is, to make sure the
+operation considers all keys it must visit enough vnodes to cover the entire
+key space [1].  In the case of N=3 this would be 1/3 of the vnodes, 1/N in
+the general case.  For example, the list keys operation uses a coverage
+operation.  This makes sense because in order to list all keys you must
+visit all keys but no more (i.e. no need to visit all nodes if a portion of
+them will get the same job done).
+
+In the case of 2I all queries are executed via a coverage operation.  This
+is because 2I uses document-based partitioning of it's index, i.e. each
+partition holds a _piece_ of the index [2].
+
+Search uses term-based partitioning, i.e. each partition holds the entire
+index for a set of terms.  E.g. the index for term &quot;basho&quot; is stored
+entirely on one partition (with replicas on other partitions of course).
+ Therefore, a query for one term in Search will only hit one vnode (it uses
+R=1).  If you perform union or intersection with M terms you are looking at
+max of M vnodes but maybe less than M depending on how they hash and some
+randomness in Search's coordinator.  If you apply this knowledge to range
+queries then it should be plain to see that it requires visiting a covering
+set of partitions.  This is because we're searching a range of terms and
+each term in that range may be on a different partition.
+
+
+&gt;
+&gt; 2. What is the reliability N,R,W / replication / failover properties of
+&gt; these indexes?  How do the two different index types reconcile after a
+&gt; netsplit / crash?
+&gt;
+
+Search honors N just like KV.  It will make make N replicas of your index
+entries.
+
+R is hardcoded to 1 currently for performance reasons (although this might
+be worth revisiting).  To be totally correct, during query time Search is
+really N=1 &amp; R=1 in the sense that it picks just one partition to query for
+a given term.  I.e. it's not like KV where you send N requests and wait for
+R replies.  It sends 1 request and waits for 1 reply.  Furthermore, Search
+prefers local data and if it can't get it locally it will choose a partition
+at random to help distributed load.  This has the consequence that replica
+loss can cause nondeterministic behavior.
+
+Without looking at the code I can't answer about W.  I can't remember if it
+waits or just does fire and forget.
+
+Search should handle node failures fine, i.e. when a node goes down for a
+while.  However, when you start loosing replicas that's when Search will
+start returning nondeterministic results.  There is no form of anti-entropy
+(active or passive) for Search indexes.  If you lose replicas you must
+reindex.  Yes, this sucks.  Yes, it should be made better.  The only thing
+stopping it from getting fixed is time and resources.  If this hurts you
+(you being anyone reading this) then please yell as much as necessary until
+we do something about it.  If you feel adventurous enough to patch it
+yourself then send in a PR and I will be happy to look at it.  Please note
+that you can get active anti-entropy for search by using
+our replication support that comes with the enterprise version (but it
+requires two clusters).
+
+
+&gt;
+&gt; 3. What are the edge conditions if nodes crash in the middle of a put?
+&gt; I.e., how dependable are the indexes?  Is the index updated before or after
+&gt; the &quot;riak put&quot;, or as part of the &quot;same transaction&quot; somehow?
+&gt;
+
+In search if you are indexing KV objects then the KV write and index write
+are not atomic.  One can succeed while the other fails.  Once again
+reindexing needs to occur or use replication support that comes with our
+enterprise version.
+
+
+&gt;
+&gt; 4. What is the storage cost for indexes?  Some of it go into the leveldb
+&gt; storage, and some go in merge indexes?
+&gt;
+
+For 2I everything goes in leveldb, but that's an implementation detail.
+
+For Search your objects go into whatever storage solution you pick and your
+indexes _always_ go into merge_index.  There are costs in terms of memory
+and ETS tables (for those that don't know what ETS tables are it's a limit
+resource in Erlang, but the limitedness of it is configurable) for
+merge_index.  merge_index stores a buffer in memory (approximately equal to
+bufer_rollover_size) for _every_ partition.  So if you have a ring_size of
+128 with 6 nodes then you're looking at ~ (128/6)*&lt;buffer_rollover_size&gt; in
+terms of memory usage.  It also keeps file offsets in memory to reduce disk
+seek during query time but I'm not sure what their general footprint looks
+like [3].
+
+There are cases where merge_index can become overwhelmed and eat up all
+available ETS tables causing Search to fall hard with system limit errors.
+ This mainly has to do with it's configured buffer_rollover_size.  Raising
+that increases memory usage but can save greatly in ETS usage.
+
+-Ryan
+
+[1]: If you really want to dig in checkout the coverage behavior:
+<a  rel="nofollow" href="https://github.com/basho/riak_core/blob/master/src/riak_core_coverage_fsm.erl">https://github.com/basho/riak_core/blob/master/src/riak_core_coverage_fsm.erl</a>
+
+
+[2]: For more information on document vs. term based partitioning see:
+<a  rel="nofollow" href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.62.1613">http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.62.1613</a>
+<a  rel="nofollow" href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.86.7337">http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.86.7337</a>
+
+[3]: Rusty did a pretty thorough writeup on merge_index in it's README,
+<a  rel="nofollow" href="https://github.com/basho/merge_index">https://github.com/basho/merge_index</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05324.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#05332">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#05332">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05322.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05292.html">Difference between 2I and Search</a></span> <span class="sender italic">Soren Hansen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05315.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05321.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05324.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Soren Hansen</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Difference between 2I and Search</span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05322.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Elias Levy</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Difference between 2I and Search">
+<input type="hidden" name="msgid" value="CACZcpen70JVfbKpkx+x1PYv2L8ZoODfFcNY7SxN0LWTUFb=7=g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05332.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Difference+between+2I+and+Search%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05324.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05322.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpen70JVfbKpkx+x1PYv2L8ZoODfFcNY7SxN0LWTUFb=7=g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak cluster unresponsive after single node failure</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07403" id="c">
+<link rel="index" href="maillist.html#07403" id="i">
+<link rel="prev" href="msg07402.html" id="p">
+<link rel="next" href="msg07404.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07403.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+cluster+unresponsive+after+single+node+failure%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak cluster unresponsive after single node failure</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Armon+Dadgar%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Armon Dadgar</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120508" rel="nofollow">Tue, 08 May 2012 15:58:39 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Where by &quot;competition&quot;, I meant &quot;compaction&quot;. Derp.
+
+Best Regards,</pre><pre>
+
+Armon Dadgar
+
+
+On Tuesday, May 8, 2012 at 3:54 PM, Armon Dadgar wrote:
+
+&gt; Hey Scott,  
+&gt;  
+&gt; My mistake, I was not sure if the claimant was responsible for convergence.
+&gt;  
+&gt; If this was a competition, it was not one that would ever finish… The node 
+&gt; went
+&gt; down at about 1AM, and by 9AM when I started to resolve the issue it was in
+&gt; the same state. I was unable to investigate the state of that machine, as it
+&gt; was refusing any SSH connections.
+&gt;  
+&gt; Thanks for mentioning the key's. We've been thinking of doing just that
+&gt; to get keys lexicographically near.
+&gt;  
+&gt; Best Regards,
+&gt;  
+&gt; Armon Dadgar
+&gt;  
+&gt;  
+&gt; On Tuesday, May 8, 2012 at 3:26 PM, Scott Lystig Fritchie wrote:
+&gt;  
+&gt; &gt; &gt; &gt; &gt; &quot;ar&quot; == Armon Dadgar &lt;armon.dad...@gmail.com 
+&gt; &gt; &gt; &gt; &gt; (<a  rel="nofollow" href="mailto:armon.dad...@gmail.com">mailto:armon.dad...@gmail.com</a>)&gt; wrote:
+&gt; &gt; &gt; &gt;  
+&gt; &gt; &gt;  
+&gt; &gt;  
+&gt; &gt;  
+&gt; &gt; ar&gt; All the nodes appeared to have been blocked trying to talk to riak
+&gt; &gt; ar&gt; 001 which was the ring claimant at the time. Doing this seems to
+&gt; &gt; ar&gt; have cleared the state enough for the cluster to make progress
+&gt; &gt; ar&gt; again.
+&gt; &gt;  
+&gt; &gt; Armon, it's quite unlikely that the ring claimant was doing anything
+&gt; &gt; special because the claimant only acts when cluster membership changes.
+&gt; &gt;  
+&gt; &gt; Instead, it's quite likely that riak001 was busy doing a set of LevelDB  
+&gt; &gt; compactions. There have been a number of changes recently to reduce the
+&gt; &gt; amount of time that we've seen worst-case LevelDB compaction blocking Erlang
+&gt; &gt; process schedulers which blocks *everything*, including the keep-alives
+&gt; &gt; that are sent between Erlang nodes. The longest LevelDB-related
+&gt; &gt; stoppage that I've seen was 7.5 minutes. :-( When that happens on a
+&gt; &gt; node X, then all other nodes will complain (almost simultaneously) that  
+&gt; &gt; node X is down. It's not *down*, it's just reallyreallyreally slow to
+&gt; &gt; respond to messages ... which is effectively the same as being down.
+&gt; &gt;  
+&gt; &gt; Checking for big LevelDB compaction storms is pretty easy using
+&gt; &gt; DTrace or SystemTap, but you're probably not using a kernel that
+&gt; &gt; has user-space SystemTap available. There are compaction messages
+&gt; &gt; in the &quot;LOG&quot; file of each LevelDB data directory. The hassle is the
+&gt; &gt; need to look at all of them in parallel.
+&gt; &gt;  
+&gt; &gt; A secondary effect is watching write ops via &quot;iostat -x 1&quot;: the
+&gt; &gt; amount of data written spikes much higher than writes triggered only by
+&gt; &gt; Riak client operations. (Read ops would go higher too, except that many
+&gt; &gt; files input to a compaction are already cached by the OS.)
+&gt; &gt;  
+&gt; &gt; Your primary keys look UID'ish. If they are not lexigraphically adjacent
+&gt; &gt; to other keys inserted at the same time, you will cause many more LevelDB
+&gt; &gt; compaction events than if your keys were adjacent (e.g. prefixing them with
+&gt; &gt; a wall-clock timestamp).
+&gt; &gt;  
+&gt; &gt; -Scott  
+&gt;  
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07402.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07403">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07403">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07404.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07398.html">Riak cluster unresponsive after single node failure</a></span> <span class="sender italic">Armon Dadgar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07399.html">Re: Riak cluster unresponsive after single node...</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07400.html">Re: Riak cluster unresponsive after single ...</a></span> <span class="sender italic">Armon Dadgar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07401.html">Re: Riak cluster unresponsive after sin...</a></span> <span class="sender italic">Scott Lystig Fritchie</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07402.html">Re: Riak cluster unresponsive after...</a></span> <span class="sender italic">Armon Dadgar</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak cluster unresponsive ...</span> <span class="sender italic">Armon Dadgar</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak cluster unresponsive after single node failure">
+<input type="hidden" name="msgid" value="D2E666B2E6234092872A3706603FCDF2@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07403.html">
+<input type="submit" value=" Armon Dadgar ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+cluster+unresponsive+after+single+node+failure%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07402.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07404.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D2E666B2E6234092872A3706603FCDF2@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak replication: can nodes replicate from clean to operational	state without re-adding them to cluster?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#13982" id="c">
+<link rel="index" href="maillist.html#13982" id="i">
+<link rel="prev" href="msg13974.html" id="p">
+<link rel="next" href="msg13983.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13982.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+replication%5C%3A+can+nodes+replicate+from+clean+to+operational%09state+without+re%5C-adding+them+to+cluster%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak replication: can nodes replicate from clean to operational	state without re-adding them to cluster?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Seth+Thomas%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Seth Thomas</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140403" rel="nofollow">Thu, 03 Apr 2014 01:05:22 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Responses inline.
+
+On Wed, Apr 2, 2014 at 3:42 AM, Igor Kukushkin &lt;i...@pbne.mygbiz.com&gt; wrote:</pre><pre>
+
+&gt; Hi all.
+&gt;
+&gt; Here's a simple scenario that we're planning to test: a cluster of 4
+&gt; nodes, 2 are normal eleveldb'backend nodes and 2 are stored on RAM
+&gt; (with same eleveldb backend).
+&gt;
+
+Going to put this out here right now, this is a very non-standard setup.
+Riak treats all nodes equally, keys are consistently hashed across the
+cluster, and there is no in-built weighting. I'd either make faster LevelDB
+nodes (maybe with SSDs) or go full in on the RAM angle and just have enough
+machines for failover. Spitting the difference doesn't really get you any
+advantages with Riak. You're also still below the 5 node threshold so there
+is still unrealized performance being left on the table before even getting
+to the physical node attributes.
+
+&gt;
+&gt; We plan to use RAM nodes as a fast &quot;frontend&quot;.
+&gt;
+&gt;
+&gt; Question A:
+&gt; RAM disks are completely volatile, so nodes will restart with no data
+&gt; stored.
+&gt; So, what will happen at restart? If a Riak node is restarted in a
+&gt; &quot;clean&quot; state (no data, same state as it was on creation), will it
+&gt; receive the state from disk nodes? Or it's required to re-add it to
+&gt; cluster?
+&gt;
+
+If you have AAE[1] enabled then the node would begin rebuilding itself if
+already a member of the cluster. Depending on the amount of data rebuild
+times may not be ideal.
+
+&gt;
+&gt; Question B: due to huge speed difference between on-disk and on-RAM
+&gt; backend, should any replication side-effects be expected?
+&gt;
+ Latency profiles are going to be weird - if you make a request (Assuming
+default N/R/W) then Riak will still have to query 2 nodes minimum on a GET
+and as keys are consistently hashed there is no controlling where they
+live. So you could on any given query completely negate the speed advantage
+of running the RAM backed nodes.
+
+&gt;
+&gt; Quesion C: should we use memory_backend + leveldb_backend nodes
+&gt; together instead of building that? Does Riak networking topology
+&gt; allows for mixed backends?
+&gt;
+It depends on what you're trying to achieve but it's entirely possible.
+Riak support multi-backends per node, in fact that is how Riak CS works, so
+running memory and levelDB on each node is a viable option. So yes, Riak
+definitely supports running multiple backends per node. It's worth noting
+that Riak will &quot;happily&quot; run with different/mixed backends on each node
+(say 3 nodes levelDB and 1 Bitcask) and still mostly work as it's largely
+agnostic to the specific backend unless doing an operation specific to that
+backend (like a 2i query).
+
+&gt; --
+&gt; Igor
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13974.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#13982">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#13982">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13983.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13973.html">Riak replication: can nodes replicate from clean to operati...</a></span> <span class="sender italic">Igor Kukushkin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13974.html">Re: Riak replication: can nodes replicate from clean t...</a></span> <span class="sender italic">Charles Bijon</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak replication: can nodes replicate from clean t...</span> <span class="sender italic">Seth Thomas</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak replication: can nodes replicate from clean to operational	state without re-adding them to cluster?">
+<input type="hidden" name="msgid" value="CAL9jJakB5+qjChwbBPi04iVfa3qexsqYrb2pkWbVNLVfSV+N5Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13982.html">
+<input type="submit" value=" Seth Thomas ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+replication%5C%3A+can+nodes+replicate+from+clean+to+operational%09state+without+re%5C-adding+them+to+cluster%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13974.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13983.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAL9jJakB5+qjChwbBPi04iVfa3qexsqYrb2pkWbVNLVfSV+N5Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Looking for a replacement datastore</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08308" id="c">
+<link rel="index" href="maillist.html#08308" id="i">
+<link rel="prev" href="msg08306.html" id="p">
+<link rel="next" href="msg08309.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08308.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Looking+for+a+replacement+datastore%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Looking for a replacement datastore</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120816" rel="nofollow">Thu, 16 Aug 2012 23:46:24 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Shawn,
+
+tl;dr use Riak and Redis. Could you do it without Redis? Probably. Would I want 
+to? No.</pre><pre>
+
+I'll take a stab at this. It goes without saying that there are many ways to do 
+this and no &quot;right&quot; way. Each solution will have its own positives and 
+negatives. It all depends on what you and your team are comfortable with and 
+the needs of your app. 
+
+For those that follow my ramblings you can guess what I'm gonna say. I would 
+put forward a solution of Riak and... Redis! Why Redis? Data structures (Riak 
+doesn't have them... at the moment... or ever? Don't try to make it have them). 
+You want them. Things like sorted sets, lists and hashes (which compress) are 
+great for basically everything. 
+
+Things in your favor:
+-immutable data
+-trivially shardable 
+-constrained data set (data is not UGC with unbounded size)
+-predictable growth rates
+-deterministic keys (think %iso8601 date or unix epoch int%_%customerid%)
+
+Keep 48 hours of live data in Redis. Run a culling process that dumps data to 
+Riak. The culling process will keep your Redis memory footprint within known 
+limits. You could run this every minute to minimize any data loss from downed 
+Redis servers (outside of master/slave etc.). So like here is where you could 
+make do without Redis. If your app is holding on to, writing or requesting data 
+every minute you could write straight to Riak and just have worker processes 
+roll those minutes into hours/days whatever if necessary. 
+
+With deterministic keys you may not even need search, secondary indexes or key 
+filters but with them you can basically cover any permutation you could come up 
+with. Your application handles fetching the correct key(s) in a deterministic 
+fashion simply by manipulating date offsets.
+
+Whatever you do, you do not want a situation where you write half baked keys 
+into Riak. Frequently updating keys will incur file compaction which will make 
+you want to cry and punch babies just to make the pain stop.
+
+Best,
+-Alexander Sicular
+
+@siculars
+<a  rel="nofollow" href="http://siculars.posterous.com">http://siculars.posterous.com</a>
+
+On Aug 16, 2012, at 6:20 PM, Shawn Parrish wrote:
+
+&gt; Howdy Riak folk,
+&gt; 
+&gt; We're looking for a possible datastore replacement for our server
+&gt; monitoring check results.  Maybe some of you can offer feedback if
+&gt; Riak is a possible good solution.
+&gt; 
+&gt; Each ping, http request, etc has a result with various metadata that
+&gt; we store.  We're looking at about 250 million results a month and that
+&gt; number continues to grow.
+&gt; 
+&gt; We query this data for:
+&gt; 1. last result (is the server up or down?)
+&gt; 2. if it's up, when was the last 'down' and inversely when it's down,
+&gt; when was the last up?
+&gt; 3. Full detail of the last 5 results (to show recent results)
+&gt; 4. Last 24 hours results (usually ~1440 results) to graph
+&gt; 5. Results in a date range (example: all results from July 1 through
+&gt; July 31)... this can be very large.
+&gt; 
+&gt; We currently use bigcouch (Couchdb) but the views and built in
+&gt; _all_docs slow down with so many results and especially when we call
+&gt; them with 'include_docs', cause we need the details of the results as
+&gt; well.
+&gt; 
+&gt; We're trying to trim down the total results stored by summarizing
+&gt; older data and deleting it but that slows down Couchdb views even
+&gt; farther.
+&gt; 
+&gt; Questions:
+&gt; 1. Is Riak a possible datastore for this use case?  Can I get so many
+&gt; results, including all the details quickly enough?
+&gt; 2. Do you know of another datastore that might be better?
+&gt; 
+&gt; Thanks,
+&gt; Shawn
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08306.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08308">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08308">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08309.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08306.html">Looking for a replacement datastore</a></span> <span class="sender italic">Shawn Parrish</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Looking for a replacement datastore</span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08309.html">Re: Looking for a replacement datastore</a></span> <span class="sender italic">Alexander Zhuravlev</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08316.html">Re: Looking for a replacement datastore</a></span> <span class="sender italic">Parnell Springmeyer</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Looking for a replacement datastore">
+<input type="hidden" name="msgid" value="2C6B45E4-8C7D-4974-B9BF-EA532E52F79C@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08308.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Looking+for+a+replacement+datastore%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08306.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08309.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">2C6B45E4-8C7D-4974-B9BF-EA532E52F79C@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

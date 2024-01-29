@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Race condition reading objects</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05403" id="c">
+<link rel="index" href="maillist.html#05403" id="i">
+<link rel="prev" href="msg05392.html" id="p">
+<link rel="next" href="msg05404.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05403.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Race+condition+reading+objects%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Race condition reading objects</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Elias+Levy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Elias Levy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111031" rel="nofollow">Mon, 31 Oct 2011 22:15:02 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Mon, Oct 31, 2011 at 2:01 PM, Rusty Klophaus &lt;ru...@basho.com&gt; wrote:</pre><pre>
+
+&gt; Thanks for your excellent description of the problem. We haven't seen this
+&gt; before to my knowledge, and this isn't expected behavior.
+&gt; Also, if you can share your code, or if you have a small script that can
+&gt; reproduce the failure, that would be extremely helpful.
+&gt;
+
+I created a small test script that reliable reproduces the issue, but I
+created another version that creates truly independent clients (distinct
+processes) and I could not reproduce it.  So there issue must lie somewhere
+in my Fiber based client software stack.  Somewhere within em-synchrony or
+EventMachine some shared state must be getting clobbered at high processing
+rates, or the high rate is causing EventMachine to return a short read
+under some circumstances.
+
+Apologies for the false alarm.
+
+In case anyone is using Ruby and would like a Fiber based client for some
+parallelism, this is the code:
+
+#!/opt/ruby/bin/ruby
+
+require 'em-synchrony'
+require 'riak'
+require 'json'
+
+# Riak's PB client uses Thread local storage.  We change it to store the
+socket in the client.
+module Riak
+  class Client
+    class ProtobuffsBackend
+      def socket
+        @riakpbc_socket ||= new_socket
+      end
+      def reset_socket
+        socket.close
+        @riakpbc_socket = nil
+      end
+    end
+  end
+end
+
+# Riak's PB client mishandles encodings when storing multibyte character
+strings.  If tries
+# to transcode to binary, which it can do as its multibyte, rather than
+force binary encoding.
+# It already correctly records the original encoding and forces it back
+when loading the
+# object.  Here we monkey patch the offending function.  Can't simply
+define it within its module,
+# as the module is included by the BeefcakeProtobuffsBackend and Ruby won't
+include twice a module.
+# So we defined it within the class that includes it.
+# Fixed on latest beta version of gem.
+Riak::Client::BeefcakeProtobuffsBackend.class_exec {
+  def maybe_encode(string)
+    ENCODING ? string.force_encoding('BINARY') : string
+  end
+}
+
+
+# replace default Socket code to use EventMachine Sockets instead
+TCPSocket = EventMachine::Synchrony::TCPSocket
+
+hosts = [ &quot;riak1&quot;, &quot;riak2&quot;, &quot;riak3&quot; ]
+num_hosts = hosts.size
+
+key = 'test_key'.encode('US-ASCII')
+
+EM.synchrony do
+  concurrency = 12
+  fibers = []
+  concurrency.times do |i|
+    fibers &lt;&lt; Fiber.new do
+      # set up our client
+      puts &quot;Creating client to #{hosts[i%num_hosts]}&quot;
+      c = Riak::Client.new :host =&gt; hosts[i%num_hosts], :protocol =&gt; &quot;pbc&quot;
+      puts &quot;Client created&quot;
+      raise &quot;Could not connect to Riak.&quot; unless c.ping
+      puts &quot;Client ready.&quot;
+
+      bucket = c['concur_test']
+      EM::Synchrony.sleep(1)
+      while true
+        begin
+          s = { rand(100000) =&gt; rand(100000) }
+          o = bucket.get_or_new(key, :r =&gt; 2)
+          # Here there be blowups.
+          s = JSON.parse(o.raw_data).merge(s) if o.raw_data
+          o.content_type = 'application/json'
+          o.raw_data = s.to_json.encode('UTF-8')
+          o.store(:returnbody =&gt; false, :w =&gt; 2, :dw =&gt; 0)
+        rescue StopIteration
+          break
+        end
+      end
+    end
+  end
+
+  # Ruby has not method to wait for a set of fibers to all finish
+  # so we just iterate over them, resuming them until they are all
+  # done.
+  puts &quot;Starting up clients.&quot;
+  fibers.each { |fiber| fiber.resume }
+  EM::Synchrony.sleep(1)
+  puts &quot;Waiting for them to finish&quot;
+  while not fibers.empty?
+    #puts &quot;Iterating over fibers&quot;
+    fibers.each do |fiber|
+      if not fiber.alive?
+        puts &quot;Found finished fiber.&quot;
+        fibers.delete fiber
+      end
+    end
+    #puts &quot;Iterated over fibers.&quot;
+    EM::Synchrony.sleep(1)
+  end
+  EventMachine.stop
+end
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05392.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05403">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05403">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05404.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05382.html">Race condition reading objects</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05392.html">Re: Race condition reading objects</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Race condition reading objects</span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05404.html">Re: Race condition reading objects</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05406.html">Re: Race condition reading objects</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05410.html">Re: Race condition reading objects</a></span> <span class="sender italic">Elias Levy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Race condition reading objects">
+<input type="hidden" name="msgid" value="CAFDmHdNjYp1boXp3LbgP6xdMd7ZvF5RL6D22uQxzUEQhygUDvw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05403.html">
+<input type="submit" value=" Elias Levy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Race+condition+reading+objects%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05392.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05404.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFDmHdNjYp1boXp3LbgP6xdMd7ZvF5RL6D22uQxzUEQhygUDvw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

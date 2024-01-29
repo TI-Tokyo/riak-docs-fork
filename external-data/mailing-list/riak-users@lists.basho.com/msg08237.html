@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: multi-get (yet again)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08237" id="c">
+<link rel="index" href="maillist.html#08237" id="i">
+<link rel="prev" href="msg08259.html" id="p">
+<link rel="next" href="msg08233.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08237.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+multi%5C-get+%5C%28yet+again%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: multi-get (yet again)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Eric+Moritz%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Eric Moritz</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120809" rel="nofollow">Thu, 09 Aug 2012 04:55:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I toyed with a pmap in Python a while back to attempt to speed up multiple
+HTTP request to our web services layer at work. You may want to attempt
+that with gevent.</pre><pre>
+
+Here's the code I wrote which is probably not production ready.
+<a  rel="nofollow" href="https://github.com/ericmoritz/pmap">https://github.com/ericmoritz/pmap</a>
+ On Aug 9, 2012 4:46 AM, &quot;Parnell Springmeyer&quot; &lt;ixma...@gmail.com&gt; wrote:
+
+&gt; Jeremy,
+&gt;
+&gt; I was looking for something similar and first built an extra handler onto
+&gt; an internal erlang cowboy API server that used maelstrom (my own worker
+&gt; pool OTP application).
+&gt;
+&gt; It was used to make a simple POST with a string of the {bucket, key} pairs
+&gt; and the server would concurrently GET and combine the results and send it
+&gt; back. This was very fast (thousands of keys GET in ms).
+&gt;
+&gt; Since that seemed gross, I then decided (based on some input from someone
+&gt; else on the list) to try using a simple Map/Reduce phase that did not use
+&gt; javascript but the erlang functions (since those are going to be really
+&gt; fast and take advantage Erlang's concurrency better than the javascript
+&gt; VM's).
+&gt;
+&gt; In python, you can do this to run that type of M/R phase without knowing
+&gt; any Erlang code:
+&gt;
+&gt; client = riak.RiakClient()
+&gt;
+&gt; # Add your KNOWN bucket and key pairs (you can do this in a loop)
+&gt; query = client.add(bucket, key)
+&gt; query.add(bucket, key)
+&gt; query.add(bucket, key)
+&gt; etc… (as many as you like)
+&gt;
+&gt; # Now tell the map and reduce phases to use Erlang module
+&gt; &quot;riak_kv_mapreduce&quot; and its given function
+&gt; # &quot;map_object_value&quot; and &quot;reduce_set_union&quot;.
+&gt; results = client.map([&quot;riak_kv_mapreduce&quot;, &quot;map_object_value&quot;]) \
+&gt;                  .reduce([&quot;riak_kv_mapreduce&quot;, &quot;reduce_set_union&quot;]) \
+&gt;                  .run()
+&gt;
+&gt; The above returns results faster for me, than the brokered multi-get
+&gt; approach I used (I guarantee my brokered multi-get is faster than anything
+&gt; you can do with python + gevent, if that's the case, the M/R phase is
+&gt; definitely the route you want to go).
+&gt;
+&gt; So IMHO, it is very fast as long as you know the buckets and keys you want
+&gt; to get.
+&gt;
+&gt; On Aug 9, 2012, at 12:11 AM, Jeremy Dunck wrote:
+&gt;
+&gt; &gt; I'm new to riak and need multi-get (that is, getting the value and/or
+&gt; &gt; existence of keys in a single network-trip latency).
+&gt; &gt;
+&gt; &gt; I was wondering what the latency of the map-reduce approach is?
+&gt; &gt;
+&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-February/003229.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-February/003229.html</a>
+&gt; &gt;
+&gt; &gt; Alternatively, has anyone tried scaling concurrent gets (perhaps with
+&gt; &gt; evented io) to do many concurrent requests and combining results on
+&gt; &gt; the client?
+&gt; &gt;
+&gt; &gt; I am toying with a python+gevent multiget function.  If the stance is
+&gt; &gt; still that a multiget operation doesn't belong in core, I'm a little
+&gt; &gt; surprised that there doesn't seem to at least be a nice client-lib API
+&gt; &gt; func to do it.  It sure seems useful...
+&gt; &gt;
+&gt; &gt; In my use-case, the immediate need is to know whether a db insert
+&gt; &gt; needs to be done.  We're handling too many keys to want to store in
+&gt; &gt; memory (so no redis, etc), and we don't want to go to the db more than
+&gt; &gt; we need to, so it seems riak would be good here.  But we're getting
+&gt; &gt; 1000s of potential insert keys and want to whittle down all those to a
+&gt; &gt; relative few db inserts.
+&gt; &gt;
+&gt; &gt; So I was thinking riak key-per-id, and insert to the db iff the riak
+&gt; &gt; key doesn't exist, then add the riak key.  We'll get some race
+&gt; &gt; conditions on the insert, but that's OK in our case.
+&gt; &gt;
+&gt; &gt; We do need low latency on the riak check, though, hence either
+&gt; &gt; multiplexing w/ eventing or map-reduce (if that latency is actually
+&gt; &gt; good).
+&gt; &gt;
+&gt; &gt; Am I doing it wrong?
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08259.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08237">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08237">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08233.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08232.html">multi-get (yet again)</a></span> <span class="sender italic">Jeremy Dunck</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08234.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Parnell Springmeyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08236.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08258.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08259.html">Re: multi-get (yet again)</a></span> <span class="sender italic">Parnell Springmeyer</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: multi-get (yet again)</span> <span class="sender italic">Eric Moritz</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: multi-get (yet again)">
+<input type="hidden" name="msgid" value="CAB5B-GDyUSD2229-=PBjsJvW25WqjDZLdfGqtOTwWZYWz5w3zg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08237.html">
+<input type="submit" value=" Eric Moritz ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+multi%5C-get+%5C%28yet+again%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08259.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08233.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAB5B-GDyUSD2229-=PBjsJvW25WqjDZLdfGqtOTwWZYWz5w3zg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

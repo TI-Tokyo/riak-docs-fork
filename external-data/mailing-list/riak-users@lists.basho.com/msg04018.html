@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riaksearch performace when numFound is high</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04018" id="c">
+<link rel="index" href="maillist.html#04018" id="i">
+<link rel="prev" href="msg04010.html" id="p">
+<link rel="next" href="msg04021.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04018.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+performace+when+numFound+is+high%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riaksearch performace when numFound is high</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110715" rel="nofollow">Fri, 15 Jul 2011 11:49:08 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Greg,
+
+I'm curious to know how you are querying search (i.e. which client/API) and
+what your setup looks like (i.e. # of nodes, disk, network between them,
+etc).  How many of these #2 query types are you seeing and what's the
+average # of results being returned?  Is your search instance opened up to
+user queries?</pre><pre>
+
+Ignoring any other inefficiencies in the Search code I'd say that there are
+two main points working against you in query #2
+
+1.) Search uses a _global index_ [1] which means that, as Rusty would say,
+it's partitioned by term (as opposed to a _local index_ which would
+partition by document).  It has been found, in cases where the query
+contains less terms than the processor count, that a global index scales out
+better as it has better concurrency characteristics [1].  However, a local
+index can balance load better and in the case of #2 could possibly drop
+latency times.  When you perform that &quot;text:guitar AND date:07/14/11&quot; each
+term is queried by one, and only one, vnode.  These results are then
+combined by a coordinator (called a broker in [1]).  How much using a local
+index would change your observed latency is unknown to me, but it would have
+other effects that may offset any latency drops.
+
+2.) Search is not limiting the results returned.  Instead of sorting the
+results based on relevance and only taking the top N from each query term
+it's getting all data from each query, passing it to the coordinator and
+saying &quot;hey, you figure this out.&quot;  When you run that #2 query, as you said,
+you are bounded by your largest result set because that's the only way for
+search to know it's correctly answered the query.  Said another way, you may
+only have 10 entries for the 14th but you still need to search all 100K
+guitar entries to determine which ones fall on that date.  Performing some
+sort of relevance calculation beforehand and limiting the result
+would certainly help but it also means you won't get the full result set.  I
+don't think there's any way to have your cake and eat it too unless you can
+afford to put everything in memory.
+
+At this point in time I think inline fields will be your best bet.  Inline
+fields help dramatically here because you are essentially bringing part of
+your document into each term entry in the index.  This means you can query
+on high cardinality terms and filter on lower ones, i.e. low latency (high
+and low being relative here).  If you're worried about disk space then you
+can make use of the `only` value for the inline attribute.  This tells
+Search to store this field's value inline but _don't_ index it.  If you're
+only using the `text` field to filter results then this is exactly what you
+should do.  In fact, I would recommend you do that because any search
+against the `text` field for a corpus of tweets is probably going to have a
+large result set.
+
+
+HTH,
+-Ryan
+
+[1]: C.S. Badue.  Distributed query processing using partitioned inverted
+files.  Master's thesis, Federal University of Minas Gerais, Belo Horizonte,
+Minas Gerias, Brazil, March 2001.
+
+On Thu, Jul 14, 2011 at 6:20 PM, Greg Pascale &lt;g...@clipboard.com&gt; wrote:
+
+&gt; Hi Ryan,
+&gt;
+&gt; Yes we are using 14.2.
+&gt;
+&gt; I think I get what you are saying about inline fields. It looks like it
+&gt; will fix some of our problems, but not all of them. If you'll indulge me in
+&gt; a little contrived example, I think I can explain what I mean.
+&gt;
+&gt; Let's say I'm implementing a simple twitter clone. In my system, tweets
+&gt; have a user, text, date and can be either public or private - so one might
+&gt; look like
+&gt;
+&gt; {
+&gt;     username: greg,
+&gt;     public: true,
+&gt;     text: &quot;I bought a new guitar!&quot;,
+&gt;     date: 07/14/11
+&gt; }
+&gt;
+&gt; Let's say that my service is popular - I have 100k users, each of whom has
+&gt; published exactly 100 tweets, and exactly half of the tweets are public, the
+&gt; rest are private. So I have 10 million tweets total and 5 million of them
+&gt; are public.
+&gt;
+&gt; Query 1: &quot;username:greg AND public:false&quot; - this finds all tweets by greg
+&gt; that are private. In this case &quot;username:greg&quot; matches 100 results and
+&gt; &quot;public:false&quot; matches 5 million. My tests have shown that the performance
+&gt; of this compound query will be roughly equivalent to the worse of the two
+&gt; (&quot;public:false&quot;) - so this query will be way too slow.
+&gt; However, since &quot;public&quot; values are nice and small, I can inline it for a
+&gt; big win.
+&gt;
+&gt; Query 2: &quot;text:guitar AND date:07/14/11&quot; - this finds all tweets from today
+&gt; that contain &quot;guitar&quot;. Suppose there are 100k tweets that contain &quot;guitar&quot;,
+&gt; but it's early in the day so there have only been 1k tweets in total on
+&gt; 07/14/11. My result set is therefore no bigger than 1k (probably much
+&gt; smaller unless all my users bought new guitars today), but this query is
+&gt; still bounded by the &quot;text:guitar&quot; piece which matches 100k results. In this
+&gt; case, inlining date wouldn't help because it's not the slow part, and
+&gt; indexing on the text field isn't practical - it's too big.
+&gt;
+&gt; If you could follow that, am I understanding this correctly? In our system,
+&gt; we have some queries like #1 above, but since we support full text search,
+&gt; many like #2 as well. Do you have any suggestions for what we could do to
+&gt; make queries like #2 performant?
+&gt;
+&gt; Thanks,
+&gt; -Greg
+&gt;
+&gt;
+&gt;
+&gt; On Wed, Jul 13, 2011 at 7:19 PM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; Greg,
+&gt;&gt;
+&gt;&gt; I'm assuming you are using 14.2.
+&gt;&gt;
+&gt;&gt; 1) There is a bug in 14.2 that will cause a (potentially very fast
+&gt;&gt; growing) memory leak when using AND.  This is unfortunate, sorry.  The good
+&gt;&gt; news I have since patched it [1].
+&gt;&gt;
+&gt;&gt; 2) This is your best course of action, and you were so close but you've
+&gt;&gt; actually crossed your fields.  That is, the inline field should be the one
+&gt;&gt; that contains the more common term (i.e. the 'text' field).  So you should
+&gt;&gt; perform a range query on your date with a filter on the text inline field.
+&gt;&gt;  Obviously, the more terms in this field the more the index will inflate
+&gt;&gt; (space-wise), but if you can live with that then it should reduce your
+&gt;&gt; latency substantially (famous last words).  Please try this and get back to
+&gt;&gt; me.
+&gt;&gt;
+&gt;&gt; 3) That is a very well written article, props to the author.  However, I
+&gt;&gt; would leave this as a last resort.  Try what I mentioned in #2, and if
+&gt;&gt; that's not enough to get you by then let's brainstorm.
+&gt;&gt;
+&gt;&gt; [1]:
+&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak_search/commit/cd910c2519f94e9d7e8a8e21894db9d0eecdd5b4">https://github.com/basho/riak_search/commit/cd910c2519f94e9d7e8a8e21894db9d0eecdd5b4</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Wed, Jul 6, 2011 at 2:43 PM, Greg Pascale &lt;g...@clipboard.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Hi,
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm looking at ways to improve riaksearch queries that produce a lot of
+&gt;&gt;&gt; matches.
+&gt;&gt;&gt;
+&gt;&gt;&gt; In my use case, I only ever want the top 20 results for any query, and
+&gt;&gt;&gt; results should be ordered by date (which is encoded in the key). For
+&gt;&gt;&gt; searches with few matches (numFound &lt; ~1000), performance is great. For
+&gt;&gt;&gt; searches with more matches (numFound &gt; ~10000), performance starts to lag
+&gt;&gt;&gt; even though I only ever want the top 20. I assume this is because the system
+&gt;&gt;&gt; needs to fetch and sort all of the results to know what the top 20 are, but
+&gt;&gt;&gt; I'm hoping I can exploit the constraints of my use case in some way to
+&gt;&gt;&gt; increase performance. I've looked at the following approaches.
+&gt;&gt;&gt;
+&gt;&gt;&gt; 1) AND the &quot;text:&quot; term with a small date range (e.g. text:&lt;common word&gt;
+&gt;&gt;&gt; AND date:[&lt;yesterday to today&gt;]). This reduces the result set, but
+&gt;&gt;&gt; performance does not improve. At best, the performance is as good as simply
+&gt;&gt;&gt; doing the &quot;text:&lt;common word&gt;&quot; search without the date range, and in some
+&gt;&gt;&gt; cases worse.
+&gt;&gt;&gt;
+&gt;&gt;&gt; 2) Same as above, but make the date an inline field. From what I could
+&gt;&gt;&gt; find on the topic, it sounded like this is exactly what inline fields or
+&gt;&gt;&gt; for, but I was disappointed to discover it performed far worse than even the
+&gt;&gt;&gt; compound query above.
+&gt;&gt;&gt;
+&gt;&gt;&gt; 3) In this article &lt;<a  rel="nofollow" href="http://blog.inagist.com/searching-with-riaksearch">http://blog.inagist.com/searching-with-riaksearch</a>&gt;,
+&gt;&gt;&gt; which I was linked to from somewhere on the basho site, the author describes
+&gt;&gt;&gt; a technique in which he calls search_fold directly and stops after he's
+&gt;&gt;&gt; received enough results. He claims this is possible in his case because
+&gt;&gt;&gt; results are returned in key order, and he's chosen his keys to match the
+&gt;&gt;&gt; desired ordering of his results. My keys have the same property, as I'm
+&gt;&gt;&gt; already using the presort=key option. Is this behavior of search_fold a
+&gt;&gt;&gt; lucky side-effect, or is this actually guaranteed to work?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Am I simply expecting too much of riaksearch here, or is there a way to
+&gt;&gt;&gt; make this work? If all else fails, I suppose I could divide my data into
+&gt;&gt;&gt; more buckets, but I'm hoping to avoid that as it would make querying much
+&gt;&gt;&gt; more complex.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt; -Greg
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04010.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04018">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04018">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04021.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03946.html">riaksearch performace when numFound is high</a></span> <span class="sender italic">Greg Pascale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04003.html">Re: riaksearch performace when numFound is high</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04010.html">Re: riaksearch performace when numFound is high</a></span> <span class="sender italic">Greg Pascale</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riaksearch performace when numFound is high</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04021.html">Re: riaksearch performace when numFound is h...</a></span> <span class="sender italic">Greg Pascale</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riaksearch performace when numFound is high">
+<input type="hidden" name="msgid" value="CACZcpemuJDhPkuAmuC8GeGm7OS36PPDLB-U19M-vzJgJPo4_Xg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04018.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+performace+when+numFound+is+high%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04010.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04021.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpemuJDhPkuAmuC8GeGm7OS36PPDLB-U19M-vzJgJPo4_Xg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

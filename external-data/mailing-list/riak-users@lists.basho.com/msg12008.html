@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: LevelDB performance (block size question)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd11.html#12008" id="c">
+<link rel="index" href="mail11.html#12008" id="i">
+<link rel="prev" href="msg12007.html" id="p">
+<link rel="next" href="msg12011.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12008.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+LevelDB+performance+%5C%28block+size+question%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: LevelDB performance (block size question)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130813" rel="nofollow">Tue, 13 Aug 2013 12:12:59 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Istvan,
+
+&quot;block_size&quot; is not a &quot;size&quot;, it is a threshold.  Data is never split across 
+blocks.  A single block contains one or more key/value pairs.  leveldb starts a 
+new block only when the total size of all key/values in the current block 
+exceed the threshold.  </pre><pre>
+
+Your must set block_size to a multiple of your typical key/value size if you 
+desire multiple per block.
+
+Plus side:  block_size is computed before compression.  So, you might get nice 
+reduction in total disk size by having multiple, mutually compressible items in 
+a block.  leveldb iterators / Riak 2i might give you slightly better 
+performance with bigger blocks because there are fewer reads if the keys needed 
+are in the same block (or fewer blocks).
+
+Negative side:  the entire block, not single key/value pairs, go into the block 
+cache uncompressed (cache_size).  You can quickly overwhelm the block cache 
+with lots of large blocks.  Also random reads / Gets have to read, decompress, 
+and CRC check the entire block.  Therefore it costs you more disk transfer and 
+decompression/CRC CPU time to read random values from bigger blocks.
+
+
+I suggest you experiment with your dataset and usage patterns.  Be sure to 
+build big sample datasets before starting to measure and/or restart Riak 
+between building and measuring.  These are ways to make sure you see the impact 
+of random reads.
+
+Matthew
+
+
+On Aug 13, 2013, at 2:51 PM, István &lt;lecc...@gmail.com&gt; wrote:
+
+&gt; Hi guys,
+&gt; 
+&gt; I am setting up a new Riak cluster and I was wondering if there is any 
+&gt; drawback of increasing the LevelDB blocksize from 4K to 64K. The reason is 
+&gt; that we have all of the values way bigger than 4K and I guess from the 
+&gt; performance point of view it would make sense to increase the block size. The 
+&gt; tests are still running to confirm this theory but I wanted to clarify that 
+&gt; there is no big red flag of doing that from the Riak side. I found the 
+&gt; following discussion about changing block size:
+&gt; 
+&gt; <a  rel="nofollow" href="https://groups.google.com/forum/#!msg/leveldb/2JJ4smpSC6Q/1Z7aDSeHiRkJ">https://groups.google.com/forum/#!msg/leveldb/2JJ4smpSC6Q/1Z7aDSeHiRkJ</a>
+&gt; 
+&gt; Is that a good idea to experiment with this in Riak to achieve better 
+&gt; performance?
+&gt; 
+&gt; Thank you in advance,
+&gt; Istvan
+&gt; 
+&gt; 
+&gt; -- 
+&gt; the sun shines for all
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12007.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd11.html#12008">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail11.html#12008">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12011.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12007.html">LevelDB performance (block size question)</a></span> <span class="sender italic">István</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: LevelDB performance (block size question)</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12011.html">Re: LevelDB performance (block size questio...</a></span> <span class="sender italic">István</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12014.html">Re: LevelDB performance (block size que...</a></span> <span class="sender italic">István</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: LevelDB performance (block size question)">
+<input type="hidden" name="msgid" value="9B5DC35E-4E57-4E88-A845-870A2CE4533F@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12008.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+LevelDB+performance+%5C%28block+size+question%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12007.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12011.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">9B5DC35E-4E57-4E88-A845-870A2CE4533F@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

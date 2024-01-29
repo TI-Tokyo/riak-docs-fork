@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: replacing node results in error with diag</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14959" id="c">
+<link rel="index" href="maillist.html#14959" id="i">
+<link rel="prev" href="msg14958.html" id="p">
+<link rel="next" href="msg14960.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14959.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+replacing+node+results+in+error+with+diag%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: replacing node results in error with diag</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sargun+Dhillon%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sargun Dhillon</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140930" rel="nofollow">Tue, 30 Sep 2014 12:58:42 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>So, I don't have a ton of experience with Riaknostic, but taking a
+casual glance at the source code, it appears that Riaknostic caches
+some node-local data about the ring (see:
+<a  rel="nofollow" href="https://github.com/basho/riaknostic/blob/2.0.0/src/riaknostic_node.erl#L192-L208">https://github.com/basho/riaknostic/blob/2.0.0/src/riaknostic_node.erl#L192-L208</a>).
+You should be able to unset this by attaching to a node &quot;riak attach&quot;
+and running application:unset_env(riaknostic, local_stats). --
+although, it'd be nice to get a dump of your local env first for
+debugging purposes, you can get that via io:format(&quot;Local env: ~p~n&quot;,
+[application:get_all_env(riaknostic)]). (including the period).</pre><pre>
+
+If that clears one node, you can do it on all of your nodes by issuing
+rpc:multicall(application, unset_env, [riaknostic, local_stats]). on
+one node.
+
+On Tue, Sep 30, 2014 at 12:39 PM, Max Vernimmen
+&lt;m.vernim...@comparegroup.eu&gt; wrote:
+&gt; Hi,
+&gt;
+&gt;
+&gt;
+&gt; Today I finished upgrading 2.0.0-pre20 to 2.0.0-1. Once that was done I did
+&gt; a node replace according to the instructions at
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/nodes/replacing/">http://docs.basho.com/riak/latest/ops/running/nodes/replacing/</a>
+&gt;
+&gt; Once the replacing was done, our monitoring notified us about a problem with
+&gt; the cluster. Our monitoring does a ‘riak-admin diag’ and each of the nodes
+&gt; is now giving the output I’ve posted here:
+&gt; <a  rel="nofollow" href="https://gist.github.com/anonymous/a3133333a07b0cd1da1c">https://gist.github.com/anonymous/a3133333a07b0cd1da1c</a>
+&gt;
+&gt; There is a node being referenced in the diag, which is the replaced node. It
+&gt; is no longer in the cluster. I confirmed the ring was settled and in the web
+&gt; interface of the cluster the replaced node is no longer listed neither is it
+&gt; in the `riak-admin status` output. Only a restart of the riak service on
+&gt; each of the nodes resolves the problem. Doing a restart on only one node
+&gt; fixes the diag status only for that node.
+&gt;
+&gt;
+&gt;
+&gt; To me it seems like there is some state left in the cluster nodes after a
+&gt; node is replaced, causing the `riak-admin diag` command to fail. Has anyone
+&gt; else seen this? Would this classify as a bug or did I simply do something
+&gt; wrong ? J
+&gt;
+&gt;
+&gt;
+&gt; Best regards,
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; Max Vernimmen
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14958.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14959">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14959">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14960.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14958.html">replacing node results in error with diag</a></span> <span class="sender italic">Max Vernimmen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: replacing node results in error with diag</span> <span class="sender italic">Sargun Dhillon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14960.html">RE: replacing node results in error with diag</a></span> <span class="sender italic">Max Vernimmen</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: replacing node results in error with diag">
+<input type="hidden" name="msgid" value="CAMp4zn-UKxo=V=82XxfYiBEPheadAc74mr8ZHeN57zw-X-j7rA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14959.html">
+<input type="submit" value=" Sargun Dhillon ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+replacing+node+results+in+error+with+diag%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14958.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14960.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMp4zn-UKxo=V=82XxfYiBEPheadAc74mr8ZHeN57zw-X-j7rA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

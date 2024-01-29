@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak vnodes not available</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd9.html#10318" id="c">
+<link rel="index" href="mail9.html#10318" id="i">
+<link rel="prev" href="msg10317.html" id="p">
+<link rel="next" href="msg10321.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10318.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+vnodes+not+available%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak vnodes not available</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Shane+McEwan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Shane McEwan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130305" rel="nofollow">Tue, 05 Mar 2013 04:58:42 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+On 05/03/13 11:36, Daniel Iwan wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+What is the correct approach to make sure nodes are ready and Riak service
+is fully up and running and can take request?
+SInce our app depends on Riak we need to somehow make sure Riak is ready
+before our services start.
+</pre></blockquote><pre style="margin: 0em;"></pre><pre>
+
+G'day!
+
+</pre><tt>We run 256 vnodes on 4 nodes. Our average Riak startup time in our 
+</tt><tt>virtualised test environment is about 60-70 seconds although it 
+</tt><tt>sometimes can take longer (I've seen over 300 seconds before I moved to 
+</tt><tt>faster disk!).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I watch the Riak console.log files and wait for the &quot;Wait complete for 
+</tt><tt>service riak_kv&quot; message to appear on each node before starting our 
+</tt><tt>application.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I have a nightly cron job that updates our test Riak database from 
+</tt><tt>production. The cron job probably does most of what your test framework 
+</tt><tt>is doing: stops the application, stops Riak, rsyncs the production 
+</tt><tt>database files, starts Riak, waits for Riak to settle, starts the 
+</tt><tt>application.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I use 'dsh'[<a  rel="nofollow" href="http://sourceforge.net/projects/dsh/">http://sourceforge.net/projects/dsh/</a>] to ssh to the four 
+</tt><tt>Riak nodes to start Riak. On each Riak node I have the following script:
+</tt><pre style="margin: 0em;">
+
+################################################################
+#!/bin/bash
+
+pattern=$1
+file=$2
+
+if [[ -z $pattern || -z $file ]]; then
+  echo &quot;Usage: $0 &lt;pattern&gt; &lt;file&gt;&quot;
+  exit 1
+fi
+
+# Wait for string and then exit
+grep -q &quot;$pattern&quot; &lt;( exec tail -n 0 -f $file ); kill $!
+#################################################################
+
+This script will wait for a string to appear in a file and then exit.
+
+I run it from my cron job like this:
+
+</pre><tt>dsh -r ssh -c -m node1 -m node2 -m node3 -m node4 -- 
+</tt><tt>/usr/local/bin/waitforstring '&quot;Wait complete for service riak_kv&quot;' 
+</tt><tt>/var/log/riak/console.log
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Using the above command in your test framework allows you to wait for 
+</tt><tt>your Riak nodes to start before starting your application. 'dsh' won't 
+</tt><tt>exit until the commands on all four nodes have completed.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Of course, there's a potential race condition if Riak starts faster than 
+</tt><tt>you can ssh and run the &quot;waitforstring&quot; script. If the string you're 
+</tt><tt>waiting for has already appeared in the log file before you start 
+</tt><tt>looking for it you'll never see it and end up waiting forever. As 
+</tt><tt>always, YMMV.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>An alternative is to have a loop running &quot;riak-admin ringready&quot; and 
+</tt><tt>&quot;riak-admin transfers&quot; and exit when they are both showing desired 
+</tt><tt>output. However, watching the log file is a nice, low impact method that 
+</tt><tt>has been working great for me.
+</tt><pre style="margin: 0em;">
+
+Hope this helps!
+
+Shane.
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10317.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd9.html#10318">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail9.html#10318">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10321.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10317.html">Riak vnodes not available</a></span> <span class="sender italic">Daniel Iwan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak vnodes not available</span> <span class="sender italic">Shane McEwan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10321.html">Re: Riak vnodes not available</a></span> <span class="sender italic">Hector Castro</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10322.html">Re: Riak vnodes not available</a></span> <span class="sender italic">Daniel Iwan</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak vnodes not available">
+<input type="hidden" name="msgid" value="5135EBBD.3080008@mcewan.id.au">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10318.html">
+<input type="submit" value=" Shane McEwan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+vnodes+not+available%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10317.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10321.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5135EBBD.3080008@mcewan.id.au</li>
+</ul>
+</div>
+</body>
+</html>

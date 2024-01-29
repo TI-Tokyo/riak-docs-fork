@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: best practices on data storage?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04110" id="c">
+<link rel="index" href="maillist.html#04110" id="i">
+<link rel="prev" href="msg04106.html" id="p">
+<link rel="next" href="msg04107.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04110.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+best+practices+on+data+storage%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: best practices on data storage?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jonathan+Langevin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jonathan Langevin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110728" rel="nofollow">Thu, 28 Jul 2011 06:39:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I don't think that nesting objects within the current object is the best
+choice every time, but it does have it's uses.
+When mapping the schema for a large project recently, what I considered was:</pre><pre>
+
+   1. How often will the nested/related objects be written to?
+   2. How large will the data get?
+
+If the data is something that will grow considerably, then I definitely
+store it on it's own (but grouped as much as possible, such as grouping
+forum posts into a thread, and the thread gets stored as a single object).
+
+If data will be written to quite often (such as log entries for a user),
+instead of storing as nested objects within the user, I again store
+separately, as I'd rather avoid write conflicts on the user object due to a
+log being added while the user profile was being updated.
+
+If the two criteria above aren't an issue, then I nest within the object as
+much as possible.
+And of course, use links to relate the data when appropriate (but avoid
+excessive linkage).
+
+Oh, and another possible help/solution is to create manual indexes, such as
+writing to a user log index that tracks all of the log entry keys. To avoid
+wasting link space, it wouldn't necessarily need to be linked, would just
+need the pks stored, so then you already would have a listing of all logs
+for a user. Then you could link the user log index object back to the user
+object.
+
+
+Don't forget that you can use creative names for your buckets/keys to help
+segment your data (at least for querying, since it's already been
+established that prefixing doesn't necessarily help performance).
+
+
+On avoiding excessive linking:
+<a  rel="nofollow" href="http://wiki.basho.com/Links.html#The-Link-Header">http://wiki.basho.com/Links.html#The-Link-Header</a>
+
+NOTE: There is no artificial limit to the number of links an object can
+have. But, as adding links to an object does increase that object’s size,
+the same guidelines that apply to your data should also apply to your links:
+strike a balance between size and usability.
+
+
+&lt;<a  rel="nofollow" href="http://www.loomlearning.com/">http://www.loomlearning.com/</a>&gt;
+*Jonathan Langevin
+Systems Administrator
+Loom Inc.
+Wilmington, NC: (910) 241-0433 - jlange...@loomlearning.com -
+www.loomlearning.com - Skype: intel352*
+
+
+
+On Thu, Jul 28, 2011 at 2:47 AM, Antonio Rohman Fernandez &lt;
+roh...@mahalostudio.com&gt; wrote:
+
+&gt; **
+&gt;
+&gt; I also thought on that... but then the &quot;User&quot; object could become really
+&gt; big... imagine i post 10 statuses every day and thousands of friends
+&gt; comments all the time on them... also... wouldn't be troublesome to update
+&gt; the &quot;User&quot; object when &quot;friends&quot; comments on statuses? as you should have to
+&gt; retrieve the data to insert the new comment nested and if several friends
+&gt; comment at the same times i see data getting lost in the way... or i'm
+&gt; missing something?
+&gt; thanks
+&gt;
+&gt; Rohman
+&gt;
+&gt; On Wed, 27 Jul 2011 23:40:30 -0700, Sylvain Niles wrote:
+&gt;
+&gt; Hi Rohman, the conversation yesterday got us to thinking and Basho
+&gt; confirmed that buckets are a form of key prefix. So no matter how small the
+&gt; bucket it will traverse the whole key space for a map reduce. We sat down
+&gt; and did some thinking of how to work our data differently as we have a
+&gt; similar use case to you and decided on nested docs using Ripple. In our case
+&gt; we had special buckets for each user like you describe below. Now that
+&gt; bucket is a nested JSON struct inside the user object instead of a separate
+&gt; bucket. In your use case you could have all statuses as a nested struct on
+&gt; your user object and display would be a matter of linkwalking all an user's
+&gt; friends and parsing status content with some time/sorting.
+&gt;
+&gt; On Wed, Jul 27, 2011 at 11:26 PM, Antonio Rohman Fernandez &lt;
+&gt; roh...@mahalostudio.com&gt; wrote:
+&gt;
+&gt;&gt;  Yesterday, somebody suggested that not for having the data distributed
+&gt;&gt; on smaller buckets, Riak's MapReduce operations would be faster... while
+&gt;&gt; nobody at Basho confirmed that yet, i'm now wondering which is the best way
+&gt;&gt; for storing data... lets imagine this simple excercise:
+&gt;&gt;
+&gt;&gt; 1. We have entities users, friends, statuses and comments in a web app
+&gt;&gt; 2. Users can make friends with other users
+&gt;&gt; 3. Users can post statuses
+&gt;&gt; 4. Friends ( Users ) can comment on user's statuses
+&gt;&gt;
+&gt;&gt; At first i thought on having a bucket called &quot;users&quot; with all users and
+&gt;&gt; then for friend linkage i was thinking on having personal buckets like
+&gt;&gt; &quot;rohman_friends&quot;, &quot;fyodor_friends&quot;, etc... with the keys to the users
+&gt;&gt; instead of a big &quot;friends&quot; bucket for easy querying... but seems i'm
+&gt;&gt; wrong... so...
+&gt;&gt;
+&gt;&gt; How would you distribute the data on buckets? and how would you run
+&gt;&gt; MapReduce jobs? Would you use a support SQL database to store relationship
+&gt;&gt; between keys? is possible on an only Riak environment?
+&gt;&gt; thanks
+&gt;&gt;
+&gt;&gt; Rohman
+&gt;&gt;  [image: line]  [image: logo] &lt;<a  rel="nofollow" href="http://mahalostudio.com">http://mahalostudio.com</a>&gt;   *Antonio Rohman
+&gt;&gt; Fernandez*
+&gt;&gt; CEO, Founder &amp; Lead Engineer
+&gt;&gt; roh...@mahalostudio.com   *Projects*
+&gt;&gt; MaruBatsu.es &lt;<a  rel="nofollow" href="http://marubatsu.es">http://marubatsu.es</a>&gt;
+&gt;&gt; PupCloud.com &lt;<a  rel="nofollow" href="http://pupcloud.com">http://pupcloud.com</a>&gt;
+&gt;&gt; Wedding Album &lt;<a  rel="nofollow" href="http://wedding.mahalostudio.com">http://wedding.mahalostudio.com</a>&gt;  [image: line]
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;  --
+&gt; [image: line]  [image: logo] &lt;<a  rel="nofollow" href="http://mahalostudio.com">http://mahalostudio.com</a>&gt;   *Antonio Rohman
+&gt; Fernandez*
+&gt; CEO, Founder &amp; Lead Engineer
+&gt; roh...@mahalostudio.com   *Projects*
+&gt; MaruBatsu.es &lt;<a  rel="nofollow" href="http://marubatsu.es">http://marubatsu.es</a>&gt;
+&gt; PupCloud.com &lt;<a  rel="nofollow" href="http://pupcloud.com">http://pupcloud.com</a>&gt;
+&gt; Wedding Album &lt;<a  rel="nofollow" href="http://wedding.mahalostudio.com">http://wedding.mahalostudio.com</a>&gt;  [image: line]
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04106.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04110">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04110">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04107.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04102.html">best practices on data storage?</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04103.html">Re: best practices on data storage?</a></span> <span class="sender italic">Sylvain Niles</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04104.html">Re: best practices on data storage?</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04105.html">Re: best practices on data storage?</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04106.html">Re: best practices on data stora...</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: best practices on data storage?</span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: best practices on data storage?">
+<input type="hidden" name="msgid" value="CAFtGYzkNOUnbBxfP4OYM6mrgtHz+zvc+EPPmbmFn0cGhzaYSQA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04110.html">
+<input type="submit" value=" Jonathan Langevin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+best+practices+on+data+storage%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04106.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04107.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFtGYzkNOUnbBxfP4OYM6mrgtHz+zvc+EPPmbmFn0cGhzaYSQA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

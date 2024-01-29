@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak CS results and proxying</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#12977" id="c">
+<link rel="index" href="mail7.html#12977" id="i">
+<link rel="prev" href="msg12974.html" id="p">
+<link rel="next" href="msg12978.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12977.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+CS+results+and+proxying%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak CS results and proxying</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Andrew+Tynefield%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Andrew Tynefield</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131113" rel="nofollow">Wed, 13 Nov 2013 17:50:28 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hey guys,
+
+I'm working on a dev environment for a riak-cs setup.</pre><pre>
+
+2 vms and an external proxy
+
+Config of the riak/riak-cs nodes appears to be all complete. I'm
+encountering two issues I'd like some pointers on where to begin diagnosing
+before I go around stracing everything.
+
+Firstly:
+When using s3cmd to query riak-cs, I'm receiving differing results on the
+same commands in succession. Here are the results when going through a
+proxy:
+
+(07:06:09) [andrew/desktop] ~ $ s3cmd -c .s3cfg-riak ls s3://lol
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:10) [andrew/desktop] ~ $ s3cmd -c .s3cfg-riak ls s3://lol
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:11) [andrew/desktop] ~ $ s3cmd -c .s3cfg-riak ls s3://lol
+2013-11-13 14:59     93107   s3://lol/_1
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:12) [andrew/desktop] ~ $ s3cmd -c .s3cfg-riak ls s3://lol
+                       DIR   s3://lol/kitties/
+2013-11-13 14:59     93107   s3://lol/_1
+(07:06:13) [andrew/desktop] ~ $ s3cmd -c .s3cfg-riak ls s3://lol
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:14) [andrew/desktop] ~ $ s3cmd -c .s3cfg-riak ls s3://lol
+                       DIR   s3://lol/kitties/
+2013-11-13 14:59     93107   s3://lol/_1
+
+And here they are querying one of the nodes directly:
+(07:05:59) [andrew/desktop] ~ $ s3cmd ls s3://lol
+                       DIR   s3://lol/kitties/
+2013-11-13 14:59     93107   s3://lol/_1
+(07:06:00) [andrew/desktop] ~ $ s3cmd ls s3://lol
+2013-11-13 14:59     93107   s3://lol/_1
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:01) [andrew/desktop] ~ $ s3cmd ls s3://lol
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:02) [andrew/desktop] ~ $ s3cmd ls s3://lol
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:02) [andrew/desktop] ~ $ s3cmd ls s3://lol
+                       DIR   s3://lol/kitties/
+2013-11-13 14:59     93107   s3://lol/_1
+(07:06:03) [andrew/desktop] ~ $ s3cmd ls s3://lol
+2013-11-13 22:20     84513   s3://lol/kitty.jpg
+(07:06:04) [andrew/desktop] ~ $ s3cmd -c .s3cfg-riak ls s3://lol
+
+The same results happen regardless of which node I query directly, within
+1-2 seconds of executing the command a repeat execution of it returns
+different results. (They are the same repetitive results, just missing
+objects on some of the returns)
+
+The other issue I'm encountering is with put's. If I put directly to the
+node, I see something like:
+
+(07:09:09) [andrew/desktop] ~ $ s3cmd put
+Downloads/CentOS-6.4-x86_64-minimal.iso s3://big
+Downloads/CentOS-6.4-x86_64-minimal.iso -&gt;
+s3://big/CentOS-6.4-x86_64-minimal.iso  [part 1 of 23, 15MB]
+ 15728640 of 15728640   100% in    5s     2.62 MB/s  done
+Downloads/CentOS-6.4-x86_64-minimal.iso -&gt;
+s3://big/CentOS-6.4-x86_64-minimal.iso  [part 2 of 23, 15MB]
+ 15728640 of 15728640   100% in    5s     2.86 MB/s  done
+(... Truncated some of the values for brevity ...)
+Downloads/CentOS-6.4-x86_64-minimal.iso -&gt;
+s3://big/CentOS-6.4-x86_64-minimal.iso  [part 22 of 23, 15MB]
+ 15728640 of 15728640   100% in    1s    12.06 MB/s  done
+Downloads/CentOS-6.4-x86_64-minimal.iso -&gt;
+s3://big/CentOS-6.4-x86_64-minimal.iso  [part 23 of 23, 12MB]
+ 12929024 of 12929024   100% in    1s    11.70 MB/s  done
+
+Which is ideally what should occur. However, when I go through the proxy:
+
+It starts great for the first chunk, but hangs:
+
+Start:
+Downloads/CentOS-6.4-x86_64-minimal.iso -&gt; s3://big/cent6.minimal.iso [part
+19 of 23, 15MB]
+8675328 of 15728640 55% in 1s 8.26 MB/s
+
+Finish:
+Downloads/CentOS-6.4-x86_64-minimal.iso -&gt; s3://big/cent6.minimal.iso
+ [part 19 of 23, 15MB]
+ 15728640 of 15728640   100% in   22s   683.57 kB/s  done
+
+It immediately jumps to 55% (the % varies) and then pauses, sometimes up to
+30 seconds and then jumps to [done].
+
+I assume this is in my nginx configuration somewhere, I thought it was a
+proxy buffer issue, I've since raised those limits and also tried disabling
+proxy_buffering entirely to no difference.
+
+server {
+        listen 80;
+        server_name cs.domain.com *.cs.domain.com;
+        location / {
+                proxy_pass <a  rel="nofollow" href="http://riak-cs">http://riak-cs</a>;
+                proxy_set_header Host $host;
+                proxy_connect_timeout 59s;
+                proxy_send_timeout   600;
+                proxy_read_timeout   600;
+                #proxy_buffering off;
+                proxy_buffers     16 32k;
+                proxy_buffer_size    64k;
+          #return 403;
+
+        }
+
+}
+
+(The two nodes are identical in versions)
+
+(07:34:47) [riak] ~ $ cat /etc/redhat-release
+CentOS release 6.4 (Final)
+(07:45:53) [riak] ~ $ uname -a
+Linux riak.tyne.io 2.6.32-358.23.2.el6.x86_64 #1 SMP Wed Oct 16 18:37:12
+UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
+(07:46:09) [riak] ~ $ riak version
+1.4.2
+(07:46:13) [riak] ~ $ riak-cs version
+1.4.2
+(07:46:25) [riak] ~ $ rpm -qa | grep riak
+riak-cs-1.4.2-1.el6.x86_64
+riak-1.4.2-1.el6.x86_64
+
+All recommended sysctl and ulimit values have been set as described in the
+docs.
+
+I look forward to any assistance with further tracking this down.
+
+-- 
+[Andy Tynefield]
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12974.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#12977">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#12977">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12978.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Riak CS results and proxying</span> <span class="sender italic">Andrew Tynefield</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12978.html">Re: Riak CS results and proxying</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12979.html">Re: Riak CS results and proxying</a></span> <span class="sender italic">Andrew Tynefield</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12983.html">Re: Riak CS results and proxying</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12984.html">Re: Riak CS results and proxying</a></span> <span class="sender italic">Andrew Tynefield</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12986.html">Re: Riak CS results and proxying</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12995.html">Re: Riak CS results and proxyin...</a></span> <span class="sender italic">Andrew Tynefield</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak CS results and proxying">
+<input type="hidden" name="msgid" value="CAKUFnCMi=VWVeoXLKZUJOL7f6up4sJQo7Tc-W_gC_LL3t4TS6A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12977.html">
+<input type="submit" value=" Andrew Tynefield ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+CS+results+and+proxying%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12974.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12978.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAKUFnCMi=VWVeoXLKZUJOL7f6up4sJQo7Tc-W_gC_LL3t4TS6A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

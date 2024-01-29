@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak java client causing OOMs on high latency [resolution]</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#09795" id="c">
+<link rel="index" href="mail5.html#09795" id="i">
+<link rel="prev" href="msg09794.html" id="p">
+<link rel="next" href="msg09797.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09795.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+java+client+causing+OOMs+on+high+latency+%5C%5Bresolution%5C%5D%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak java client causing OOMs on high latency [resolution]</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dietrich+Featherston%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dietrich Featherston</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130110" rel="nofollow">Thu, 10 Jan 2013 14:42:17 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We now believe this to be fixed in the following commit to rjc. Socket
+timeouts were not resulting in permits being released -
+<a  rel="nofollow" href="https://github.com/basho/riak-java-client/commit/b8a4e7b872ae26e2c38e0ff4dd3e2d617a2c8344">https://github.com/basho/riak-java-client/commit/b8a4e7b872ae26e2c38e0ff4dd3e2d617a2c8344</a></pre><pre>
+
+The content of the byte[]s indicated that multiple threads were
+reading from the same socket, and hence reading &quot;length headers&quot; out
+of the middle of messages. We went digging for culprits, found the
+missing finally block, then noticed this change downstream.
+
+Will post more info if this doesn't do the trick.
+
+
+On Thu, Jan 10, 2013 at 11:44 AM, Dietrich Featherston &lt;d...@d2fn.com&gt; wrote:
+&gt; Have confirmed that this is likely a protobuf corruption issue and not
+&gt; related to the actual data we are storing and fetching. We never see
+&gt; object sizes as reported in /stats higher than about 600-700KB.
+&gt; However, we forked the riak driver to instrument the byte[] allocation
+&gt; sizes in this block of code. In some cases, it is attempting to create
+&gt; ~2GB byte[] arrays and in other cases it is actually returning a
+&gt; negative size header. See attached screenshot for the range of lengths
+&gt; we are seeing returned.
+&gt;
+&gt;
+&gt; On Tue, Jan 8, 2013 at 6:50 AM, Brian Roach &lt;ro...@basho.com&gt; wrote:
+&gt;&gt; The code you cite is reading a size (32 bit int, network byte order)
+&gt;&gt; and a message code (8bit int)  from the socket. It then creates a
+&gt;&gt; byte[] of the size required for the amount of data that has been
+&gt;&gt; requested and then sent back by Riak to the client in a response. (See
+&gt;&gt; the docs here: 
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/references/apis/protocol-buffers/">http://docs.basho.com/riak/latest/references/apis/protocol-buffers/</a>
+&gt;&gt;  that show this format )
+&gt;&gt;
+&gt;&gt; That byte[] is then passed into the Google protocol buffers generated
+&gt;&gt; code where the appropriate protocol buffers object(s) are deserialized
+&gt;&gt; from those bytes and the information contained therein is extracted
+&gt;&gt; from them into our own objects which are returned to the caller as a
+&gt;&gt; response.
+&gt;&gt;
+&gt;&gt; From the client's perspective, if that's how much data you're getting,
+&gt;&gt; that's how much data you've requested, and how much Riak has sent you.
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; Brian Roach
+&gt;&gt;
+&gt;&gt; On Mon, Jan 7, 2013 at 3:26 PM, Dietrich Featherston &lt;d...@d2fn.com&gt; wrote:
+&gt;&gt;&gt; We're seeing instances of a JVM app which talks to riak run out of
+&gt;&gt;&gt; memory when riak operations rise in latency or riak becomes otherwise
+&gt;&gt;&gt; unresponsive. A heap dump of the JVM at the time of the OOM show that
+&gt;&gt;&gt; 91% of the 1G (active) heap is consumed by large byte[] instances. In
+&gt;&gt;&gt; our case 3 of those byte[]s are in the 200MB range with size dropping
+&gt;&gt;&gt; off after that. The byte[] instances cannot be traced back to a
+&gt;&gt;&gt; specific variable as their references appear to be stack-allocated
+&gt;&gt;&gt; local method variables. But, based on the name of the thread, we can
+&gt;&gt;&gt; tell that the thread is doing a store operation against
+&gt;&gt;&gt; riak@localhost.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Inspection of the data in one of these byte[]s shows what looks like
+&gt;&gt;&gt; an r_object response with headers and footer boilerplate around our
+&gt;&gt;&gt; object payload. This 200+MB byte[] is filled with 0s after the 338th
+&gt;&gt;&gt; element which is really confusing and indicates that far too much
+&gt;&gt;&gt; space is being allocated to read the protobuf payload. Here's a dump
+&gt;&gt;&gt; of one of these instances:
+&gt;&gt;&gt; <a  rel="nofollow" href="https://gist.github.com/40ef9b2ff561e973a72c">https://gist.github.com/40ef9b2ff561e973a72c</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt; It's also worth mentioning that, according to /stats,
+&gt;&gt;&gt; get_fsm_objsize_100 is consistently under 1MB so there is no reason to
+&gt;&gt;&gt; think that our objects are actually this large.
+&gt;&gt;&gt;
+&gt;&gt;&gt; At this point I'm suspicious of the following code creating too large
+&gt;&gt;&gt; a byte[] from possibly too large a return from dis.readInt()
+&gt;&gt;&gt;
+&gt;&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client/blob/master/src/main/java/com/basho/riak/pbc/RiakConnection.java#L110">https://github.com/basho/riak-java-client/blob/master/src/main/java/com/basho/riak/pbc/RiakConnection.java#L110</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt; Unsure if that indicates a problem in the driver or the server-side
+&gt;&gt;&gt; erlang protobuf server.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Suspicious that requests pile up and many of these byte[]s are hanging
+&gt;&gt;&gt; out--enough to cause an OOM. It's possible that they are always very
+&gt;&gt;&gt; large, but are short-lived enough as to not cause a problem until
+&gt;&gt;&gt; latencies rise increasing their numbers briefly.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thoughts?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt; D
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09794.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#09795">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail5.html#09795">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09797.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak java client causing OOMs on high latency [resolution]">
+<input type="hidden" name="msgid" value="CAHQXTbH+xJb-TAdadGg=gUjrg8VrHsmeHY+Y24qwZc5+LxaaJw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09795.html">
+<input type="submit" value=" Dietrich Featherston ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+java+client+causing+OOMs+on+high+latency+%5C%5Bresolution%5C%5D%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09794.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09797.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHQXTbH+xJb-TAdadGg=gUjrg8VrHsmeHY+Y24qwZc5+LxaaJw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Slow Riak issue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04489" id="c">
+<link rel="index" href="maillist.html#04489" id="i">
+<link rel="prev" href="msg04474.html" id="p">
+<link rel="next" href="msg04475.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04489.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+Riak+issue%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Slow Riak issue</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110827" rel="nofollow">Sat, 27 Aug 2011 06:08:59 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I've CC'd in OJ and the riak-users lists on this.
+
+---
+Jeremiah Peschka - Founder, Brent Ozar PLF, LLC
+Microsoft SQL Server MVP</pre><pre>
+
+On Aug 26, 2011, at 11:35 PM, Neil Unadkat wrote:
+
+&gt; 
+&gt; Hey Jeremiah,
+&gt; 
+&gt; I tried using CorrugatedIron, but it used to connect only to the nodes i had 
+&gt; started on my machine. As in, i had 2 nodes running on my mac os, and i have 
+&gt; a vm running windows 7, through which using CorrugatedIron i could connect 
+&gt; and write to those nodes.
+
+I develop CorrugatedIron in a Windows 7 VM on OS X. I had to do a few things to 
+get CorrugatedIron in Windows to talk to Riak in OS X:
+
+1) Configure Riak to listen on 0.0.0.0 - this will listen for connections no 
+matter which IP they are asking for. 
+    THIS IS UNSAFE TO DEPLOY INTO PRODUCTION. 
+    SET THIS UP PROPERLY WHEN YOU MOVE TO PRODUCTION.
+2) Set up a loopback adapter that listens on a specific IP - this makes it easy 
+to set up a DNS alias on your localhost and VMs.
+3) Set up a DNS alias in /etc/hosts
+4) Use the host name instead of the IP address. You can see this in all of the 
+CorrugatedIron code, we use host names instead of IP addresses.
+
+I have aliases in my .bash_profile to add and remove loopback adapters. It 
+looks like this:
+
+alias add_loopback='sudo ifconfig lo0 alias 10.0.0.22'
+alias remove_loopback='sudo ifconfig lo0 -alias 10.0.0.22'
+
+/etc/hosts on OS X has this line in it:
+
+127.0.0.1    riak-test
+
+and the Windows hosts file (C:\Windows\System32\drivers\etc\hosts) has this 
+line in it:
+
+10.0.0.22    riak-test
+
+&gt; Just 2 days back i could manage to talk to the other nodes i had setup on 
+&gt; another machine through CorrugatedIron. But still everything is quite slow. I 
+&gt; have enabled the PBC interface on the nodes. 
+&gt; Even if we use the C# native classes for HTTP it should take too long right?
+
+HTTP is going to be orders of magnitude slower than Protocol Buffers. There's 
+an exceptional amount of overhead involved in HTTP, especially for small 
+messages. CorrugatedIron will use Protocol Buffers for almost all operations. 
+There are a few operations  that are not supported by Riak's API so we have to 
+drop down to HTTP requests for those.
+
+Riak's performance is going to be bound by the speed of your hard drive. Every 
+write that Riak performs goes to disk. There is no buffering like you would see 
+with MongoDB (or even buffering of data like you'd see in an RDBMS). If you are 
+using a laptop and you're using the HDD that came with it, you have a 5400RPM 
+hard drive which is by all standards an incredibly slow drive. You can compound 
+that with 3 Riak nodes running on the same drive AND one of those nodes running 
+on a virtual environment AND it's a slow laptop HDD with poor caching. I 
+suspect you can see how this would not be the fastest thing on earth.
+
+For development purposes, it's advisable to use a single Riak node running on 
+bare metal (a non-virtualized OS). Once you move into production you can either 
+change the configuration in CorrugatedIron to use multiple nodes or you can use 
+a proxy/load balancer to push your writes out to all of your Riak nodes. The 
+benefit of using an abstractions we've built into Corrugated Iron is that you 
+don't need to worry about the physical implementation - you can a configuration 
+and you're good to go.
+
+&gt; 
+&gt; Thanks
+&gt; Neil 
+&gt; 
+&gt; On 26 August 2011 20:04, Jeremiah Peschka &lt;jeremiah.pesc...@gmail.com&gt; wrote:
+&gt; Hi Neil,
+&gt; 
+&gt; Which one of the .NET clients are you using? If it's CorrugatedIron, let me 
+&gt; know and I can work with you off list to get things connected (OJ Reeves and 
+&gt; I maintain it). I don't think the other two libraries are getting much 
+&gt; maintenance and attention at the moment.
+&gt; 
+&gt; If you can't connect, have you looked into the app.config to change the IPs 
+&gt; that Riak will bind to? By default it's set to only bind to 127.0.0.1. You 
+&gt; can change that for development purposes to 0.0.0.0 (I'd use the real IP 
+&gt; address for production). Since you have two nodes on the same host, make sure 
+&gt; that they're not both using the same port.
+&gt; 
+&gt; Otherwise:
+&gt; 
+&gt; You'll see slower performance with HTTP requests than you will with Protocol 
+&gt; Buffers requests.
+&gt; 
+&gt; Let me know how I can help more.
+&gt; ---
+&gt; Jeremiah Peschka - Founder, Brent Ozar PLF, LLC
+&gt; Microsoft SQL Server MVP
+&gt; 
+&gt; On Aug 25, 2011, at 8:32 PM, Neil Unadkat wrote:
+&gt; 
+&gt; &gt; Hey,
+&gt; &gt; We have been testing Riak to use as our backend database, but one of the 
+&gt; &gt; issues that we are facing is that Riak is very slow when a call is made 
+&gt; &gt; from the c# sharp code.
+&gt; &gt; In the code, we have used the basic Web Client class, and make a simple GET 
+&gt; &gt; call. It takes like 2 seconds to get one object.
+&gt; &gt; We have setup a cluster which has 2 nodes on Mac mini, and one on an Ubuntu 
+&gt; &gt; machine.
+&gt; &gt; I have tried using the .net client library mentioned on the site, but with 
+&gt; &gt; those i cannot even connect to the nodes.
+&gt; &gt; Can anyone help? _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04474.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04489">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04489">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04475.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04467.html">Slow Riak issue</a></span> <span class="sender italic">Neil Unadkat</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04474.html">Re: Slow Riak issue</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Slow Riak issue</span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Slow Riak issue">
+<input type="hidden" name="msgid" value="318E7F36-C473-4834-A48E-2D9CCC0F981E@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04489.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+Riak+issue%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04474.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04475.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">318E7F36-C473-4834-A48E-2D9CCC0F981E@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

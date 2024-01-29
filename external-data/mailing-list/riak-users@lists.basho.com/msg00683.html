@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: bitcask and innostore overheads</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd3.html#00683" id="c">
+<link rel="index" href="mail3.html#00683" id="i">
+<link rel="prev" href="msg00681.html" id="p">
+<link rel="next" href="msg01187.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00683.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+bitcask+and+innostore+overheads%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: bitcask and innostore overheads</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Cribbs%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Cribbs</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100706" rel="nofollow">Tue, 06 Jul 2010 13:18:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Jeremy,
+
+I'm glad to see you're still looking at Riak.</pre><pre>
+
+Regarding your bitcask question, that does seem to be in the correct range of 
+sizes.  Dave (@dizzyco) tells me the actual figure is 24 bytes + the hashtable 
+overhead.
+
+Inno does pad things to fixed-size pages, so yes, you could end up with wasted 
+disk.  However, I would suspect the greater concern would be excessive 
+invalidation of the buffer pool from the essentially random/uniform shape of 
+your key-space, making it difficult to get good throughput.  Inno works best 
+when keys are inserted in sequential order.
+
+Sean Cribbs &lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On Jul 6, 2010, at 3:36 PM, Jeremy Hinegardner wrote:
+
+&gt; Hi all,
+&gt; 
+&gt; I am doing some sizing estimates for a possible transition to riak of
+&gt; our document store.  I've mentioned it before on this list before and
+&gt; in #riak and this is a snippet of a conversation I had with @seancribbs:
+&gt; 
+&gt;    <a  rel="nofollow" href="https://gist.github.com/c3838e5c421d6ab21c93">https://gist.github.com/c3838e5c421d6ab21c93</a>
+&gt; 
+&gt; I have also reviewed the bitcask-intro.pdf and <a  rel="nofollow" href="http://gist.github.com/438065">http://gist.github.com/438065</a>
+&gt; 
+&gt; Quick and dirty info, I am looking to store billions of documents, starting
+&gt; with 2 billion initially, and a linear growth of around 10 million per day.
+&gt; 
+&gt; The key is a 64bit number as a string (generaly about 20 bytes) and the value 
+&gt; is
+&gt; a text/xml document of an average size of 1.5KiB.  This size long tails out to
+&gt; maybe 5 MiB.  
+&gt; 
+&gt; Our system is write once. A key/value pair should never be overwritten once it
+&gt; is initially inserted, and it is accessed fairly often for about a day, and 
+&gt; then
+&gt; a long tail drop off.  The pair must be available for retrieval at any time.
+&gt; 
+&gt; == Bitcask ==
+&gt; 
+&gt; I went into the source of bitcask to confirm the 32 bytes per key minimum
+&gt; memory requirements mentioned in <a  rel="nofollow" href="http://gist.github.com/438065">http://gist.github.com/438065</a> and turned
+&gt; up:
+&gt; 
+&gt;    <a  rel="nofollow" href="http://github.com/basho/bitcask/blob/master/c_src/bitcask_nifs.c#L37">http://github.com/basho/bitcask/blob/master/c_src/bitcask_nifs.c#L37</a>
+&gt; 
+&gt; If my calculations are correct, the actual memory overhead, per key using 
+&gt; bitcask is 72+N bytes on a 64bit system:
+&gt; 
+&gt;    UT_hash_handle -&gt;  50 bytes, (6 pointers and 2 chars)
+&gt;    file_id        -&gt;   4 bytes,
+&gt;    total_sz       -&gt;   4 bytes,
+&gt;    offset         -&gt;   8 bytes,
+&gt;    tstamp         -&gt;   4 bytes,
+&gt;    key_sz         -&gt;   2 bytes,
+&gt;    key            -&gt;   N bytes - how big is this?  is this the riak key, 
+&gt;                                  or a hash of the riak key?
+&gt; 
+&gt; This adds up to 72 bytes + the size of the key, per key/value in bitcask.
+&gt; 
+&gt; If I assume that the key is 20 bytes, then we are talking 92 bytes of memory
+&gt; overhead per document. That means I can store, ~11 million documents per GiB 
+&gt; of
+&gt; free memory (1024^3 / 92),  Or, if I have 32GiB of free ram on a machine
+&gt; to dedicate to riak w/bitcask (the rest would be used for diskcache) I
+&gt; can store ~373 Million documents.
+&gt; 
+&gt; Are my calculations correct?
+&gt; 
+&gt; It also does not look like bitcask pads values on disk, so there is no wasted
+&gt; disk space.  Is this correct?
+&gt; 
+&gt; == Innostore ==
+&gt; 
+&gt; For Innostore I'm not so worried about the memory overhead as insertion 
+&gt; overhead
+&gt; and wasted disk space.
+&gt; 
+&gt; Since InnoDB stores data in key order and our keys are esssentially random 
+&gt; 64bit
+&gt; numbers as strings, are we going to have a significant overhead in our
+&gt; insertions?  
+&gt; 
+&gt; Using innostore, will there be any key/value padding on the data which
+&gt; would cause an overhead per row of disk usage?
+&gt; 
+&gt; Also, we currently compress the data on on disk, and I would interested in 
+&gt; hearing how the compression of disk pages with innostore works.
+&gt; 
+&gt; thanks,
+&gt; 
+&gt; -jeremy
+&gt; 
+&gt; -- 
+&gt; ========================================================================
+&gt; Jeremy Hinegardner                              jer...@hinegardner.org 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00681.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd3.html#00683">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail3.html#00683">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01187.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00681.html">bitcask and innostore overheads</a></span> <span class="sender italic">Jeremy Hinegardner</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: bitcask and innostore overheads</span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01187.html">Re: bitcask and innostore overheads</a></span> <span class="sender italic">Colin Surprenant</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: bitcask and innostore overheads">
+<input type="hidden" name="msgid" value="7DFB3EB1-D2AF-4C2C-90C1-7749890DC89D@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00683.html">
+<input type="submit" value=" Sean Cribbs ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+bitcask+and+innostore+overheads%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00681.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01187.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">7DFB3EB1-D2AF-4C2C-90C1-7749890DC89D@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

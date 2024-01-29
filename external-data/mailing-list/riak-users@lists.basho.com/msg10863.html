@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Advice for storing records in Riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10863" id="c">
+<link rel="index" href="maillist.html#10863" id="i">
+<link rel="prev" href="msg10861.html" id="p">
+<link rel="next" href="msg10865.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10863.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Advice+for+storing+records+in+Riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Advice for storing records in Riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Toby+Corkindale%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Toby Corkindale</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130412" rel="nofollow">Fri, 12 Apr 2013 00:11:02 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi,
+</pre><tt>I wondered if I could get a little advice on good practices for storing 
+</tt><tt>my records in Riak, such that they perform reasonably well in map-reduce 
+</tt><tt>queries?
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>I have a little over 200 million records, currently stored in a regular 
+</tt><tt>SQL database. I'm expecting this dataset to continue to grow, of course.
+</tt><tt>Each record is reasonably small - some get up to couple of hundred 
+</tt><tt>bytes, but most are smaller, and consist of around a dozen numeric 
+</tt><tt>fields and some small alphanumeric identifier fields.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>My initial trial of importing these into Riak were to take each database 
+</tt><tt>row and convert it into a small JSON of key=&gt;value pairs.
+</tt><pre style="margin: 0em;">
+
+I'm find two issues with this though.
+</pre><tt>1) It takes a really long time to import everything into Riak, at least 
+</tt><tt>compared to ingesting into PostgreSQL. (I'm using Riak's HTTP API)
+</tt><tt>2) An initial trial of some map-reduce queries was significantly slower 
+</tt><tt>than I was hoping; I suspect this is because of my data structure though.
+</tt><tt>My initial map phase was iterating over a high percentage of the keys, 
+</tt><tt>decoding the JSON, and then returning just one or two of the fields from 
+</tt><tt>the JSON structure, which is maybe an inefficient way to go about things?
+</tt><pre style="margin: 0em;">
+
+
+</pre><tt>So I was wondering if there's a better way to be approaching the 
+</tt><tt>problem.. I wondered about breaking up the records further, and storing 
+</tt><tt>individual fields against keys, rather than the whole record as a JSON 
+</tt><tt>object.
+</tt><pre style="margin: 0em;">
+
+Eg. This was my initial method:
+Key: {id}:{recordtype}:{recordid}
+Value: { field1: &quot;foo&quot;, field2: &quot;bar&quot;, field3: &quot;baz&quot; }
+
+I wondered about this, creating one key for each field:
+{id}:{recordtype}:{recordid}:field1 ==&gt; &quot;foo&quot;
+{id}:{recordtype}:{recordid}:field2 ==&gt; &quot;bar&quot;
+{id}:{recordtype}:{recordid}:field3 ==&gt; &quot;baz&quot;
+
+</pre><tt>That would avoid the need for one of the map phases; but on the other 
+</tt><tt>hand, now I'd be creating an order of magnitude more overall keys in the db.
+</tt><pre style="margin: 0em;">
+
+
+</pre><tt>On the other hand, I wondered about going the other way, and grouping 
+</tt><tt>records under one key. So instead of having keys 100, 101, 102 .. 109, I 
+</tt><tt>would have one key 10x that contained a JSON structure with an array of 
+</tt><tt>records.. (I don't know whether I store 10, 50 or 100 records per key)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>This would speed up the time taken to ingest data to Riak, and reduce 
+</tt><tt>the number of total queries made by the map phase.. but would increase 
+</tt><tt>the work DONE in the map phase and add inefficiencies as sometimes only 
+</tt><tt>a few rows of the set would actually be required for a given query.
+</tt><pre style="margin: 0em;">
+
+
+
+</pre><tt>And the third consideration is that maybe I just need to scale up the 
+</tt><tt>cluster size to have more machines. Currently it's running on a small 
+</tt><tt>cluster of four nodes while trialling Riak. (And I'm comparing 
+</tt><tt>performance with a single, but significantly more powerful, PostgreSQL node)
+</tt><pre style="margin: 0em;">
+
+
+</pre><tt>There's nothing to stop me trying out all these methods, but I thought 
+</tt><tt>I'd poll the community for advice since no doubt implemented similar 
+</tt><tt>things before and know what rough things may or may not work well.
+</tt><pre style="margin: 0em;">
+
+
+Thanks,
+Toby
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10861.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10863">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10863">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10865.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Advice for storing records in Riak</span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10865.html">Re: Advice for storing records in Riak</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10868.html">Re: Advice for storing records in Riak</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10880.html">Re: Advice for storing records in Riak</a></span> <span class="sender italic">Toby Corkindale</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Advice for storing records in Riak">
+<input type="hidden" name="msgid" value="5167B340.30609@strategicdata.com.au">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10863.html">
+<input type="submit" value=" Toby Corkindale ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Advice+for+storing+records+in+Riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10861.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10865.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5167B340.30609@strategicdata.com.au</li>
+</ul>
+</div>
+</body>
+</html>

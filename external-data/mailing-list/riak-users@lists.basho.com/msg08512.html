@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Node shutdown error</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#08512" id="c">
+<link rel="index" href="mail2.html#08512" id="i">
+<link rel="prev" href="msg08506.html" id="p">
+<link rel="next" href="msg08513.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08512.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Node+shutdown+error%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Node shutdown error</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120912" rel="nofollow">Wed, 12 Sep 2012 08:22:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Wolf,
+
+It looks like a couple of things are going on.  I suspect you're hitting an
+issue with leveldb that we've identified and corrected where compactions
+can sometimes build up and block writing.  This is enough to cause your
+handoff timeout issue.  If you are affected you'll have entries in the LOG
+files in the leveldb dirs that say 'Waiting...' or you'll see large build
+ups of Compacting NNN@0 where NNN &gt; 8.  The fix will be included with the
+next point release of Riak.</pre><pre>
+
+The busy_dist_port messages are due to buffers filling up in distributed
+erlang.  This may be caused by the leveldb issue if multiple vnodes are
+backed up on puts and you don't have very many cores.  It may also be due
+to network load.  You can increase the size of the buffers by adding +zdbbl
+16384 to your vm.args file.  That will give 16Mb buffers rather than the
+default 1Mb.
+
+The node is actually exiting due to a race condition around restarting
+vnodes with leveldb.  We changed the locking scheme to be per-file handle
+for leveldb in 1.2.0.  Previously it was just per-OS process.  When the
+handoff died I think it killed the erlang process running that vnode.  The
+race exists around relaunching a process to handle the dead vnode.
+
+Delving into details for a moment, this is what I suspect the problem is.
+ The driver we wrote for leveldb uses erlang NIF resources which are
+reference counted.  When the process exits the reference goes to zero and
+eventually the erlang virtual machine calls our cleanup code that closes
+the database.  However the process that relaunches the vnode is completely
+decoupled from that cleanup.  If the leveldb database has not been closed
+yet it will now get the lock error you see in the logs.
+
+Whenever riak can't start a vnode it fails safe and shuts itself down.  In
+a cluster, a down node is much better than a sick node.  We're planning to
+change Riak to be more tolerant of crashes for transient problems like
+this, however doing it right will take some thought.
+
+Best,
+
+Jon
+
+On Wed, Sep 12, 2012 at 12:57 AM, Wolf Iem &lt;wolf...@gmail.com&gt; wrote:
+
+&gt; Hi all,
+&gt;
+&gt; We have 4 nodes Riak installation. They are running on Ubuntu 12.04 LTS
+&gt; Precise installed servers.
+&gt; We have installed 1.1.4 at August 1st 2012 and upgraded 1.2.0 when its
+&gt; available.
+&gt;
+&gt; Server names are:
+&gt;
+&gt; f1 - 10.10.0.12 - This is the first installed server. We have joined other
+&gt; ones to this server. This also serves Riak control.
+&gt; s2 - 10.10.0.22 -
+&gt; s3 - 10.10.0.23 -
+&gt; s4 - 10.10.0.24 - This server also serves Riak control.
+&gt;
+&gt; This servers randomly shutdown. Yesterday s4 was shutdown.
+&gt;
+&gt;
+&gt;
+
+
+-- 
+Jon Meredith
+Platform Engineering Manager
+Basho Technologies, Inc.
+jmered...@basho.com
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08506.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#08512">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#08512">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08513.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Re: Node shutdown error</span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08513.html">Re: Node shutdown error</a></span> <span class="sender italic">Dmitry Demeshchuk</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08514.html">Re: Node shutdown error</a></span> <span class="sender italic">Wolf Iem</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Node shutdown error">
+<input type="hidden" name="msgid" value="CAGgQeStKCU2VBCqdn+bi8zub70X=M6SwNtFWyHgR5Umfq75wgw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08512.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Node+shutdown+error%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08506.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08513.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGgQeStKCU2VBCqdn+bi8zub70X=M6SwNtFWyHgR5Umfq75wgw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

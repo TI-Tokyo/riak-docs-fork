@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Number of replica for Luwak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02425" id="c">
+<link rel="index" href="maillist.html#02425" id="i">
+<link rel="prev" href="msg02422.html" id="p">
+<link rel="next" href="msg02377.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02425.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Number+of+replica+for+Luwak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Number of replica for Luwak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Fink%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Fink</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110223" rel="nofollow">Wed, 23 Feb 2011 12:02:02 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Wed, Feb 23, 2011 at 10:40 AM, Les Mikesell &lt;lesmikes...@gmail.com&gt; wrote:
+&gt; On 2/23/2011 9:11 AM, Bryan Fink wrote:
+&gt;&gt;
+&gt;&gt; On Fri, Feb 18, 2011 at 8:54 PM, Les Mikesell&lt;lesmikes...@gmail.com&gt;
+&gt;&gt;  wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; What happens if there is a read of the object while it is in the process
+&gt;&gt;&gt; of
+&gt;&gt;&gt; being updated if the update is several different operations?
+&gt;&gt;
+&gt;&gt; Luwak streams work in an &quot;all or nothing&quot; fashion.  That is, no read
+&gt;&gt; will see the result of any stream until that stream is flushed.  Luwak
+&gt;&gt; blocks are immutable, so old file trees will still reference
+&gt;&gt; completely valid old blocks while new ones are being written.  The
+&gt;&gt; last action of flushing a stream is to point the file-metdata object
+&gt;&gt; (in the luwak_tld bucket) at the head of the new tree.
+&gt;&gt;
+&gt;&gt; A flush will only occur when a stream closes, unless your program
+&gt;&gt; explicitly calls luwak_put_stream:flush/1.
+&gt;
+&gt;
+&gt; Thanks!  A couple more somewhat related questions: is that atomic update
+&gt; nature hard to duplicate outside of luwak (say by a client that needs to
+&gt; keep several items in sync), and if the luwak blocks are immutable, how do
+&gt; you ever clean up the space used by data that has been deleted or modified
+&gt; and no longer referenced?</pre><pre>
+
+(Ryan Zezeski sent correct answers before I could finish this, but I'm
+sending anyway, with hopefully extra information.)
+
+Well, these two behaviors are partially related.
+
+It's easy to duplicate this behavior: write the new versions of your
+items, without removing the old versions, then when you're finished,
+replace the object that says which version of those items is the
+latest.  It's akin to the old filesystem trick of writing out a new
+file, then using 'rename' to move it in place of the old one.  (In
+reference to your followup email, yes, Luwak accomplishes this by
+effectively (tree-wise) putting all the keys in one object, which is
+updated last.)
+
+But, you've hit one one of Luwak's major specializations: it was
+originally designed for immutable data, and so it does nothing about
+cleaning up unreferenced blocks.  At this point, it's a distributed
+online garbage collection problem that we haven't written a solution
+for yet.  If you can pause all updates to Luwak, and be sure that the
+data is stable (i.e. no conflicts hidden by unreachable nodes), it's
+relatively simple to mark&amp;sweep the luwak_node bucket, based on
+pointers from the luwak_tld bucket.  There's even some history (look
+at the &quot;ancestors&quot; property of the file object) that might help out.
+But, (as both you and Ryan figured out) doing this live involves much
+more bookkeeping to keep track of not only blocks shared between
+files, but also blocks that are not linked solely because a stream
+hasn't finished flushing yet.
+
+/me takes down a note to review Ryan's GC experiments
+
+-Bryan
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02422.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02425">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02425">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02377.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02376.html">Number of replica for Luwak</a></span> <span class="sender italic">Aditya Patadia</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02380.html">Re: Number of replica for Luwak</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02383.html">Re: Number of replica for Luwak</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02385.html">Re: Number of replica for Luwak</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02418.html">Re: Number of replica for Luwak</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02419.html">Re: Number of replica for Luwak</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02421.html">Re: Number of replica for Luwak</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02422.html">Re: Number of replica for Luw...</a></span> <span class="sender italic">Les Mikesell</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Number of replica for Luwak</span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Number of replica for Luwak">
+<input type="hidden" name="msgid" value="AANLkTing71mdZpKZrhbsUcosDTZVGqzJgWrY+YEM2ZKk@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02425.html">
+<input type="submit" value=" Bryan Fink ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Number+of+replica+for+Luwak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02422.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02377.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTing71mdZpKZrhbsUcosDTZVGqzJgWrY+YEM2ZKk@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

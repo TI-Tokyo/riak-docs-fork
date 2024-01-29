@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: CorrugatedIron call to delete a bucket.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10020" id="c">
+<link rel="index" href="maillist.html#10020" id="i">
+<link rel="prev" href="msg10018.html" id="p">
+<link rel="next" href="msg10002.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10020.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+CorrugatedIron+call+to+delete+a+bucket.%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: CorrugatedIron call to delete a bucket.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kevin+Burton%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kevin Burton</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130206" rel="nofollow">Wed, 06 Feb 2013 08:58:15 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Again, thank you. I have followed the documentation and set LevelDB as the
+storage backend. Now what?</pre><pre>
+
+ 
+
+From: Jeremiah Peschka [<a  rel="nofollow" href="mailto:jeremiah.pesc...@gmail.com">mailto:jeremiah.pesc...@gmail.com</a>] 
+Sent: Wednesday, February 06, 2013 9:14 AM
+To: Kevin Burton
+Cc: riak-users
+Subject: Re: CorrugatedIron call to delete a bucket.
+
+ 
+
+There is no LevelDB to learn - it's a C++ API. It's like MyISAM vs InnoDB vs
+whatever TokuTek are selling these days. LevelDB is just one possible
+storage backend for Riak
+
+ 
+
+To use secondary indices, you'd switch your Riak backend to LevelDB in the
+erlang app.config - see
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/tutorials/choosing-a-backend/LevelDB/">http://docs.basho.com/riak/latest/tutorials/choosing-a-backend/LevelDB/</a>.
+
+ 
+
+To keep the delete activity localized to the server, you'll want to use
+Erlang + MapReduce jobs. This is equivalent to a stored procedure that runs
+DELETE FROM table;
+
+ 
+
+If you want to perform a delete from CorrugatedIron, you'll be doing the
+equivalent of creating a cursor that streams rows back to the client which
+then issues a delete.
+
+ 
+
+There are some portions of Riak where the learning curve is steep - bulk
+data operations with Erlang is one of them.
+
+
+
+
+---
+
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+
+MCITP: SQL Server 2008, MVP
+
+Cloudera Certified Developer for Apache Hadoop
+
+ 
+
+On Wed, Feb 6, 2013 at 7:07 AM, Kevin Burton &lt;rkevinbur...@charter.net&gt;
+wrote:
+
+So it sounds like if there is the possibility of deleting buckets I need to
+learn LevelDB or Erlang. It sounds like you are leaning towards the former.
+
+ 
+
+From: Jeremiah Peschka [<a  rel="nofollow" href="mailto:jeremiah.pesc...@gmail.com">mailto:jeremiah.pesc...@gmail.com</a>] 
+Sent: Wednesday, February 06, 2013 8:56 AM
+To: Kevin Burton; riak-users@lists.basho.com
+Subject: Re: CorrugatedIron call to delete a bucket.
+
+ 
+
+Don't be too put out - deleting a bucket is the sad panda story of Riak. We
+provide the DeleteBucket() method largely for our own selfish purposes of
+cleaning up after unit tests.
+
+ 
+
+2i is a secondary index. If you've set up Riak to use the LevelDB back end,
+you can create secondary indices. There is a $keys index that just lists the
+names of the keys in a bucket. By using secondary indices, you can stream
+the $keys index back to CorrugatedIron and then issue async deletes on
+chunks of keys.
+
+ 
+
+The Erlang way is a bit more complex - it requires knowing Erlang. In
+theory, you can write several Erlang functions that will perform a MapReduce
+across your bucket (or even the secondary index) and delete keys. The upside
+of using Erlang + MapReduce to do it is that you won't have to round trip
+between Riak and your client. The downside is that you have to learn Erlang.
+;)
+
+ 
+
+ 
+
+ 
+
+
+
+
+---
+
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+
+MCITP: SQL Server 2008, MVP
+
+Cloudera Certified Developer for Apache Hadoop
+
+ 
+
+On Wed, Feb 6, 2013 at 4:56 AM, Kevin Burton &lt;rkevinbur...@charter.net&gt;
+wrote:
+
+Sorry. Being a beginner I am not aware of &quot;alternative&quot; methods. I have not
+read enough to use Erlang. I don't know what &quot;querying a 2i&quot; is. I also
+wasn't aware that I needed to manage my keys. Perhaps this question could
+turn into a kind of poll for best practices? All suggestions are greatly
+appreciated.
+
+
+On Feb 6, 2013, at 6:44 AM, OJ Reeves &lt;o...@buffered.io&gt; wrote:
+
+Kevin,
+
+ 
+
+No I'm not saying that bucket's can't be deleted. I'm saying that you should
+choose an alternative method. For example, manage your keys in another way
+perhaps by querying a 2i and using the result to delete the values. This
+could be done via an Erlang map reduce job. You could store the keys
+elsewhere for later retrieval then delete each object via the key.
+
+ 
+
+The problem here isn't deleting buckets, the problem is listing keys. I do
+think that other Riak users, Basho people in particular, would be better
+positioned to offer alternative approaches than me.
+
+ 
+
+OJ
+
+ 
+
+On Wed, Feb 6, 2013 at 10:37 PM, Kevin Burton &lt;rkevinbur...@charter.net&gt;
+wrote:
+
+I see the warning and I would love to heed it. You are saying buckets can
+never be deleted? Rename has the same problem?
+
+
+On Feb 6, 2013, at 6:15 AM, OJ Reeves &lt;o...@buffered.io&gt; wrote:
+
+Deleting a bucket takes forever in any Riak client if the bucket has a lot
+of values in it. This is because a bucket isn't an object that is any way
+analogous to a &quot;table&quot; like you'd see in an RDBMS and to delete a bucket the
+keys in that bucket need to be listed first (please correct me if I'm wrong
+people!). This operation is known to be slow and using it is not
+recommended.
+
+ 
+
+CorrugatedIron outputs warning messages to the debug console whenever
+ListKeys or DeleteBucket are called. I'd recommend heeding those warnings
+and look to take a different approach.
+
+ 
+
+OJ
+
+ 
+
+On Wed, Feb 6, 2013 at 8:11 AM, Jeremiah Peschka
+&lt;jeremiah.pesc...@gmail.com&gt; wrote:
+
+No.
+
+ 
+
+Deleting a bucket requires deleting all keys in the bucket. It will be slow.
+
+
+
+
+---
+
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+
+MCITP: SQL Server 2008, MVP
+
+Cloudera Certified Developer for Apache Hadoop
+
+ 
+
+On Tue, Feb 5, 2013 at 1:58 PM, Kevin Burton &lt;rkevinbur...@charter.net&gt;
+wrote:
+
+ 
+
+I am trying to remove a bucket. So I call client.DeleteBucket(&lt;my bucket&gt;)
+but this takes *forever*. Is there a faster way to simply remove a bucket?
+
+ 
+
+ 
+
+ 
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+ 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+
+
+ 
+
+-- 
+
+OJ Reeves
+
++61 431 952 586 &lt;tel:%2B61%20431%20952%20586&gt; 
+<a  rel="nofollow" href="http://buffered.io/">http://buffered.io/</a>
+
+
+
+
+
+ 
+
+-- 
+
+OJ Reeves
+
++61 431 952 586 &lt;tel:%2B61%20431%20952%20586&gt; 
+<a  rel="nofollow" href="http://buffered.io/">http://buffered.io/</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+ 
+
+ 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10018.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10020">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10020">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10002.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09998.html">CorrugatedIron call to delete a bucket.</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10000.html">Re: CorrugatedIron call to delete a bucket.</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10008.html">Re: CorrugatedIron call to delete a bucket.</a></span> <span class="sender italic">OJ Reeves</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10010.html">Re: CorrugatedIron call to delete a bucket.</a></span> <span class="sender italic">OJ Reeves</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10012.html">Re: CorrugatedIron call to delete a buck...</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10015.html">Re: CorrugatedIron call to delete a...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10016.html">RE: CorrugatedIron call to dele...</a></span> <span class="sender italic">Kevin Burton</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10018.html">Re: CorrugatedIron call to ...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email tSliceCur"><span class="subject">RE: CorrugatedIron call to ...</span> <span class="sender italic">Kevin Burton</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: CorrugatedIron call to delete a bucket.">
+<input type="hidden" name="msgid" value="011501ce048b$0087fb40$0197f1c0$@charter.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10020.html">
+<input type="submit" value=" Kevin Burton ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+CorrugatedIron+call+to+delete+a+bucket.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10018.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10002.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">011501ce048b$0087fb40$0197f1c0$@charter.net</li>
+</ul>
+</div>
+</body>
+</html>

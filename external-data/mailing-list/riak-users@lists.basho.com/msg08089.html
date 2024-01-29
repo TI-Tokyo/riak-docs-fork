@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: How to store data</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08089" id="c">
+<link rel="index" href="maillist.html#08089" id="i">
+<link rel="prev" href="msg08078.html" id="p">
+<link rel="next" href="msg08076.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08089.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+store+data%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: How to store data</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Erik+S%C3%B8e+S%C3%B8rensen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Erik Søe Sørensen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120726" rel="nofollow">Thu, 26 Jul 2012 15:20:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+On 26-07-2012 10:23, Andrew Kondratovich wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>1) Identifiers is not random. They are collected in groups, but number 
+</tt><tt>of these groups is large and the same identifier can occur in 
+</tt><tt>different groups.
+</tt><tt>2) It's a fixed amount of time - it can be changed, but usually it's 
+</tt><tt>one day. But request can be &quot;get items from day before&quot;, not only for 
+</tt><tt>today.
+</tt></blockquote><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>OK... Still assuming that latency, and hence the number of seeks, and 
+</tt><tt>hence the number of keys touched, is a key concern (and forgive me for 
+</tt><tt>going on at length, but I regard this as an exercise):
+</tt><pre style="margin: 0em;">
+
+</pre><tt>&quot;2)&quot; suggests that grouping events by day may be an idea. Then, to get 
+</tt><tt>all record for a certain &quot;from&quot;, you'll need to look (usually) two keys.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If &quot;time&quot; in the events is the time the event is written, then this 
+</tt><tt>structuring may in itself be good enough: the 10,000 keys corresponding 
+</tt><tt>to 'today', and even 'yesterday' as well, might fit into the disk cache. 
+</tt><tt>Depending on what else is going on on the server in question, the number 
+</tt><tt>of items needed to actually be read from the disk to respond to a 
+</tt><tt>request may be low enough that performance is good enough.
+</tt><pre style="margin: 0em;">
+That is probably assuming too much, though.
+
+
+As for &quot;1)&quot;, there's still a lot of &quot;it depends&quot;.
+First a bit of &quot;why it depends&quot;:
+</pre><tt>- one disk seek costs approximately as much as reading 300KB from the 
+</tt><tt>disk -- according to &quot;Numbers Everyone Should Know&quot; 
+</tt><tt>(<a  rel="nofollow" href="http://brenocon.com/dean_perf.html">http://brenocon.com/dean_perf.html</a>).
+</tt><tt>- data sitting next to each other on the disk won't require (much) 
+</tt><tt>seeking.  For certain backends, such as eleveldb, data with adjacent 
+</tt><tt>keys will be adjacent on disk (with high probability; for eleveldb 
+</tt><tt>they'll have to be roughly same age as well).
+</tt><tt>- data accessed often can be accessed cheap, because it'll probably be 
+</tt><tt>in the disk cache.
+</tt><pre style="margin: 0em;">
+- data access patterns are often skewed.
+
+So,
+</pre><tt>- If the identifier groups are made of subgroups, such that each 
+</tt><tt>identifier only occurs in one subgroup, and identifier groups 
+</tt><tt>(typically) contain just a few subgroups (significantly fewer than 500), 
+</tt><tt>then storing each subgroup together may improve performance.
+</tt><tt>This of course also apply even if an identifier group contains just part 
+</tt><tt>of each subgroup - instead of all of it; the remainder of the subgroup 
+</tt><tt>can be ignored.
+</tt><tt>Whether this pays off depends on the size of the data in the entry, and 
+</tt><tt>the &quot;subgroupability&quot;.
+</tt><tt>For example, if instead of reading 500 keys each pertaining one 
+</tt><tt>identifier and holding 10KB each, we can form 50 subgroups of each 20 
+</tt><tt>identifiers (using only, on average, half of these subgroups) and read 
+</tt><tt>those instead (= 200KB per subgroup), then we've traded 450 (potential) 
+</tt><tt>disk seeks for 5MB disk data transfer, which is good. (Doing the math, 
+</tt><tt>we may have cut time from 5.05s to 0.6s, not considering parallelism.)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- If the identifiers of a group are lexicographically adjacent, or 
+</tt><tt>consists of few subgroups which are each lexicographically adjacent, and 
+</tt><tt>a backend is used which stores the objects sorted by key, then the 
+</tt><tt>number of seeks may not be very high to begin with. In that case, we're 
+</tt><tt>lucky and can just use the (identifier/date) pair as keys.
+</tt><tt>This of course also applies if, instead of having such identifiers to 
+</tt><tt>start with, we can translate the identifiers into other keys with that 
+</tt><tt>property.
+</tt><tt>(One possible use case which matches this: a game or similar in which a 
+</tt><tt>player can see a 20x25 area centered on the location of the player; each 
+</tt><tt>area square = an identifier. If the squares are named &quot;YYY,XXX&quot;, then 
+</tt><tt>the identifiers of a request consists of 20 subgroups 
+</tt><tt>(&quot;YYY,Xmin&quot;...&quot;YYY,Xmax&quot;) which are lexicographically, and hence 
+</tt><tt>disk-wise, adjacent - and therefore, only 20 disk seeks are needed (or 
+</tt><tt>2x20, to get yesterday's data as well), which is manageable.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- If the access pattern is very skewed, so that e.g. of the 500 
+</tt><tt>identifiers in each request, the 450 are in fact more or less fixed and 
+</tt><tt>only the 50 remaining vary, then of course the 450 lookups are quite 
+</tt><tt>cheap, and the math changes accordingly.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Thus, the topology of the request&lt;-&gt;identifier graph matters - both 
+</tt><tt>regarding which identifiers are mostly requested together, and the 
+</tt><tt>&quot;degree&quot; of each identifier.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- If the identifier/group graphs is known and the degree of each 
+</tt><tt>identifier is low - such as if each identifier belongs to exactly two 
+</tt><tt>groups, e.g. if an identifier corresponds to an edge in a graph, and the 
+</tt><tt>groups correspond to nodes (they might be roads and cities, or messages 
+</tt><tt>and actors, or whatever), - then you might want to consider storing the 
+</tt><tt>data in multiple places: have a key for each group (well, group/date 
+</tt><tt>pair) and store the data in both/all groups which contains the identifier.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- Finally (it's all about the data and access patterns...), there's the 
+</tt><tt>question of how many of the 500 identifiers on average have data from 
+</tt><tt>the past day. If it happens to be the case that for most of the 
+</tt><tt>identifiers, there are no recent events, then the corresponding 
+</tt><tt>(identifier,date) key would be absent. For certain backend - such as 
+</tt><tt>bitcask - this is detected without any disk access at all, because 
+</tt><tt>bitcask keeps the entire key directory in RAM. Then again, unless the 
+</tt><tt>database is pruned with suitable frequency, this same property could 
+</tt><tt>mean that the key set would grow too fast for bitcask to be suitable for 
+</tt><tt>your needs.
+</tt><tt>But anyway, in a suitable scenario, this cheap existence check would 
+</tt><tt>keep the disk seek count low enough that simply using the 
+</tt><tt>(identifier,date)-pair would give reasonable performance.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>There are probably other special cases of interest, but I'd better stop 
+</tt><tt>here - this should suffice to illustrate the scope of &quot;it depends&quot; :-)
+</tt><tt>And all of this is of course still assuming that disk seeks are in fact 
+</tt><tt>of the essence; SSDs change that game, for instance. (As does a 56kbit 
+</tt><tt>connection between the app server and the Riak cluster.)
+</tt><pre style="margin: 0em;">
+
+/Erik
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>On Thu, Jul 26, 2012 at 10:48 AM, Erik Søe Sørensen &lt;e...@trifork.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:e...@trifork.com">mailto:e...@trifork.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    Never mind the number of requests (well, almost) - what you
+    certainly want to keep down is the number of disk seeks.
+
+    To that end...:
+    1) those 500 identifiers present in a request - are they totally
+    unrelated, or do they occur in some pattern - e.g. the same
+    together always?
+    2) the cut-off time - may it be anything, or is it something like
+    a fixed amount back in time?
+
+
+    ----- Reply message -----
+    Fra: &quot;Andrew Kondratovich&quot; &lt;andrew.kondratov...@gmail.com
+    &lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>&gt;&gt;
+    Dato: ons., jul. 25, 2012 18:23
+    Emne: How to store data
+    Til: &quot;Andres Jaan Tack&quot; &lt;andres.jaan.t...@eesti.ee
+    &lt;<a  rel="nofollow" href="mailto:andres.jaan.t...@eesti.ee">mailto:andres.jaan.t...@eesti.ee</a>&gt;&gt;
+    Cc: &quot;riak-users@lists.basho.com
+    &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;&quot; &lt;riak-users@lists.basho.com
+    &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;&gt;
+
+
+    Yeap.. half a thousand requests to riak isn't cool =( I'm looking
+    some strategy of storing data so that i could fetch all items by 1
+    request.
+
+    I could use index MR at time and filter results at map phase. I
+    could use special keys with from data and use key filters (with
+    time filtering at map phase)... I wish I could use several 2i at
+    MR or combine 2i with keyfilters, or perform MR on buckets... I
+    wish... =)
+
+    On Wed, Jul 25, 2012 at 5:35 PM, Andres Jaan Tack
+    &lt;andres.jaan.t...@eesti.ee
+    &lt;<a  rel="nofollow" href="mailto:andres.jaan.t...@eesti.ee">mailto:andres.jaan.t...@eesti.ee</a>&gt;&lt;<a  rel="nofollow" href="mailto:andres.jaan.t...@eesti.ee">mailto:andres.jaan.t...@eesti.ee</a> 
+&lt;<a  rel="nofollow" href="mailto:andres.jaan.t...@eesti.ee">mailto:andres.jaan.t...@eesti.ee</a>&gt;&gt;&gt;
+    wrote:
+    Is that a realistic strategy for low latency requirements? Imagine
+    this were some web service, and people generate this query at some
+    reasonable frequency.
+
+    (not that I know what Andrew is looking for, exactly)
+
+
+    2012/7/25 Yousuf Fauzan &lt;yousuffau...@gmail.com
+    &lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>&gt;&lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>
+    &lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>&gt;&gt;&gt;
+    Since 500 is not that big a number, I think you can run that many
+    M/Rs with each emitting only records having &quot;time&quot; greater than
+    specified. Input would be {index, &lt;&lt;&quot;bucket&quot;&gt;&gt;, &lt;&lt;&quot;from_bin&quot;&gt;&gt;,
+    &lt;&lt;&quot;from_field_value&quot;&gt;&gt;}
+
+    If you decide to split the data into separate buckets based on
+    &quot;from&quot; field, input would be {index, &lt;&lt;&quot;from_field_value&quot;&gt;&gt;,
+    &lt;&lt;&quot;time_bin&quot;&gt;&gt;, &lt;&lt;&quot;time_low&quot;&gt;&gt;, &lt;&lt;&quot;time_high&quot;&gt;&gt;}
+
+
+    --
+    Yousuf
+
+    On Wed, Jul 25, 2012 at 6:35 PM, Andrew Kondratovich
+    &lt;andrew.kondratov...@gmail.com
+    &lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>&gt;&lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>
+    &lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>&gt;&gt;&gt; wrote:
+    Hello,  Yousuf.
+
+    Thanks for your reply.
+
+    We have several millions of items. It's about 10 000 of unique
+    'from' fields (about 1000 items for each). Usually, we need to get
+    items for about 500 'from' identifiers with 'time' limit (about 5%
+    of items is corresponding).
+
+    On Wed, Jul 25, 2012 at 1:02 PM, Yousuf Fauzan
+    &lt;yousuffau...@gmail.com
+    &lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>&gt;&lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>
+    &lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>&gt;&gt;&gt; wrote:
+    Hi Andrew,
+
+    First of all, the correct answer to your question is the
+    proverbial &quot;it depends&quot;. Having said that, here is what I could do
+    in your case
+
+    1. If there are enough data points with the same &quot;from&quot; field, I
+    will make it a bucket and then index on time.
+    2. If the above is not true, I will index on &quot;from&quot; and &quot;time&quot; field.
+        a. If number of records where &quot;time&quot; is greater than the one
+    your require is small, I will run a map/reduce with the initial
+    input as those records.
+        b. If number of records having a particular &quot;from&quot; is small, I
+    will do the above with the initial input as records having that
+    &quot;from&quot; field. This could be a problem as Riak only supports range
+    and exact queries so if you want to query multiple identifiers,
+    you will have to run multiple queries.
+        In both the above cases, I will use secondary indexes to get
+    the initial records.
+        Note that we are using M/R as Riak does not support querying
+    by multiple indexes.
+
+    What I would also suggest is to partition your data into different
+    buckets. You will need to understand the queries that you will be
+    supporting and partition it accordingly.
+
+    --
+    Yousuf
+
+    On Wed, Jul 25, 2012 at 2:50 PM, Andrew Kondratovich
+    &lt;andrew.kondratov...@gmail.com
+    &lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>&gt;&lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>
+    &lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>&gt;&gt;&gt; wrote:
+    Good afternoon.
+
+    I am considering several storage solutions for my project, and now
+    I look at Riak.
+    We work with the following pattern of data:
+    {
+      time: unixtime
+      from: int
+      data: binary
+      ...
+    }
+
+
+
+
+--
+Andrew Kondratovich
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+--
+Mobile: + 45 26 36 17 55 | Skype: eriksoesorensen | Twitter: @eriksoe
+</pre><tt>Trifork A/S  |  Margrethepladsen 4  |  DK-8000 Aarhus C | 
+</tt><tt>www.trifork.com &lt;<a  rel="nofollow" href="http://www.trifork.com/">http://www.trifork.com/</a>&gt;
+</tt><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08078.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08089">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08089">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08076.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08054.html">How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08055.html">Re: How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08056.html">Re: How to store data</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08058.html">Re: How to store data</a></span> <span class="sender italic">Andres Jaan Tack</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08061.html">Re: How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08064.html">Re: How to store data</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08075.html">SV: How to store data</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08078.html">Re: How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: How to store data</span> <span class="sender italic">Erik Søe Sørensen</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08076.html">SV: How to store data</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: How to store data">
+<input type="hidden" name="msgid" value="5011C285.9030009@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08089.html">
+<input type="submit" value=" Erik Søe Sørensen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+store+data%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08078.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08076.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5011C285.9030009@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

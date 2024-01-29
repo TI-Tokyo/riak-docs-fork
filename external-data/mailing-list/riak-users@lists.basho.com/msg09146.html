@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>avg write io wait time regression in 1.2.1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09146" id="c">
+<link rel="index" href="maillist.html#09146" id="i">
+<link rel="prev" href="msg09135.html" id="p">
+<link rel="next" href="msg09147.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09146.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22avg+write+io+wait+time+regression+in+1.2.1%22&amp;o=newest" rel="nofollow"><span itemprop="name">avg write io wait time regression in 1.2.1</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dietrich+Featherston%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dietrich Featherston</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121101" rel="nofollow">Thu, 01 Nov 2012 17:13:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We've just gone through the process of upgrading two riak clusters from 1.1
+ to 1.2.1. Both are on the leveldb backend backed by RAID0'd SSDs. The
+process has gone smoothly and we see that latencies as measured at the
+gen_fsm level are largely unaffected.</pre><pre>
+
+However, we are seeing some troubling disk statistics and I'm looking for
+an explanation before we upgrade the remainder of our nodes. The source of
+the worry seems to be a huge amplification in the number of writes serviced
+by the disk which may be the cause of rising io wait times.
+
+My first thought was that this could be due to some leveldb tuning in 1.2.1
+which increases file sizes per the release notes (
+<a  rel="nofollow" href="https://github.com/basho/riak/blob/master/RELEASE-NOTES.md">https://github.com/basho/riak/blob/master/RELEASE-NOTES.md</a>). But nodes that
+were upgraded yesterday are still showing this symptom. I would have
+expected any block re-writing to have subsided by now.
+
+Next hypothesis has to do with block size overriding in app.config. In 1.1,
+we had specified custom block sizes of 256k. We removed this prior to
+upgrading to 1.2.1 at the advice of #riak since block size configuration
+was ignored prior to 1.2 ('&quot;block_size&quot; parameter within app.config for
+leveldb was ignored.  This parameter is now properly passed to leveldb.'
+--&gt;
+<a  rel="nofollow" href="https://github.com/basho/riak/commit/f12596c221a9d942cc23d8e4fd83c9ca46e02105">https://github.com/basho/riak/commit/f12596c221a9d942cc23d8e4fd83c9ca46e02105</a>).
+I'm wondering if the block size parameter really was being passed to
+leveldb, and having removed it, blocks are now being rewritten to a new
+size, perhaps different from what they were being written as before (
+<a  rel="nofollow" href="https://github.com/basho/riak_kv/commit/ad192ee775b2f5a68430d230c0999a2caabd1155">https://github.com/basho/riak_kv/commit/ad192ee775b2f5a68430d230c0999a2caabd1155</a>
+)
+
+Here is the output of the following script showing the increased writes to
+disk (<a  rel="nofollow" href="https://gist.github.com/37319a8ed2679bb8b21d">https://gist.github.com/37319a8ed2679bb8b21d</a>)
+
+--an upgraded 1.2.1 node--
+read ios: 238406742
+write ios: 4814320281
+read/write ratio: .04952033
+avg wait: .10712340
+read wait: .49174364
+write wait: .42695475
+
+
+--a node still running 1.1--
+read ios: 267770032
+write ios: 944170656
+read/write ratio: .28360342
+avg wait: .34237204
+read wait: .47222371
+write wait: 1.83283749
+
+And here's what munin is showing us in terms of avg io wait times.
+
+[image: Inline image 1]
+
+
+Any thoughts on what might explain this?
+
+Thanks,
+D
+</pre><p><tt>&lt;&lt;image.png&gt;&gt;</tt></p><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09135.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09146">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09146">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09147.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">avg write io wait time regression in 1.2.1</span> <span class="sender italic">Dietrich Featherston</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09147.html">Re: avg write io wait time regression in 1.2.1</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09148.html">Re: avg write io wait time regression in 1....</a></span> <span class="sender italic">Dietrich Featherston</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09149.html">Re: avg write io wait time regression i...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09150.html">Re: avg write io wait time regressi...</a></span> <span class="sender italic">Dietrich Featherston</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09156.html">Re: avg write io wait time reg...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09161.html">Re: avg write io wait time...</a></span> <span class="sender italic">Dave Brady</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09172.html">Re: avg write io wait ...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09191.html">Re: avg write io wait ...</a></span> <span class="sender italic">Dave Brady</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg09173.html">Re: avg write io wait time...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09210.html">Re: avg write io wait time...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="avg write io wait time regression in 1.2.1">
+<input type="hidden" name="msgid" value="CAHQXTbHcYPwcJ2Db7m7N2Sev9BvRuicaY-eVFhBhKxf_nQVb-A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09146.html">
+<input type="submit" value=" Dietrich Featherston ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22avg+write+io+wait+time+regression+in+1.2.1%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09135.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09147.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHQXTbHcYPwcJ2Db7m7N2Sev9BvRuicaY-eVFhBhKxf_nQVb-A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

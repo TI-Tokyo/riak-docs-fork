@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Multiple keys to fetch in a Java client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05783" id="c">
+<link rel="index" href="maillist.html#05783" id="i">
+<link rel="prev" href="msg05780.html" id="p">
+<link rel="next" href="msg05784.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05783.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Multiple+keys+to+fetch+in+a+Java+client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Multiple keys to fetch in a Java client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Russell+Brown%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Russell Brown</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111129" rel="nofollow">Tue, 29 Nov 2011 05:06:52 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Suresh,
+</pre><pre>
+
+On 29 Nov 2011, at 12:10, suresh chandran wrote:
+
+&gt; Thanks Russel for the reply .
+&gt; 
+&gt; After going through all the APIs I too reached the same opinion. 
+&gt; 1)Simultaneous multiple fetch and 2)MapReduce. However, simultaneous access 
+&gt; would make the fetch very slower and it doesnt look efficient ( since there 
+&gt; are threads spawned for each key and fetching say, 10K records might be an 
+&gt; over head) let me know if I miss something here and that I shoudl not be 
+&gt; concerned. My worry is not the procedure to spawn so many worker threads, but 
+&gt; the number of connections they open and close and the performance overhead, 
+&gt; thereby
+
+Right, 10k is probably too many keys to fetch in parallel. Though you wouldn't 
+open and close 10k connections since there is a connection pool, and you can 
+set an upper bound on it when you configure your client (more on that below.) 
+But you could easily use a producer/consumer set up to fetch many objects in 
+parallel. It depends on what you are fetching the data for, how often, and what 
+you're going to do with it.
+
+&gt; 
+&gt; I tried the map reduce in similar way that you mentioned. For weird reasons, 
+&gt; it throws Java Heap memory exception and dies.
+&gt; MapReduceResult result =
+&gt;  client.mapReduce()
+&gt;         .addInput(&quot;goog&quot;,&quot;2010-01-04&quot;)
+&gt;         .addInput(&quot;goog&quot;,&quot;2010-01-05&quot;)
+&gt;         .addInput(&quot;goog&quot;,&quot;2010-01-06&quot;)
+&gt;         .addInput(&quot;goog&quot;,&quot;2010-01-07&quot;)
+&gt;         .addInput(&quot;goog&quot;,&quot;2010-01-08&quot;)
+&gt;         .addMapPhase(new NamedJSFunction(&quot;Riak.mapValuesJson&quot;), true)
+&gt;     .execute();
+&gt; 
+&gt;   
+&gt; I used the same format as above mentioned in 
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client">https://github.com/basho/riak-java-client</a> page. I tried with and without the 
+&gt; addMapPhase method, but in vain. Am I missing something here? Is there a 
+&gt; prerequisite to use this code?
+
+Curious. The code above is part of the integration test suite, it is run every 
+time we build and doesn't usually throw an OOM exception. Did you call 
+*addInput* 10k time in a loop before executing the map/reduce (can I see a 
+snippet of code maybe, in a gist or pastebin, ideally)? Can I have a stack 
+trace (a gist or pastebin is best for this also, please)? What version of the 
+client did you use?
+
+&gt; 
+&gt; I also see that the above methods works only for IRiakClient. Until now I 
+&gt; have been using RiakClient.
+
+Which one? Which version etc? There are two classes called RiakClient (both 
+legacy classes (one PB, one HTTP)), you can use them, but they are likely going 
+to deprecated and removed in future versions. I recommend IRiakClient interface.
+
+&gt; Only to access these methods. I am using IRiakClient. Does that have any 
+&gt; significance? way to access/ configure IRiakClient/ Mapreduce.
+
+Like a lot of Java libraries you configure/acquire a client through a factory. 
+There is an example in the README on the repo home page 
+(<a  rel="nofollow" href="https://github.com/basho/riak-java-client">https://github.com/basho/riak-java-client</a>) under the heading *Configuration*, 
+it is lower down that page. Maybe the README needs re-organising a bit.
+
+&gt; This is the only place I need the map reduce, 
+&gt; and throughout my code, i just store and fetch key values.  
+&gt; 
+&gt; I dont seem to get the answers in the forums or documents. If there are 
+&gt; any,can you please point? Thanks again.
+
+The README, the integration tests, and this mailing list are the current best 
+sources of help. I would like to spend some time writing some more detailed 
+documentation and tutorials (ha, actually, _no_, I wouldn't, but I really 
+*should*!)
+
+Hopefully that helps, and if you get me that stack trace I'll try and figure 
+out what is going on with the map/reduce error.
+
+Cheers
+
+Russell
+
+&gt; 
+&gt; Suresh C Nair  
+&gt; 
+&gt; From: Russell Brown &lt;russell.br...@me.com&gt;
+&gt; To: suresh chandran &lt;sureshcn...@yahoo.com&gt; 
+&gt; Cc: &quot;riak-users@lists.basho.com&quot; &lt;riak-users@lists.basho.com&gt; 
+&gt; Sent: Monday, November 28, 2011 7:14 PM
+&gt; Subject: Re: Multiple keys to fetch in a Java client
+&gt; 
+&gt; 
+&gt; On 28 Nov 2011, at 20:16, suresh chandran wrote:
+&gt; 
+&gt;&gt; May be I can make my statement clear :) I store my devices values in buckets 
+&gt;&gt; named after OS (say windows/ linux) with the device id's as keys. I want to 
+&gt;&gt; get  the devices  for a list of device ids . From what I see, the fetch API 
+&gt;&gt; signature takes in bucket name and key. (Client.fetch(&quot;windows&quot;, &quot;D1&quot;). Is 
+&gt;&gt; there a way where I can get Client.fetch(&quot;windows&quot;, &lt;Collection fo keys&gt;?
+&gt; 
+&gt; There is no multi-fetch from Riak right now. You can either fetch your 
+&gt; individual keys (serially on in parallel) or run a Map/Reduce. In most case 
+&gt; the Map/Reduce will be slower (though the API is simpler, I suppose.)
+&gt; 
+&gt; Use IRiakClient.mapReduce().addInput(bucket, key).addInput(bucket, 
+&gt; key2)…(repeat!) I guess this is ripe for a convenience method that takes (as 
+&gt; you suggest) addInputs(bucket, Collection&lt;String&gt; keys), so I'll add that to 
+&gt; the features list.
+&gt; 
+&gt; Or just fetch all your keys using fetch. 
+&gt; 
+&gt; I guess it would be possible to add a bulk fetch API to the Riak Java Client 
+&gt; that spawns a configurable number of threads to fetch a bunch of keys in 
+&gt; parallel, but right now that is left as an exercise for the reader :)
+&gt; 
+&gt; Cheers
+&gt; 
+&gt; Russell
+&gt; 
+&gt; 
+&gt;&gt; 
+&gt;&gt; Thanks
+&gt;&gt; Suresh C Nair
+&gt;&gt; From: suresh chandran &lt;sureshcn...@yahoo.com&gt;
+&gt;&gt; To: &quot;riak-users@lists.basho.com&quot; &lt;riak-users@lists.basho.com&gt; 
+&gt;&gt; Sent: Monday, November 28, 2011 2:53 PM
+&gt;&gt; Subject: Multiple keys to fetch in a Java client
+&gt;&gt; 
+&gt;&gt; HI,
+&gt;&gt; 
+&gt;&gt; I am storing values of a devices under a particular OS. I want to fetch the 
+&gt;&gt; list of all vallues, based on the key list. What I see if that, I can fetch 
+&gt;&gt; the value one by one using the FETCH. Am using the HttpClient in Java. How 
+&gt;&gt; do I go about this? Assume I am tryign to reach the same behavior like query 
+&gt;&gt; that has &quot;CONTAINS(key1, key2...). Is there a way to do this? or we can 
+&gt;&gt; fetch the values only one by one. I do see that Map-reduce, makes use of the 
+&gt;&gt; list fo keys, but am not sure if it is applicable in my case, as it ia 
+&gt;&gt; simple fetch with collection of / list of keys.
+&gt;&gt; 
+&gt;&gt; Thanks
+&gt;&gt; Suresh C Nair
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05780.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05783">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05783">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05784.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05758.html">Multiple keys to fetch in a Java client</a></span> <span class="sender italic">suresh chandran</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05759.html">Re: Multiple keys to fetch in a Java client</a></span> <span class="sender italic">suresh chandran</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05767.html">Re: Multiple keys to fetch in a Java client</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05780.html">Re: Multiple keys to fetch in a Java client</a></span> <span class="sender italic">suresh chandran</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Multiple keys to fetch in a Java clie...</span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05784.html">Re: Multiple keys to fetch in a Java...</a></span> <span class="sender italic">suresh chandran</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05785.html">Re: Multiple keys to fetch in a ...</a></span> <span class="sender italic">suresh chandran</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05786.html">Re: Multiple keys to fetch i...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05788.html">Re: Multiple keys to fetch i...</a></span> <span class="sender italic">suresh chandran</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05787.html">Re: Multiple keys to fetch in a ...</a></span> <span class="sender italic">Russell Brown</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Multiple keys to fetch in a Java client">
+<input type="hidden" name="msgid" value="B7218473-352B-46E8-85B6-53D1A60A2194@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05783.html">
+<input type="submit" value=" Russell Brown ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Multiple+keys+to+fetch+in+a+Java+client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05780.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05784.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">B7218473-352B-46E8-85B6-53D1A60A2194@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

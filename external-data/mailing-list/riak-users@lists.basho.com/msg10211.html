@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Understanding read_repairs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10211" id="c">
+<link rel="index" href="maillist.html#10211" id="i">
+<link rel="prev" href="msg10210.html" id="p">
+<link rel="next" href="msg10212.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10211.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Understanding+read_repairs%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Understanding read_repairs</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jared+Morrow%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jared Morrow</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130222" rel="nofollow">Fri, 22 Feb 2013 10:57:39 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Belai,
+
+One other option is to use our &quot;basho-patches&quot; functionality. We use it to
+run new code on current installations where sending a new .beam file is
+easier than remaking the packages or compiling from source. On your ubuntu
+system using our packages, the folder should be in
+/usr/lib/riak/lib/basho-patches.</pre><pre>
+
+To do this you just need the one file changed in the PR pointed to by
+Russell.
+
+Here are the steps to make that happen:
+
+   - Install Erlang R15B01:
+   <a  rel="nofollow" href="http://docs.basho.com/riak/latest/tutorials/installation/Installing-Erlang/">http://docs.basho.com/riak/latest/tutorials/installation/Installing-Erlang/</a>
+   - Get riak_kv: git clone git://github.com/basho/riak_kv.git
+   - compile riak_kv with just 'make'
+   - copy the resulting .beam file in the ebin folder to the machines you
+   need the new file: scp ebin/riak_kv_vnode.beam user@myriaknode
+   :/usr/lib/riak/lib/basho-patches
+   - stop each node and restart them one at a time
+   - If you want to convince yourself you are using the new code, you can
+   do a 'riak attach' to attach to the node and run
+   code:which('riak_kv_vnode'). (Don't forget the '.' at the end)
+
+For example on my dev install here is the command before the file is in
+basho-patches:
+
+(dev2@127.0.0.1)1&gt; code:which('riak_kv_vnode').
+&quot;.../lib/riak_kv-1.3.0/ebin/riak_kv_vnode.beam&quot;
+
+Here is the command after I put the .beam in the basho-patches directory:
+
+(dev2@127.0.0.1)1&gt; code:which('riak_kv_vnode').
+&quot;.../lib/basho-patches/riak_kv_vnode.beam&quot;
+
+Notice the path of the code changed from .../riak_kv-1.3.0/... to
+.../basho-patches/...
+
+That might seem like a lot of work, but it is a really handy and useful
+trick/skill that you might use quite a bit down the road.
+
+Hope that helps,
+Jared
+
+
+On Fri, Feb 22, 2013 at 10:25 AM, Belai Beshah &lt;belai.bes...@nwgeo.com&gt;wrote:
+
+&gt; Thanks Russel, that looks like exactly the problem we saw. I have never
+&gt; built riak from source before but I will give it a try it this weekend.
+&gt;
+&gt; ________________________________________
+&gt; From: Russell Brown [russell.br...@me.com]
+&gt; Sent: Friday, February 22, 2013 1:24 AM
+&gt; To: Belai Beshah
+&gt; Cc: riak-users@lists.basho.com
+&gt; Subject: Re: Understanding read_repairs
+&gt;
+&gt; Hi,
+&gt; Thanks for trying Riak.
+&gt;
+&gt; On 21 Feb 2013, at 23:48, Belai Beshah &lt;belai.bes...@nwgeo.com&gt; wrote:
+&gt;
+&gt; &gt; Hi All,
+&gt; &gt;
+&gt; &gt; We are evaluating Riak to see if it can be used to cache large blobs of
+&gt; data. Here is our test cluster setup:
+&gt; &gt;
+&gt; &gt;       • six Ubuntu LTS 12.04 dedicated nodes with 8 core 2.6 Ghz CPU, 32
+&gt; GB RAM, 3.6T disk
+&gt; &gt;       • {pb_backlog, 64},
+&gt; &gt;       • {ring_creation_size, 256},
+&gt; &gt;       • {default_bucket_props, [{n_val, 2},
+&gt; {allow_mult,false},{last_write_wins,true}]},
+&gt; &gt;       • using bitcask as the backend
+&gt; &gt;
+&gt; &gt; Everything else default except the above. There is an HAProxy load
+&gt; balancer infront of the nodes that the clients talk too configured
+&gt; according to the basho wiki. Due to the nature of the application we are
+&gt; integrating we do about 1200/s writes of approximately 40-50KB each and
+&gt; read them back almost immediately. We noticed a lot of read repairs and
+&gt; since that was one of the things that could indicate performance problem we
+&gt; go worried. So we wrote a simple java client application that simulates our
+&gt; use case. The test program is dead simple:
+&gt; &gt;       • generate keys using random UUID and value using Apache commons
+&gt; RandomStringUtils
+&gt; &gt;       • create a thread pool of 5 and store key/value using
+&gt; “bucket.store()”
+&gt; &gt;       • read the values back using “bucket.fetch()” multiple times
+&gt; &gt; I could provide the spike code if needed. What we noticed is that we get
+&gt; a lot of read repairs all over the place. We even made it use a single
+&gt; thread to read/write, played with the write/read quorum and even put a
+&gt; delay of 5 minutes between the writes before the reads start to give the
+&gt; cluster time to be eventually consistent. Nothing helps, we always see a
+&gt; lot of read repairs, sometime as many as the number of inserts.
+&gt;
+&gt;
+&gt; It sounds like you are experiencing this bug
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak_kv/pull/334">https://github.com/basho/riak_kv/pull/334</a>
+&gt;
+&gt; It is fixed in master, but it doesn't look like it made it into 1.3.0. If
+&gt; you're ok with building from source, I tried it and a patch from
+&gt; 8895d2877576af2441bee755028df1a6cf2174c7 goes cleanly onto 1.3.0.
+&gt;
+&gt; Cheers
+&gt;
+&gt; Russell
+&gt;
+&gt;
+&gt; &gt; The good thing is that in all of these tests we have not seen any read
+&gt; failures. Performance is also not bad, a few maxs here and there we don't
+&gt; like but 90% looks good. Even when we killed a node, the reads are still
+&gt; successful.
+&gt; &gt;
+&gt; &gt; We are wondering what the expected ratio of read repairs is and what is
+&gt; a reasonable time for the cluster not to restore to read_repair to fulfill
+&gt; a read request or is there something we are missing in our setup.
+&gt; &gt;
+&gt; &gt; Thanks
+&gt; &gt; Belai
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10210.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10211">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10211">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10212.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10187.html">Understanding read_repairs</a></span> <span class="sender italic">Belai Beshah</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10199.html">Re: Understanding read_repairs</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10210.html">RE: Understanding read_repairs</a></span> <span class="sender italic">Belai Beshah</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Understanding read_repairs</span> <span class="sender italic">Jared Morrow</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10212.html">Re: Understanding read_repairs</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10238.html">RE: Understanding read_repairs</a></span> <span class="sender italic">Belai Beshah</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10277.html">RE: Understanding read_repairs</a></span> <span class="sender italic">Belai Beshah</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10279.html">Re: Understanding read_repairs</a></span> <span class="sender italic">Jared Morrow</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10280.html">RE: Understanding read_repai...</a></span> <span class="sender italic">Belai Beshah</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10298.html">Re: Understanding read_r...</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10301.html">RE: Understanding read_r...</a></span> <span class="sender italic">Belai Beshah</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10302.html">Re: Understanding read_r...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10303.html">RE: Understanding read_r...</a></span> <span class="sender italic">Belai Beshah</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10287.html">Re: Understanding read_repairs</a></span> <span class="sender italic">Sebastian Cohnen</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Understanding read_repairs">
+<input type="hidden" name="msgid" value="CACUSOvd6-hp6ZUdou=CmvNrq8PUKYHO_0jce+7Fzk-BYMgOW9A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10211.html">
+<input type="submit" value=" Jared Morrow ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Understanding+read_repairs%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10210.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10212.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACUSOvd6-hp6ZUdou=CmvNrq8PUKYHO_0jce+7Fzk-BYMgOW9A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: speeding up riaksearch precommit indexing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03699" id="c">
+<link rel="index" href="maillist.html#03699" id="i">
+<link rel="prev" href="msg03662.html" id="p">
+<link rel="next" href="msg03743.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03699.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+speeding+up+riaksearch+precommit+indexing%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: speeding up riaksearch precommit indexing</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rusty+Klophaus%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rusty Klophaus</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110615" rel="nofollow">Wed, 15 Jun 2011 05:30:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Steve,
+
+Thanks for sending over more details.</pre><pre>
+
+The pre- vs. post-commit hook question is a good one. The reason we chose a
+pre-commit hook over a post-commit hook for Riak Search indexing is because
+a post commit hook doesn't currently provide back-pressure to the Riak KV
+side of the system. It would be possible to get yourself into a situation
+where the queue of objects to index is so large that it exhausts available
+resources. The pre-commit hook prevents that situation.
+
+Everything in your setup below appears correct, so it may be time to look
+into batching as a way to increase the speed of indexing.
+
+Best,
+Rusty
+
+
+On Mon, Jun 13, 2011 at 1:45 PM, Steve Webb &lt;sw...@gnip.com&gt; wrote:
+
+&gt; Ok, I've changed my two VMs to each have:
+&gt;
+&gt; 3 CPUs, 1GB ram, 120GB disk
+&gt;
+&gt; I'm ingesting the twitter spritzer stream (about 10-20 tweets per second,
+&gt; approx 2k of data per tweet).  One bucket is storing the non-indexed tweets
+&gt; in full.  Another bucket is storing the indexed tweet string, id, date and
+&gt; username.  A maximum of 20 clients can be hitting the 'cluster' at any one
+&gt; time.
+&gt;
+&gt; I'm using n_val=2 so there is replication going on behind the scenes.
+&gt;
+&gt; I'm using a hardware load-balancer to distribute the work amongst the two
+&gt; nodes and now I'm seeing about 75% CPU usage as opposed to 100% on one node
+&gt; and 50% on the replicating-only node.
+&gt;
+&gt; I've monitored the VM over the last few days and it seems to be mostly
+&gt; CPU-bound.  The disk I/O is low.  The Network I/O is low.
+&gt;
+&gt; Q: Can I change the pre-commit to a post-commit trigger or something
+&gt; perhaps or will that make any difference at all?  I'm ok if the tweet stuff
+&gt; doesn't get indexed immediately and there's a slight lag in indexing if it
+&gt; saves on CPU.
+&gt;
+&gt; Here's my search schema (the default, I think):
+&gt;
+&gt; root@ha2:/var/log/riaksearch# search-cmd show_schema Index
+&gt; Attempting to restart script through sudo -u riak
+&gt;
+&gt; %% Schema for 'Index'
+&gt;
+&gt; {
+&gt;    schema,
+&gt;    [
+&gt;        {version, &quot;1.1&quot;},
+&gt;        {n_val, 3},
+&gt;        {default_field, &quot;value&quot;},
+&gt;        {analyzer_factory, {erlang, text_analyzers,
+&gt; whitespace_analyzer_factory}}
+&gt;    ],
+&gt;    [
+&gt;        %% Field names ending in &quot;_num&quot; are indexed as integers
+&gt;        {dynamic_field, [
+&gt;            {name, &quot;*_num&quot;},
+&gt;            {type, integer},
+&gt;            {analyzer_factory, {erlang, text_analyzers,
+&gt; integer_analyzer_factory}}
+&gt;        ]},
+&gt;
+&gt;        %% Field names ending in &quot;_int&quot; are indexed as integers
+&gt;        {dynamic_field, [
+&gt;            {name, &quot;*_int&quot;},
+&gt;            {type, integer},
+&gt;            {analyzer_factory, {erlang, text_analyzers,
+&gt; integer_analyzer_factory}}
+&gt;        ]},
+&gt;
+&gt;        %% Field names ending in &quot;_dt&quot; are indexed as dates
+&gt;        {dynamic_field, [
+&gt;            {name, &quot;*_dt&quot;},
+&gt;            {type, date},
+&gt;            {analyzer_factory, {erlang, text_analyzers,
+&gt; noop_analyzer_factory}}
+&gt;        ]},
+&gt;
+&gt;        %% Field names ending in &quot;_date&quot; are indexed as dates
+&gt;        {dynamic_field, [
+&gt;            {name, &quot;*_date&quot;},
+&gt;            {type, date},
+&gt;            {analyzer_factory, {erlang, text_analyzers,
+&gt; noop_analyzer_factory}}
+&gt;        ]},
+&gt;
+&gt;        %% Field names ending in &quot;_txt&quot; are indexed as full text&quot;
+&gt;        {dynamic_field, [
+&gt;            {name, &quot;*_txt&quot;},
+&gt;            {type, string},
+&gt;            {analyzer_factory, {erlang, text_analyzers,
+&gt; standard_analyzer_factory}}
+&gt;        ]},
+&gt;
+&gt;        %% Field names ending in &quot;_text&quot; are indexed as full text&quot;
+&gt;        {dynamic_field, [
+&gt;            {name, &quot;*_text&quot;},
+&gt;            {type, string},
+&gt;            {analyzer_factory, {erlang, text_analyzers,
+&gt; standard_analyzer_factory}}
+&gt;        ]},
+&gt;
+&gt;        %% Everything else is a string
+&gt;        {dynamic_field, [
+&gt;            {name, &quot;*&quot;},
+&gt;            {type, string},
+&gt;            {analyzer_factory, {erlang, text_analyzers,
+&gt; whitespace_analyzer_factory}}
+&gt;        ]}
+&gt;    ]
+&gt; }.
+&gt;
+&gt; Here's an indexed record:
+&gt;
+&gt; root@ha1:~# curl -s <a  rel="nofollow" href="http://ha:8098/riak/gnip/80329247314550784">http://ha:8098/riak/gnip/80329247314550784</a> | json_xs
+&gt; {
+&gt;   &quot;created_at&quot; : &quot;Mon Jun 13 17:42:39 +0000 2011&quot;,
+&gt;   &quot;tweet&quot; : &quot;@NielJDBSimpson yeaah&quot;,
+&gt;   &quot;screen_name&quot; : &quot;SophieBieber69&quot;
+&gt; }
+&gt;
+&gt; A non-indexed record:
+&gt;
+&gt; root@ha1:~# curl -s <a  rel="nofollow" href="http://ha:8098/riak/tweets/80329247314550784">http://ha:8098/riak/tweets/80329247314550784</a>
+&gt;
+&gt; &quot;{\&quot;entities\&quot;:{\&quot;urls\&quot;:[],\&quot;hashtags\&quot;:[],\&quot;user_mentions\&quot;:[{\&quot;indices\&quot;:[0,15],\&quot;screen_name\&quot;:\&quot;NielJDBSimpson\&quot;,\&quot;name\&quot;:\&quot;\\u2665Enielle
+&gt; Anne\\u2665
+&gt; \\u25d5\\u203f\\u25d5\&quot;,\&quot;id_str\&quot;:\&quot;197405933\&quot;,\&quot;id\&quot;:197405933}]},\&quot;retweet_count\&quot;:0,\&quot;truncated\&quot;:false,\&quot;text\&quot;:\&quot;@NielJDBSimpson
+&gt; yeaah\&quot;,\&quot;created_at\&quot;:\&quot;Mon Jun 13 17:42:39 +0000
+&gt; 2011\&quot;,\&quot;place\&quot;:null,\&quot;in_reply_to_status_id\&quot;:77609368182472704,\&quot;coordinates\&quot;:null,\&quot;source\&quot;:\&quot;web\&quot;,\&quot;geo\&quot;:null,\&quot;favorited\&quot;:false,\&quot;in_reply_to_status_id_str\&quot;:\&quot;77609368182472704\&quot;,\&quot;id_str\&quot;:\&quot;80329247314550784\&quot;,\&quot;in_reply_to_screen_name\&quot;:\&quot;N
+&gt; ielJDBSimpson\&quot;,\&quot;in_reply_to_user_id_str\&quot;:\&quot;197405933\&quot;,\&quot;user\&quot;:{\&quot;lang\&quot;:\&quot;en\&quot;,\&quot;created_at\&quot;:\&quot;Wed
+&gt; May 04 17:02:14 +0000
+&gt; 2011\&quot;,\&quot;profile_text_color\&quot;:\&quot;3D1957\&quot;,\&quot;profile_image_url\&quot;:\&quot;http:\\\/\\\/
+&gt; a3.twimg.com
+&gt; \\\/profile_images\\\/1372500926\\\/IMG01256-20110418-1827_normal.jpg\&quot;,\&quot;is_translator\&quot;:false,\&quot;statuses_count\&quot;:124,\&quot;profile_sidebar_fill_color\&quot;:\&quot;7AC3EE\&quot;,\&quot;li
+&gt; sted_count\&quot;:0,\&quot;following\&quot;:null,\&quot;profile_background_tile\&quot;:true,\&quot;friends_count\&quot;:425,\&quot;description\&quot;:\&quot;I
+&gt; love Justin Bieber i saw him 23\\\/03\\\/2011 in concert best nite ever.
+&gt; Never say Never imma beliber.Follow me I will follow back xx
+&gt; :P\&quot;,\&quot;screen_name\&quot;:\&quot;SophieBieber69\&quot;,\&quot;contributors_enabled\&quot;:false,\&quot;verified\&quot;:false,\&quot;profile_link_color\&quot;:\&quot;FF0000\&quot;,\&quot;url\&quot;:null,\&quot;profile_sidebar_border_color\&quot;:\&quot;65B0DA\&quot;,\&quot;default_profile_image\&quot;:false,\&quot;time_zone\&quot;:null,\&quot;protected\&quot;:false,\&quot;i
+&gt; d_str\&quot;:\&quot;293033762\&quot;,\&quot;notifications\&quot;:null,\&quot;profile_use_background_image\&quot;:true,\&quot;favourites_count\&quot;:6,\&quot;location\&quot;:\&quot;Sheffield\&quot;,\&quot;name\&quot;:\&quot;Sophie
+&gt; Bieber
+&gt; \&quot;,\&quot;profile_background_color\&quot;:\&quot;642D8B\&quot;,\&quot;id\&quot;:293033762,\&quot;default_profile\&quot;:false,\&quot;show_all_inline_media\&quot;:false,\&quot;follow_request_sent\&quot;:null,\&quot;geo_enabled\&quot;:false,\&quot;profile_background_image_url\&quot;:\&quot;http:\\\/\\\/
+&gt; a1.twimg.com\\\/images\\\/themes\\\/th
+&gt;
+&gt; eme10\\\/bg.gif\&quot;,\&quot;utc_offset\&quot;:null,\&quot;followers_count\&quot;:184},\&quot;id\&quot;:80329247314550784,\&quot;contributors\&quot;:null,\&quot;retweeted\&quot;:false,\&quot;in_reply_to_user_id\&quot;:197405933}\r&quot;
+&gt;
+&gt; - Steve Webb
+&gt;
+&gt; -- Steve Webb - Senior System Administrator for gnip.com
+&gt; <a  rel="nofollow" href="http://twitter.com/GnipWebb">http://twitter.com/GnipWebb</a>
+&gt;
+&gt;
+&gt; On Thu, 9 Jun 2011, Rusty Klophaus wrote:
+&gt;
+&gt;  Hi Steve,
+&gt;&gt;
+&gt;&gt; Riak does best with a lot of memory and a fast disk. Depending on how much
+&gt;&gt; data you have in the system, putting two nodes into 1GB of memory on a
+&gt;&gt; single VM may be causing the system to overrun available resources and
+&gt;&gt; page
+&gt;&gt; out to disk, and depending on how you've set up your virtualized
+&gt;&gt; environment, you could be paying extra costs with each disk access,
+&gt;&gt; compounding the problem. My first recommendation would be to either run
+&gt;&gt; the
+&gt;&gt; test again while monitoring disk operations using iostat to see if disk is
+&gt;&gt; the problem, or to just go ahead and test on bigger hardware. I suspect
+&gt;&gt; you
+&gt;&gt; will see much less of a performance difference between the tests once
+&gt;&gt; there
+&gt;&gt; are ample resources.
+&gt;&gt;
+&gt;&gt; That said, some slowdown is expected when you turn on indexing, as Riak
+&gt;&gt; Search adds quite a bit of overhead in parsing and tokenizing the
+&gt;&gt; document,
+&gt;&gt; and then storing the results.
+&gt;&gt;
+&gt;&gt; There are two ways to speed up indexing:
+&gt;&gt;
+&gt;&gt;  1. Reduce the size of your documents. If your documents are large, but
+&gt;&gt;
+&gt;&gt;  you only need one or two fields indexed, you can create smaller
+&gt;&gt; &quot;surrogate&quot;
+&gt;&gt;  documents with just the fields you need indexed, plus a link back to your
+&gt;&gt;  original document.
+&gt;&gt;  2. Batch your writes using the Solr interface. Riak Search uses
+&gt;&gt;
+&gt;&gt;  &quot;term-based partitioning&quot;. Term-based partitioning reduces complexity
+&gt;&gt; during
+&gt;&gt;  queries, at the cost of increased complexity during writes.  You can gain
+&gt;&gt;  back some of the lost performance by batching your writes. This allows
+&gt;&gt; the
+&gt;&gt;  system to plan which messages it sends more intelligently, thus sending
+&gt;&gt;  fewer messages and reducing overhead. The downside here is that you can't
+&gt;&gt;  use the Riak KV interface, you need to switch to the Solr interface.
+&gt;&gt;
+&gt;&gt; Would you mind describing a bit more about your the size and shape of your
+&gt;&gt; data (how many objects, average object size, object format, throughput,
+&gt;&gt; etc.) and ideally attach your Riak Search schema?
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; Rusty
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Tue, Jun 7, 2011 at 4:35 PM, Steve Webb &lt;sw...@gnip.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;  Hey there.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm inserting twitter spritzer tweets into a bucket that doesn't have a
+&gt;&gt;&gt; precommit index hook, and a few fields from the tweet into a second
+&gt;&gt;&gt; bucket
+&gt;&gt;&gt; that does have the precommit hook.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Speeds on the inserts into the indexed bucket are an order or magnitude
+&gt;&gt;&gt; slower than the non-indexed bucket.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm using a 1GB ram, 20GB disk vmware VM, 2-node cluster, ubuntu 10.4,
+&gt;&gt;&gt; riaksearch 0.14.0 with n_val = 2.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Is there a way to do a more lazy indexing to where it doesn't slow down
+&gt;&gt;&gt; inserts so much?
+&gt;&gt;&gt;
+&gt;&gt;&gt; - Steve
+&gt;&gt;&gt;
+&gt;&gt;&gt; --
+&gt;&gt;&gt; Steve Webb - Senior System Administrator for gnip.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://twitter.com/GnipWebb">http://twitter.com/GnipWebb</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03662.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03699">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03699">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03743.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03600.html">speeding up riaksearch precommit indexing</a></span> <span class="sender italic">Steve Webb</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03618.html">Re: speeding up riaksearch precommit indexing</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03662.html">Re: speeding up riaksearch precommit indexing</a></span> <span class="sender italic">Steve Webb</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: speeding up riaksearch precommit indexing</span> <span class="sender italic">Rusty Klophaus</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03743.html">Re: speeding up riaksearch precommit indexing</a></span> <span class="sender italic">John D. Rowell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03745.html">Re: speeding up riaksearch precommit index...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03746.html">Re: speeding up riaksearch precommit ...</a></span> <span class="sender italic">John D. Rowell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03767.html">Re: speeding up riaksearch precom...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03768.html">Re: speeding up riaksearch pr...</a></span> <span class="sender italic">Sylvain Niles</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03770.html">Re: speeding up riaksearch pr...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03772.html">Re: speeding up riaksearch pr...</a></span> <span class="sender italic">Mathias Meyer</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: speeding up riaksearch precommit indexing">
+<input type="hidden" name="msgid" value="BANLkTikyKMoAD84ay2wuEK8UA5QkFBfZZA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03699.html">
+<input type="submit" value=" Rusty Klophaus ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+speeding+up+riaksearch+precommit+indexing%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03662.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03743.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTikyKMoAD84ay2wuEK8UA5QkFBfZZA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

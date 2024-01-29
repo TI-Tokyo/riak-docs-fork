@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>riak-search and innostore</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02235" id="c">
+<link rel="index" href="maillist.html#02235" id="i">
+<link rel="prev" href="msg02234.html" id="p">
+<link rel="next" href="msg02236.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02235.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak%5C-search+and+innostore%22&amp;o=newest" rel="nofollow"><span itemprop="name">riak-search and innostore</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Gordon+Tillman%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Gordon Tillman</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110208" rel="nofollow">Tue, 08 Feb 2011 16:08:52 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Greetings All,
+
+I just have a couple of quick comments regarding using riak-search with 
+innostore.  Thought it may save someone else a bit of trouble.</pre><pre>
+
+OK, starting with a standard dev install of riak-search (latest version).  I 
+installed innostore and configured as per the wiki.  So I had the following 
+lines in the app.config files of my 3 node development cluster:
+
+{storage_backend, riak_kv_innostore_backend},
+...
+%% innostore config
+{innostore, [
+    {data_home_dir, &quot;data/innodb&quot;}, %% Where data files go
+    {log_group_home_dir, &quot;data/innodb&quot;}, %% Where log files go
+    {buffer_pool_size, 268435456} %% 256MB in-memory buffer in bytes
+]}
+
+The cluster started up fine and I populated it with some initial data with no 
+errors.  Found that I was unable to list keys in a bucket.  Did some poking 
+around and found out that even though all of the proper riak_search and 
+merge_index config was in place, the system had used innostore and not 
+merge_index_backend for the indexes.
+
+So I discovered that the right thing to do was to configure the cluster using:
+
+{storage_backend, riak_kv_multi_backend},
+
+And that brings me to my second note.  The wiki docs describe the configuration 
+info needed to work with riak_kv_multi_backend.  An example:
+
+            {multi_backend_default, &lt;&lt;&quot;bitcask&quot;&gt;&gt;},
+            {multi_backend, [
+                {&lt;&lt;&quot;bitcask&quot;&gt;&gt;, riak_kv_bitcask_backend,
+                    [{data_root, &quot;data/bitcask&quot;}]},
+                {&lt;&lt;&quot;innostore&quot;&gt;&gt;, riak_kv_innostore_backend,
+                    [
+                        {data_home_dir, &quot;data/innodb&quot;},
+                        {log_group_home_dir, &quot;data/innodb&quot;},
+                        {buffer_pool_size, 268435456}
+                    ]}
+            ]},
+
+I found out that even though this info must be present, the system was not 
+honoring my settings for &lt;&lt;&quot;innostore&quot;&gt;&gt;.  I know this because it was creating 
+a different directory for the indexes in a different location than what I had 
+specified.  I still had to include this section (outside of the multi_backend 
+block):
+
+{innostore, [
+    {data_home_dir, &quot;data/innodb&quot;}, %% Where data files go
+    {log_group_home_dir, &quot;data/innodb&quot;}, %% Where log files go
+    {buffer_pool_size, 268435456} %% 256MB in-memory buffer in bytes
+]}
+
+With that declaration in place, all is working well.  The riak-search indexes 
+are correct and functioning.  I can list bucket keys, and the information for 
+the buckets whose &quot;backend&quot; property is set to &quot;innostore&quot; (via REST interface) 
+is being correctly stored in the proper directory, etc.
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02234.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02235">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02235">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02236.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">riak-search and innostore</span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02236.html">riak-search and innostore</a></span> <span class="sender italic">Gordon Tillman</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="riak-search and innostore">
+<input type="hidden" name="msgid" value="6721777A-CD29-4228-840C-42022E3E91B3@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02235.html">
+<input type="submit" value=" Gordon Tillman ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak%5C-search+and+innostore%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02234.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02236.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">6721777A-CD29-4228-840C-42022E3E91B3@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

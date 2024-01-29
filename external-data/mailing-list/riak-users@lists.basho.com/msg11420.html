@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: load balance problem among riakc_pb_socket processes when get	objects?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd14.html#11420" id="c">
+<link rel="index" href="mail14.html#11420" id="i">
+<link rel="prev" href="msg11413.html" id="p">
+<link rel="next" href="msg11421.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11420.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+load+balance+problem+among+riakc_pb_socket+processes+when+get%09objects%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: load balance problem among riakc_pb_socket processes when get	objects?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Wu+Ray%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Wu Ray</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130708" rel="nofollow">Mon, 08 Jul 2013 19:06:41 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi, guys,
+I found  that the problem only appeared in some special computers. For
+example the problem can only be reproduced in my old MacBook(2007, MacOSX
+Lion) and Intel Atom computer(Intel(R) Atom(TM) CPU N2800   @ 1.86GHz,
+Ubuntu 12.04). I cannot reproduce it on a Desktop PC, which is Intel(R)
+Core(TM)2 Duo CPU     E7500  @ 2.93GHz, Ubuntu 13.04.</pre><pre>
+
+
+my test code:
+test_parallel_put() -&gt;
+      folsom:start(),
+      folsom_metrics:new_histogram(put_metric),
+
+      B = &lt;&lt;&quot;bigdata&quot;&gt;&gt;,
+      F = &quot;/tmp/sss.mp4&quot;, %% a 384MB size file
+      [spawn_put_worker(B, F, S) || S &lt;- lists:seq(1, 10)].
+
+spawn_put_worker(B, F, S) -&gt;
+      spawn(fun() -&gt;
+          {ok, Pid} = riakc_pb_socket:start_link(&quot;127.0.0.1&quot;, 10017),
+          {ok, IoDevice} = file:open(F, [read, binary]),
+          [do_one_put(IoDevice, Pid, B, S, I) || I &lt;- lists:seq(1, 100)]
+      end).
+
+  do_one_put(IoDevice, Pid, B, S, I) -&gt;
+      K = list_to_binary(integer_to_list(S * 100 + I)),
+      {ok, BinData} = file:pread(IoDevice, S*100 + I, 2097152),
+      O = riakc_obj:new(B, K, BinData),
+      {Elapse,Res} = timer:tc(folsom_metrics,
+                              histogram_timed_update,
+                              [put_metric, riakc_pb_socket, put, [Pid, O]]),
+      io:format(&quot;Pid: ~p, sz: ~p, time put: ~p, OK~n&quot;, [Pid, size(BinData),
+Elapse/1000.0]).
+
+
+--------------------------------------
+
+
+test_parallel_get() -&gt;
+      folsom:start(),
+      folsom_metrics:new_histogram(get_metric),
+
+      B = &lt;&lt;&quot;bigdata&quot;&gt;&gt;,
+      [spawn_get_worker(B, S) || S &lt;- lists:seq(1, 10)].
+
+spawn_get_worker(B, S) -&gt;
+      spawn(fun() -&gt;
+          {ok, Pid} = riakc_pb_socket:start_link(&quot;127.0.0.1&quot;, 10017),
+          io:format(&quot;riakc: ~p~n&quot;, [Pid]),
+          [do_one_get(Pid, B, S, I) || I &lt;- lists:seq(1, 100)]
+      end).
+
+  do_one_get(Pid, B, S, I) -&gt;
+      K = list_to_binary(integer_to_list(S * 100 + I)),
+      {Elapse,Res} = timer:tc(folsom_metrics,
+                              histogram_timed_update,
+                              [get_metric, riakc_pb_socket, get, [Pid, B,
+K]]),
+      case Res of
+      {ok, O} -&gt;
+          BinData = riakc_obj:get_value(O),
+          io:format(&quot;~p) Pid: ~p, sz: ~p, time get: ~p, OK~n&quot;,
+                    [I, Pid, size(BinData), Elapse/1000.0]);
+      {error, Reason} -&gt;
+          io:format(&quot;~p) Pid: ~p(is alive: ~p), time get: ~p, Error Rason
+-----&gt; ~p~n&quot;,
+                    [I, Pid, is_process_alive(Pid), Elapse/1000.0, Reason])
+      end.
+
+
+the tests show that parallel-put always work well, in any case. However,
+parallel-get has some problem in some platform.
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11413.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd14.html#11420">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail14.html#11420">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11421.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: load balance problem among riakc_pb_socket processes when get	objects?">
+<input type="hidden" name="msgid" value="CAABFZ=YCC1FkY791LpvNuvn++4JUPqHONddRAE_TQRVc5D2n0w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11420.html">
+<input type="submit" value=" Wu Ray ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+load+balance+problem+among+riakc_pb_socket+processes+when+get%09objects%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11413.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11421.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAABFZ=YCC1FkY791LpvNuvn++4JUPqHONddRAE_TQRVc5D2n0w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

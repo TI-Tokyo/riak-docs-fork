@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Short read error on .store() with protobufs using Python client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02134" id="c">
+<link rel="index" href="maillist.html#02134" id="i">
+<link rel="prev" href="msg02133.html" id="p">
+<link rel="next" href="msg02048.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02134.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Short+read+error+on+.store%5C%28%5C%29+with+protobufs+using+Python+client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Short read error on .store() with protobufs using Python client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bob+Feldbauer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bob Feldbauer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110127" rel="nofollow">Thu, 27 Jan 2011 12:05:28 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Jon,
+
+</pre><tt>Yes, your jdm-msglen-fix tree seems to resolve the issue for me; 
+</tt><tt>however, I'm only currently using (and likewise only testing) .store() 
+</tt><tt>operations with the python client. With the un-patched version, the 
+</tt><tt>issue occurred for me every time I tried to store data -- of course, my 
+</tt><tt>data is presumably all larger than a single packet.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+Thanks,
+
+Bob
+
+On 1/27/2011 11:08 AM, Jon Meredith wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Bob/Nico/Gary
+
+</pre><tt>Thanks for submitting the pull request.  I took a look at the patch 
+</tt><tt>and would prefer to keep the packet length check in, but just move it 
+</tt><tt>to the right place.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I'm unable to reproduce the issue locally, but wondered if you'd be 
+</tt><tt>able to try out the 
+</tt><tt><a  rel="nofollow" href="https://github.com/basho/riak-python-client/tree/jdm-msglen-fix">https://github.com/basho/riak-python-client/tree/jdm-msglen-fix</a> branch 
+</tt><tt>and double-check it really resolves your issues.
+</tt><pre style="margin: 0em;">
+
+Cheers, Jon.
+
+
+
+</pre><tt>On Sat, Jan 22, 2011 at 6:21 PM, Bob Feldbauer &lt;b...@completefusion.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:b...@completefusion.com">mailto:b...@completefusion.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    Thanks, Nico. I forked riak-python-client and created a pull
+    request for the patch you described (removing the three lines for
+    the length check in recv _pkt).
+
+    - Bob Feldbauer
+
+
+    On 1/22/2011 3:23 AM, Nico Meyer wrote:
+
+        Hi
+
+        let me clarify the situation somewhat. The problem is not
+        intermittent
+        in the sense that it occurs randomly. It depends mainly on the
+        size of
+        the answer that riak sends. If the answer is bigger than the
+        network MTU
+        the error will occur most of the time. If its smaller it
+        occurs almost
+        never. The recv operation on the socket will usually return
+        after every
+        received network packet, which means if you call recv fast
+        enough it
+        will never return more bytes than the MTU of the conection.
+
+        For get operations and put operations where return_body is
+        True (the
+        default) this obviously depends on the size of the object one is
+        requesting/putting. So it seems to be itermittent if most
+        objects are
+        smaller than about 1400 bytes (most LANs have an MTU of 1492),
+        but some
+        are larger or multiple versions are returned for some of them.
+
+        The fix I proposed in the bug report (removing the three line)
+        is the
+        correct one. The while loop only terminates if the desired
+        number of
+        bytes have been read or a socket error like a timeout or a closed
+        connection produces an exception.
+
+        BTW, I have also observed short write errors when storing
+        large objects
+        (larger than the default TCP send buffer I would guess, which
+        is 16k at
+        least on Linux). The fix would be to also loop in snd_pkt()
+        until all
+        data has been sent.
+
+        Cheers,
+        Nico
+
+
+        Am Freitag, den 21.01.2011, 14:43 -0800 schrieb Bob Feldbauer:
+
+            Interesting. I was actually seeing this all the time, not just
+            intermittently. Removing the lines as described in bug #695
+            (<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=695">https://issues.basho.com/show_bug.cgi?id=695</a>) did resolve
+            my issue.
+            Thanks for the help, Gary.
+
+            - Bob
+
+            On 1/21/2011 2:28 PM, Gary Flake wrote:
+
+                I had the same problem the other day and someone
+                answered with the
+                fix.  So search the archives on my name to find the
+                precise answer.
+                But the fix was to remove the three lines in pbc.py
+                where the check
+                and error message occur.   Basically this is a known
+                issue and the
+                check should not be there.
+
+                -- GWF
+
+                (sent from my cell phone.)
+
+
+
+                On Jan 21, 2011, at 1:48 PM, Bob
+                Feldbauer&lt;b...@completefusion.com
+                &lt;<a  rel="nofollow" href="mailto:b...@completefusion.com">mailto:b...@completefusion.com</a>&gt;&gt;   wrote:
+
+                    Thanks for the suggestion, Jon. This is occurring
+                    every time I try to do .store() via protobuf
+                    transport in the Python client (so yes, it is
+                    reproducible); however, there is no output in logs
+                    or riak console.
+
+                    - Bob
+
+                    On 1/21/2011 1:02 PM, Jon Meredith wrote:
+
+                        Hi Bob,
+
+                        That sounds like the connection got closed as
+                        the client was readying.
+
+                        Have you checked through the server logs to
+                        verify that no processes died or no other
+                        nodes went down?  Or if it's reproducible you
+                        should be able to start the server with 'riak
+                        console' and see what gets printed.
+
+                        Cheers, Jon.
+                        Basho Technologies
+
+
+                        On Fri, Jan 21, 2011 at 11:36 AM, Bob
+                        Feldbauer&lt;b...@completefusion.com
+                        
+&lt;<a  rel="nofollow" href="mailto:b...@completefusion.com">mailto:b...@completefusion.com</a>&gt;&lt;<a  rel="nofollow" href="mailto:b...@completefusion.com">mailto:b...@completefusion.com</a>
+                        &lt;<a  rel="nofollow" href="mailto:b...@completefusion.com">mailto:b...@completefusion.com</a>&gt;&gt;&gt;   wrote:
+
+                            I'm using the riak-python-client with Riak
+                        0.14. If I use HTTP
+                            instead of PBC, my code works fine;
+                        however, with PBC I get a
+                            &quot;socket returned short read&quot; error. Any
+                        help would be appreciated!
+                            Code as follows (for debugging, I added
+                        .is_alive() which returns
+                            as expected, prior to the error being
+                        displayed):
+
+                            client =
+                        riak.RiakClient(host='servername', port=8087,
+                            transport_class=riak.RiakPbcTransport)
+                            riakBucket = client.bucket('bucketname')
+                            print client.is_alive()
+                            ... [code to setup the key/data] ...
+                            doc = riakBucket.new(key, data=result)
+                            doc.store()
+
+                            And the full error shown:
+
+                            Traceback (most recent call last):
+                             File &quot;riak_import-pb.py&quot;, line 23, in&lt;module&gt;
+                               doc.store()
+                             File
+</pre><tt>                           
+</tt><tt>                        &quot;/usr/local/lib/python2.6/dist-packages/riak/riak_object.py&quot;,
+</tt><pre style="margin: 0em;">
+                        line
+                            269, in store
+                               Result = t.put(self, w, dw, return_body)
+                             File
+</pre><tt>                           
+</tt><tt>                        &quot;/usr/local/lib/python2.6/dist-packages/riak/transports/pbc.py&quot;,
+</tt><pre style="margin: 0em;">
+                            line 190, in put
+                               msg_code, resp = self.recv_msg()
+                             File
+</pre><tt>                           
+</tt><tt>                        &quot;/usr/local/lib/python2.6/dist-packages/riak/transports/pbc.py&quot;,
+</tt><pre style="margin: 0em;">
+                            line 349, in recv_msg
+                               self.recv_pkt()
+                             File
+</pre><tt>                           
+</tt><tt>                        &quot;/usr/local/lib/python2.6/dist-packages/riak/transports/pbc.py&quot;,
+</tt><pre style="margin: 0em;">
+                            line 399, in recv_pkt
+                               format(len(recv_buf), want_len))
+                            riak.RiakError: 'Socket returned short
+                        read 1444 - expected 8192'
+
+
+                            - Bob Feldbauer
+
+</pre><tt>                           
+</tt><tt>                        _______________________________________________
+</tt><pre style="margin: 0em;">
+                            riak-users mailing list
+                        riak-users@lists.basho.com
+                        
+&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>
+                        &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;&gt;
+                        
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+                    _______________________________________________
+                    riak-users mailing list
+                    riak-users@lists.basho.com
+                    &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+                    
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+            _______________________________________________
+            riak-users mailing list
+            riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+            <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02133.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02134">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02134">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02048.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02040.html">Short read error on .store() with protobufs using Python cli...</a></span> <span class="sender italic">Bob Feldbauer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02041.html">Re: Short read error on .store() with protobufs using P...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02042.html">Re: Short read error on .store() with protobufs usi...</a></span> <span class="sender italic">Bob Feldbauer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02043.html">Re: Short read error on .store() with protobufs...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02046.html">Re: Short read error on .store() with proto...</a></span> <span class="sender italic">Jon Meredith</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02047.html">Re: Short read error on .store() with protobufs...</a></span> <span class="sender italic">Gary Flake</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02045.html">Re: Short read error on .store() with proto...</a></span> <span class="sender italic">Bob Feldbauer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02052.html">Re: Short read error on .store() with ...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02069.html">Re: Short read error on .store() w...</a></span> <span class="sender italic">Bob Feldbauer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02133.html">Re: Short read error on .store...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Short read error on .store...</span> <span class="sender italic">Bob Feldbauer</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Short read error on .store() with protobufs using Python client">
+<input type="hidden" name="msgid" value="4D41CFF9.7050602@completefusion.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02134.html">
+<input type="submit" value=" Bob Feldbauer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Short+read+error+on+.store%5C%28%5C%29+with+protobufs+using+Python+client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02133.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02048.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4D41CFF9.7050602@completefusion.com</li>
+</ul>
+</div>
+</body>
+</html>

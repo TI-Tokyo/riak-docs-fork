@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak on one node</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08779" id="c">
+<link rel="index" href="maillist.html#08779" id="i">
+<link rel="prev" href="msg08778.html" id="p">
+<link rel="next" href="msg08780.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08779.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+on+one+node%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak on one node</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dmitry+Demeshchuk%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dmitry Demeshchuk</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121001" rel="nofollow">Mon, 01 Oct 2012 17:36:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Judging by the wiki,
+
+Changing the N value after a bucket has data in it is not recommended. If
+you do change the value, especially increasing it, you might need to force
+read repair. Overwritten objects and newly stored objects will
+automatically be replicated to the correct number of nodes.</pre><pre>
+
+Another possible thing is that you've been expecting an answer from 2 or
+more nodes, while n_val for the bucket was already set to 1. Can you show
+your client code?
+
+But, before you do that, let me mutter a bit:
+
+1. Storing cached data at disk? Okay, if you really want to do it, use
+Bitcask, not LevelDB. Bitcask has expiration time for keys, and it *might*
+save you from running out of disk space, unlike LevelDB. But using disk,
+even the fastest SSDs for caching is mostly a bad idea in advance, no
+matter how fast your caching database is.
+
+
+2. One-node Riak isn't a good thing either. Riak literally shines when you
+have a lot of nodes. The more – the better (well, I wouldn't build a
+cluster of more than 200-300 nodes, due to Erlang &quot;each-to-each&quot; node
+communication behavior). But large scale clusters, like 10+ – that's where
+it shows the most strong qualities, that the other databases mostly lack.
+We are running Riak in production and are glad of it. But we realised that
+even running 3-4 nodes is generally pointless: you can hardly benefit from
+this approach.
+
+In case of one node, I'll tell you what I generally tell people when they
+ask abstract &quot;Should I use Riak?&quot; questions: if you are not sure what you
+are doing – use something like Postgres. I'm not convincing you to stop
+using Riak or something – it just seems you are trying to use it for a
+wrong purpose, and instead of being satisfied with a product you'll
+probably end up strongly disappointed.
+
+
+3. From what I remember, secondary indexes are very slow (guys from Basho,
+I'd be glad to be wrong, since we are eager to use 2i at some places, so
+please correct me if they've become significantly faster). So, not only you
+are trying to use a database that is meant to be distributed (so, even on 1
+node involves extra overhead that wouldn't exist in non-distributable DB),
+not only you are using disks, that are far slower than memory, but you are
+also using 2i, which would make Riak even slower for you.
+
+
+TL;DR: You seem to be trying to use Riak for a very wrong purpose. Use
+something that has been designed for caching stuff: memcached, CouchBase
+(former Membase, don't mix it up with CouchDB) or Redis.
+
+
+P.S. Seriously, people, use pastebin or GitHub gists to post large amounts
+of config/code.
+
+
+On Tue, Oct 2, 2012 at 4:06 AM, Curtis Schofield &lt;cur...@ram9.cc&gt; wrote:
+
+&gt;
+&gt; I do not believe that this is the best use of memcache - I have switched
+&gt;&gt; to the filesystem for now - I could imagine this
+&gt;&gt; system becoming very large and it would be useful to have a cluster
+&gt;&gt; holding the server traffic.
+&gt;&gt;
+&gt;&gt;     I think i meant to say - this may not be the best use of riak - it
+&gt; may be better to use memcache.
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+
+-- 
+Best regards,
+Dmitry Demeshchuk
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08778.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08779">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08779">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08780.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08777.html">riak on one node</a></span> <span class="sender italic">Curtis Schofield</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08778.html">Re: riak on one node</a></span> <span class="sender italic">Curtis Schofield</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak on one node</span> <span class="sender italic">Dmitry Demeshchuk</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08780.html">Re: riak on one node</a></span> <span class="sender italic">Curtis Schofield</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak on one node">
+<input type="hidden" name="msgid" value="CANH2pzs+G2RWY+GB8fJ_YtAyuRnbNAWt8B1rpYkxVdRUsqGTsw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08779.html">
+<input type="submit" value=" Dmitry Demeshchuk ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+on+one+node%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08778.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08780.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANH2pzs+G2RWY+GB8fJ_YtAyuRnbNAWt8B1rpYkxVdRUsqGTsw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

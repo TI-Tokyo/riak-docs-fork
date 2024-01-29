@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>oddness when using java client within storm</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14068" id="c">
+<link rel="index" href="maillist.html#14068" id="i">
+<link rel="prev" href="msg14067.html" id="p">
+<link rel="next" href="msg14069.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14068.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22oddness+when+using+java+client+within+storm%22&amp;o=newest" rel="nofollow"><span itemprop="name">oddness when using java client within storm</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Allen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Allen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140414" rel="nofollow">Mon, 14 Apr 2014 08:28:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm seeing something very odd trying to scale out part of code I'm working
+on.</pre><pre>
+
+It runs inside of Storm and lookups up entries from 10 node riak cluster.
+I've hit a wall that we can't get past. We are looking up entries (json
+representation of a job)
+in batches of 100 from Riak, each batch gets handled by a bolt in Storm,
+adding more
+bolts (an instance of the bolt class with a dedicated thread) results in no
+increase
+in performance. I instrumted the code and saw that waiting for all riak
+futures to finish
+increases as more bolts are added. Thinking that perhaps there was
+contention around the
+RiakCluster object that we were sharing per jvm, I tried giving each bolt
+instance its own
+cluster object and there wasn't any change.
+
+Note that changing Thread spool size given to withExecutor not
+withExecutionAttempts value
+has any impact.
+
+We're working off of the develop branch for the java client. We've been
+using d3cc30d but I also tried with cef7570 and had the same issue.
+
+A simplied version of the scala code running this:
+
+  // called once upon bolt initialization.
+  def prepare(config: JMap[_, _],
+              context: TopologyContext,
+              collector: OutputCollector): Unit = {
+    ...
+
+    val nodes = RiakNode.Builder.buildNodes(new RiakNode.Builder, (1 to
+10).map(n =&gt; s&quot;riak-beavis-$n&quot;).toList.asJava)
+    riak = new RiakCluster.Builder(nodes)
+      // varying this has made no difference
+      .withExecutionAttempts(1)
+     // nor has varying this
+      .withExecutor(new ScheduledThreadPoolExecutor(200))
+      .build()
+    riak.start
+
+    ...
+  }
+
+  private def get(jobLocationId: String):
+RiakFuture[FetchOperation.Response] = {
+    val location = new
+Location(&quot;jobseeker-job-view&quot;).setBucketType(&quot;no-siblings&quot;).setKey(jobLocationId)
+    val fop = new
+FetchOperation.Builder(location).withTimeout(75).withR(1).build
+
+    riak.execute(fop)
+  }
+
+  def execute(tuple: Tuple): Unit = {
+    val indexType = tuple.getStringByField(&quot;index_type&quot;)
+    val indexName = tuple.getStringByField(&quot;index_name&quot;)
+    val batch = tuple.getValueByField(&quot;batch&quot;).asInstanceOf[Set[Payload]]
+
+    var lookups: Set[(Payload, RiakFuture[FetchOperation.Response])] =
+Set.empty
+
+    // this always returns in a standard time based on batch size
+    time(&quot;dispatch-calls&quot;) {
+      lookups = batch.filter(_.key.isDefined).map {
+        payload =&gt; {(payload, get(payload.key.get))}
+      }
+    }
+
+    val futures = lookups.map(_._2)
+
+    // this is what takes longer and longer when more bolts are added.
+    // it doesnt matter what the sleep time is.
+    time(&quot;waiting-on-futures&quot;) {
+      while (futures.count(!_.isDone) &gt; 0) {
+        Thread.sleep(25L)
+      }
+    }
+
+
+    // everything from here to the end returns in a fixed amount of time
+    // and doesn't change with the number of bolts
+    ...
+
+  }
+
+
+It seems like we are running into contention somewhere in the riak java
+client.
+My first thought was the LinkedBlockingQueue that serves as the retry queue
+in RiakCluster
+but, I've tried running with only a single execution attempt as well as a
+custom client
+version where I removed all retries from the codebase and still experience
+the same problem.
+
+I'm still digging through the code looking for possible points of
+contention.
+
+Any thoughts?
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14067.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14068">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14068">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14069.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">oddness when using java client within storm</span> <span class="sender italic">Sean Allen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14069.html">Re: oddness when using java client within storm</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14070.html">Re: oddness when using java client within storm</a></span> <span class="sender italic">Sean Allen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14071.html">Re: oddness when using java client within s...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14072.html">Re: oddness when using java client with...</a></span> <span class="sender italic">Sean Allen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14080.html">Re: oddness when using java client...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14082.html">Re: oddness when using java cl...</a></span> <span class="sender italic">Sean Allen</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="oddness when using java client within storm">
+<input type="hidden" name="msgid" value="CABm-Wmff9UOG=r9C_KECPA8S62=H-fdxSpjtq7b8Zyq5y-x6Ng@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14068.html">
+<input type="submit" value=" Sean Allen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22oddness+when+using+java+client+within+storm%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14067.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14069.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABm-Wmff9UOG=r9C_KECPA8S62=H-fdxSpjtq7b8Zyq5y-x6Ng@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

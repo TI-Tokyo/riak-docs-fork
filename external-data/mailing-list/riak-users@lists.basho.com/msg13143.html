@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak in Node + Protobuf</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#13143" id="c">
+<link rel="index" href="mail6.html#13143" id="i">
+<link rel="prev" href="msg13140.html" id="p">
+<link rel="next" href="msg13137.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13143.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+in+Node+%5C%2B+Protobuf%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak in Node + Protobuf</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alain+Rodriguez%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alain Rodriguez</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131203" rel="nofollow">Tue, 03 Dec 2013 11:51:58 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>So the cluster is operational in production and we are accessing it
+via the http interface. The problem comes when I access it via
+protobuf. *some* clients connect and run queries just fine, while
+others fail to connect with a connection timeout.</pre><pre>
+
+This is the library I am using directly, which is the underlying
+library used by the <a  rel="nofollow" href="http://riak-js.org/">http://riak-js.org/</a> library:
+<a  rel="nofollow" href="https://github.com/nlf/riakpbc">https://github.com/nlf/riakpbc</a>
+
+Below is the code I am using to connect to Riak. From what I have seen
+in the library code, the client automatically connects before sending
+a request if it isn't already connected.
+
+var RiakDataStore = function (config) {
+    var self = this;
+
+    DataStore.call(self, Utils.extend(defaultConfig, config));
+
+    var riakConfig = self.config.riak;
+
+    self.logger.info(&quot;Connecting to riak: host = %s, port = %s&quot;,
+riakConfig.host, riakConfig.port);
+
+    self.riakClient = RiakPBC.createClient({
+        host: riakConfig.host,
+        port: riakConfig.port
+    });
+};
+Util.inherits(RiakDataStore, DataStore);
+
+RiakDataStore.prototype.storeTile = function (tile, callback) {
+    var self = this;
+
+    var bucketName = RiakDataStore.getBucketNameForTile(tile);
+    var keyName = tile.getId();
+
+    return self.riakClient.put({
+        bucket: bucketName,
+        key: keyName,
+        content: {
+            value: JSON.stringify(tile),
+            content_type: 'application/json'
+        }
+    }, function (err, reply) {
+        return callback(err);
+    });
+};
+
+RiakDataStore.prototype.loadTile = function (tileQuery, callback) {
+    var self = this;
+
+    var bucketName = RiakDataStore.getBucketNameForTileQuery(tileQuery);
+    var keyName = tileQuery.getId();
+
+    self.riakClient.get({
+        bucket: bucketName,
+        key: keyName
+    }, function (err, reply) {
+        if (err) {
+            return callback(err, undefined);
+        } else if (Array.isArray(reply.content) &amp;&amp; reply.content.length) {
+            if (reply.content.length &gt; 1) {
+                self.logger.warn(&quot;Multiple documents returned for
+tile: %s (%d versions)&quot;, tileQuery.getId(), reply.content.length);
+            }
+
+            var tile;
+
+            try {
+                tile = DataTile.fromJSON(JSON.parse(reply.content[0].value));
+            } catch (ex) {
+                return callback(ex, undefined);
+            }
+
+            return callback(undefined, tile);
+        } else {
+            return callback(undefined, null);
+        }
+    });
+};
+
+Thanks,
+
+Alain
+
+On Tue, Dec 3, 2013 at 7:02 AM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+&gt; First, make sure Riak is working properly, `riak-admin test` will do a
+&gt; get/put cycle to make sure your cluster is ok.
+&gt;
+&gt; Second, double-check what the protobuffs port is in your config file,
+&gt; usually 8087.
+&gt;
+&gt; The pb_backlog will only be a problem when you are rapidly opening
+&gt; connections to the server, although we are bumping up the default to 128 for
+&gt; Riak 2.0.
+&gt;
+&gt; Other than those initial guesses, this might be a problem in the library.
+&gt; Can you post the code you are using?
+&gt;
+&gt;
+&gt; On Tue, Dec 3, 2013 at 12:04 AM, Alain Rodriguez &lt;al...@uber.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; Hi all,
+&gt;&gt;
+&gt;&gt; I am trying to connect to Riak using the Node.js library
+&gt;&gt; <a  rel="nofollow" href="https://github.com/nlf/riakpbc">https://github.com/nlf/riakpbc</a>, however many of my connections are
+&gt;&gt; failing with the error &quot;Connection timeout&quot;. Is there a limit on the
+&gt;&gt; number of connections allowed over PB? I looked into tuning pb_backlog
+&gt;&gt; but it didn't yield any results.
+&gt;&gt;
+&gt;&gt; As a comparison, I am able to open many concurrent connections via the
+&gt;&gt; HTTP interface on the same riak cluster.
+&gt;&gt;
+&gt;&gt; Is there another protobuf specific configuration that I might be missing?
+&gt;&gt;
+&gt;&gt; Cheers,
+&gt;&gt;
+&gt;&gt; Alain
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Software Engineer
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13140.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#13143">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#13143">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13137.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13136.html">Riak in Node + Protobuf</a></span> <span class="sender italic">Alain Rodriguez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13140.html">Re: Riak in Node + Protobuf</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak in Node + Protobuf</span> <span class="sender italic">Alain Rodriguez</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak in Node + Protobuf">
+<input type="hidden" name="msgid" value="CAMBnFRDuj-BVr1xerYKRCFJKac=nyyY0T93kWi2fpDyWifdycw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13143.html">
+<input type="submit" value=" Alain Rodriguez ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+in+Node+%5C%2B+Protobuf%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13140.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13137.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMBnFRDuj-BVr1xerYKRCFJKac=nyyY0T93kWi2fpDyWifdycw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: A bunch of Erlang client questions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09386" id="c">
+<link rel="index" href="maillist.html#09386" id="i">
+<link rel="prev" href="msg09383.html" id="p">
+<link rel="next" href="msg09387.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09386.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+bunch+of+Erlang+client+questions%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: A bunch of Erlang client questions</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Fink%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Fink</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121127" rel="nofollow">Tue, 27 Nov 2012 05:16:26 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi, Alex. I'm sorry you weren't able to find your answers in our docs.
+Some of them assume that you've read all of the other docs as well.
+I'll see what I can do to clear things up inline.</pre><pre>
+
+On Mon, Nov 26, 2012 at 7:23 PM, Alex Rønne Petersen
+&lt;xtzgzo...@gmail.com&gt; wrote:
+&gt; * Is the proper way to replace the object associated with a bucket/key
+&gt; pair to simply do a riakc_pb_socket:put/2 with the same bucket/key
+&gt; pair (with a new object)?
+
+This one is answered in the &quot;Modifying Data&quot; section of the README:
+
+<a  rel="nofollow" href="https://github.com/basho/riak-erlang-client/blob/master/README.md#modifying-data">https://github.com/basho/riak-erlang-client/blob/master/README.md#modifying-data</a>
+
+In short, the proper way to replace an object is to first fetch the
+existing object, then update the value of what you fetched, then use
+riakc_pb_socket:put to write the new value. The reason for doing this
+is to comply with Riak's consistency system (the vector clocks) - it
+needs to know what value you were starting from in order to overwrite
+it correctly.
+
+&gt; * What exactly is the purpose of riakc_obj:update_value/2 (with
+&gt; regards to the above question)?
+
+The riakc_obj structure stores two different things: the
+value+metadata you read, and the value+metadata you want to write. The
+update_value and update_metadata functions set the value+metadata you
+want to write. The same can be said about get_value/get_metadata and
+get_update_value/get_update_metadata - they each access one part of
+the riakc_obj structure. Although, as was discussed recently on this
+list, get_update_value will return the result of get_value if no
+update value has been set.
+
+&gt; * How does one associate a secondary index with an object? Is this
+&gt; done via riakc_obj:update_metadata/2?
+
+Yes, you need to set the &quot;index&quot; metadata entry to associate a
+secondary index with an object. For example, to set values the
+&quot;myidx_bin&quot; and &quot;youridx_int&quot; indexes:
+
+    Obj = riakc_obj:new(Bucket, Key, Value).
+    Idx = [{&quot;myidx_bin&quot;, &quot;hello&quot;},{&quot;youridx_int&quot;,&quot;9876&quot;}].
+    MD = dict:store(&lt;&lt;&quot;index&quot;&gt;&gt;, Idx, dict:new()).
+    ObjIndexed = riakc_obj:update_metadata(Obj, MD).
+    riakc_pb_socket:put(Socket, ObjIndexed).
+
+If overwriting a value, you would use the result of
+riakc_obj:get_metadata/1 instead of dict:new/0 for building your new
+metadata.
+
+&gt; * Is there any particular reason the Erlang client doesn't yet support
+&gt; all bucket properties?
+
+Yes, it does not support the bucket properties that the Protocol
+Buffers interface to Riak does not support. It's a known problem. You
+can follow work on it here:
+
+<a  rel="nofollow" href="https://github.com/basho/riak_pb/issues/5">https://github.com/basho/riak_pb/issues/5</a>
+
+In the meantime, the riak-erlang-http-client can be used to set other
+bucket properties:
+
+<a  rel="nofollow" href="https://github.com/basho/riak-erlang-http-client">https://github.com/basho/riak-erlang-http-client</a>
+
+&gt; * What exactly do the various get and put options do? Specifically,
+&gt; if_modified, notfound_ok, basic_quorum, head, and deletedvclock for
+&gt; the former
+
+These answers can be found in the docs for the Protocol Buffers get message:
+
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/references/apis/protocol-buffers/PBC-Fetch-Object/">http://docs.basho.com/riak/latest/references/apis/protocol-buffers/PBC-Fetch-Object/</a>
+
+ and return_body, return_head, if_not_modified, and
+&gt; if_none_match for the former.
+
+And these answers are in the docs for the Protocol Buffers put message:
+
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/references/apis/protocol-buffers/PBC-Store-Object/">http://docs.basho.com/riak/latest/references/apis/protocol-buffers/PBC-Store-Object/</a>
+
+&gt; * How will riakc_pb_socket:get/3 behave when queue_if_disconnected is
+&gt; enabled? Will it fail immediately if the socket is disconnected or
+&gt; block until it has reconnected?
+
+With queue_if_disconnected enabled, riakc_pb_socket:get/3 will block
+until the socket is reconnected.
+
+HTH,
+Bryan
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09383.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09386">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09386">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09387.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09383.html">A bunch of Erlang client questions</a></span> <span class="sender italic">Alex Rønne Petersen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: A bunch of Erlang client questions</span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09387.html">Re: A bunch of Erlang client questions</a></span> <span class="sender italic">Alex Rønne Petersen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09393.html">Re: A bunch of Erlang client questions</a></span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: A bunch of Erlang client questions">
+<input type="hidden" name="msgid" value="CAOLR_obuhXFJnt8Mar0Qc-ZD4ZBhbg+naEcLovrhX-ayWKN7+Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09386.html">
+<input type="submit" value=" Bryan Fink ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+bunch+of+Erlang+client+questions%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09383.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09387.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOLR_obuhXFJnt8Mar0Qc-ZD4ZBhbg+naEcLovrhX-ayWKN7+Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

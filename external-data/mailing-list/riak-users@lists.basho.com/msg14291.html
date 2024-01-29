@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using the 'fold' keys threshold</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#14291" id="c">
+<link rel="index" href="maillist.html#14291" id="i">
+<link rel="prev" href="msg14217.html" id="p">
+<link rel="next" href="msg14219.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14291.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+the+%27fold%27+keys+threshold%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using the 'fold' keys threshold</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alex+Moore%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alex Moore</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140605" rel="nofollow">Thu, 05 Jun 2014 08:36:58 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Venkat,
+
+You can find those settings in our docs: 
+<a  rel="nofollow" href="http://docs.basho.com/riak/1.4.9/ops/advanced/backends/bitcask/#Configuring-Bitcask">http://docs.basho.com/riak/1.4.9/ops/advanced/backends/bitcask/#Configuring-Bitcask</a>
+ (search for “Fold Keys Threshold”).   </pre><pre>
+
+In Bitcask when we do range operations like “List Keys” or other operations 
+that require us to fold over all the data, we take a snapshot of the “Keydir” 
+to get a consistent read.  The Keydir is the hash table that holds the `key-&gt; 
+latest object` mapping.  When we do this snapshot, we also start a delta of any 
+changes since the snapshot.
+
+We use the two “Fold Keys Threshold” options `max_fold_age` and `max_fold_puts` 
+only when Bitcask is processing one fold operation, and gets a request for a 
+second one.  These two options let the user choose whether to reuse the 
+snapshot, or to block and get a new snapshot before starting the second fold.  
+This lets you tradeoff between a potential performance boost and consistency.
+
+By default we have Bitcask side toward consistency; it will get a new snapshot, 
+by setting `max_fold_puts` to `0`.  If any new puts come in, we must grab a new 
+snapshot before folding again. 
+
+        - Increasing `max_fold_puts` to `n` will let Bitcask reuse the snapshot 
+if there are fewer than `n` changes in the delta.
+        - Increasing `max_fold_age` to `s` will let Bitcask reuse the snapshot 
+if the snapshot is younger than `s` microseconds. 
+
+Setting either of these to positive values can let folds ignore recent changes, 
+so you can run into stale data. Because of that, we recommend that you don’t 
+change them.
+I hope this helps.
+
+Thanks,
+Alex
+
+
+On May 13, 2014, at 3:02 PM, Venkatachalam Subramanian 
+&lt;venkatsubb...@gmail.com&gt; wrote:
+
+&gt; Hi All,
+&gt; 
+&gt; It was very helpful to get my first few questions about Riak/Bitcacsk 
+&gt; answered pretty quickly.
+&gt; 
+&gt; I just have a another question on the same lines,
+&gt; 
+&gt; I ran across the 'fold keys threshold' option in riak/bitcask.
+&gt; I could not find enough information about the 'fold keys' option to 
+&gt; understand it completely.
+&gt; 
+&gt; Could someone tell me what 'fold keys' option is? what does it do? when could 
+&gt; we use it? 
+&gt; Does it help when you want to get the list of all keys available?
+&gt; 
+&gt; I greatly appreciate your help.
+&gt; Thank You.
+&gt; 
+&gt; -- 
+&gt; Regards,
+&gt; Venkat Subramanian
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14217.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#14291">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14291">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14219.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14217.html">Using the 'fold' keys threshold</a></span> <span class="sender italic">Venkatachalam Subramanian</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using the 'fold' keys threshold</span> <span class="sender italic">Alex Moore</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using the 'fold' keys threshold">
+<input type="hidden" name="msgid" value="B97F0694-746E-4F1C-B950-C0D068992EEF@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14291.html">
+<input type="submit" value=" Alex Moore ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+the+%27fold%27+keys+threshold%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14217.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14219.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">B97F0694-746E-4F1C-B950-C0D068992EEF@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

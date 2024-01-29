@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak search. Different results (XML - JSON)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08369" id="c">
+<link rel="index" href="maillist.html#08369" id="i">
+<link rel="prev" href="msg08365.html" id="p">
+<link rel="next" href="msg08452.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08369.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+search.+Different+results+%5C%28XML+%5C-+JSON%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak search. Different results (XML - JSON)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Vladimir+Shapovalov%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Vladimir Shapovalov</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120827" rel="nofollow">Mon, 27 Aug 2012 07:23:07 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thank you for the explanation.
+
+It looks like the serialization routine in one case (solr) encodes
+characters_to_binary()
+and by normal fetch not. Assuming we fetch in JSON in both cases.</pre><pre>
+
+I'm requesting same data in same format, i.e. JSON.
+Once by fetching object like /buckets/bucket/keys/key.
+And second time by using solr query
+/solr/index_name/select?q=kex_name:value.
+And I get different results, i.e. differently encoded JSON.
+Both requests give me exactly the same key back. From &quot;user abstraction
+level&quot; I was expecting the same results.
+
+Probably riak folks could give me an advice how to convince riak give me
+exactly the same result back in both cases. Are there any config options
+for?
+
+Thanks in advance!
+Vladimir
+
+
+
+On Sun, Aug 26, 2012 at 6:07 PM, Olav Frengstad &lt;o...@fwt.no&gt; wrote:
+
+&gt; The current implementation uses mochiweb2 to serialize JSON. By itself
+&gt; mochijson2 produces the output you expect (src/riak_solr_output.erl):
+&gt;
+&gt; 55&gt; io:format(&quot;~s~n&quot;, [mochijson2:encode(&quot;Sabinastraße&quot;)]).
+&gt; [83,97,98,105,110,97,115,116,114,97,223,101]
+&gt;
+&gt; But since everything is mapped according to your schema the actual
+&gt; call handling the encoding looks like this:
+&gt;
+&gt; 56 &gt; io:format(&quot;~s~n&quot;,
+&gt; [mochijson2:encode([unicode:characters_to_binary(&quot;Sabinastraße&quot;)])]).
+&gt; [&quot;Sabinastra\u00dfe&quot;]
+&gt;
+&gt; The reason for the difference in your results comes down to JSON using
+&gt; convert_type/2 when serializing data and XML doesn't. Unfortunately I
+&gt; don't know why the the difference in serialization routines.
+&gt;
+&gt; Hope this answers your question.
+&gt;
+&gt; Olav
+&gt;
+&gt; 2012/8/26 Vladimir Shapovalov &lt;shapova...@gmail.com&gt;:
+&gt; &gt; Hey Olaf,
+&gt; &gt;
+&gt; &gt; Thanks for the answer.
+&gt; &gt;
+&gt; &gt; Yep, I know, it's JSON compliant.
+&gt; &gt; The question is, why the unicode escaped sequences appear only in case of
+&gt; &gt; searching and retrieveing in JSON? This is not the case in XML output.
+&gt; &gt;
+&gt; &gt; If I just get the same key directly in JSON, the unicode chars are NOT
+&gt; &gt; escaped.
+&gt; &gt;
+&gt; &gt; Cheers
+&gt; &gt; Vladimir
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On Sun, Aug 26, 2012 at 4:55 PM, Olav Frengstad &lt;o...@fwt.no&gt; wrote:
+&gt; &gt;&gt;
+&gt; &gt;&gt; Hey,
+&gt; &gt;&gt;
+&gt; &gt;&gt; \00df is the unicode representation of ß. The JSON spec states that
+&gt; &gt;&gt; &quot;Any character may be escaped&quot; so it is valid JSON.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Your JSON parser should handle this automatic.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Cheers,
+&gt; &gt;&gt; Olav
+&gt; &gt;&gt; 2012/8/25 Vladimir Shapovalov &lt;shapova...@gmail.com&gt;:
+&gt; &gt;&gt; &gt; Hi all,
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; I've a key in a bucket, witch is indexed.
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; {
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt; &quot;street&quot;:&quot;Sabinastraße&quot;
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt; }
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; If I retrieve the key this way:
+&gt; &gt;&gt; &gt; curl -i -v <a  rel="nofollow" href="http://localhost:8098/buckets/is_solr/keys/123">http://localhost:8098/buckets/is_solr/keys/123</a>
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; The response looks like:
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; {
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt; &quot;street&quot;:&quot;Sabinastraße&quot;
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt; }
+&gt; &gt;&gt; &gt; which is correct.
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; If I search for key and expect XML output:
+&gt; &gt;&gt; &gt; curl -i -v
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; &quot;
+&gt; <a  rel="nofollow" href="http://localhost:8098/solr/is_solr/select?wt=xml&amp;q=street:Sabinastra%C3%9Fe">http://localhost:8098/solr/is_solr/select?wt=xml&amp;q=street:Sabinastra%C3%9Fe</a>
+&gt; &quot;
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; Response:
+&gt; &gt;&gt; &gt; &lt;response&gt;
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt; &lt;result name=&quot;response&quot; numFound=&quot;1&quot; start=&quot;0&quot; maxScore=&quot;0.353553&quot;&gt;
+&gt; &gt;&gt; &gt; &lt;doc&gt;
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt;   &lt;str name=&quot;street&quot;&gt;Sabinastraße&lt;/str&gt;
+&gt; &gt;&gt; &gt;   ...
+&gt; &gt;&gt; &gt; &lt;/doc&gt;
+&gt; &gt;&gt; &gt; &lt;/result&gt;
+&gt; &gt;&gt; &gt; &lt;/response&gt;
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; wich is also correct.
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; But in case the format of the output is JSON:
+&gt; &gt;&gt; &gt; curl -i -v
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; &quot;
+&gt; <a  rel="nofollow" href="http://localhost:8098/solr/is_solr/select?wt=json&amp;q=street:Sabinastra%C3%9Fe">http://localhost:8098/solr/is_solr/select?wt=json&amp;q=street:Sabinastra%C3%9Fe</a>
+&gt; &quot;
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; result looks differently:
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt; &quot;street&quot;:&quot;Sabinastra\u00dfe&quot;
+&gt; &gt;&gt; &gt; ...
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; Why is the JSON response looks differently then XML?
+&gt; &gt;&gt; &gt; Is it an expected output or I'm doing something wrong?
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; Thanks in advance!
+&gt; &gt;&gt; &gt; Vladimir
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt; &gt; _______________________________________________
+&gt; &gt;&gt; &gt; riak-users mailing list
+&gt; &gt;&gt; &gt; riak-users@lists.basho.com
+&gt; &gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;&gt; &gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt; --
+&gt; &gt;&gt; Med Vennlig Hilsen
+&gt; &gt;&gt; Olav Frengstad
+&gt; &gt;&gt;
+&gt; &gt;&gt; Systemutvikler // FWT
+&gt; &gt;&gt; +47 920 42 090
+&gt; &gt;
+&gt; &gt;
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Med Vennlig Hilsen
+&gt; Olav Frengstad
+&gt;
+&gt; Systemutvikler // FWT
+&gt; +47 920 42 090
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08365.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08369">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08369">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08452.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08359.html">Riak search. Different results (XML - JSON)</a></span> <span class="sender italic">Vladimir Shapovalov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08365.html">Re: Riak search. Different results (XML - JSON)</a></span> <span class="sender italic">Vladimir Shapovalov</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak search. Different results (XML - JSO...</span> <span class="sender italic">Vladimir Shapovalov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08452.html">Re: Riak search. Different results (XML -...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak search. Different results (XML - JSON)">
+<input type="hidden" name="msgid" value="CAFKLhmtnW4YkJFKyamG5eK6cdpMmMWxjp8NLFDD16uLsoS1KuA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08369.html">
+<input type="submit" value=" Vladimir Shapovalov ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+search.+Different+results+%5C%28XML+%5C-+JSON%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08365.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08452.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFKLhmtnW4YkJFKyamG5eK6cdpMmMWxjp8NLFDD16uLsoS1KuA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

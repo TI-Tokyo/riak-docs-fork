@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak on SAN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd9.html#12482" id="c">
+<link rel="index" href="mail9.html#12482" id="i">
+<link rel="prev" href="msg12480.html" id="p">
+<link rel="next" href="msg12483.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12482.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+on+SAN%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak on SAN</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Pedram+Nimreezi%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Pedram Nimreezi</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131002" rel="nofollow">Wed, 02 Oct 2013 20:08:46 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I think this is just an area that hasn't been addressed unlike things like
+a &quot;hot&quot; copy in the rdbms world..
+I think at least a plan for how a hotcopy tool for a riak core semantics
+database system
+could be made would be a good step in the right direction, ie.. maybe a
+combination of
+specifying a target system to transfer to, then converge the source ring ie
+5 nodes to 1..
+having a riak_backup_vnode with a batch put fsm, that transfers 1-10mb's
+worth of keys to
+another riak system's vnode compressed with crc checks and writes directly
+to leveldb.
+Or a wiki of some sort outlining possible strategies for achieving this.</pre><pre>
+
+The current backup approach is not at all the way it could or should be.
+
+
+
+On Wed, Oct 2, 2013 at 10:24 PM, John E. Vincent &lt;
+lusis.org+riak-us...@gmail.com&gt; wrote:
+
+&gt; Man I go away for a few hours for family time and off things go ;)
+&gt;
+&gt; So this lead to some interesting convos on twitter and here. Others have
+&gt; addressed some things. I figure it helps to explain the sad lonely world I
+&gt; live in - It's called &quot;Enterprise&quot;.
+&gt;
+&gt; A few folks are somewhat aware that our product uses Riak under the
+&gt; covers. We have a hosted SaaS version and we also allow customers to
+&gt; install it entirely isolated on their own networks. The only people who do
+&gt; this are traditional enterprises.
+&gt;
+&gt; The very first question that comes up during an installation after &quot;you
+&gt; need HOW many servers?&quot; is &quot;How do I back this up&quot;.  Since we use LevelDB,
+&gt; we have the worst of backup options - coordinated node shutdown and
+&gt; tarball'ing. The thing is we can't say to them &quot;you never need to back this
+&gt; up. Just add more nodes!&quot;
+&gt;
+&gt; That doesn't check the box they have. That doesn't meet the legal and
+&gt; industry guidelines they have to follow. So now that they've swallowed the
+&gt; &quot;you need 5 servers just for the DB&quot; we now hit them with &quot;your backup
+&gt; strategy involves this complicated orchestrated shutdown process and some
+&gt; tarballs&quot;. When faced with that, we ran into a new issue. They started
+&gt; doing vm snapshots and stupid shit like vmotioning the instances (oh yes,
+&gt; they virtualize it =/).
+&gt;
+&gt; If you aren't familiar with vmotion, it's basically vmware's bullshit that
+&gt; says they can somehow defy the laws of physics. If you read the details on
+&gt; exactly what vmotion does (hint - it doesn't actually take the node offline
+&gt; - vmware just &quot;buffers&quot; the pending network requests among other things),
+&gt; you can see how this can TOTALLY fuck up Riak clusters.
+&gt;
+&gt; Anyway so this is the world we have to live in and we have to provide
+&gt; something that resembles a backup they can DR from. Our normal course of
+&gt; action is to tell them to contact Basho for RiakDS and go multi-site. SAN
+&gt; based snapshots largely meet that need for them.
+&gt;
+&gt; For what it's worth, this is not just a problem with Riak and there are
+&gt; legitimate use cases for wanting to have a &quot;copy&quot; of production data for
+&gt; testing new code against. The biggest problem is once you get data IN to
+&gt; riak (and other stores), it's REALLY difficult to prune it outside of
+&gt; expensive &quot;walk all the things&quot;, an external index of some kind or
+&gt; resorting to application-level business logic tooling.
+&gt;
+&gt; I'm not making a judgement call. Trade offs are a thing but it's
+&gt; definitely a issue. At this point I'm considering resorting to a
+&gt; post-commit hook machination of some kind.
+&gt;
+&gt;
+&gt; On Wed, Oct 2, 2013 at 6:02 PM, Jeremiah Peschka &lt;
+&gt; jeremiah.pesc...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; Responses inline.
+&gt;&gt;
+&gt;&gt; TL;DR - I actually agree with John, SANs make management of storage
+&gt;&gt; stupidly easy, but you pay more money for it. Make the right decision for
+&gt;&gt; your org, but make sure you can monitor and backup that decision. The SAN
+&gt;&gt; isn't a magic box. And  a Drobo b1200i [2] is definitely not a SAN.
+&gt;&gt;
+&gt;&gt; ---
+&gt;&gt; Jeremiah Peschka - Founder, Brent Ozar Unlimited
+&gt;&gt; MCITP: SQL Server 2008, MVP
+&gt;&gt; Cloudera Certified Developer for Apache Hadoop
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Wed, Oct 2, 2013 at 2:12 PM, John E. Vincent &lt;
+&gt;&gt; lusis.org+riak-us...@gmail.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; I'm going to take a competing view here.
+&gt;&gt;&gt;
+&gt;&gt;&gt; SAN is a bit overloaded of a term at this point. Nothing precludes a SAN
+&gt;&gt;&gt; from being performant or having SSDs. Yes the cost is overkill for fiber
+&gt;&gt;&gt; but iSCSI is much more realistic. Alternately you can even do ATAoE.
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; Agreed. You can buy a glorified direct attached storage device with a few
+&gt;&gt; ethernet ports in it, but vendors will call it a SAN.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; From a hardware perspective, if I have 5 pizza boxes as riak nodes, I
+&gt;&gt;&gt; can only fit so many disks in them. Meanwhile I can add another shelf to my
+&gt;&gt;&gt; SAN and expand as needed.
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; We have the ability to cram 16x 960GB SSDs into the front of a Dell R720
+&gt;&gt; for about $550 per drive... no SAN vendor can beat you on price for that.
+&gt;&gt; SAN storage is an order of magnitude more expensive, but...
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;&gt; Additionally backup of a SAN is MUCH easier than backup of a riak node
+&gt;&gt;&gt; itself. It's a snapshot and you're done. Mind you nothing precludes you
+&gt;&gt;&gt; from doing LVM snapshots in the OS but you still need to get the data OFF
+&gt;&gt;&gt; that system for it to be truly backed up.
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; The products worth of being called a SAN offer you fantastic features
+&gt;&gt; like application aware volume snapshots, multi-site async and synchronous
+&gt;&gt; block level synchronization, and all kinds of amazing features that mean
+&gt;&gt; you never need to think about your storage beyond &quot;HEY THERE, MAGIC BOX, I
+&gt;&gt; NEED 500GB OF SPACE!&quot;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; I love riak and other distributed stores but backing them up is NOT a
+&gt;&gt;&gt; solved problem. Walking all keys, coordinating the take down of all your
+&gt;&gt;&gt; nodes in a given order or whatever your strategy is a serious pain point.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Using a SAN or local disk also doesn't excuse you from watching I/O
+&gt;&gt;&gt; performance. With a SAN I get multiple redundant paths to a block device
+&gt;&gt;&gt; and I don't get that necessarily with local storage.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Just my two bits.
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; For many applications, if you need storage performance outside of the
+&gt;&gt; main chassis, you could also look at an approach like Microsoft take with
+&gt;&gt; the Fast Track Data Warehouse Reference Architecture [1]. For those who
+&gt;&gt; don't want to read, you line up the ability of your CPUs to process data
+&gt;&gt; with the ability of your disks to produce data. For SQL Server, you assume
+&gt;&gt; ~300MB/s of processing per core. Core count * 300MB/s = total combined disk
+&gt;&gt; speed. It's easy to use something like a Dell MD1220 or an HP MSA to get
+&gt;&gt; this kind of performance, too, without breaking the bank and upgrading to
+&gt;&gt; something like a 3PAR or EMC.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; [1]:
+&gt;&gt; <a  rel="nofollow" href="http://www.microsoft.com/en-us/sqlserver/solutions-technologies/data-warehousing/reference-architecture.aspx">http://www.microsoft.com/en-us/sqlserver/solutions-technologies/data-warehousing/reference-architecture.aspx</a>
+&gt;&gt; [2]:
+&gt;&gt; <a  rel="nofollow" href="http://www.droboworks.com/B1200i.asp?gclid=CPbhhL2T-bkCFeI-Mgod0hEAaA">http://www.droboworks.com/B1200i.asp?gclid=CPbhhL2T-bkCFeI-Mgod0hEAaA</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Wed, Oct 2, 2013 at 2:18 AM, Jeremiah Peschka &lt;
+&gt;&gt;&gt; jeremiah.pesc...@gmail.com&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Could you do it? Sure.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Should you do it? No.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; An advantage of Riak is that you can avoid the cost of SAN storage by
+&gt;&gt;&gt;&gt; getting duplication at the machine level rather than rely on your storage
+&gt;&gt;&gt;&gt; vendor to provide it.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Running Riak on a SAN also exposes you to the SAN becoming your
+&gt;&gt;&gt;&gt; bottleneck; you only have so many fiber/iSCSI ports and a fixed number of
+&gt;&gt;&gt;&gt; disks. The risk of storage contention is high, too, so you can run into
+&gt;&gt;&gt;&gt; latency issues that are difficult to diagnose without looking into both
+&gt;&gt;&gt;&gt; Riak as well as the storage system.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Keeping cost in mind, too, SAN storage is about 10x the cost of
+&gt;&gt;&gt;&gt; consumer grade SSDs. Not to mention feature licensing and support... The
+&gt;&gt;&gt;&gt; cost comparison isn't favorable.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Please note: Even though your vendor calls it a SAN, that doesn't mean
+&gt;&gt;&gt;&gt; it's a SAN.
+&gt;&gt;&gt;&gt;  On Oct 1, 2013 11:08 PM, &quot;Guy Morton&quot; &lt;guy.mor...@bksv.com&gt; wrote:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Does this make sense?
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt;&gt; Guy Morton
+&gt;&gt;&gt;&gt;&gt; Web Development Manager
+&gt;&gt;&gt;&gt;&gt; Brüel &amp; Kjær EMS
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; This e-mail is confidential and may be read, copied and used only by
+&gt;&gt;&gt;&gt;&gt; the intended recipient. If you have received it in error, please contact
+&gt;&gt;&gt;&gt;&gt; the sender immediately by return e-mail. Please then delete the e-mail and
+&gt;&gt;&gt;&gt;&gt; do not disclose its contents to any other person.
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+
+-- 
+/* Sincerely
+--------------------------------------------------------------
+Pedram Nimreezi - Chief Technology Officer  */
+
+// The hardest part of design … is keeping features out. - Donald Norman
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12480.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd9.html#12482">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail9.html#12482">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12483.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12464.html">Re: Riak on SAN</a></span> <span class="sender italic">Heinz Nikolaus Gies</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12465.html">RE: Riak on SAN</a></span> <span class="sender italic">Victor</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12466.html">Re: Riak on SAN</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12468.html">Re: Riak on SAN</a></span> <span class="sender italic">Pedram Nimreezi</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12470.html">RE: Riak on SAN</a></span> <span class="sender italic">Victor</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12471.html">Re: Riak on SAN</a></span> <span class="sender italic">Darren Govoni</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12472.html">Re: Riak on SAN</a></span> <span class="sender italic">Steve Vinoski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12473.html">Re: Riak on SAN</a></span> <span class="sender italic">Darren Govoni</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg12475.html">Re: Riak on SAN</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12480.html">Re: Riak on SAN</a></span> <span class="sender italic">John E. Vincent</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak on SAN</span> <span class="sender italic">Pedram Nimreezi</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12483.html">Re: Riak on SAN</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12485.html">Re: Riak on SAN</a></span> <span class="sender italic">Brian Akins</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12486.html">Re: Riak on SAN</a></span> <span class="sender italic">Guido Medina</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12487.html">Re: Riak on SAN</a></span> <span class="sender italic">Guido Medina</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12488.html">Re: Riak on SAN</a></span> <span class="sender italic">Pedram Nimreezi</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12489.html">Re: Riak on SAN</a></span> <span class="sender italic">Guido Medina</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12490.html">Re: Riak on SAN</a></span> <span class="sender italic">Heinz Nikolaus Gies</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12491.html">Re: Riak on SAN</a></span> <span class="sender italic">Guido Medina</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12492.html">Re: Riak on SAN</a></span> <span class="sender italic">Jared Morrow</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg12510.html">Re: Riak on SAN</a></span> <span class="sender italic">Mike Oxford</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak on SAN">
+<input type="hidden" name="msgid" value="CAAaFgHttRvJ4RC_5HF_KuXtx2F+w0YWy+18Pd0W_+ypssam3Gg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12482.html">
+<input type="submit" value=" Pedram Nimreezi ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+on+SAN%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12480.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12483.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAaFgHttRvJ4RC_5HF_KuXtx2F+w0YWy+18Pd0W_+ypssam3Gg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

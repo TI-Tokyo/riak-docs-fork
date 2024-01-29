@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: High volume data series storage and queries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04265" id="c">
+<link rel="index" href="maillist.html#04265" id="i">
+<link rel="prev" href="msg04273.html" id="p">
+<link rel="next" href="msg04268.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04265.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+volume+data+series+storage+and+queries%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: High volume data series storage and queries</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110808" rel="nofollow">Mon, 08 Aug 2011 14:53:21 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Responses inline
+
+On Aug 8, 2011, at 1:25 PM, Paul O wrote:</pre><pre>
+
+&gt; Hi Jeremiah,
+&gt; 
+&gt; This is for a yet-to-exist system, so the existing data characteristics are 
+&gt; not that important.
+
+Will any existing data be imported? If this is totally greenfield, then you're 
+free to do whatever zany things you want!
+
+&gt; 
+&gt; The volume of data would be something like : average 10 events per second per 
+&gt; source meaning about 320 million events per source, for tens of thousands of 
+&gt; sources, potentially hundreds of thousands.
+
+Ah, so you need IOPS throughput, not storage capacity. On the hardware side 
+make sure your storage subsystem can keep up - don't cheap out on disks just 
+because you have a lot of nodes. A single rotational HDD can only handle about 
+180 IOPS on average. There's a lot you can do on the storage backend to make 
+sure you're able to keep up there.
+
+&gt; 
+&gt; Data retention policy would be in the range of years, probably 5 years.
+&gt; 
+
+You may want to look into ways to force Riak to clean up the bitcask files. I 
+don't entirely remember how it's going to handle cleaning up deleted records, 
+but you might run into some tricky situations where compactions aren't 
+occurring.
+
+&gt; Most of the above-mentioned are averages, some sources might be sampled even 
+&gt; hundreds of times per second. There is also a layer of creating aggregates 
+&gt; for &quot;regressive granularity&quot; (a la RRD) but it's a bit less of a concern 
+&gt; (i.e. the same strategy I'm describing could be used for storing the 
+&gt; aggregates.)
+
+I like this - write more to avoid aggregations on reads. Us relational types do 
+this, too.
+
+&gt; 
+&gt; The strategy I've described tries to make the most common query (time range 
+&gt; per source with a max number of elements) predictable and as performant as 
+&gt; possible. I.e. for any range I know at most three batches need to be read 
+&gt; from Riak (or equivalent) so I can say that, if reading a batch takes 20 ms 
+&gt; and the initial query takes 10 ms I can predictably respond to most such 
+&gt; requests under 100 ms.
+
+Riak is pretty constant time for Bitcask. The tricky part with the amount of 
+data you're describing is that Bitcask requires (I think) that all keys fit 
+into memory. As your data volume increases, you'll need to do a combination of 
+scaling up and scaling out. Scale up RAM in the nodes and then add additional 
+nodes to handle load. RAM will help with data volume, more nodes will help with 
+write throughput.
+
+&gt; 
+&gt; So as long as I can benchmark individual aspects of the strategy I hope to a 
+&gt; predictable query cost and an idea of how to grow the system.
+
+You're speaking my language! I love it. 
+
+&gt; 
+&gt; As for the read to write ration I don't have an exact estimate (the system 
+&gt; will be generic and consumption applications will be built on top of it) but 
+&gt; the system is expected to be a lot more write intensive than read intensive. 
+&gt; Most data might go completely unused, some data might be rather &quot;hot&quot; so 
+&gt; additional caching might be implemented later but I'm trying to design the 
+&gt; underlying system so at least some performance axioms are computable.
+&gt; 
+&gt; Does this clarify or confuses further?
+
+Very clear.
+
+Since you're searching on time series, mostly, you could build time indexes in 
+your RDBMS. The nice thing is that querying temporal data is well documented in 
+the relational world, especially in the data warehousing world. In your case, 
+I'd create a dates table and have a foreign key relating to my RDBMS index 
+table to make it easy to search for dates. Querying your time table will be 
+fast which reduces the need for scans in your index table.
+
+EXAMPLE:
+
+CREATE TABLE timeseries (
+  time_key INT,
+  date TIMESTAMP,
+  datestring VARCHAR(30),
+  year SMALLINT,
+  month TINYINT,
+  day TINYINT,
+  day_of_week TINYINT
+  -- etc
+);
+
+CREATE TABLE riak_index (
+  id INT NOT NULL,
+  time_key INT NOT NULL REFERENCES timeseries(time_key),
+  riak_key VARCHAR(100) NOT NULL
+);
+
+
+SELECT ri.riak_key
+FROM timeseries ts
+JOIN riak_index ri ON ts.time_key = ri.time_key
+WHERE ts.date BETWEEN '20090702' AND '20100702';
+
+
+Without going too much into RDBMS fun, this pattern can get your RDBMS running 
+pretty quickly and then you can combine that with Riak's performance and have a 
+really good idea of how quick any query will be.
+
+
+&gt; 
+&gt; Regards,
+&gt; 
+&gt; Paul
+&gt; 
+&gt; On Mon, Aug 8, 2011 at 3:32 PM, Jeremiah Peschka &lt;jeremiah.pesc...@gmail.com&gt; 
+&gt; wrote:
+&gt; It sounds like a potentially interesting use case.
+&gt; 
+&gt; The questions that immediately enter my head are:
+&gt; * How much data do you currently have?
+&gt; * How much data do you plan to have?
+&gt; * Do you have a data retention policy? If so, what is it? How do you plan to 
+&gt; implement it?
+&gt; * What's the anticipated rate of growth per day? Week? Year?
+&gt; * What type of queries will you have? Is it a fixed set of queries? Is it a 
+&gt; decision support system?
+&gt; * What does your read to write ratio look like?
+&gt; 
+&gt; Your plan to support Riak with a hybrid system isn't that out of whack; it's 
+&gt; very doable.
+&gt; 
+&gt; You can certainly do the type of querying you've described through careful 
+&gt; choice of key names, sorting in memory, and only using the first N data 
+&gt; points in a given Map Reduce query result. The main reason to not perform 
+&gt; range queries in Riak is that they'll result in full key space scans across 
+&gt; the Riak cluster. If you're using bitcask as your backend then it's an in 
+&gt; memory scan, otherwise you're doing a much more costly scan from disk. And, 
+&gt; since key names are hashed as they are partitioned across the cluster, you're 
+&gt; not going to get the benefit of sequential disk scan performance like you 
+&gt; might get with a traditional database.
+&gt; 
+&gt; The only thing that worries me is the phrase &quot;should grow more than what a 
+&gt; 'vanilla' RDBMS would support&quot;. Are you thinking 1TB? 10TB? 50TB? 500TB? I'm 
+&gt; trying to get a handle on what size and performance characteristics you're 
+&gt; looking for before diving into how to look at your system vs. saying &quot;Hell if 
+&gt; I know, does someone else on the list have a good idea?&quot;
+&gt; 
+&gt; ---
+&gt; Jeremiah Peschka - Founder, Brent Ozar PLF, LLC
+&gt; Microsoft SQL Server MVP
+&gt; 
+&gt; On Aug 8, 2011, at 11:21 AM, Paul O wrote:
+&gt; 
+&gt; &gt; Hello Riak enthusiasts,
+&gt; &gt;
+&gt; &gt; I am trying to design a solution for storing time series data coming from a 
+&gt; &gt; very large number of potential high-frequency sources.
+&gt; &gt;
+&gt; &gt; I thought Riak could be of help, though based on what I read about it I 
+&gt; &gt; can't use it without some other layer on top of it.
+&gt; &gt;
+&gt; &gt; The problem is I need to be able to do range queries over this data, by the 
+&gt; &gt; source. Hence, I want to be able to say &quot;give me the N first data points 
+&gt; &gt; for source S between time T1 and time T2.&quot;
+&gt; &gt;
+&gt; &gt; I need to store this data for a rather long time, and the expected volume 
+&gt; &gt; should grow more than what a &quot;vanilla&quot; RDBMS would support.
+&gt; &gt;
+&gt; &gt; Another thing to note is that I can restrict the number of data points to 
+&gt; &gt; be returned by a query, so no query would return more than MaxN data points.
+&gt; &gt;
+&gt; &gt; I thought about doing this the following way:
+&gt; &gt;
+&gt; &gt; 1. bundle date time series in batches of MaxN, to ensure that any query 
+&gt; &gt; would require reading at most two batches. The batches would be store 
+&gt; &gt; inside Riak.
+&gt; &gt; 2. Store the start-time, end-time, size and Riak batch ID in a MySQL (or 
+&gt; &gt; PostgreSQL) DB.
+&gt; &gt;
+&gt; &gt; My thinking is such a strategy would allow me to persist data in Riak and 
+&gt; &gt; linearly grow with the data, and the index would be kept in a RDBM for fast 
+&gt; &gt; range queries.
+&gt; &gt;
+&gt; &gt; Does it sound sensible to use Riak this way? Does this make you 
+&gt; &gt; laugh/cry/shake your head in disbelief? Am I overlooking something from 
+&gt; &gt; Riak which would make all this much better?
+&gt; &gt;
+&gt; &gt; Thanks and best regards,
+&gt; &gt;
+&gt; &gt; Paul
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+---
+Jeremiah Peschka - Founder, Brent Ozar PLF, LLC
+ Microsoft SQL Server MVP
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04273.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04265">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04265">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04268.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04258.html">High volume data series storage and queries</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04259.html">Re: High volume data series storage and queries</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04263.html">Re: High volume data series storage and que...</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04264.html">Re: High volume data series storage and...</a></span> <span class="sender italic">Pablo Chacin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04267.html">Re: High volume data series storage...</a></span> <span class="sender italic">Paul O</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04273.html">Re: High volume data series storage...</a></span> <span class="sender italic">Pablo Chacin</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: High volume data series storage and...</span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04268.html">Re: High volume data series storage...</a></span> <span class="sender italic">Paul O</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04279.html">Re: High volume data series st...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04280.html">Re: High volume data series st...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04281.html">Re: High volume data serie...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04282.html">Re: High volume data s...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04283.html">Re: High volume data s...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04284.html">Re: High volume data s...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04311.html">Re: High volume data s...</a></span> <span class="sender italic">Paul O</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04315.html">Re: High volume data s...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04316.html">Re: High volume data s...</a></span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: High volume data series storage and queries">
+<input type="hidden" name="msgid" value="D20B66E6-59EB-4596-9771-1D250C89B468@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04265.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+volume+data+series+storage+and+queries%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04273.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04268.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D20B66E6-59EB-4596-9771-1D250C89B468@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

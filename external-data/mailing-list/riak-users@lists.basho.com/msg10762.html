@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Using Fog with Ruby</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10762" id="c">
+<link rel="index" href="maillist.html#10762" id="i">
+<link rel="prev" href="msg10759.html" id="p">
+<link rel="next" href="msg10763.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10762.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Using+Fog+with+Ruby%22&amp;o=newest" rel="nofollow"><span itemprop="name">Using Fog with Ruby</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Michael+Holt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Michael Holt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130408" rel="nofollow">Mon, 08 Apr 2013 14:36:55 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I have a small script that I am trying to set up that can read usage stats in 
+Ruby Fog. The script is largely pieced together from examples from the Basho 
+site and Fog github project. The script is below.</pre><pre>
+
+
+
+The issue I am running into is the following error:
+
+&lt;Error&gt;
+
+                &lt;Code&gt;AccessDenied&lt;/Code&gt;
+
+                &lt;Message&gt;Access Denied&lt;/Message&gt;
+
+                
+&lt;Resource&gt;/riak-cs/usage/OJIPWXM698VYGEMGZLIV/bx/20130401T000000Z/20130430T235959Z.abj.20130407T213209Z.20130408T213209Z&lt;/Resource&gt;
+
+                &lt;RequestId&gt;&lt;/RequestId&gt;
+
+&lt;/Error&gt;
+
+
+
+The list user (users = provisioning.list_users.body) works. The key and secret 
+is for the admin user.
+
+
+
+Why would I get an Access Denied for the admin user?
+
+
+
+--------------RUBY CODE-------------
+
+require 'rubygems'
+
+require 'fog'
+
+
+
+def show_usage(usage, key)
+
+        utilization = usage.get_usage(  &quot;/usage/#{key}&quot;,
+
+                        :types          =&gt; [:access, :storage]
+
+                        )
+
+
+
+        objects = 0
+
+        bytes = 0
+
+
+
+        # Retrieve Storage information
+
+        utilization.body['Storage']['Samples'][0].each do |k,v|
+
+                # Sum the # of objects and bytes stored from each user bucket 
+for per tenant totals
+
+                if v.is_a?(Hash) # To ignore StartTime &amp; EndTime
+
+                        objects += v['Objects']
+
+                        bytes   += v['Bytes']
+
+                end
+
+        end
+
+
+
+        puts &quot;  showUsage objects:       #{objects}&quot;
+
+        puts &quot;  showUsage bytes:         #{bytes}&quot;
+
+end
+
+
+
+configuration = {
+
+  :riakcs_access_key_id     =&gt; &quot;OJIPWXM698VYGEMGZLIV&quot;,
+
+  :riakcs_secret_access_key =&gt; &quot;fTbOq8WIBiHrUnHxBgRLDIOyo4yK2Qysrx3vjA==&quot;,
+
+  :host                     =&gt; 'localhost',
+
+  :port                     =&gt; 80,
+
+  :scheme                   =&gt; &quot;http&quot;
+
+}
+
+
+
+Excon.defaults[:ssl_verify_peer] = false
+
+
+
+# Requests for User Provision and Usage information
+
+provisioning = Fog::RiakCS::Provisioning.new(configuration)
+
+usage        = Fog::RiakCS::Usage.new(configuration)
+
+
+
+
+
+users = provisioning.list_users.body
+
+
+
+# The following block of code displays all available information for every user
+
+users.each do | user |
+
+
+
+  utilization = 
+usage.get_usage(&quot;/usage/#{user['key_id']}/bx/20130401T000000Z/20130430T235959Z&quot;,
+ :types =&gt; [:access, :storage])
+
+
+
+  puts 
+&quot;§=================================================================================§&quot;
+
+  puts &quot;  name:         #{user['name']}&quot;
+
+  puts &quot;  display_name: #{user['display_name']}&quot;
+
+  puts &quot;  email:        #{user['email']}&quot;
+
+  puts &quot;  id:           #{user['id']}&quot;
+
+  puts &quot;  key_id:       #{user['key_id']}&quot;
+
+  puts &quot;  key_secret:   #{user['key_secret']}&quot;
+
+  puts &quot;  status:       #{user['status']}&quot;
+
+  show_usage usage, user['key_id']
+
+end
+
+puts 
+&quot;§=================================================================================§&quot;
+
+
+
+--
+
+Michael Holt
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10759.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10762">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10762">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10763.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Using Fog with Ruby</span> <span class="sender italic">Michael Holt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10763.html">Re: Using Fog with Ruby</a></span> <span class="sender italic">Tom Santero</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10764.html">RE: Using Fog with Ruby</a></span> <span class="sender italic">Michael Holt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10772.html">Re: Using Fog with Ruby</a></span> <span class="sender italic">Hector Castro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10776.html">Re: Using Fog with Ruby</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10779.html">Re: Using Fog with Ruby</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Using Fog with Ruby">
+<input type="hidden" name="msgid" value="69ecae96098f439e95268f0f456b6a52@BN1PR08MB011.namprd08.prod.outlook.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10762.html">
+<input type="submit" value=" Michael Holt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Using+Fog+with+Ruby%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10759.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10763.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">69ecae96098f439e95268f0f456b6a52@BN1PR08MB011.namprd08.prod.outlook.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Follow-up: Riak / Map, Reduce - error [preflist_exhausted]</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07669" id="c">
+<link rel="index" href="maillist.html#07669" id="i">
+<link rel="prev" href="msg07666.html" id="p">
+<link rel="next" href="msg07617.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07669.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Follow%5C-up%5C%3A+Riak+%5C%2F+Map%2C+Reduce+%5C-+error+%5C%5Bpreflist_exhausted%5C%5D%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Follow-up: Riak / Map, Reduce - error [preflist_exhausted]</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sati%2C+Mohit%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sati, Mohit</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120612" rel="nofollow">Tue, 12 Jun 2012 11:57:25 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Bryan,
+
+I was able to get around this problem more than 2 weeks ago. Initially I wasn't 
+able to query data for more than 1 day. The business requirement was to query 
+data for 1 month. I was using default configuration which is low. I tried with 
+increasing the mapper count to 16,32,64,128,256 and 512. I started getting 
+results at 512 for one month's data. The reducer count was increased to 384. I 
+did not change any memory configuration.</pre><pre>
+
+I added more nodes to the cluster which also helped and I could go beyond one 
+month.
+
+Thanks for your help...
+
+Regards
+Mohit
+
+ 
+
+-----Original Message-----
+From: Bryan Fink [<a  rel="nofollow" href="mailto:br...@basho.com">mailto:br...@basho.com</a>] 
+Sent: Tuesday, June 12, 2012 10:17 AM
+To: clau...@br.ibm.com; Sati, Mohit
+Cc: Riak-Users
+Subject: Re: Follow-up: Riak / Map, Reduce - error [preflist_exhausted]
+
+On Tue, Jun 5, 2012 at 9:51 AM,  &lt;clau...@br.ibm.com&gt; wrote:
+&gt; Any idea how to adjust the processing capacity of the Riak JavaScript 
+&gt; in the Map / Reduce process to avoid the error [preflist_exhausted] ?
+&gt; Checking the user posts, I also see a similar error report sent at 
+&gt; 29/05 by Mr. Sati, Hohit.
+
+Hello, Claude and Mohit.  I apologize for the delay in this response.
+Hopefully I can help you sort out this JS VM vs. preflist_exhausted situation.
+
+The number of JS VMs you will need in the map pool to be sure of
+*never* having contention produce preflist_exhausted is:
+
+     (number of expected concurrent MR queries)
+   * (number of map phases in each query)
+   * (number of partitions a node has claimed)
+
+The reason is that each node might start up a map worker for each partition it 
+has claimed, for each map phase, in each query.
+
+The size needed for the reduce JS VM pool, if you're not using pre-reduce, is:
+
+     (number of concurrent MR queries)
+   * (number of reduce phases in each query)
+
+This doesn't depend on partition claim count, because reduce is performed by 
+exactly one worker.  If you *are* using pre-reduce, you have to add a factor 
+for that distribution:
+
+     (number of concurrent MR queries)
+   * (number of reduce phases in each query)
+   * (1 + number of partitions a node has claimed)
+
+So, as an example, if you're doing only one MR query at a time, with just one 
+map phase, on a 4-node, 64-partition cluster (so each node has 16 partitions 
+claimed), you will need 1 * 1 * 16 = 16 JS VMs in the map pool to be assured of 
+never seeing preflist_exhausted.  If you're doing 100 MR queries concurrently, 
+each with three map phases, on a single node claiming 64 partitions, you will 
+need 100 * 3 * 64 =
+19200 JS VMs in the map pool to be assured of never seeing preflist_exhausted.
+
+That large second example sounds crazy, and it is.  Most of the time, the 
+contention should not be bad enough that every single map-phase worker process 
+will need its own JS VM to work with.  If each computation they're doing is 
+quick, a single JS VM should be able to be picked up and released by many 
+workers in succession.
+
+These numbers are upper bounds to guarantee that there is never a dearth of JS 
+VMs.  A lower number should be able to be found via monitoring and 
+experimentation.  There is also a hard upper bound you should never have to 
+cross for either pool, which is:
+
+      (the configured value of riak_pipe worker_limit)
+    * (number of partitions a node has claimed)
+
+Riak Pipe will refuse to start more workers than the configured limit, and thus 
+there should never be more than that number of JS VMs in use.
+The default worker_limit (set in the riak_pipe section of your
+app.config) is 50.
+
+Unfortunately, I think this situation may be complicated by a similar behavior 
+as is found in <a  rel="nofollow" href="https://github.com/basho/riak_kv/issues/290">https://github.com/basho/riak_kv/issues/290</a>.
+That is, while a worker is waiting on a JS VM to free up, its work queue is 
+filling up.  If any worker times out while waiting on a JS VM, it will try to 
+forward that input to one of its peer workers, in hopes that it will succeed in 
+finding a free JS VM.  If that peer has already been waiting long enough for 
+its input queue to fill up, Riak Pipe will fail the forwarding operation and 
+raise an error.  Methods for tweaking those queue sizes are not exposed in the 
+MapReduce interface.
+
+Of course, none of this precludes some other bug causing trouble, but if each 
+of you could check your JS VM settings against the formulas above, I'd be 
+interested in hearing what you find.
+
+-Bryan
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07666.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07669">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07669">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07617.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07616.html">Follow-up:   Riak / Map, Reduce - error [preflist_exhausted]</a></span> <span class="sender italic">claudef</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07666.html">Re: Follow-up: Riak / Map, Reduce - error [preflist_exhau...</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Follow-up: Riak / Map, Reduce - error [preflist_e...</span> <span class="sender italic">Sati, Mohit</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Follow-up: Riak / Map, Reduce - error [preflist_exhausted]">
+<input type="hidden" name="msgid" value="F21B86FE3BD28A42BD08228D228E2A3F026E41@IAC-EXMAIL.iac.corp">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07669.html">
+<input type="submit" value=" Sati, Mohit ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Follow%5C-up%5C%3A+Riak+%5C%2F+Map%2C+Reduce+%5C-+error+%5C%5Bpreflist_exhausted%5C%5D%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07666.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07617.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">F21B86FE3BD28A42BD08228D228E2A3F026E41@IAC-EXMAIL.iac.corp</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Multiple disks</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02751" id="c">
+<link rel="index" href="maillist.html#02751" id="i">
+<link rel="prev" href="msg02729.html" id="p">
+<link rel="next" href="msg02707.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02751.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Multiple+disks%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Multiple disks</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dan+Reverri%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dan Reverri</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110327" rel="nofollow">Sun, 27 Mar 2011 18:06:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Joe,
+
+You observation regarding question 5 is correct. The coordinating FSM
+would attempt to send the request to the failed vnode and receive
+either an error or no reply. A request may still succeed if enough of
+the other vnodes respond; &quot;enough&quot; would be determined by the &quot;r&quot;,
+&quot;w&quot;, &quot;dw&quot;, or &quot;rw&quot; setting of the request. Handoff would not occur in
+this scenario.</pre><pre>
+
+Thanks,
+Dan
+
+Daniel Reverri
+Developer Advocate
+Basho Technologies, Inc.
+d...@basho.com
+
+
+On Wed, Mar 23, 2011 at 5:58 PM, Joseph Blomstedt
+&lt;joseph.blomst...@gmail.com&gt; wrote:
+&gt;
+&gt; Sorry, I don't have a lot of time right now. I'll try to write a more
+&gt; detailed response later.
+&gt;
+&gt; &gt;&gt;&gt; With a few hours of investigation today, your patch is looking
+&gt; &gt;&gt;&gt; promising. Maybe you can give some more detail on what you did in your
+&gt; &gt;&gt;&gt; experiments a few months ago?
+&gt;
+&gt; I'll try to write something up when I have the time. I need to find my
+&gt; notes. In general, the focus was mostly on performance tuning,
+&gt; although I did look into error/recovery a bit as well. My main goal at
+&gt; the time was trying to reduce disk seeks as much as possible. Bitcask
+&gt; is awesome as it is an append only store, but if you have multiple
+&gt; bitcasks being written to on the same disk you still end up with disk
+&gt; seeking depending on how the underlying file system works. I was
+&gt; trying to mitigate this as much as possible, given a project that used
+&gt; bitcask in a predominately write-only mode (basically as a transaction
+&gt; log that was only written to; read only in failure conditions). BTW,
+&gt; concerning RAID, I recall seeing better performance spreading vnode
+&gt; bitcasks across several smaller RAID arrays than using a single larger
+&gt; RAID array during write-heavy bursts.
+&gt;
+&gt; &gt;&gt;&gt; Oh, one thing I noticed is that while Riak starts up, if there's a bad
+&gt; &gt;&gt;&gt; disk then it will shutdown (the whole node), at this line:
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; <a  rel="nofollow" href="https://github.com/jtuple/riak_kv/blob/jdb-multi-dirs/src/riak_kv_bitcask_backend.erl#L103">https://github.com/jtuple/riak_kv/blob/jdb-multi-dirs/src/riak_kv_bitcask_backend.erl#L103</a>
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; That makes sense, but I'm wondering if it's possible to let the node
+&gt; &gt;&gt;&gt; start since some of its vnodes would be able to open their bitcasks just
+&gt; &gt;&gt;&gt; fine. I wonder if it's as simple as removing that line?
+&gt; &gt;&gt;&gt;
+&gt;
+&gt; You don't want to remove that line, riak expects the vnode to come
+&gt; online or kill the entire node. You would need to have a vnode failure
+&gt; trigger an ownership change if you really wanted things to behave
+&gt; properly.
+&gt;
+&gt; The better case is to not have the vnode fail if there are other
+&gt; existing disks. That's an easy change that I'll throw together when I
+&gt; have time. Basically, when a vnode starts, have it pick a bitcask
+&gt; directory, if that directory fails, then have it pick a different
+&gt; directory. If all configured directories fail, then call riak:stop.
+&gt; Thus, if a disk fails and a vnode restarts, it should create a new
+&gt; empty bitcask on a working disk. Then read repair will slowly rewrite
+&gt; your data depending on data access (handoff won't occur though, unless
+&gt; that's added in patch).
+&gt;
+&gt; &gt; After reading todays recap, I am a bit unsure:
+&gt; &gt;
+&gt; &gt;&gt; 5) Q --- Would Riak handle an individual vnode failure the same way as
+&gt; &gt;&gt; an entire node failure? (from grourk via #riak)
+&gt; &gt;&gt;
+&gt; &gt;&gt;    A --- Yes. The request to that vnode would fail and will be routed
+&gt; &gt;&gt; to the next available vnode
+&gt; &gt;
+&gt; &gt; Is it really handled the same way? I don't believe handoff will occur. The
+&gt; &gt; R/W values still apply of course, but I think there will be one less replica
+&gt; &gt; of the keys that map to the failed vnode until the situation.
+&gt; &gt; I have delved quite a bit into the riak code, but if I really missed
+&gt; &gt; something I would be glad if someone could point me to the place where a
+&gt; &gt; vnode failure is detected. As far as I can see, the heavy lifting happens in
+&gt; &gt; riak_kv_util:try_cast/5 (
+&gt; &gt; <a  rel="nofollow" href="https://github.com/basho/riak_kv/blob/riak_kv-0.14.1/src/riak_kv_util.erl#L78">https://github.com/basho/riak_kv/blob/riak_kv-0.14.1/src/riak_kv_util.erl#L78</a>),
+&gt; &gt; which only checks if the whole node is up.
+&gt;
+&gt; I don't think handoff occurs either. Maybe folks at Basho can look
+&gt; into this further, or someone can test it. I'll test it
+&gt; tonight/tomorrow if I have the time. It looks like the cast will
+&gt; occur, but never return. So, your overall write may fail depending on
+&gt; your W-val. Is there something we're both missing here?
+&gt;
+&gt; -Joe
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02729.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02751">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02751">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02707.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02702.html">Re: Multiple disks</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02704.html">Re: Multiple disks</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02705.html">Re: Multiple disks</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02706.html">Re: Multiple disks</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02708.html">Re: Multiple disks</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02709.html">Re: Multiple disks</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02723.html">Re: Multiple disks</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02726.html">Re: Multiple disks</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02727.html">Re: Multiple disks</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02729.html">Re: Multiple disks</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Multiple disks</span> <span class="sender italic">Dan Reverri</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02707.html">Re: Multiple disks</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02710.html">Re: Multiple disks</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Multiple disks">
+<input type="hidden" name="msgid" value="BANLkTik8n1sHc=jK99owNWCZdMEBeM7HXQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02751.html">
+<input type="submit" value=" Dan Reverri ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Multiple+disks%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02729.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02707.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTik8n1sHc=jK99owNWCZdMEBeM7HXQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Fwd: Evaluating Riak for search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#13253" id="c">
+<link rel="index" href="mail5.html#13253" id="i">
+<link rel="prev" href="msg13246.html" id="p">
+<link rel="next" href="msg13248.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13253.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+Evaluating+Riak+for+search%22&amp;o=newest" rel="nofollow"><span itemprop="name">Fwd: Evaluating Riak for search</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Todd+Tyree%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Todd Tyree</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131216" rel="nofollow">Mon, 16 Dec 2013 02:45:51 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Forgot to Reply-All.
+
+---------- Forwarded message ----------
+From: Todd Tyree &lt;t...@basho.com&gt;
+Date: Mon, Dec 16, 2013 at 10:43 AM
+Subject: Re: Evaluating Riak for search
+To: Cristian Bichis &lt;cri...@imagis.ro&gt;</pre><pre>
+
+
+Hi Cristian,
+
+Firstly, I recommend you look at our Yokozuna project [0].  This is a tight
+integration of Riak and SOLR that will be released as Riak Search 2.0.
+
+To answer your specific questions:
+
+&gt; what capacity/server specs could I start ?
+
+Have a look at our cluster capacity planning guide for a start [1].  For a
+production environment, you will need a minimum of five nodes for optimal
+performance.  Our key-value read and write operations scale linearly, so
+you can easily increase performance by adding nodes.
+
+Yokozuna search works using a coverage query, meaning that a quorum of
+nodes (ceil(number of nodes/2)) must respond for a query to be considered
+successful.  Practically, this means that it does not scale linearly.  I
+believe a standard five-node cluster will meet your search performance
+requirements, but you should do some benchmarking to ensure this is the
+case.  Currently, Basho Bench does not support Yokozuna queries, so you
+will need to use another tool to perform these benchmarks.
+
+However, Yokozuna is compatible with all SOLR clients, so you should be
+able to use any SOLR benchmarking tool to test and optimise search
+performance.
+
+Minimum per-node hardware recommendations can be found in our &quot;Planning for
+a Riak System&quot; guide [2].
+
+
+&gt; Can I start with just one box (the app will grow so definetly I will
+benefit from scaling features of Riak at later moment) for the above specs
+(200+ search queries, 5-20 write queries, 1 Million bucket size) ?
+
+No, I'm afraid not.  At a minimum you will need a five-node cluster.  In
+addition to the information from docs.basho.com, you should also read our
+blog entry &quot;Why Your Riak Cluster Should Have At Least Five Nodes&quot; [3].
+
+I recommend you read and apply all of the recommended settings found in the
+'Tuning' section of our documentation [4][5][6].
+
+&gt; what response times should I expect for search requests ? How about the
+write requests ? I don't have lined up here the queries and the data so
+this is impossible to know but I have no idea now how Riak works on
+performance. As you see for the moment scaling is not my focus. I plan to
+use the bench tool to do some testing but some overall insights still are
+helping.
+
+This depends on your data and access patterns.  As I said earlier, you
+should benchmark representative data.
+
+
+&gt; high offset (eg: list 10 items from a search located at offset 200,000)
+search requests how are expected to work ?
+
+You should be able to use the standard SOLR 'start' and 'rows' query
+parameters [7] to setup the offset and the number of results returned.
+ Faceting may also be appropriate depending on your data [8].  You may need
+to optimise your SOLR queries for efficiency for these kinds of operations.
+ Without knowing more about your data, I'm afraid I cannot recommend a
+specific strategy.
+
+Please be aware that Yokozuna shares the same limitations as SOLR's
+Distributed Search [9].
+
+For the broad scenario you are describing, I suggest you use the bitcask
+backend and start with a ring size of 128 or 256.  You can do an easy
+proof-of-concept on AWS EC2 instances.  Specific AWS tuning recommendations
+can be found on the 'AWS Performance Tuning' page [10].   We frequently use
+m1.xlarge instances for exactly this purpose.
+
+
+[0] <a  rel="nofollow" href="https://github.com/basho/yokozuna">https://github.com/basho/yokozuna</a>
+[1] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/building/planning/cluster/">http://docs.basho.com/riak/latest/ops/building/planning/cluster/</a>
+[2]
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/building/planning/system-planning/#Hardware">http://docs.basho.com/riak/latest/ops/building/planning/system-planning/#Hardware</a>
+[3] <a  rel="nofollow" href="http://basho.com/why-your-riak-cluster-should-have-at-least-five-nodes/">http://basho.com/why-your-riak-cluster-should-have-at-least-five-nodes/</a>
+[4] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/tuning/open-files-limit/">http://docs.basho.com/riak/latest/ops/tuning/open-files-limit/</a>
+[5] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/tuning/file-system/">http://docs.basho.com/riak/latest/ops/tuning/file-system/</a>
+[6] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/tuning/linux/">http://docs.basho.com/riak/latest/ops/tuning/linux/</a>
+[7] <a  rel="nofollow" href="http://wiki.apache.org/solr/CommonQueryParameters">http://wiki.apache.org/solr/CommonQueryParameters</a>
+[8] <a  rel="nofollow" href="http://wiki.apache.org/solr/SolrFacetingOverview">http://wiki.apache.org/solr/SolrFacetingOverview</a>
+[9]
+<a  rel="nofollow" href="http://wiki.apache.org/solr/DistributedSearch#Distributed_Searching_Limitations">http://wiki.apache.org/solr/DistributedSearch#Distributed_Searching_Limitations</a>
+[10] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/tuning/aws/">http://docs.basho.com/riak/latest/ops/tuning/aws/</a>
+
+
+On Sun, Dec 15, 2013 at 7:56 AM, Cristian Bichis &lt;cri...@imagis.ro&gt; wrote:
+
+&gt;  Hello,
+&gt;
+&gt; I have an application which is based on mysql + sphinx (for search) + PHP
+&gt; + caching. I am running the mysql part on a multi server master-slave and
+&gt; currently sphinx is over one box only.
+&gt;
+&gt; Currently I have performance issues with writes
+&gt; (INSERT/DELETE/UPDATE/REPLACE) on Sphinx and I am looking for an
+&gt; alternative on search part. I was checking by 1+ year for some alternative
+&gt; solutions (when I didn't had current issues with sphinx) and on the short
+&gt; list is Riak and Mark Logic.
+&gt;
+&gt; The app I am currently handing has about 130-170 search queries (SELECT
+&gt; with full text) at peak time (but occasionally can go to 200-500 qps) and
+&gt; 5-20 writes per second (INSERT/DELETE/UPDATE/REPLACE). The &quot;bucket&quot; size
+&gt; is close to 1 million. I am handling through sphinx mainly the search part,
+&gt; with only some non-search queries been sent to Sphinx because would take
+&gt; more to run on mysql.
+&gt;
+&gt; The reads/searches are fine, average is 0.04/query. But currently I am
+&gt; having issues because of the way Sphinx is handling writes (it seems writes
+&gt; are waiting for all reads to complete), a write can even take 7 seconds to
+&gt; finish. Beside some momentary optimizations, as the traffic goes up I only
+&gt; have the solution to bring more capacity (which is not impossible but wont
+&gt; help so much based on my tests, the performance/box is decreasing as we add
+&gt; more boxes). So I am ending up checking for Riak for search part of the app.
+&gt;
+&gt; My questions:
+&gt; * what capacity/server specs could I start ? Can I start with just one box
+&gt; (the app will grow so definetly I will benefit from scaling features of
+&gt; Riak at later moment) for the above specs (200+ search queries, 5-20 write
+&gt; queries, 1 Million bucket size) ?
+&gt;
+&gt; * what response times should I expect for search requests ? How about the
+&gt; write requests ? I don't have lined up here the queries and the data so
+&gt; this is impossible to know but I have no idea now how Riak works on
+&gt; performance. As you see for the moment scaling is not my focus. I plan to
+&gt; use the bench tool to do some testing but some overall insights still are
+&gt; helping.
+&gt;
+&gt; * high offset (eg: list 10 items from a search located at offset 200,000)
+&gt; search requests how are expected to work ?
+&gt;
+&gt; Thank you!
+&gt; Cristian
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+
+-- 
+*Todd Tyree*
+Client Services Engineer Basho &lt;<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>&gt;
+
+mobile: +44(0)7861 220 182
+web: www.basho.com
+github: tatyree &lt;<a  rel="nofollow" href="http://github.com/tatyree">http://github.com/tatyree</a>&gt;
+
+
+
+-- 
+*Todd Tyree*
+Client Services Engineer Basho &lt;<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>&gt;
+
+mobile: +44(0)7861 220 182
+web: www.basho.com
+github: tatyree &lt;<a  rel="nofollow" href="http://github.com/tatyree">http://github.com/tatyree</a>&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13246.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#13253">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail5.html#13253">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13248.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13246.html">Evaluating Riak for search</a></span> <span class="sender italic">Cristian Bichis</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Fwd: Evaluating Riak for search</span> <span class="sender italic">Todd Tyree</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Fwd: Evaluating Riak for search">
+<input type="hidden" name="msgid" value="CACUpyvx_x1dyXm=O5FfwBiBmKwehHzoETF8SfGOwKfbs0N3meQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13253.html">
+<input type="submit" value=" Todd Tyree ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+Evaluating+Riak+for+search%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13246.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13248.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACUpyvx_x1dyXm=O5FfwBiBmKwehHzoETF8SfGOwKfbs0N3meQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

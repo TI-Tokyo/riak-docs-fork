@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak 1.0.2 RC1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05456" id="c">
+<link rel="index" href="maillist.html#05456" id="i">
+<link rel="prev" href="msg05452.html" id="p">
+<link rel="next" href="msg05446.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05456.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.0.2+RC1%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak 1.0.2 RC1</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111107" rel="nofollow">Mon, 07 Nov 2011 11:11:54 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>In the release notes, we mention 256, 512, or 1024 as reasonable
+maximum ring sizes depending on the performance of your underlying
+hardware. If you have the hardware to spare, you could try setting up
+a duplicate cluster and then upgrade it to 1.0 and see how things work
+out. If not, you may want to wait until the issue is resolved. If
+we're talking about the 75 node case here, then I imagine duplication
+isn't an option. So, waiting may in fact be best. This issue is
+entirely related to riak_core itself, so any apps that build on
+riak_core will have this limitation.</pre><pre>
+
+This is a huge priority for Basho. This issue should be completely
+resolved in the next major release of Riak. The underlying problem is
+a set of operations that should be independent of ring size, but are
+currently linearly dependent on it due to how vnodes are implemented.
+Current work that will be going into riak_core's master branch in the
+next 2 to 4 weeks will be eliminating this dependency. So, it may be
+possible to pull some of those changes into your code base earlier
+than the next release if your risk profile is comfortable with
+pre-release code.
+
+You are correct that the issue only occurs during ring changes.
+However, upgrading from 0.14.2 to 1.0 will result in a ring divergence
+that will trigger at least one period of increased gossip. If your
+cluster can make it through this upgrade and convergence window
+without nodes running out of RAM and crashing, then you will be fine
+after the cluster converges provided you don't add/remove additional
+nodes or perform any operations that change the ring metadata.
+However, if your nodes do start crashing, then you'll end up in state
+that will take a lot of manual effort to resolve and get things
+working smoothly again.
+
+At Basho, we are currently considering a stopgap fix for this issue
+for a 1.0.x release until the next major release ships. The current
+idea is to build in a rate limiting feature that will slow down the
+number of gossip messages sent over a period of time, and therefore
+allow users to tune this setting to prevent the cluster from being
+overloaded. The cluster will still need to process the same number of
+messages in order to converge, but could be set to do so at a slower
+rate and therefore not become overloaded. It would essentially trade
+convergence time for cluster stability. The downside is that a large
+75 node, 1024 partition cluster could take hours to converge after a
+ring divergence with a reasonable limit. However, if ring divergence
+is rare (which is usually is), then this is a good option. We are
+currently deep in the QA cycle for our 1.0.2 release, so any rate
+limiting feature will likely ship in a 1.0.3 release. However, there
+is an older pre-existing branch with this feature (from before the 1.0
+release) that may be clean to merge into the current 1.0.2 code base
+for those that need an option today rather than tomorrow:
+<a  rel="nofollow" href="https://github.com/basho/riak_core/tree/jdb-gossip-limit">https://github.com/basho/riak_core/tree/jdb-gossip-limit</a>
+
+Again, the real fix going into the next major release is an
+architectural change that removes ring size as a variable in how many
+gossip messages are necessary for convergence.
+
+-Joe
+
+On Mon, Nov 7, 2011 at 10:31 AM, Anthony Molinaro
+&lt;antho...@alumni.caltech.edu&gt; wrote:
+&gt; Lets say I already have a system with a ring size of 1024 in 0.14.2,
+&gt; should I wait to upgrade until this is sorted out?  And how long will
+&gt; that be?  Where is this in terms of Basho's priorities?
+&gt;
+&gt; You say stay under 1024, so I assume that means the max size you
+&gt; recommend would be 512?   Does this also apply to applications using
+&gt; riak_core?  We have a riak_core appliction which currently has about
+&gt; 75 nodes with 1024 partitions, should we not update riak_core to
+&gt; the version shipped in the 1.0.x releases.
+&gt;
+&gt; Are there things that can be done if we require a 1024 ring size to
+&gt; mitigate the issue?  It appears the issue might only be during ring
+&gt; changes, so might not be that awful?
+&gt;
+&gt; Thanks,
+&gt;
+&gt; -Anthony
+&gt;
+&gt; On Sun, Nov 06, 2011 at 08:10:52PM -0700, Joseph Blomstedt wrote:
+&gt;&gt; &gt; RE: large ring size warning in the release notes, is the performance
+&gt;&gt; &gt; degradation linear below 256? That is, until the major release that fixes
+&gt;&gt; &gt; this, is it best to keep ring sizes at 64 for best performance?
+&gt;&gt;
+&gt;&gt; The large ring size warning in the release notes is predominately
+&gt;&gt; related to an issue with Riak's ring gossip functionality.
+&gt;&gt; Adding/removing nodes, changing bucket properties, and setting cluster
+&gt;&gt; metadata all result in a brief period (usually a few seconds) where
+&gt;&gt; gossip traffic increases significantly. The size of the ring
+&gt;&gt; determines both the number of gossip messages that occur during this
+&gt;&gt; window, as well as the size of each message. With large rings, it is
+&gt;&gt; possible that messages are generated faster than they can be handled,
+&gt;&gt; resulting in large message queues that impact cluster performance and
+&gt;&gt; tie up system memory until the message queues are fully drained. In
+&gt;&gt; general, there is no problem as long as your hardware is fast enough
+&gt;&gt; to process the brief spike in gossip traffic in close to real time.
+&gt;&gt; Concerning this specific issue, choosing a ring size smaller than the
+&gt;&gt; maximum you can handle does not provide any additional performance
+&gt;&gt; gains.
+&gt;&gt;
+&gt;&gt; However, unrelated to this issue, there are general performance
+&gt;&gt; considerations related to ring size versus the number of nodes in your
+&gt;&gt; cluster. Given a fixed number of nodes, a larger ring results in more
+&gt;&gt; vnodes per node. This allows more process concurrency which may
+&gt;&gt; improvement performance. However, each vnode runs it's own backend
+&gt;&gt; instance that has it's own set of on-disk files, and competing
+&gt;&gt; reads/writes to different files may result in additional I/O
+&gt;&gt; contention than having fewer vnodes per node. The overall performance
+&gt;&gt; is going to depend largely on your OS, your file system, and your
+&gt;&gt; traffic pattern. So, it's hard to give specific hard and fast rules.
+&gt;&gt; The other issue is 2I performance. Secondary indexes send request to a
+&gt;&gt; covering set of vnodes, which works out to ring_size / N requests;
+&gt;&gt; therefore increasing the ring_size without increasing N leads to more
+&gt;&gt; 2I requests. Again, the right answer depends largely on your use case.
+&gt;&gt;
+&gt;&gt; Overall, I believe we normally recommend between 10 and 50 vnodes per
+&gt;&gt; node, with the ring size rounded up to the next power of two.
+&gt;&gt; Personally, I think 16 vnodes per node is a good number, which matches
+&gt;&gt; the common 64 partition, 4 node Riak cluster. Thus, choosing a ring
+&gt;&gt; size based on that ratio and your expected number of future nodes is a
+&gt;&gt; reasonable choice. Just be sure to stay under 1024 until the issue
+&gt;&gt; with gossip overloading the cluster is resolved.
+&gt;&gt;
+&gt;&gt; -Joe
+&gt;&gt;
+&gt;&gt; On Sat, Nov 5, 2011 at 9:49 AM, Jim Adler &lt;jim.ad...@comcast.net&gt; wrote:
+&gt;&gt; &gt; RE: large ring size warning in the release notes, is the performance
+&gt;&gt; &gt; degradation linear below 256? That is, until the major release that fixes
+&gt;&gt; &gt; this, is it best to keep ring sizes at 64 for best performance?
+&gt;&gt; &gt; Jim
+&gt;&gt; &gt;
+&gt;&gt; &gt; Sent from my phone. Please forgive the typos.
+&gt;&gt; &gt; On Nov 4, 2011, at 7:20 PM, Jared Morrow &lt;ja...@basho.com&gt; wrote:
+&gt;&gt; &gt;
+&gt;&gt; &gt; As we've mentioned earlier, the 1.0.2 release of Riak is coming soon.   
+&gt;&gt; &gt; Like
+&gt;&gt; &gt; we did with Riak 1.0.0, we are provided a release candidate for test before
+&gt;&gt; &gt; we release 1.0.2 final.
+&gt;&gt; &gt; You can find the packages here:
+&gt;&gt; &gt; <a  rel="nofollow" href="http://downloads.basho.com/riak/riak-1.0.2rc1/">http://downloads.basho.com/riak/riak-1.0.2rc1/</a>
+&gt;&gt; &gt; The release notes have been updated and can be found here:
+&gt;&gt; &gt;  <a  rel="nofollow" href="https://github.com/basho/riak/blob/1.0/RELEASE-NOTES.org">https://github.com/basho/riak/blob/1.0/RELEASE-NOTES.org</a>
+&gt;&gt; &gt; Thank you, as always, for continuing to provide bug reports and feedback.
+&gt;&gt; &gt; -Jared
+&gt;&gt; &gt;
+&gt;&gt; &gt; _______________________________________________
+&gt;&gt; &gt; riak-users mailing list
+&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; &gt;
+&gt;&gt; &gt; _______________________________________________
+&gt;&gt; &gt; riak-users mailing list
+&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; &gt;
+&gt;&gt; &gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; Joseph Blomstedt &lt;j...@basho.com&gt;
+&gt;&gt; Software Engineer
+&gt;&gt; Basho Technologies, Inc.
+&gt;&gt; <a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt; --
+&gt; ------------------------------------------------------------------------
+&gt; Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05452.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05456">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05456">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05446.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05444.html">Riak 1.0.2 RC1</a></span> <span class="sender italic">Jared Morrow</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05445.html">Re: Riak 1.0.2 RC1</a></span> <span class="sender italic">Jim Adler</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05449.html">Re: Riak 1.0.2 RC1</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05450.html">Re: Riak 1.0.2 RC1</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05452.html">Re: Riak 1.0.2 RC1</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak 1.0.2 RC1</span> <span class="sender italic">Joseph Blomstedt</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak 1.0.2 RC1">
+<input type="hidden" name="msgid" value="CANvk2KTuCnZPVoAC8yXWMPsUc+HNModO3KDOcmmV65sWxkUmWw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05456.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.0.2+RC1%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05452.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05446.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KTuCnZPVoAC8yXWMPsUc+HNModO3KDOcmmV65sWxkUmWw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

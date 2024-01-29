@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak 1.4.2 10G Ethernet Performance Problems</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd8.html#12778" id="c">
+<link rel="index" href="mail8.html#12778" id="i">
+<link rel="prev" href="msg12777.html" id="p">
+<link rel="next" href="msg14326.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12778.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.4.2+10G+Ethernet+Performance+Problems%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak 1.4.2 10G Ethernet Performance Problems</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Chris+Read%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Chris Read</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131028" rel="nofollow">Mon, 28 Oct 2013 08:41:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks Sean, I'll try the batch threshold and report back.
+</pre><pre>
+
+
+On Mon, Oct 28, 2013 at 10:26 AM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+
+&gt; Chris,
+&gt;
+&gt; I've spoken to our performance-tuning experts and unfortunately they say
+&gt; there's not too much we can do with 1.4 to eek out more bandwidth for
+&gt; handoff. However, the two settings you might try:
+&gt;
+&gt; {riak_core, [
+&gt;     {handoff_batch_threshold, 1048576},
+&gt;     {handoff_concurrency, 2} ]}
+&gt;
+&gt; handoff_batch_threshold is how big of a buffer it will collect before
+&gt; doing a TCP send. You could bump that up to, say, 4MB (4 * 1024 * 1024),
+&gt; but we have found it to be somewhat inconclusive in tests.
+&gt;
+&gt; The other option (which can be set at runtime using riak-admin) is
+&gt; handoff_concurrency, which is how many handoffs (incoming + outgoing) can
+&gt; be running at a time. Increasing this will also increase disk IO
+&gt; utilization, so tune it carefully.
+&gt;
+&gt; We are looking at a lot of ways to increase performance in Riak 2.0, but
+&gt; as many performance things go, the bottlenecks are not always what we first
+&gt; think. I'm sure our perf experts will be able to discuss this more as 2.0
+&gt; approaches.
+&gt;
+&gt; Sorry I can't provide a more satisfactory answer.
+&gt;
+&gt;
+&gt; On Mon, Oct 28, 2013 at 9:59 AM, Chris Read &lt;chris.r...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; Yes, we have have jumbo frames on.
+&gt;&gt;
+&gt;&gt; Kernel and systems are in a good state. I've got the settings from the
+&gt;&gt; Linux perf tuning guide on the riak docs. Testing with iperf(1) shows our
+&gt;&gt; nodes can saturate the 10G interfaces without breaking a sweat - as long as
+&gt;&gt; the packets are large enough...
+&gt;&gt;
+&gt;&gt; 1) <a  rel="nofollow" href="http://iperf.sourceforge.net/">http://iperf.sourceforge.net/</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Sat, Oct 26, 2013 at 11:36 AM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Chris,
+&gt;&gt;&gt;
+&gt;&gt;&gt; Are you using jumbo frames on your network? (MTU 9000 or w/e) That's
+&gt;&gt;&gt; just one aspect, but we've also found there are many other kernel/TCP-stack
+&gt;&gt;&gt; tunings that need to be done to get Riak to push the limits of the network.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Fri, Oct 25, 2013 at 9:10 PM, Chris Read &lt;chris.r...@gmail.com&gt;wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Greetings all...
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Context: We're running Riak 1.4.2 on Ubuntu 12.04 using the Basho build
+&gt;&gt;&gt;&gt; .deb package. Out object size varies between 1K and 512K
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; I've been having some trouble trying to figure out why handoffs between
+&gt;&gt;&gt;&gt; our nodes takes so long and never pushes the network card over 2.5 Gb/s.
+&gt;&gt;&gt;&gt; Testing communication between nodes using iperf shows that the
+&gt;&gt;&gt;&gt; configuration we have can sustain 10G.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Further investigation shows that communication between nodes never uses
+&gt;&gt;&gt;&gt; messages &gt; 4k which gets the network cards to top out on packages per
+&gt;&gt;&gt;&gt; second before they reach the top bits per second.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Possibly related: I see exactly the same problem when using Basho Bench
+&gt;&gt;&gt;&gt; and the pb driver - I can never get the client to go over 2.5Gb/s. This is
+&gt;&gt;&gt;&gt; pushing me to suspect erlang vm or something as the problem.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Anyone seen this before? Is there a magic &quot;use bigger messages&quot; flag
+&gt;&gt;&gt;&gt; hidden somewhere?
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Chris
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; --
+&gt;&gt;&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt;&gt; Software Engineer
+&gt;&gt;&gt; Basho Technologies, Inc.
+&gt;&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Software Engineer
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12777.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd8.html#12778">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail8.html#12778">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14326.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12761.html">Riak 1.4.2 10G Ethernet Performance Problems</a></span> <span class="sender italic">Chris Read</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12765.html">Re: Riak 1.4.2 10G Ethernet Performance Problem...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12776.html">Re: Riak 1.4.2 10G Ethernet Performance Pro...</a></span> <span class="sender italic">Chris Read</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12777.html">Re: Riak 1.4.2 10G Ethernet Performance...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak 1.4.2 10G Ethernet Perform...</span> <span class="sender italic">Chris Read</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg14326.html">Riak 1.4.2 10G Ethernet Performance Problems</a></span> <span class="sender italic">Earl Ruby</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14327.html">Re: Riak 1.4.2 10G Ethernet Performance Pro...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14335.html">Re: Riak 1.4.2 10G Ethernet Performance...</a></span> <span class="sender italic">Chris Read</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14336.html">Re: Riak 1.4.2 10G Ethernet Perform...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14337.html">Re: Riak 1.4.2 10G Ethernet Pe...</a></span> <span class="sender italic">Earl Ruby</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak 1.4.2 10G Ethernet Performance Problems">
+<input type="hidden" name="msgid" value="CACahnQYwJCUi=4uehBQqJVUvgBoSC0=GbjcnLqwAXCdR+i4iLw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12778.html">
+<input type="submit" value=" Chris Read ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.4.2+10G+Ethernet+Performance+Problems%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12777.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14326.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACahnQYwJCUi=4uehBQqJVUvgBoSC0=GbjcnLqwAXCdR+i4iLw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

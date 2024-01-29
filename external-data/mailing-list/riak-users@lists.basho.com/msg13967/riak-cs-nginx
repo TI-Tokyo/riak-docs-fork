@@ -1,0 +1,51 @@
+upstream riak_cs_host {
+  server  192.168.0.1:8080;
+  server  192.168.0.2:8080;
+  server  192.168.0.3:8080;
+  server  192.168.0.4:8080;
+  server  192.168.0.5:8080;
+  server  192.168.0.6:8080;
+  server  192.168.0.7:8080;
+  server  192.168.0.8:8080;
+}
+
+server {
+  listen   80;
+  server_name  _;
+  access_log  /var/log/nginx/riak.access.log;
+  error_log  /var/log/nginx/riak.error.log;
+
+  proxy_set_header Host $http_host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_redirect off;
+
+  proxy_connect_timeout      90;
+  proxy_send_timeout         90;
+  proxy_read_timeout         90;
+
+  proxy_buffer_size          64k;  # If set to a smaller value,
+                                   # nginx can complain with a
+                                   # "headers too large" error
+  proxy_buffers 18 4k;
+  proxy_busy_buffers_size 68k; # http://www.lexa.ru/nginx-ru/msg05140.html
+  client_body_temp_path  /home/nginx_tmpdir 1 2;
+  client_max_body_size 200g;
+  proxy_request_buffering off;
+
+  location / {
+    proxy_pass http://riak_cs_host;
+  }
+
+  location /riak-cs {
+    # office:
+    allow xx.xxx.xxx.xx;
+    allow xxx.xxx.xxx.xxx;
+    # panel:
+    allow xx.xxx.xx.xx;
+    # staging:
+    allow xxx.xxx.xxx.xxx;
+    deny all;
+    proxy_pass http://riak_cs_host;
+  }
+}
+

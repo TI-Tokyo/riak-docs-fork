@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Schema design - version history and time travel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08374" id="c">
+<link rel="index" href="maillist.html#08374" id="i">
+<link rel="prev" href="msg08314.html" id="p">
+<link rel="next" href="msg08377.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08374.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Schema+design+%5C-+version+history+and+time+travel%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Schema design - version history and time travel</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mark+Phillips%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mark Phillips</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120827" rel="nofollow">Mon, 27 Aug 2012 23:11:56 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Patrik,
+
+Sorry for the late response here.</pre><pre>
+
+On Fri, Aug 17, 2012 at 9:37 AM, Patrik Sundberg
+&lt;patrik.sundb...@gmail.com&gt; wrote:
+&gt; Hi,
+&gt;
+&gt; I'll simplify the case to something easier to follow. The typical question I
+&gt; have is: find piece of data X as of time Y. A piece of data X has a start
+&gt; time and end time, can think of as positive integers (that I could have 2i
+&gt; indices for). I'm trying to find the version of X whose start and end time
+&gt; integer range includes the integer Y.
+&gt;
+&gt; I don't see how I make the query with 2i, and doing it via Search seems
+&gt; wrong since don't need the overhead of converting to text etc. Do I need to
+&gt; do a 2step procedure where I get all the possible X versions (think
+&gt; intervals) via a 2i query (I can organize that easily), then a map reduce on
+&gt; those results to find the right interval covering Y? The number of versions
+&gt; for the map reduce will typically be in the range of 10s to 1000s at the
+&gt; maximum, not more.
+&gt;
+
+My initial thoughts (based on a quick reading of this email) is that a
+2i range query that feeds the resulting keys to a M/R job [0] would do
+the trick.
+
+What type of response times are you looking for with these queries?
+When you say &quot;The number of versions for the map reduce will typically
+be in the range of 10s to 1000s at the maximum&quot; do you mean that the
+total number of keys you'll be map-reduce'ing over will be in the 10s
+to 1000s range? Or the result set you'll be producing with that M/R
+job will be on the order of that?
+
+Hope that helps.
+
+Mark
+ricon2012.com
+
+[0] All the way at the bottom of this ---&gt;
+<a  rel="nofollow" href="http://wiki.basho.com/Secondary-Indexes---Configuration-and-Examples.html#Index-Lookups">http://wiki.basho.com/Secondary-Indexes---Configuration-and-Examples.html#Index-Lookups</a>
+
+&gt; Any input would be great!
+&gt;
+&gt; On Wed, Aug 15, 2012 at 11:54 AM, Patrik Sundberg
+&gt; &lt;patrik.sundb...@gmail.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; Hi,
+&gt;&gt;
+&gt;&gt; I have a domain where I want to be able to &quot;time travel&quot;. I don't have
+&gt;&gt; many of updates (many more reads), but when there is an update I need to
+&gt;&gt; preserve history and create new versions. Setting my local &quot;application
+&gt;&gt; time&quot; determines which version of a particular piece of data is fetched, and
+&gt;&gt; I can go back in time and recreate how things looked previously. One can't
+&gt;&gt; change the past, just create new versions in the &quot;future&quot; relative to last
+&gt;&gt; version. Using a model of &quot;starting point + replaying deltas&quot; to get to a
+&gt;&gt; given time is not a good idea, it's an ever evolving state where snapshots
+&gt;&gt; are cheap enough to store and reduces complexity a lot.
+&gt;&gt;
+&gt;&gt; My domain objects are in the order of a couple of hundred types, each type
+&gt;&gt; having some pure data properties (10s, up to hundreds, easily represented as
+&gt;&gt; JSON blobs) and in the order of tens, maximum hundreds of has_one and
+&gt;&gt; has_many type relationships to other objects (which can be of different
+&gt;&gt; type). The relationships only require one direction, always from parent to
+&gt;&gt; child (sourced to destination). An object has a given unique ID, and a
+&gt;&gt; version of that object has a given unique valid time period (with the latest
+&gt;&gt; version having an implicit &quot;infinity&quot; end of period).
+&gt;&gt;
+&gt;&gt; The queries are mostly to find a data property or a relationship for a
+&gt;&gt; given object. A few special cases may be for range queries and exact queries
+&gt;&gt; on properties, easily taken care of by 2i queries.
+&gt;&gt;
+&gt;&gt; I'm trying to think of if and how my domain would be fitted into a riak
+&gt;&gt; &quot;schema&quot;. My hunch of starting point:
+&gt;&gt; - map object types to buckets
+&gt;&gt; - make the unique object IDs the keys in the bucket to represent the
+&gt;&gt; concept of that object
+&gt;&gt; - not sure how to represent the links to versions of that particular
+&gt;&gt; object
+&gt;&gt; - the versions themselves may be either in the same bucket or in a another
+&gt;&gt; bucket (think &quot;cars&quot; and &quot;car-versions&quot; or using &quot;cars&quot; for both)
+&gt;&gt; - a version has a JSON value with its properties, some 2i for any possible
+&gt;&gt; exact and range queries I need
+&gt;&gt; - the has_one and has_many links i could do in several ways. first
+&gt;&gt; decision is if to point them to the object identity or directly to a
+&gt;&gt; specific version. then can use Link, can use 2i, can store IDs in the JSON
+&gt;&gt; and do a 2 query fetch to get there
+&gt;&gt; - 99% of read operations are of the type &quot;given the time of X, give me the
+&gt;&gt; property or relation Y of object with ID Z&quot;
+&gt;&gt;
+&gt;&gt; Anyone having built something similar with a time snapshot/version angle
+&gt;&gt; with experience to share? Any input in general appreciated.
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; Patrik
+&gt;&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08314.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08374">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08374">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08377.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08291.html">Schema design - version history and time travel</a></span> <span class="sender italic">Patrik Sundberg</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08314.html">Re: Schema design - version history and time travel</a></span> <span class="sender italic">Patrik Sundberg</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Schema design - version history and time trav...</span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08377.html">Re: Schema design - version history and time ...</a></span> <span class="sender italic">Patrik Sundberg</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Schema design - version history and time travel">
+<input type="hidden" name="msgid" value="CAE8zJQGhzK-rTeZuMm+iYewa51hK0FyCTW0N3BuugGtJ+x_aoQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08374.html">
+<input type="submit" value=" Mark Phillips ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Schema+design+%5C-+version+history+and+time+travel%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08314.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08377.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAE8zJQGhzK-rTeZuMm+iYewa51hK0FyCTW0N3BuugGtJ+x_aoQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

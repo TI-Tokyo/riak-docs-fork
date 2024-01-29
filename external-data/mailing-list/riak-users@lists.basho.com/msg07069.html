@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak_core question when a node dies</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07069" id="c">
+<link rel="index" href="maillist.html#07069" id="i">
+<link rel="prev" href="msg07068.html" id="p">
+<link rel="next" href="msg07075.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07069.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_core+question+when+a+node+dies%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak_core question when a node dies</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Brisbin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Brisbin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120328" rel="nofollow">Wed, 28 Mar 2012 10:09:27 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm using get_primary_apl to get my preflist but the problem is how to handle a 
+failure of trying to dispatch to a node that is just now going down and hasn't 
+had time to notify the caller yet. I don't want to loose the web request 
+currently in progress. Maybe I need to get a list of indexes to possibly 
+dispatch to and iterate over them, stopping at the first one that doesn't blow 
+up.</pre><pre>
+
+Sent from my iPhone
+
+On Mar 28, 2012, at 12:00 PM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+
+&gt; Jon,
+&gt; 
+&gt; Generally I would use the riak_core_apl module to calculate the preflist for 
+&gt; your request. It takes into account node visibility and service availability. 
+&gt; Use riak_core_node_watcher:service_up to announce that your app is available 
+&gt; after registering with riak_core.
+&gt; 
+&gt; When doing some &quot;split brain&quot; testing/simulation for gen_leader we would do 
+&gt; something like the following on a node we wanted to partition:
+&gt; 
+&gt; 1&gt; erlang:set_cookie(node(), riak2).
+&gt; 2&gt; erlang:disconnect_node('dev3@127.0.0.1'), 
+&gt; erlang:disconnect_node('dev4@127.0.0.1').
+&gt; Basically, set the cookie so it can't connect to the other nodes, then 
+&gt; manually disconnect. That might help you simulate node-outage.
+&gt; 
+&gt; On Wed, Mar 28, 2012 at 12:49 PM, Jon Brisbin &lt;j...@jbrisbin.com&gt; wrote:
+&gt; I'm testing the example code that dispatches a web request from misultin into 
+&gt; a riak_core ring of vnodes. It works fantastic when all nodes are up! :)
+&gt; 
+&gt; Doing &quot;ab -k -c 200 -n 10000 <a  rel="nofollow" href="http://localhost:3000/&quot">http://localhost:3000/&quot</a>; yields a none-to-shabby 
+&gt; performance (dispatching at random into all available vnodes on two separate 
+&gt; riak_core processes):
+&gt; 
+&gt; Concurrency Level:      200
+&gt; Time taken for tests:   1.446 seconds
+&gt; Complete requests:      10000
+&gt; Failed requests:        0
+&gt; Write errors:           0
+&gt; Keep-Alive requests:    10000
+&gt; Total transferred:      1600480 bytes
+&gt; HTML transferred:       120036 bytes
+&gt; Requests per second:    6914.04 [#/sec] (mean)
+&gt; Time per request:       28.927 [ms] (mean)
+&gt; Time per request:       0.145 [ms] (mean, across all concurrent requests)
+&gt; Transfer rate:          1080.64 [Kbytes/sec] received
+&gt; 
+&gt; Connection Times (ms)
+&gt;               min  mean[+/-sd] median   max
+&gt; Connect:        0    0   1.0      0      12
+&gt; Processing:     4   28   9.8     27      78
+&gt; Waiting:        4   28   9.8     27      78
+&gt; Total:          4   28  10.1     27      83
+&gt; 
+&gt; Percentage of the requests served within a certain time (ms)
+&gt;   50%     27
+&gt;   66%     31
+&gt;   75%     34
+&gt;   80%     36
+&gt;   90%     41
+&gt;   95%     47
+&gt;   98%     53
+&gt;   99%     58
+&gt;  100%     83 (longest request)
+&gt; 
+&gt; If I were really zealous, I'd set up haproxy to load balance between these 
+&gt; two misultin servers and get double failover.
+&gt; 
+&gt; I'm trying to catch the situation of going into the console of one of my 
+&gt; nodes and hitting &quot;CTL-C&quot; to kill that process. I'm not sure what the best 
+&gt; way is to handle this. Check before I dispatch to make sure the node is up? 
+&gt; Keep a watch of some other kind that, when it sees that node go down and if 
+&gt; it's trying to dispatch to that node, it tries to find another one?
+&gt; 
+&gt; Essentially, I'm trying to prevent misultin from completely bailing on the 
+&gt; request because the sync_spawn_command blows up trying to do a 
+&gt; gen_server:call to a non-existent node. I'd like to retry to dispatch to a 
+&gt; different node if one happens to have crashed while I'm serving requests (I 
+&gt; don't want to loose a request, essentially).
+&gt; 
+&gt; Thanks!
+&gt; 
+&gt; Jon Brisbin
+&gt; <a  rel="nofollow" href="http://about.me/jonbrisbin">http://about.me/jonbrisbin</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Software Engineer
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt; 
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07068.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07069">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07069">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07075.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07067.html">riak_core question when a node dies</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07068.html">Re: riak_core question when a node dies</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak_core question when a node dies</span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07075.html">Re: riak_core question when a node dies</a></span> <span class="sender italic">Samuel Elliott</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak_core question when a node dies">
+<input type="hidden" name="msgid" value="D49ADFEC-8CB4-4F9A-920D-ECCF8720D70A@jbrisbin.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07069.html">
+<input type="submit" value=" Jon Brisbin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_core+question+when+a+node+dies%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07068.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07075.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D49ADFEC-8CB4-4F9A-920D-ECCF8720D70A@jbrisbin.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Need quick fix for > lineno":466, "message":"SyntaxError: syntax	error", "source":"()</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06907" id="c">
+<link rel="index" href="maillist.html#06907" id="i">
+<link rel="prev" href="msg06904.html" id="p">
+<link rel="next" href="msg06906.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06907.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Need+quick+fix+for+%3E+lineno%5C%22%5C%3A466%2C+%5C%22message%5C%22%5C%3A%5C%22SyntaxError%5C%3A+syntax%09error%5C%22%2C+%5C%22source%5C%22%5C%3A%5C%22%5C%28%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Need quick fix for > lineno":466, "message":"SyntaxError: syntax	error", "source":"()</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ivaylo+Panitchkov%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ivaylo Panitchkov</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120306" rel="nofollow">Tue, 06 Mar 2012 12:48:44 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+
+Hi Dan,</pre><pre>
+
+</pre><tt>The simple solution I came up was to replace the M/R request (basically 
+</tt><tt>fetching 10-50 objects at a time) to a version that fetches objects one 
+</tt><tt>by one :-)
+</tt><tt>I haven't noticed performance degradation so that solution even not so 
+</tt><tt>elegant works for me (at least for the moment).
+</tt><tt>The problem was related to recently deleted objects that still exist in 
+</tt><tt>the cluster but with undefined content. If I perform M/R and at least 
+</tt><tt>one of the requested keys is in that state the M/R request just fails 
+</tt><tt>returning {lineno&quot;:466, &quot;message&quot;:&quot;SyntaxError: syntax error&quot;, &quot;source&quot;:&quot;()}
+</tt><tt>M/R requests to buckets where we don't perform delete operations work 
+</tt><tt>perfect.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>We have had that problem for a while and rewrote and rewrote the 
+</tt><tt>function that should do the job.
+</tt><tt>We use node-js library to communicate with the cluster but for that 
+</tt><tt>specific task used (till today) the functions below as we thought the 
+</tt><tt>problem was with the library.
+</tt><pre style="margin: 0em;">
+
+performMapReduceCURL = function(command, cb) {
+</pre><tt>    var exec = 'curl -X POST -d \'' + command + '\' -H &quot;Content-Type: 
+</tt><tt>application/json&quot; http://' + config.riakHosts[0].join(':') + '/mapred';
+</tt><pre style="margin: 0em;">
+    require('child_process').exec(exec, cb);
+};
+
+function mapFunc(o, keyData, arg) {
+    var data = Riak.mapValuesJson(o)[0];
+    var result;
+    if(undefined !== data &amp;&amp; data.id) {
+        result = [
+</pre><tt>            
+</tt><tt>{id:data.id,social_id:data.social_id,experience:data.experience,map:data.map,visited_users:data.visited_users}
+</tt><pre style="margin: 0em;">
+        ];
+    }
+    else {
+        result = [];
+    }
+    return result;
+}
+
+ids = ['key1', 'key2', 'key3', etc....];
+ids.unshift('set_member');
+
+</pre><tt>var command = '{&quot;inputs&quot;:{&quot;bucket&quot;:\&quot;' + config.CONCRETESBUCKET + 
+</tt><tt>'\&quot;,&quot;key_filters&quot;:[' + JSON.stringify(ids) + 
+</tt><tt>']},&quot;query&quot;:[{&quot;map&quot;:{&quot;language&quot;:&quot;javascript&quot;,&quot;source&quot;:&quot;' + 
+</tt><tt>mapFunc.toString() + '&quot;, &quot;keep&quot;:true}}], &quot;timeout&quot; : ' + 
+</tt><tt>config.listenHostTimeout + '}';
+</tt><pre style="margin: 0em;">
+performMapReduceCURL(command, function(error, stdout, stderr) {
+
+</pre><tt>    // at this point if we have at least one key from ids that looks 
+</tt><tt>like 'tombstone'
+</tt><pre style="margin: 0em;">
+    error = null
+</pre><tt>    stdout = lineno&quot;:466, &quot;message&quot;:&quot;SyntaxError: syntax error&quot;, 
+</tt><tt>&quot;source&quot;:&quot;()
+</tt><pre style="margin: 0em;">
+}
+
+For now everything is under control so thanks to everyone for the help,
+Ivaylo
+
+
+
+On 12-03-06 12:15 PM, Dan Reverri wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Ivaylo,
+
+</pre><tt>Can you provide an example of the MapReduce job you are running? Are 
+</tt><tt>there any log messages on the server side which correspond to the 
+</tt><tt>MapReduce error? What bug are you referring to?
+</tt><pre style="margin: 0em;">
+
+Thanks,
+Dan
+
+Daniel Reverri
+Developer Advocate
+Basho Technologies, Inc.
+d...@basho.com &lt;<a  rel="nofollow" href="mailto:d...@basho.com">mailto:d...@basho.com</a>&gt;
+
+
+</pre><tt>On Tue, Mar 6, 2012 at 8:11 AM, Ivaylo Panitchkov 
+</tt><tt>&lt;ipanitch...@hibernum.com &lt;<a  rel="nofollow" href="mailto:ipanitch...@hibernum.com">mailto:ipanitch...@hibernum.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+
+    Hello guys,
+
+    We are in production and noticed ALL of the M/R requests failing
+    right after a bulk delete with the following response returned back:
+
+    lineno&quot;:466,&quot;message&quot;:&quot;SyntaxError: syntax error&quot;,&quot;source&quot;:&quot;()
+
+    The problem is now persistent even if the delete operation was
+    done awhile ago.
+    I googled to find a solution and realized this is a bug not fixed yet.
+    We have a cluster of 4 machines with riak (1.0.2 2011-11-17)
+    Debian x86_64 installed.
+    I need a quick fix ASAP if someone could help me out.
+
+    Thanks in advance,
+    Ivaylo
+
+</pre><tt>    -- 
+</tt><tt>    Ivaylo Panitchkov
+</tt><pre style="margin: 0em;">
+    Software developer
+    Hibernum Creations Inc.
+
+    Ce courriel est confidentiel et peut aussi être protégé par la
+    loi.Si vous avez reçu ce courriel par erreur, veuillez nous en
+    aviser immédiatement en y répondant, puis supprimer ce message de
+    votre système. Veuillez ne pas le copier, l’utiliser pour quelque
+    raison que ce soit ni divulguer son contenu à quiconque.
+    This email is confidential and may also be legally privileged. If
+    you have received this email in error, please notify us
+    immediately by reply email and then delete this message from your
+    system. Please do not copy it or use it for any purpose or
+    disclose its content.
+
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+--
+Ivaylo Panitchkov
+Software developer
+Hibernum Creations Inc.
+
+Ce courriel est confidentiel et peut aussi être protégé par la loi.Si vous avez 
+reçu ce courriel par erreur, veuillez nous en aviser immédiatement en y 
+répondant, puis supprimer ce message de votre système. Veuillez ne pas le 
+copier, l’utiliser pour quelque raison que ce soit ni divulguer son contenu à 
+quiconque.
+This email is confidential and may also be legally privileged. If you have 
+received this email in error, please notify us immediately by reply email and 
+then delete this message from your system. Please do not copy it or use it for 
+any purpose or disclose its content.
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06904.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06907">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06907">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06906.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06901.html">Need quick fix for &gt; lineno&quot;:466,	&quot;message&...</a></span> <span class="sender italic">Ivaylo Panitchkov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06904.html">Re: Need quick fix for &gt; lineno&quot;:466, &quot...</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Need quick fix for &gt; lineno&quot;:466, &...</span> <span class="sender italic">Ivaylo Panitchkov</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06906.html">Re: Need quick fix for &gt; lineno&quot;:466, &quot...</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07045.html">Re: Need quick fix for &gt; lineno&quot;:466, &...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Need quick fix for &gt; lineno&quot;:466, &quot;message&quot;:&quot;SyntaxError: syntax	error&quot;, &quot;source&quot;:&quot;()">
+<input type="hidden" name="msgid" value="4F567823.9090408@hibernum.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06907.html">
+<input type="submit" value=" Ivaylo Panitchkov ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Need+quick+fix+for+%3E+lineno%5C%22%5C%3A466%2C+%5C%22message%5C%22%5C%3A%5C%22SyntaxError%5C%3A+syntax%09error%5C%22%2C+%5C%22source%5C%22%5C%3A%5C%22%5C%28%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06904.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06906.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4F567823.9090408@hibernum.com</li>
+</ul>
+</div>
+</body>
+</html>

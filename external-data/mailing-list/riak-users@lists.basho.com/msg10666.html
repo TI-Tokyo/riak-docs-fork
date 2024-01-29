@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Rebalancing issue -- failure to hand-off partitions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10666" id="c">
+<link rel="index" href="maillist.html#10666" id="i">
+<link rel="prev" href="msg10663.html" id="p">
+<link rel="next" href="msg10627.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10666.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Rebalancing+issue+%5C-%5C-+failure+to+hand%5C-off+partitions%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Rebalancing issue -- failure to hand-off partitions</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Evan+Vigil%5C-McClanahan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Evan Vigil-McClanahan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130403" rel="nofollow">Wed, 03 Apr 2013 13:58:34 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>You may wish to make the memory limit a little smaller; that means
+~20GB per node, which might put undue memory pressure on leveldb.
+I'd also recommend setting {max_open_files, 400} in the eleveldb
+section (and maybe tuning the write buffer back down), as that's
+important for high quantile latencies.</pre><pre>
+
+Both the TTL and the memory limit put per-operation load on a cluster,
+but it shouldn't be too expensive, depending on how much it's being
+used.
+
+I'd keep TTL off for now.  I'll keep looking into it.
+
+On Wed, Apr 3, 2013 at 1:23 PM, Giri Iyengar &lt;giri.iyen...@sociocast.com&gt; wrote:
+&gt; Evan,
+&gt;
+&gt; We have about 28G per partition. We are running leveldb + memory ( a
+&gt; multi-backend).
+&gt; Here are the relevant info from our app.config:
+&gt;
+&gt;             {storage_backend, riak_kv_multi_backend},
+&gt;
+&gt;             {multi_backend_default, &lt;&lt;&quot;eleveldb_backend&quot;&gt;&gt;},
+&gt;
+&gt;             {multi_backend, [
+&gt;               {&lt;&lt;&quot;eleveldb_backend&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+&gt;                 {write_buffer_size_max, 125829120},
+&gt;                 {write_buffer_size_min, 62914560}
+&gt;               ]},
+&gt;               {&lt;&lt;&quot;memory_backend&quot;&gt;&gt;, riak_kv_memory_backend, [
+&gt;                 {max_memory, 1024}
+&gt;               ]}
+&gt;             ]},
+&gt;
+&gt; We are running a 6 node cluster and the ring size is 128.
+&gt;
+&gt; Best Regards and thanks for your help on this.
+&gt;
+&gt; -giri
+&gt;
+&gt;
+&gt; On Wed, Apr 3, 2013 at 3:58 PM, Evan Vigil-McClanahan
+&gt; &lt;emcclana...@basho.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; How much data do you have in each partition?  Are you running leveldb
+&gt;&gt; or bitcask?  If the former, what does your eleveldb config look like?
+&gt;&gt;
+&gt;&gt; On Wed, Apr 3, 2013 at 6:26 AM, Giri Iyengar &lt;giri.iyen...@sociocast.com&gt;
+&gt;&gt; wrote:
+&gt;&gt; &gt; Evan,
+&gt;&gt; &gt;
+&gt;&gt; &gt; I tried re-introducing the TTL. It reverts back to the issue of vnodes
+&gt;&gt; &gt; not
+&gt;&gt; &gt; successfully transferring. This time it is the hinted_handoffs as
+&gt;&gt; &gt; expected
+&gt;&gt; &gt; since the ownership transfers have already happened. I have been
+&gt;&gt; &gt; specifying
+&gt;&gt; &gt; both a memory limit and a TTL. Should I be specifying only one?
+&gt;&gt; &gt;
+&gt;&gt; &gt; Also, on a separate note, I notice that if I turn AAE on, while the
+&gt;&gt; &gt; repairs
+&gt;&gt; &gt; happen nodes tend to go offline causing a lot of hinted_handoffs. I
+&gt;&gt; &gt; tried
+&gt;&gt; &gt; leaving AAE on for about 48 hours but it still didn't settle. So, I
+&gt;&gt; &gt; ended up
+&gt;&gt; &gt; turning AAE off and the cluster quiesced quickly after that.
+&gt;&gt; &gt;
+&gt;&gt; &gt; -giri
+&gt;&gt; &gt;
+&gt;&gt; &gt;
+&gt;&gt; &gt; On Tue, Apr 2, 2013 at 1:22 PM, Godefroy de Compreignac
+&gt;&gt; &gt; &lt;godef...@eklablog.com&gt; wrote:
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; Thanks Evan, it helped me a lot for my cluster!
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; Godefroy
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; 2013/3/29 Evan Vigil-McClanahan &lt;emcclana...@basho.com&gt;
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; That's an interesting result.  Once it's fully rebalanced, I'd turn it
+&gt;&gt; &gt;&gt;&gt; back on and see if the fallback handoffs still fail.  If they do, I'd
+&gt;&gt; &gt;&gt;&gt; recommend using memory limits, rather than TTL to limit growth (also,
+&gt;&gt; &gt;&gt;&gt; remember that memory limits are *per vnode*, rather than per node).
+&gt;&gt; &gt;&gt;&gt; They're slower, but they don't seem to have this problem.  I'll do my
+&gt;&gt; &gt;&gt;&gt; best to figure out what is going on and get a patch (if one is needed)
+&gt;&gt; &gt;&gt;&gt; into the next version.
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; On Fri, Mar 29, 2013 at 3:15 PM, Giri Iyengar
+&gt;&gt; &gt;&gt;&gt; &lt;giri.iyen...@sociocast.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt; Evan,
+&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt; As recommended by you, I disabled the TTL on the memory backends and
+&gt;&gt; &gt;&gt;&gt; &gt; did a
+&gt;&gt; &gt;&gt;&gt; &gt; rolling restart of the cluster. Now, things are rebalancing quite
+&gt;&gt; &gt;&gt;&gt; &gt; nicely.
+&gt;&gt; &gt;&gt;&gt; &gt; Do you think I can turn the TTL back on once the rebalancing
+&gt;&gt; &gt;&gt;&gt; &gt; completes?
+&gt;&gt; &gt;&gt;&gt; &gt; I'd
+&gt;&gt; &gt;&gt;&gt; &gt; like to ensure that the vnodes in memory don't keep growing forever.
+&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt; -giri
+&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt; On Thu, Mar 28, 2013 at 6:50 PM, Giri Iyengar
+&gt;&gt; &gt;&gt;&gt; &gt; &lt;giri.iyen...@sociocast.com&gt;
+&gt;&gt; &gt;&gt;&gt; &gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt; Evan,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt; This has been happening for a while now (about 3.5 weeks now), even
+&gt;&gt; &gt;&gt;&gt; &gt;&gt; prior
+&gt;&gt; &gt;&gt;&gt; &gt;&gt; to our upgrade to 1.3.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt; -giri
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt; On Thu, Mar 28, 2013 at 6:36 PM, Evan Vigil-McClanahan
+&gt;&gt; &gt;&gt;&gt; &gt;&gt; &lt;emcclana...@basho.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; No.  AAE is unrelated to the handoff subsystem.  I am not familiar
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; enough with the lowest level of it's working to know if it'd
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; reproduce
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; the TTL stuff across on nodes that don't have it.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; I am not totally sure about your timeline here.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; When did you start seeing these errors, before or after your
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; upgrade
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; to 1.3?  When did you start your cluster transition?  What cluster
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; transitions have you initiated?
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; If these errors started with 1.3, an interesting experiment would
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; be
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; to disable AAE and do a rolling restart of the cluster, which
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; should
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; lead to empty memory backends that won't be populated by AAE with
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; anything suspicious.  That said: if you've had cluster balance
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; problems for a while, it's possible that these messages (even this
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; whole issue) is just masking some other problem.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; On Thu, Mar 28, 2013 at 3:24 PM, Giri Iyengar
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &lt;giri.iyen...@sociocast.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; Evan,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; All nodes have been restarted (more than once, in fact) after
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; config
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; changes. Using riak-admin aae-status, I noticed that the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; anti-entropy
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; repair
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; is still proceeding across the cluster.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; It has been less than 24 hours since I upgraded to 1.3 and maybe
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; I
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; have
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; to
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; wait till the first complete build of the index trees happens
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; for
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; cluster to start rebalancing itself.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; Could that be the case?
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; -giri
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; On Thu, Mar 28, 2013 at 5:49 PM, Evan Vigil-McClanahan
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; &lt;emcclana...@basho.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; Giri,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; if all of the nodes are using identical app.config files
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; (including
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; the joining node) and have been restarted since those files
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; changed,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; it may be some other, related issue.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; On Thu, Mar 28, 2013 at 2:46 PM, Giri Iyengar
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &lt;giri.iyen...@sociocast.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; Evan,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; I reconfirmed that all the servers are using identical
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; app.configs.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; They
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; all
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; use multi-backend schema. Are you saying that some of the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; vnodes
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; are
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; in
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; memory backend in one physical node and in eleveldb backend
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; in
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; another
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; physical node?
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; If so, how can I fix the offending vnodes?
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; Thanks,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; -giri
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; On Thu, Mar 28, 2013 at 5:18 PM, Evan Vigil-McClanahan
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; &lt;emcclana...@basho.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; it would if some of the nodes weren't migrated to the new
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; multi-backend schema; if a memory node was trying to hand
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; off
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; to a
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; eleveldb backed node, you'd see this.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; On Thu, Mar 28, 2013 at 2:05 PM, Giri Iyengar
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &lt;giri.iyen...@sociocast.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; Evan,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; I verified that all of the memory backends have the same
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; ttl
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; settings
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; and
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; have done rolling restarts but it doesn't seem to make a
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; difference.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; One
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; thing to note though -- I remember this problem starting
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; roughly
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; around
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; time I migrated a bucket from being backed by leveldb to
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; being
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; backed
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; by
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; memory. I did this by setting the bucket properties via
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; curl
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; and
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; let
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; Riak do
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; the migration of the objects in that bucket. Would that
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; cause
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; such
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; issues?
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; Thanks for your help.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; -giri
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; On Thu, Mar 28, 2013 at 4:55 PM, Evan Vigil-McClanahan
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; &lt;emcclana...@basho.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; Giri, I've seen similar issues in the past when someone
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; was
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; adjusting
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; their ttl setting on the memory backend.  Because one
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; memory
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; backend
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; has it and the other does not, it fails on handoff.   The
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; solution
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; then was to make sure that all memory backend settings
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; are
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; same
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; and then do a rolling restart of the cluster (ignoring a
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; lot
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; of
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; errors
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; along the way).  I am not sure that this is applicable to
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; your
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; case,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; but it's something to look at.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; On Thu, Mar 28, 2013 at 10:22 AM, Giri Iyengar
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &lt;giri.iyen...@sociocast.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; Godefroy:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; Thanks. Your email exchange on the mailing list was
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; what
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; prompted
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; me
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; to
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; consider switching to Riak 1.3. I do see repair
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; messages
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; in
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; console
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; logs
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; and so some healing is happening. However, there are a
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; bunch
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; of
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; hinted
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; handoffs and ownership handoffs that are simply not
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; proceeding
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; because
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; same vnodes keep coming up for transfer and fail.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; Perhaps
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; there is
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; a
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; manual
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; way to forcibly repair and push the vnodes around.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; -giri
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; On Thu, Mar 28, 2013 at 1:19 PM, Godefroy de
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; Compreignac
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; &lt;godef...@eklablog.com&gt; wrote:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; I have exactly the same problem with my cluster. If
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; anyone
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; knows
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; what
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; those errors mean... :-)
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; Godefroy
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; 2013/3/28 Giri Iyengar &lt;giri.iyen...@sociocast.com&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Hello,
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; We are running a 6-node Riak 1.3.0 cluster in
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; production. We
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; recently
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; upgraded to 1.3. Prior to this, we were running Riak
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 1.2
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; on
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; same
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 6-node
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; cluster.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; We are finding that the nodes are not balanced. For
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; instance:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; ================================= Membership
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; ==================================
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Status     Ring    Pending    Node
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; valid       0.0%      0.0%    'riak@172.16.25.106'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; valid      34.4%     20.3%    'riak@172.16.25.107'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; valid      21.9%     20.3%    'riak@172.16.25.113'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; valid      19.5%     20.3%    'riak@172.16.25.114'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; valid       8.6%     19.5%    'riak@172.16.25.121'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; valid      15.6%     19.5%    'riak@172.16.25.122'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Valid:6 / Leaving:0 / Exiting:0 / Joining:0 / Down:0
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; When we look at the logs in the largest node
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; (riak@172.16.25.107),
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; we
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; see
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; error messages that look like this:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 2013-03-28 13:04:16.957 [error]
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; &lt;0.10957.1462&gt;@riak_core_handoff_sender:start_fold:226
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; hinted_handoff
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; transfer of riak_kv_vnode from 'riak@172.16.25.107'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 148433760041419827630061740822747494183805648896 to
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 'riak@172.16.25.121'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 148433760041419827630061740822747494183805648896
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; failed
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; because
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; of
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; error:{badmatch,{error,{worker_crash,{function_clause,[{riak_core_pb,encode,[{ts,{1364,476737,222223}},{{ts,{1364,476737,222223}},&lt;&lt;131,104,7,100,0,8,114,95,111,98,106,101,99,116,109,0,0,0,11,69,78,84,73,84,89,95,83,69,83,83,109,0,0,0,36,67,54,57,95,48,48,51,56,100,56,102,50,52,49,52,99,97,97,54,102,99,52,56,53,52,99,99,101,51,98,50,48,102,53,98,52,108,0,0,0,1,104,3,100,0,9,114,95,99,111,110,116,101,110,116,104,9,100,0,4,100,105,99,116,97,5,97,16,97,16,97,8,97,80,97,48,104,16,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,104,1,104,16,106,106,106,106,106,106,106,106,106,106,108,0,0,0,2,108,0,0,0,11,109,0,0,0,12,99,111,110,116,101,110,116,45,116,121,112,101,97,116,97,101,97,120,97,116,97,47,97,112,97,108,97,97,97,105,97,110,106,108,0,0,0,23,109,0,0,0,11,88,45,82,105,97,107,45,86,84,97,103,97,51,97,120,97,105,97,101,97,120,97,66,97,120,97,107,97,119,97,101,97,75,97,117,97,122,97,111,97,55,97,85,97,104,97,85,97,107,97,112,97,120,97,107,106,106,108,0,0,0,1,108,0,0,0,1,109,0,0,0,5,105,110,100,101,120,106,106,106,108,0,0,0,1,108,0,0,0,1,109,0,0,0,20,88,45,82,105,97,107,45,76,97,115,116,45,77,111,100,105,102,105,101,100,104,3,98,0,0,5,84,98,0,7,70,65,98,0,3,99,115,106,106,108,0,0,0,1,108,0,0,0,6,109,0,0,0,7,99,104,97,114,115,101,116,97,85,97,84,97,70,97,45,97,56,106,106,109,0,0,0,36,52,54,55,98,54,51,98,50,45,50,99,56,52,45,52,56,50,99,45,97,48,99,54,45,56,53,50,100,53,99,57,97,98,98,53,101,106,108,0,0,0,1,104,2,109,0,0,0,8,0,69,155,215,81,84,63,31,104,2,97,1,110,5,0,65,191,200,202,14,106,104,9,100,0,4,100,105,99,116,97,1,97,16,97,16,97,8,97,80,97,48,104,16,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,104,1,104,16,106,106,106,106,106,106,106,106,106,106,106,106,106,106,108,0,0,0,1,108,0,0,0,1,100,0,5,99,108,101,97,110,100,0,4,116,114,117,101,106,106,100,0,9,117,110,100,101,102,105,110,101,100&gt;&gt;}],[{file,&quot;src/riak_core_pb.erl&quot;},{line,40}]},{riak_core_pb,pack,5,...},...]},...}}}
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; [{riak_core_handoff_sender,start_fold,5,[{file,&quot;src/riak_core_handoff_sender.erl&quot;},{line,170}]}]
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 2013-03-28 13:04:16.961 [error] &lt;0.29352.909&gt; CRASH
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; REPORT
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Process
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; &lt;0.29352.909&gt; with 0 neighbours exited with reason:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; no
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; function
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; clause
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; matching
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; riak_core_pb:encode({ts,{1364,476737,222223}},
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; {{ts,{1364,476737,222223}},&lt;&lt;131,104,7,100,0,8,114,95,111,98,106,101,99,116,109,0,0,0,11,69,78,...&gt;&gt;})
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; line 40 in gen_server:terminate/6 line 747
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 2013-03-28 13:04:13.888 [error]
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; &lt;0.12680.1435&gt;@riak_core_handoff_sender:start_fold:226
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; ownership_handoff
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; transfer of riak_kv_vnode from 'riak@172.16.25.107'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 11417981541647679048466287755595961091061972992 to
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 'riak@172.16.25.113'
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 11417981541647679048466287755595961091061972992
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; failed
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; because
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; of
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; error:{badmatch,{error,{worker_crash,{function_clause,[{riak_core_pb,encode,[{ts,{1364,458917,232318}},{{ts,{1364,458917,232318}},&lt;&lt;131,104,7,100,0,8,114,95,111,98,106,101,99,116,109,0,0,0,11,69,78,84,73,84,89,95,83,69,83,83,109,0,0,0,36,67,54,57,95,48,48,48,54,52,98,99,52,53,51,49,52,55,101,50,101,53,97,102,101,102,49,57,99,50,55,99,97,49,53,54,99,108,0,0,0,1,104,3,100,0,9,114,95,99,111,110,116,101,110,116,104,9,100,0,4,100,105,99,116,97,5,97,16,97,16,97,8,97,80,97,48,104,16,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,104,1,104,16,106,106,106,106,106,106,106,106,106,106,108,0,0,0,2,108,0,0,0,11,109,0,0,0,12,99,111,110,116,101,110,116,45,116,121,112,101,97,116,97,101,97,120,97,116,97,47,97,112,97,108,97,97,97,105,97,110,106,108,0,0,0,23,109,0,0,0,11,88,45,82,105,97,107,45,86,84,97,103,97,54,97,88,97,76,97,66,97,69,97,69,97,116,97,73,97,104,97,118,97,77,97,86,97,48,97,81,97,103,97,110,97,119,97,73,97,51,97,85,97,72,97,53,106,106,108,0,0,0,1,108,0,0,0,1,109,0,0,0,5,105,110,100,101,120,106,106,106,108,0,0,0,1,108,0,0,0,1,109,0,0,0,20,88,45,82,105,97,107,45,76,97,115,116,45,77,111,100,105,102,105,101,100,104,3,98,0,0,5,84,98,0,7,0,165,98,0,3,138,179,106,106,108,0,0,0,1,108,0,0,0,6,109,0,0,0,7,99,104,97,114,115,101,116,97,85,97,84,97,70,97,45,97,56,106,106,109,0,0,0,36,55,102,98,52,50,54,54,53,45,57,100,56,48,45,52,54,98,97,45,98,53,97,100,45,56,55,52,52,54,54,97,97,50,56,53,99,106,108,0,0,0,1,104,2,109,0,0,0,8,0,69,155,215,81,59,179,219,104,2,97,1,110,5,0,165,121,200,202,14,106,104,9,100,0,4,100,105,99,116,97,1,97,16,97,16,97,8,97,80,97,48,104,16,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,106,104,1,104,16,106,106,106,106,106,106,106,106,106,106,106,106,106,106,108,0,0,0,1,108,0,0,0,1,100,0,5,99,108,101,97,110,100,0,4,116,114,117,101,106,106,100,0,9,117,110,100,101,102,105,110,101,100&gt;&gt;}],[{file,&quot;src/riak_core_pb.erl&quot;},{line,40}]},{riak_core_pb,pack,5,[{...},...]},...]},...}}}
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; [{riak_core_handoff_sender,start_fold,5,[{file,&quot;src/riak_core_handoff_sender.erl&quot;},{line,170}]}]
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 2013-03-28 13:04:14.255 [error] &lt;0.1120.0&gt; CRASH
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; REPORT
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Process
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; &lt;0.1120.0&gt; with 0 neighbours exited with reason: no
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; function
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; clause
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; matching
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; riak_core_pb:encode({ts,{1364,458917,232318}},
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; {{ts,{1364,458917,232318}},&lt;&lt;131,104,7,100,0,8,114,95,111,98,106,101,99,116,109,0,0,0,11,69,78,...&gt;&gt;})
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; line 40 in gen_server:terminate/6 line 747
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; This has been going on for days and the cluster
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; doesn't
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; seem
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; to
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; be
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; rebalancing itself. We see this issue with both
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; hinted_handoffs
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; and
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; ownership_handoffs. Looks like we have some corrupt
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; data
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; in
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; our
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; cluster. I
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; checked through the leveldb LOGs and did not see any
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; compaction
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; errors.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; I was hoping that upgrading to 1.3.0 will slowly
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; start
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; repairing
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; the
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; cluster. However, that doesn't seem to be happening.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Any help/hints would be much appreciated.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; -giri
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; --
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; GIRI IYENGAR, CTO
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; SOCIOCAST
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Simple. Powerful. Predictions.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 36 WEST 25TH STREET, 7TH FLOOR NEW YORK CITY, NY
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 10010
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; O: 917.525.2466x104   M: 914.924.7935   F:
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; 347.943.6281
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; E: giri.iyen...@sociocast.com W: www.sociocast.com
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; Facebook's Ad Guru Joins Sociocast -
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; <a  rel="nofollow" href="http://bit.ly/NjPQBQ">http://bit.ly/NjPQBQ</a>
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; _______________________________________________
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; riak-users mailing list
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; --
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; GIRI IYENGAR, CTO
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; SOCIOCAST
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; Simple. Powerful. Predictions.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; 36 WEST 25TH STREET, 7TH FLOOR NEW YORK CITY, NY 10010
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; O: 917.525.2466x104   M: 914.924.7935   F: 347.943.6281
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; E: giri.iyen...@sociocast.com W: www.sociocast.com
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; Facebook's Ad Guru Joins Sociocast -
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; <a  rel="nofollow" href="http://bit.ly/NjPQBQ">http://bit.ly/NjPQBQ</a>
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; _______________________________________________
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; riak-users mailing list
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; --
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; GIRI IYENGAR, CTO
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; SOCIOCAST
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; Simple. Powerful. Predictions.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; 36 WEST 25TH STREET, 7TH FLOOR NEW YORK CITY, NY 10010
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; O: 917.525.2466x104   M: 914.924.7935   F: 347.943.6281
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; E: giri.iyen...@sociocast.com W: www.sociocast.com
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;&gt; &gt; Facebook's Ad Guru Joins Sociocast - <a  rel="nofollow" href="http://bit.ly/NjPQBQ">http://bit.ly/NjPQBQ</a>
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; --
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; GIRI IYENGAR, CTO
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; SOCIOCAST
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; Simple. Powerful. Predictions.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; 36 WEST 25TH STREET, 7TH FLOOR NEW YORK CITY, NY 10010
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; O: 917.525.2466x104   M: 914.924.7935   F: 347.943.6281
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; E: giri.iyen...@sociocast.com W: www.sociocast.com
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;&gt; &gt; Facebook's Ad Guru Joins Sociocast - <a  rel="nofollow" href="http://bit.ly/NjPQBQ">http://bit.ly/NjPQBQ</a>
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; --
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; GIRI IYENGAR, CTO
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; SOCIOCAST
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; Simple. Powerful. Predictions.
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; 36 WEST 25TH STREET, 7TH FLOOR NEW YORK CITY, NY 10010
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; O: 917.525.2466x104   M: 914.924.7935   F: 347.943.6281
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; E: giri.iyen...@sociocast.com W: www.sociocast.com
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt;
+&gt;&gt; &gt;&gt;&gt; &gt;&gt;&gt; &gt; Facebook's Ad Guru Joins Sociocast - <a  rel="nofollow" href="http://bit.ly/NjPQBQ">http://bit.ly/NjPQBQ</a>
+&gt

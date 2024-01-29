@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: auto-apply different backend config via bucket name prefix</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14194" id="c">
+<link rel="index" href="maillist.html#14194" id="i">
+<link rel="prev" href="msg14147.html" id="p">
+<link rel="next" href="msg14202.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14194.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+auto%5C-apply+different+backend+config+via+bucket+name+prefix%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: auto-apply different backend config via bucket name prefix</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Luke+Bakken%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Luke Bakken</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140508" rel="nofollow">Thu, 08 May 2014 07:46:02 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Gavin,
+
+The multi_backend_prefix_list feature is for Riak CS's use and is not
+intended for general use. That being said, the following two configuration
+lines will direct you to how Riak CS accomplishes this:</pre><pre>
+
+{add_paths, [&quot;/usr/lib/riak-cs/lib/riak_cs-1.4.5/ebin&quot;]},
+{storage_backend, riak_cs_kv_multi_backend},
+
+--
+Luke Bakken
+CSE
+lbak...@basho.com
+
+
+On Wed, Apr 30, 2014 at 2:21 AM, Gavin Huang &lt;shuminghu...@gmail.com&gt; wrote:
+&gt; Hi,
+&gt;
+&gt; I know that Riak2 delivered a new feature of bucket type, buckets with
+same
+&gt; bucket type will have same bucket properties and different bucket type can
+&gt; have different bucket properties.
+&gt; however, since Riak2 is still on it's beta version, so think may be I
+should
+&gt; wait for a while before stable version released, so i would stick with
+1.4.7
+&gt; for now.
+&gt;
+&gt; however, since more than one application is using same riak cluster right
+&gt; now, and different application need different storage engine, for example
+&gt; application1 need leveldb, while another one application2 need to use
+&gt; bitcask. so think it's better to use multi-backend in riak cluster.
+&gt;
+&gt; i can achieve that by change app.config:
+&gt; {storage_backend, riak_kv_multi_backend},
+&gt; %%{multi_backend_prefix_list, [{&lt;&lt;&quot;service1_:&quot;&gt;&gt;, be_blocks}]},
+&gt; {multi_backend_default, &lt;&lt;&quot;be_default&quot;&gt;&gt;},
+&gt; {multi_backend, [
+&gt;   {&lt;&lt;&quot;be_default&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+&gt;     {max_open_files, 50},
+&gt;       {data_root, &quot;/var/lib/riak/leveldb&quot;}
+&gt;   ]},
+&gt;     {&lt;&lt;&quot;be_blocks&quot;&gt;&gt;, riak_kv_bitcask_backend, [
+&gt;       {data_root, &quot;/var/lib/riak/bitcask&quot;}
+&gt;   ]},
+&gt;     {&lt;&lt;&quot;for_service1&quot;&gt;&gt;, riak_kv_bitcask_backend, [
+&gt;       {data_root, &quot;/var/lib/riak/service1&quot;}
+&gt;   ]},
+&gt;     {&lt;&lt;&quot;for_service2&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+&gt;       {data_root, &quot;/var/lib/riak/service2&quot;}
+&gt;   ]}
+&gt; ]},
+&gt; and then:
+&gt; curl -XPUT <a  rel="nofollow" href="http://riak:8098/riak/manually_created/">http://riak:8098/riak/manually_created/</a> -d
+&gt; '{&quot;props&quot;:{&quot;backend&quot;:&quot;for_service1&quot;}}'
+&gt;
+&gt; the problem is I could like to have riak automatically apply backend
+setting
+&gt; by the bucket name prefix, for example:
+&gt; service1_bucket11 would use &lt;&lt;&quot;for_service1&quot;&gt;&gt; as backend, while
+&gt; service2_bucket21 would use &lt;&lt;&quot;for_service2&quot;&gt;&gt; as backend.
+&gt;
+&gt; I know riakcs is using the similar mechanism from:
+&gt;
+<a  rel="nofollow" href="http://docs.basho.com/riakcs/latest/cookbooks/configuration/Configuring-Riak/">http://docs.basho.com/riakcs/latest/cookbooks/configuration/Configuring-Riak/</a>
+&gt; {multi_backend_prefix_list, [{&lt;&lt;&quot;0b:&quot;&gt;&gt;, be_blocks}]},
+&gt;
+&gt; but seems this does not work for me:
+&gt; {multi_backend_prefix_list, [{&lt;&lt;&quot;service1&quot;&gt;&gt;, &lt;&lt;&quot;for_service1&quot;&gt;&gt;}]},
+&gt;
+&gt; the newly created bucket did not use bitcask backend as expected, but
+using
+&gt; default leveldb.
+&gt;
+&gt; i'm not familiar with Erlang, can't read through the riak source code,
+don't
+&gt; why it does not work, or did i mis-understand how RiakCS achieve this?
+&gt;
+&gt; Thanks.
+&gt; Gavin
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14147.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14194">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14194">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14202.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14147.html">auto-apply different backend config via bucket name prefix</a></span> <span class="sender italic">Gavin Huang</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: auto-apply different backend config via bucket name p...</span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14202.html">Re: auto-apply different backend config via bucket na...</a></span> <span class="sender italic">Gavin Huang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14235.html">Re: auto-apply different backend config via bucke...</a></span> <span class="sender italic">Luke Bakken</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: auto-apply different backend config via bucket name prefix">
+<input type="hidden" name="msgid" value="CAJJ0J9MkKwz_cMZgsapYP7te4jkJrmHpi7miLtUvgH4zq1K+Tw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14194.html">
+<input type="submit" value=" Luke Bakken ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+auto%5C-apply+different+backend+config+via+bucket+name+prefix%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14147.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14202.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAJJ0J9MkKwz_cMZgsapYP7te4jkJrmHpi7miLtUvgH4zq1K+Tw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

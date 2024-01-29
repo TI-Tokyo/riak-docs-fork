@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: A script to check bitcask keydir sizes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#02733" id="c">
+<link rel="index" href="mail5.html#02733" id="i">
+<link rel="prev" href="msg02731.html" id="p">
+<link rel="next" href="msg02738.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02733.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+script+to+check+bitcask+keydir+sizes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: A script to check bitcask keydir sizes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110324" rel="nofollow">Thu, 24 Mar 2011 03:12:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Anthony,
+
+watching the memory that riak consumes is certainly the most important
+metric. If riak runs out of memory you are screwed. On a dedicated node
+just use the 'free' command to get that information:</pre><pre>
+
+          total      used       free      shared    buffers   cached
+Mem:      66106100   49834164   16271936   0        232460    41492552
+-/+ buffers/cache:    8109152   57996948
+Swap:      1951856         36    1951820
+
+
+the most important line is the second one. There should be &quot;enough&quot; free
+memory. Also swap used should always be near zero. Whats enough is not
+so clear cut. If latency is really important for you, it should be
+enough free memory, so that your working set fits into that amount. Then
+the disk is mostly used for writing.
+
+The way you can eyeball if you have enough memory left for caching is
+for example by using a tool like 'iostat' (in the systats package on
+Debian). It shows you the disk utilization of your system. I usually
+call it like that:
+
+iostat -x 2
+
+
+Of course you should also watch CPU and network utilization, but usually
+disk or memory becomes a problem first.
+
+Cheers,
+Nico
+
+Am Mittwoch, den 23.03.2011, 23:45 -0700 schrieb Anthony Molinaro:
+&gt; Hi Nico,
+&gt; 
+&gt;    Its unclear riak-admin status eventually calls riak_kv_stat:get_stats
+&gt; which states
+&gt; 
+&gt; %%&lt;/dd&gt;&lt;dt&gt; mem_total
+&gt; %%&lt;/dt&gt;&lt;dd&gt; The first element of the tuple returned by
+&gt; %%          {@link memsup:get_memory_data/0}.
+&gt; %%
+&gt; %%&lt;/dd&gt;&lt;dt&gt; mem_allocated
+&gt; %%&lt;/dt&gt;&lt;dd&gt; The second element of the tuple returned by
+&gt; %%          {@link memsup:get_memory_data/0}.
+&gt; %%
+&gt; 
+&gt; The man page for memsup states
+&gt; 
+&gt;   Returns  the  result  of the latest memory check, where Total is
+&gt;   the total memory size and Allocated the allocated  memory  size,
+&gt;   in bytes.
+&gt; 
+&gt; which doesn't tell me if that's filesystem cache or not.  According to
+&gt; top the riak beam.smp is using 3G of virtual and 2.7G of resident
+&gt; on node1 which don't match any of the values from before.  Attaching
+&gt; to the riak node and running memory() I see
+&gt; 
+&gt; [{total,2392208240},
+&gt;  {processes,15012600},
+&gt;  {processes_used,12797856},
+&gt;  {system,2377195640},
+&gt;  {atom,824297},
+&gt;  {atom_used,812024},
+&gt;  {binary,898656},
+&gt;  {code,8336856},
+&gt;  {ets,556632}]
+&gt; 
+&gt; Which seems to reflect what top claims.  I'm just curious what to look at
+&gt; to determine when I need to add new nodes.  I'm currently capturing the
+&gt; statistics riak provides and putting them into rrds, and mean response time
+&gt; is great (95,99, and 100 have spikes quite regularly which I still don't fully
+&gt; understand the cause of, but mean/median is pretty good &lt;1ms).  But I'm
+&gt; wondering when to detect if the whole thing will come crashing down.
+&gt; 
+&gt; I've used Cassandra for the last 20 months in production and had the same
+&gt; issue, it works great then it falls over, and unfortunately with such evenly
+&gt; space data, everything tends to fall over at once.  I just don't want that
+&gt; to happen with my riak cluster, so am wondering how to tell if you are close
+&gt; to needing to grow.
+&gt; 
+&gt; Anyone have any ideas?
+&gt; 
+&gt; -Anthony
+&gt; 
+&gt; 
+&gt; On Thu, Mar 24, 2011 at 01:21:05AM +0100, Nico Meyer wrote:
+&gt; &gt; Hi Anthony,
+&gt; &gt; 
+&gt; &gt; are you sure you are not including the filesystem cache in your
+&gt; &gt; mem_allocated values? It will grow to use all of the free memory or
+&gt; &gt; the total size of your bitcask data files, whichever is smaller.
+&gt; &gt; 
+&gt; &gt; We have about 100Mio keys per node, and riak uses about 7GB of RAM.
+&gt; &gt; 
+&gt; &gt; Cheers,
+&gt; &gt; Nico
+&gt; &gt; 
+&gt; &gt; On 23.03.2011 23:24, Anthony Molinaro wrote:
+&gt; &gt; &gt;So a question about when to add new nodes.  I'm looking at the output of
+&gt; &gt; &gt;this script and the output of riak-admin status to attempt to figure out
+&gt; &gt; &gt;if it's time to grow a cluster.
+&gt; &gt; &gt;
+&gt; &gt; &gt;I have 4 nodes 1024 partitions replication factor 3, currently with a
+&gt; &gt; &gt;single bitcask single bucket where both the key and the value are 36 bytes.
+&gt; &gt; &gt;
+&gt; &gt; &gt;According to the bitcask spreadsheet the overhead per key is 40 bytes
+&gt; &gt; &gt;
+&gt; &gt; &gt;The current key counts/memory are
+&gt; &gt; &gt;
+&gt; &gt; &gt;              key_counts  mem_total  mem_allocated   (key_count*76)
+&gt; &gt; &gt;node1        22381785  25269010432  21015953408     1701015660
+&gt; &gt; &gt;node2        22378092  25269010432  14076137472     1700734992
+&gt; &gt; &gt;node3        22373770  25269010432  21565509632     1700406520
+&gt; &gt; &gt;node4        22382394  25269010432  21493731328     1701061944
+&gt; &gt; &gt;
+&gt; &gt; &gt;node2 failed at some point and was replaced with with a new node.
+&gt; &gt; &gt;
+&gt; &gt; &gt;So there is some oddness here I don't understand.  According to the
+&gt; &gt; &gt;calculated value I should see about 1.7GB per box used, instead I see
+&gt; &gt; &gt;21GB on most machines except for the one which was restarted which has
+&gt; &gt; &gt;14GB.  From looking at memory it seems like I should be adding some nodes
+&gt; &gt; &gt;real soon or amount allocated will hit the total amount.  Or maybe there's
+&gt; &gt; &gt;a memory leak which will reduce the amount of memory (as with node2)?
+&gt; &gt; &gt;
+&gt; &gt; &gt;I'm just trying to figure out why I seem to almost be out of memory with
+&gt; &gt; &gt;23 million documents when the Bitcask capacity planning spreadsheet seems
+&gt; &gt; &gt;to suggest I should be able to have 282 million with 20 GiB of free Ram.
+&gt; &gt; &gt;
+&gt; &gt; &gt;Confused,
+&gt; &gt; &gt;
+&gt; &gt; &gt;-Anthony
+&gt; &gt; &gt;
+&gt; &gt; &gt;On Wed, Mar 16, 2011 at 12:04:48PM -0700, Aphyr wrote:
+&gt; &gt; &gt;&gt;I'm trying to track some basic metrics so we can plan for cluster
+&gt; &gt; &gt;&gt;capacity, monitor transfers, etc. Figured this might be of interest
+&gt; &gt; &gt;&gt;to other riak admins. Apologies if my erlang is nonidiomatic, I'm
+&gt; &gt; &gt;&gt;still learning. :)
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt;#!/usr/bin/env escript
+&gt; &gt; &gt;&gt;%%! -name riakstatuscheck -setcookie riak
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt;main([]) -&gt;  main([&quot;riak@127.0.0.1&quot;]);
+&gt; &gt; &gt;&gt;main([Node]) -&gt;
+&gt; &gt; &gt;&gt;   io:format(&quot;~w\n&quot;, [
+&gt; &gt; &gt;&gt;     lists:foldl(
+&gt; &gt; &gt;&gt;       fun({_VNode, Count}, Sum) -&gt;  Sum + Count end,
+&gt; &gt; &gt;&gt;       0,
+&gt; &gt; &gt;&gt;       rpc:call(list_to_atom(Node), riak_kv_bitcask_backend, key_counts, 
+&gt; &gt; &gt;&gt; [])
+&gt; &gt; &gt;&gt;     )
+&gt; &gt; &gt;&gt;   ]).
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt;$ ./riakstatus riak@127.0.0.1
+&gt; &gt; &gt;&gt;18729
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt;_______________________________________________
+&gt; &gt; &gt;&gt;riak-users mailing list
+&gt; &gt; &gt;&gt;riak-users@lists.basho.com
+&gt; &gt; &gt;&gt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt; &gt;
+&gt; 
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02731.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#02733">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail5.html#02733">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02738.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02666.html">A script to check bitcask keydir sizes</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02722.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02728.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02731.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: A script to check bitcask keydir siz...</span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02738.html">Re: A script to check bitcask keydi...</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02739.html">Re: A script to check bitcask k...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02740.html">Re: A script to check bitcask k...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03608.html">Re: A script to check bitca...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03609.html">Re: A script to check bitca...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03613.html">Re: A script to check bitca...</a></span> <span class="sender italic">Mike Oxford</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: A script to check bitcask keydir sizes">
+<input type="hidden" name="msgid" value="1300961508.2340.31.camel@erdnuss1">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02733.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+script+to+check+bitcask+keydir+sizes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02731.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02738.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1300961508.2340.31.camel@erdnuss1</li>
+</ul>
+</div>
+</body>
+</html>

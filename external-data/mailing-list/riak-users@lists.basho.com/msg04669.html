@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riaksearch 0.14.2 via solr: sort desc</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04669" id="c">
+<link rel="index" href="maillist.html#04669" id="i">
+<link rel="prev" href="msg04667.html" id="p">
+<link rel="next" href="msg04670.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04669.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+0.14.2+via+solr%5C%3A+sort+desc%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riaksearch 0.14.2 via solr: sort desc</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Cribbs%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Cribbs</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110912" rel="nofollow">Mon, 12 Sep 2011 08:55:09 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Pagination can be non-trivial, but this feels like a good fit for secondary
+indexes rather than Search. Note that secondary indexes are only available
+in 1.0 (you can get a prerelease package from downloads.basho.com).</pre><pre>
+
+I'd start off with a reduce phase that handles the pagination (since you
+know it's by key, it's easy to do up front), then you can add a map to fetch
+the documents and a final reduce/sort to make sure they are in the original
+order. This isn't exact because I don't know your document structure, but
+here's how you might do that:
+
+{
+    &quot;inputs&quot;: {
+        &quot;bucket&quot;: &quot;order&quot;,
+        &quot;index&quot;: &quot;contact_email_bin&quot;,
+        &quot;key&quot;: &quot;firstname.lastn...@company.com&quot;
+    },
+    &quot;query&quot;:[
+
+{&quot;reduce&quot;:{&quot;language&quot;:&quot;erlang&quot;,&quot;module&quot;:&quot;riak_kv_mapreduce&quot;,&quot;function&quot;:&quot;reduce_identity&quot;}},
+        {&quot;reduce&quot;:{&quot;language&quot;:&quot;javascript&quot;, &quot;name&quot;:&quot;paginateOrders&quot;, &quot;arg&quot;:
+1}},
+        {&quot;map&quot;:{&quot;language&quot;:&quot;javascript&quot;, &quot;name&quot;:&quot;Riak.mapValuesJson&quot;}},
+        {&quot;reduce&quot;:{&quot;language&quot;:&quot;javascript&quot;, &quot;name&quot;:&quot;Riak.reduceSort&quot;,
+&quot;keep&quot;:true, arg:&quot;function(a,b){ return a.Order.OrderNumber &gt;
+b.Order.OrderNumber; }&quot;}}
+    ]
+}
+
+The first reduce makes sure the keys emitted can be passed to the pagination
+function in Javascript. If you are using Erlang for the function, you might
+not need this. Your paginateOrders function (assuming stored as a built-in)
+would look like this:
+
+function(values, page){
+  // Set the page size here, or possibly set as an argument
+  var pageSize = 30;
+  // Sort on the key, descending.
+  values = values.sort(function(a,b){ return parseInt(a[1]) &lt;
+parseInt(b[1]); });
+  return values.slice((page - 1) * pageSize,  page * pageSize);
+}
+
+Note the Riak.reduceSort function can take a comparator function as a string
+arg and will evaluate it and pass it to the Array.sort function.
+
+2011/9/12 Fredrik Lindström &lt;fredrik.lindst...@qbranch.se&gt;
+
+&gt;  Hi Sean,
+&gt; thank you for the clarification. In our scenario a user might have many
+&gt; orders so it would be nice to be able to page through the result set in
+&gt; descending order.
+&gt; Since our OrderNumbers are guaranteed to be unique we are currently using
+&gt; them as the keys in Riak. They numbers are also created sequentially, hence
+&gt; the desire to page through them in descending order giving the user a
+&gt; chronological perspective of placed orders.
+&gt;
+&gt; We're still quite early in the process of evaluating Riak for our project
+&gt; so we have plenty of time to try other approaches.
+&gt;
+&gt; /F
+&gt;  ------------------------------
+&gt; *From:* Sean Cribbs [s...@basho.com]
+&gt; *Sent:* Monday, September 12, 2011 3:53 PM
+&gt; *To:* Fredrik Lindström
+&gt; *Cc:* riak-users@lists.basho.com
+&gt; *Subject:* Re: riaksearch 0.14.2 via solr: sort desc
+&gt;
+&gt;  Fredrik,
+&gt;
+&gt;  Unfortunately, because of limitations in Riak Search 0.14.x, it can only
+&gt; (pre-)sort reliably on the document ID.  However, it seems like OrderNumber
+&gt; might be a natural ID for this document?  If so, you could do something like
+&gt; the following:
+&gt;
+&gt;  <a  rel="nofollow" href="http://riak/solr/order/select?rows=1&amp;presort=key&amp;q=">http://riak/solr/order/select?rows=1&amp;presort=key&amp;q=</a>
+&gt; Order_Contact_Email:firstname.lastn...@company.com
+&gt;
+&gt; However, this query will also return in ascending order.  If you just want
+&gt; the highest order number, then feeding this query to MapReduce and
+&gt; processing it there would seem appropriate.
+&gt;
+&gt; 2011/9/12 Fredrik Lindström &lt;fredrik.lindst...@qbranch.se&gt;
+&gt;
+&gt;&gt;  Hi everyone,
+&gt;&gt; does the &quot;sort=myfieldname desc&quot; parameter in riaksearch 0.14.2 (via solr)
+&gt;&gt; only sort within the current result set dictated by rows=x and start =y?
+&gt;&gt;
+&gt;&gt; I can get my search results in the correct ASC order regardless of the
+&gt;&gt; rows and start parameters.
+&gt;&gt; Sorting in DESC with rows=1 and start=0 I get one (obviously) result but
+&gt;&gt; the result actually appears to be in ASC order. The doc returned in the
+&gt;&gt; search result is the one with the lowest integer value in the field used for
+&gt;&gt; sorting.
+&gt;&gt;
+&gt;&gt; I'm quite new to Riak and Riak Search and therefore I assume that the
+&gt;&gt; error is on my part.
+&gt;&gt;
+&gt;&gt; Some technical details:
+&gt;&gt;
+&gt;&gt; Total objects in &quot;order&quot; bucket: 187
+&gt;&gt;
+&gt;&gt; Query with DESC sort:
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="http://riak/solr/order/select?rows=1&amp;start=0&amp;sort=Order_OrderNumber%20desc&amp;q=Order_Contact_Email:firstname.lastn...@company.com">http://riak/solr/order/select?rows=1&amp;start=0&amp;sort=Order_OrderNumber%20desc&amp;q=Order_Contact_Email:firstname.lastn...@company.com</a>
+&gt;&gt; Result: 1 doc with Order_OrderNumber = 362982 (Expected result in my
+&gt;&gt; world of fantasy would be 621738 which is currently the highest value)
+&gt;&gt;
+&gt;&gt; Query with ASC sort:
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="http://riak/solr/order/select?rows=1&amp;start=0&amp;sort=Order_OrderNumber%20asc&amp;q=Order_Contact_Email:firstname.lastn...@company.com">http://riak/solr/order/select?rows=1&amp;start=0&amp;sort=Order_OrderNumber%20asc&amp;q=Order_Contact_Email:firstname.lastn...@company.com</a>&lt;<a  rel="nofollow" href="http://riak/solr/order/select?rows=1&amp;start=0&amp;sort=Order_OrderNumber%20desc&amp;q=Order_Contact_Email:firstname.lastn...@company.com">http://riak/solr/order/select?rows=1&amp;start=0&amp;sort=Order_OrderNumber%20desc&amp;q=Order_Contact_Email:firstname.lastn...@company.com</a>&gt;
+&gt;&gt; Result: 1 doc with Order_OrderNumber = 362982
+&gt;&gt;
+&gt;&gt; I have a custom schema where I have defined the field I want to sort by in
+&gt;&gt; the following way:
+&gt;&gt;         {field, [
+&gt;&gt;             {name, &quot;Order_OrderNumber&quot;},
+&gt;&gt;             {type, integer},
+&gt;&gt;             {analyzer_factory, {erlang, text_analyzers,
+&gt;&gt; integer_analyzer_factory}}
+&gt;&gt;         ]},
+&gt;&gt;
+&gt;&gt; If I run the DESC query with rows=187 the results are ordered in the
+&gt;&gt; correct descending order.
+&gt;&gt;
+&gt;&gt; /F
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt;  --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+&gt;
+&gt;
+
+
+-- 
+Sean Cribbs &lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04667.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04669">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04669">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04670.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04665.html">riaksearch 0.14.2 via solr: sort desc</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04666.html">Re: riaksearch 0.14.2 via solr: sort desc</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04667.html">RE: riaksearch 0.14.2 via solr: sort desc</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riaksearch 0.14.2 via solr: sort desc</span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04670.html">Re: riaksearch 0.14.2 via solr: sort d...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riaksearch 0.14.2 via solr: sort desc">
+<input type="hidden" name="msgid" value="CAHsw=e3P+ba-s6=t7p0=jWaW3ap0U2c0pykuJCC9rrWCMPR9Sg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04669.html">
+<input type="submit" value=" Sean Cribbs ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+0.14.2+via+solr%5C%3A+sort+desc%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04667.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04670.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHsw=e3P+ba-s6=t7p0=jWaW3ap0U2c0pykuJCC9rrWCMPR9Sg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

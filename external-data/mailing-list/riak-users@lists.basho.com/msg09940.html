@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Differences between riak_client and riak_kv_mrc_pipe MapReduce	when one node is down.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09940" id="c">
+<link rel="index" href="maillist.html#09940" id="i">
+<link rel="prev" href="msg09937.html" id="p">
+<link rel="next" href="msg09946.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09940.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Differences+between+riak_client+and+riak_kv_mrc_pipe+MapReduce%09when+one+node+is+down.%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Differences between riak_client and riak_kv_mrc_pipe MapReduce	when one node is down.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22gunin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">gunin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130131" rel="nofollow">Thu, 31 Jan 2013 05:36:05 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thank your for response.
+1. Riak 1.2. I'm clone it form github master branch some times ago.
+2. 6 nodes in out test environment.
+3. more than 100 millions.(100 thousands per day)
+4. near 100 thousands (index by date).</pre><pre>
+
+I'm prepare simple test module and test scenario. It must help you to help me:)
+
+1. Generate four riak node.
+[xx riak]$ make devrel
+2. Start all nodes and join it to cluster.
+[xx dev]$ dev1/bin/riak-admin ringready
+TRUE All nodes agree on the ring ['dev1@127.0.0.1','dev2@127.0.0.1',
+                                  'dev3@127.0.0.1','dev4@127.0.0.1']
+
+3. Kill fourth node.
+[xx dev]$ dev4/bin/riak stop
+
+[xx dev]$ dev1/bin/riak-admin ringready
+FALSE ['dev4@127.0.0.1'] down.  All nodes need to be up to check.
+
+4. Compile my test module and include it in code path on all started nodes(I'm 
+include it in riak_kv before compiling riak).
+
+5. Join to erlang console on node dev1.
+[xx dev]$ dev1/bin/riak attach
+
+6. Test
+
+Generate test dataset (50 objects).
+(dev1@127.0.0.1)1&gt; mapred_test:make_data(50).
+ok
+
+Check that all data available.
+(dev1@127.0.0.1)7&gt; mapred_test:check_data(50).
+{not_available,0}
+Ok. All data saved.
+Check that all data available 50 times.
+(dev1@127.0.0.1)8&gt; mapred_test:check_data_n(50,50).
+ok
+Ok. All data really saved.
+
+Try Count object count this MapReduce.
+(dev1@127.0.0.1)23&gt; mapred_test:pipe_mapreduce_check(50).
+{not_available,0}
+Ok. 
+....Repeat 7 times.
+Attempts #8.
+(dev1@127.0.0.1)23&gt; mapred_test:pipe_mapreduce_check(50).
+{not_available,50}
+!!!Fail!!!MapReduce actualy return {ok,[]}.
+
+Try generate some statistics. Repeat MapReduce task 50 times.
+(dev1@127.0.0.1)29&gt; mapred_test:pipe_mapreduce_check_n(50,50).
+ok count 39
+failed count 11.
+
+Every 1 of 5 task failed.
+
+Code of mapred_test module:
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-module(mapred_test).
+
+
+-export([map/3,
+                 reduce/2,
+                 make_data/1,
+                 check_data_n/2,
+                 check_data/1,
+                 pipe_mapreduce_check/1,
+                 pipe_mapreduce_check_n/2]).
+
+%%map for counter
+map({error,notfound},_,_)-&gt;
+        [];
+map(_,_,_)-&gt;
+        [1].
+
+%%simle sum.
+reduce(L,_)-&gt;
+        [lists:foldl(fun(I,Acc)-&gt;I+Acc end,0,L)].
+
+%%Generate data set for test.
+make_data(Count)-&gt;
+        {ok,Conn} = riak:local_client(),
+        make_data_loop(Count,Conn).
+make_data_loop(0,_)-&gt;
+        ok;
+make_data_loop(Count,Conn)-&gt;
+        Key = list_to_binary(integer_to_list(Count)),
+        RObj = riak_object:new(&lt;&lt;&quot;mapred_test&quot;&gt;&gt;,Key,1),
+        case Conn:put(RObj) of
+                ok-&gt;
+                        make_data_loop(Count-1,Conn);
+                Else-&gt;
+                        {error,Else}
+        end.
+
+        
+check_data(Count)-&gt;
+        {ok,Conn} = riak:local_client(),
+        {not_available,check_data_loop(Count,Conn,0)}.
+
+check_data_loop(0,_Conn,Acc)-&gt;
+        Acc;
+check_data_loop(Count,Conn,Acc)-&gt;
+        Key = list_to_binary(integer_to_list(Count)),
+        case Conn:get(&lt;&lt;&quot;mapred_test&quot;&gt;&gt;,Key) of
+                {ok,_}-&gt;
+                        check_data_loop(Count-1,Conn,Acc);
+                _-&gt;
+                        check_data_loop(Count-1,Conn,Acc+1)
+        end.
+
+check_data_n(_Count,0)-&gt;
+        ok;
+check_data_n(Count,N)-&gt;
+        case check_data(Count) of
+                {not_available,0}-&gt;
+                        check_data_n(Count,N-1);
+                Else-&gt;
+                        Else
+        end.
+
+pipe_mapreduce_check(Count)-&gt;
+        Query = [{map, {modfun,?MODULE,map},[do_prereduce,none],false},
+                         {reduce, 
+{modfun,?MODULE,reduce},[{reduce_phase_batch_size, 1000}], true}],
+        case riak_kv_mrc_pipe:mapred(&lt;&lt;&quot;mapred_test&quot;&gt;&gt;,Query,60000) of
+                {ok,[I]} when is_integer(I)-&gt;
+                        {not_available,Count-I};
+                {ok,[]}-&gt;
+                        {not_available,Count};
+                Else-&gt;
+                        Else
+        end.
+
+pipe_mapreduce_check_n(Count,N)-&gt;
+        {Good,Bad}=pipe_mapreduce_check_n(Count,N,{0,0}),
+        io:format(&quot;ok count ~p ~nfailed count ~p~n&quot;,[Good,Bad]).
+
+pipe_mapreduce_check_n(_Count,0,Acc)-&gt;
+        Acc;
+pipe_mapreduce_check_n(Count,N,{Good,Bad})-&gt;
+        case pipe_mapreduce_check(Count) of
+                {not_available,0}-&gt;
+                        pipe_mapreduce_check_n(Count,N-1,{Good+1,Bad});
+                {not_available,_}-&gt;
+                        pipe_mapreduce_check_n(Count,N-1,{Good,Bad+1});
+                Else-&gt;
+                        {0,{runtime_error,Else}}
+        end.
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+
+Thanks,
+Alexander Gunin.
+
+----- Исходное сообщение -----
+От: &quot;Bryan Fink&quot; &lt;br...@basho.com&gt;
+Кому: gu...@mail.mipt.ru
+Копия: &quot;John Daily&quot; &lt;jda...@basho.com&gt;, &quot;Riak-Users&quot; 
+&lt;riak-users@lists.basho.com&gt;
+Отправленные: Четверг, 31 Январь 2013 г 17:03:09
+Тема: Re: Differences between riak_client and riak_kv_mrc_pipe MapReduce when 
+one node is down.
+
+On Thu, Jan 31, 2013 at 6:07 AM,  &lt;gu...@mail.mipt.ru&gt; wrote:
+&gt; Sorry John. You don't understand my question.
+&gt; 1. One node(I mean physical(erlang) node) in cluster is down.
+&gt; 2. It was down when i'm start job,when perform job and after it. We power off 
+&gt; this node. It's under repair. But we don't remove this node from cluster.
+
+Aha. Thank you for the clarification. Sorry for pushing John in the
+wrong direction. Your new description leads me to think that the
+problem is likely in the reduce phase (where we do, yes, use an nval
+of 1, but also a constant hash that doesn't account for node
+liveness).
+
+As yet, I've been unable to reproduce exactly what you'r seeing,
+though. I always get an error instead of an empty result. Answers to
+some of these questions may help me:
+
+1. What version of Riak are you running?
+2. How many nodes do you have in the cluster?
+3. About how many keys are in this bucket?
+4. About how many keys do you expect to match the index query?
+
+Thanks,
+Bryan
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09937.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09940">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09940">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09946.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09920.html">Differences between riak_client and riak_kv_mrc_pipe MapReduce ...</a></span> <span class="sender italic">gunin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09927.html">Re: Differences between riak_client and riak_kv_mrc_pipe M...</a></span> <span class="sender italic">John Daily</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09936.html">Re: Differences between riak_client and riak_kv_mrc_pi...</a></span> <span class="sender italic">gunin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09937.html">Re: Differences between riak_client and riak_kv_mr...</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Differences between riak_client and riak_k...</span> <span class="sender italic">gunin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09946.html">Re: Differences between riak_client and r...</a></span> <span class="sender italic">gunin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09950.html">Re: Differences between riak_client a...</a></span> <span class="sender italic">gunin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09952.html">Re: Differences between riak_clie...</a></span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Differences between riak_client and riak_kv_mrc_pipe MapReduce	when one node is down.">
+<input type="hidden" name="msgid" value="434f4353-0693-4995-8465-230b13def6db@mail">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09940.html">
+<input type="submit" value=" gunin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Differences+between+riak_client+and+riak_kv_mrc_pipe+MapReduce%09when+one+node+is+down.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09937.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09946.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">434f4353-0693-4995-8465-230b13def6db@mail</li>
+</ul>
+</div>
+</body>
+</html>

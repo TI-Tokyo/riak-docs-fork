@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Store() Performance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#02940" id="c">
+<link rel="index" href="mail2.html#02940" id="i">
+<link rel="prev" href="msg02939.html" id="p">
+<link rel="next" href="msg02921.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02940.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Store%5C%28%5C%29+Performance%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Store() Performance</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kev+Burns%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kev Burns</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110408" rel="nofollow">Fri, 08 Apr 2011 11:11:52 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Gui,
+
+I was talking to Andy Gross at a drinkup last month and he told me about a
+config var which might help speed up your import.
+<a  rel="nofollow" href="http://wiki.basho.com/Configuration-Files.html#disable_http_nagle">http://wiki.basho.com/Configuration-Files.html#disable_http_nagle</a></pre><pre>
+
+&gt; disable_http_nagle
+&gt;
+&gt; When set to true, this option will disable the Nagle buffering algorithm
+&gt; for HTTP traffic. This is equivalent to setting the TCP_NODELAY option on
+&gt; the HTTP socket. The setting defaults to false. If you experience
+&gt; consistent minimum latencies in multiples of 20 milliseconds, setting this
+&gt; option to true may reduce latency.
+&gt;
+So the way I understand it, by default Riak waits for a few ms after
+receiving an HTTP request to see if there are any more requests right behind
+it so that it can roll them up and processes them as a batch. Given that
+you're running 1 import script, you've only got 1 process throwing things
+into Riak so disabling this flag may speed you up considerably.
+
+You might also consider breaking the file into chunks and running multiple
+import scripts concurrently.
+
+And lastly if you don't already have HAproxy or something similar to
+distribute reads/writes evenly across your cluster, that's definitely
+something you'll want to set up.
+
+- Kev
+c: +001 (650) 521-7791
+
+
+On Fri, Apr 8, 2011 at 9:32 AM, Gui Pinto &lt;gpi...@chitika.com&gt; wrote:
+
+&gt; Awesome..
+&gt; I'll quickly hack out what I need for the quick import, and hope you can
+&gt; release your re-write.
+&gt;
+&gt;
+&gt; Gui Pinto
+&gt; Software Engineer at Chitika
+&gt;
+&gt;
+&gt; On Fri, Apr 8, 2011 at 12:26 PM, Mark Steele &lt;mste...@beringmedia.com&gt;wrote:
+&gt;
+&gt;&gt; I've re-written the php library to use keep alives (and various other
+&gt;&gt; tweaks). Let me see what I can do about releasing the code.
+&gt;&gt;
+&gt;&gt; The current php library simply instantiates a new curl instance for each
+&gt;&gt; request, making it less than optimal.
+&gt;&gt;
+&gt;&gt; Mark Steele
+&gt;&gt; Bering Media Inc.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Fri, Apr 8, 2011 at 12:23 PM, Gui Pinto &lt;gpi...@chitika.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Hey Everyone, thanks for all of the recommendations.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I've tried importing using the example load_data 
+&gt;&gt;&gt; script&lt;<a  rel="nofollow" href="http://wiki.basho.com/Loading-Data-and-Running-MapReduce-Queries.html">http://wiki.basho.com/Loading-Data-and-Running-MapReduce-Queries.html</a>&gt;available
+&gt;&gt;&gt;  on the Fast Track, and have last tried the PHP library.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Both of these execute a straight-foward CURL -X PUT request.. which makes
+&gt;&gt;&gt; me think Mark might have just guessed it..
+&gt;&gt;&gt; Keep-alive not being used definitely explains the 200-writes/second cap.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm going to take a look into the PHP library and test this theory.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Gui Pinto
+&gt;&gt;&gt; Software Engineer at Chitika
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Fri, Apr 8, 2011 at 10:01 AM, Mark Steele &lt;mste...@beringmedia.com&gt;wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; If using HTTP, make sure you're using keep-alives. That will be a
+&gt;&gt;&gt;&gt; gigantic speed boost.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; The protocol buffer API is much faster if you're client language
+&gt;&gt;&gt;&gt; supports it.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Mark Steele
+&gt;&gt;&gt;&gt; Bering Media Inc.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; On Thu, Apr 7, 2011 at 10:58 PM, matthew hawthorne &lt;
+&gt;&gt;&gt;&gt; mhawtho...@gmail.com&gt; wrote:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Hi Gui,
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; I recently pushed 70 million records of size 1K each into a 5-node
+&gt;&gt;&gt;&gt;&gt; Riak cluster (which was replicating to another 5-node cluster) at
+&gt;&gt;&gt;&gt;&gt; around 1000 writes/second using basho_bench and the REST interface.  I
+&gt;&gt;&gt;&gt;&gt; probably could have pushed it further, but I wanted to confirm that it
+&gt;&gt;&gt;&gt;&gt; could maintain the load for the entire data set, which it did.
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; My point being that your speed-limit of 200 writes/second is likely
+&gt;&gt;&gt;&gt;&gt; specific to your configuration.
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; I wonder:
+&gt;&gt;&gt;&gt;&gt; 1) what's your average write latency?
+&gt;&gt;&gt;&gt;&gt; 2) how big is your connection pool?
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Because it's possible that you don't have enough connections available
+&gt;&gt;&gt;&gt;&gt; to handle your desired load.
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; -matt
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; On Thu, Apr 7, 2011 at 6:01 PM, Gui Pinto &lt;gpi...@chitika.com&gt; wrote:
+&gt;&gt;&gt;&gt;&gt; &gt; Hey guys,
+&gt;&gt;&gt;&gt;&gt; &gt; I'm attempting to importing 300M+ objects into a Riak cluster, but
+&gt;&gt;&gt;&gt;&gt; have
+&gt;&gt;&gt;&gt;&gt; &gt; quickly reached the REST API's speed-limit at 200-store()'s per
+&gt;&gt;&gt;&gt;&gt; second..
+&gt;&gt;&gt;&gt;&gt; &gt; At the rate of 200/s, I'm looking at 20-days to import this data set!
+&gt;&gt;&gt;&gt;&gt; That
+&gt;&gt;&gt;&gt;&gt; &gt; can't be the fastest method to do this..
+&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt; &gt; Any recommendations?
+&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt; &gt; Thanks!
+&gt;&gt;&gt;&gt;&gt; &gt; Gui Pinto
+&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt; &gt; _______________________________________________
+&gt;&gt;&gt;&gt;&gt; &gt; riak-users mailing list
+&gt;&gt;&gt;&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02939.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#02940">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#02940">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02921.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02919.html">Store() Performance</a></span> <span class="sender italic">Gui Pinto</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02920.html">Re: Store() Performance</a></span> <span class="sender italic">Rexxe</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02922.html">Re: Store() Performance</a></span> <span class="sender italic">David Leimbach</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02923.html">Re: Store() Performance</a></span> <span class="sender italic">matthew hawthorne</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02936.html">Re: Store() Performance</a></span> <span class="sender italic">Mark Steele</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02937.html">Re: Store() Performance</a></span> <span class="sender italic">Gui Pinto</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02938.html">Re: Store() Performance</a></span> <span class="sender italic">Mark Steele</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02939.html">Re: Store() Performance</a></span> <span class="sender italic">Gui Pinto</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Store() Performance</span> <span class="sender italic">Kev Burns</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Store() Performance">
+<input type="hidden" name="msgid" value="BANLkTim9WUB7g1e2fy=aKJcYOS8oy3anEQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02940.html">
+<input type="submit" value=" Kev Burns ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Store%5C%28%5C%29+Performance%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02939.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02921.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTim9WUB7g1e2fy=aKJcYOS8oy3anEQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Configuring Riak 2.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd7.html#12855" id="c">
+<link rel="index" href="mail7.html#12855" id="i">
+<link rel="prev" href="msg12854.html" id="p">
+<link rel="next" href="msg12836.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12855.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Configuring+Riak+2.0%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Configuring Riak 2.0</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Chris+Read%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Chris Read</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131105" rel="nofollow">Tue, 05 Nov 2013 10:50:59 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks for the detailed follow up Joe!
+
+I think being able to get the &quot;start time&quot; config is perfect, and just
+enough for what I'm after. Ultimately what I want to be able to do is see
+if the config we started with is different from the config in the file, and
+then perhaps run a diff to see how it has changed.</pre><pre>
+
+I guess a little script that would either attach to a running riak or parse
+a riak.conf file and spit out the generated erlang is enough for that...
+
+Chris
+
+
+On Tue, Nov 5, 2013 at 12:13 PM, Joe DeVivo &lt;jdev...@basho.com&gt; wrote:
+
+&gt; Chris,
+&gt;
+&gt; That’s a great question, and unfortunately there’s not a simple answer. I
+&gt; am happy to get into the complex answer.
+&gt;
+&gt; At this point I would actually say that there is no way to get the true
+&gt; running configuration of a Riak node. That’s because Riak has two types of
+&gt; configuration settings: those that are read every time they’re used, and
+&gt; those that are read once when some process starts. Both types live in
+&gt; application context, so you can change any of them while running, but those
+&gt; changes might not take effect ever.
+&gt;
+&gt; An example would be when configuring lager. If you were to change the
+&gt; lager handlers of a running node to [], you would expect logging to stop
+&gt; because you changed the configuration of lager. Lager has actually already
+&gt; set up all the handlers at launch, and you’d need to interact with Lager’s
+&gt; API to change them. So, now you’re operating in a state where the
+&gt; application configuration has changed, but the effective configuration has
+&gt; not. In this case, application:get_all_env() won’t return the true running
+&gt; configuration of Riak. In my opinion, this is an edge case, but not edgy
+&gt; enough to ignore.
+&gt;
+&gt; There are other settings like riak_core’s handoff_concurrency, which can
+&gt; be changed at runtime by attaching and calling application:set_env. So what
+&gt; we know is that you can change the running configuration, but that doesn’t
+&gt; always change what Riak is actually doing.
+&gt;
+&gt; Now, if we were to ignore this case, and make the assumption that people
+&gt; aren’t attaching and changing settings, then we have a couple of options in
+&gt; the 2.0 world. Every setting mapped by Cuttlefish has an explicit default
+&gt; value (unless that default is supposed to be ‘undefined’). When the
+&gt; app.config is generated it is generated as a “complete” app.config. What I
+&gt; mean is that every possible configuration setting will be defined, which
+&gt; means you don’t have to dig through source to find out what a specific
+&gt; application environment variable defaulted to. It will all be in one place.
+&gt; Here’s an example generated app.config:
+&gt; <a  rel="nofollow" href="https://gist.github.com/joedevivo/7320800">https://gist.github.com/joedevivo/7320800</a>
+&gt;
+&gt; Actually, that’s the best you can do right now to see the “start time”
+&gt; configuration in Riak 2.0. Unfortunately, that’s still an Erlang
+&gt; configuration file, which goes against the spirit of Cuttlefish. I’m hoping
+&gt; to add some command line tools in the near future that will make reading
+&gt; your configuration easier. One would be to output the “start time” config
+&gt; in Cuttlefish’s syntax. The second I am considering is a kind of man-page
+&gt; looking thing, but it would output the documentation for a setting and
+&gt; include the default value and your value if you have changed it in your
+&gt; riak.conf file.
+&gt;
+&gt; I hope that’s enough to answer your question. Follow up questions welcome,
+&gt; as well as opinions on the command line interface that’s still in the
+&gt; design phase.
+&gt;
+&gt; —joe
+&gt;
+&gt;
+&gt;
+&gt; On November 5, 2013 at 7:39:30 AM, Chris Read 
+&gt; (chris.r...@gmail.com&lt;//chris.r...@gmail.com&gt;)
+&gt; wrote:
+&gt;
+&gt; Glad someone there is thinking about configuration :D
+&gt;
+&gt; Question - are you planning on making it just as easy to find out what the
+&gt; _running_ configuration is? Currently I have to resort to the:
+&gt;
+&gt; riak-attach
+&gt; application:get_all_env(...).
+&gt;
+&gt; incantation to find out settings riak is actually using at the time. While
+&gt; I don't mind using attach, it's not always obvious what env you should be
+&gt; asking for in the first place...
+&gt;
+&gt; Thanks,
+&gt;
+&gt; Chris
+&gt;
+&gt;
+&gt; On Mon, Nov 4, 2013 at 11:36 AM, Joe DeVivo &lt;jdev...@basho.com&gt; wrote:
+&gt;
+&gt;&gt;  Riak Users,
+&gt;&gt;
+&gt;&gt; We've been kind of tiptoeing around the configuration changes for Riak
+&gt;&gt; 2.0. Mostly it was because I wanted to have a dramatic reveal at
+&gt;&gt; RICON|West. Now that you can see that here (<a  rel="nofollow" href="http://ricon.io/west2013.htmlDay">http://ricon.io/west2013.htmlDay</a> 
+&gt;&gt; 1, Track 1, 7:08:22), it's time for me to talk to you all about
+&gt;&gt; configuration.
+&gt;&gt;
+&gt;&gt; A lot of what I want to say, I've already written in a cool blog post
+&gt;&gt; with fancy features like &quot;syntax highlighting&quot; and &quot;hyperlinks&quot;. I
+&gt;&gt; encourage you to read my story here:
+&gt;&gt; <a  rel="nofollow" href="https://github.com/joedevivo/ricon/blob/master/cuttlefish.md">https://github.com/joedevivo/ricon/blob/master/cuttlefish.md</a>
+&gt;&gt;
+&gt;&gt; The biggest issue I have with the state of configuration in the 2.0 tech
+&gt;&gt; preview is the lack of documentation. Changing how we do configuration is
+&gt;&gt; going to affect almost all of the documentation. We're working on that
+&gt;&gt; already, but in the interim, here's a gist of mappings from old config
+&gt;&gt; style to new style: <a  rel="nofollow" href="https://gist.github.com/joedevivo/7305410">https://gist.github.com/joedevivo/7305410</a> I'll do my
+&gt;&gt; best to keep updating that gist as we make changes to the configuration
+&gt;&gt; settings.
+&gt;&gt;
+&gt;&gt; As you thumb through that gist, please note that some variable names in
+&gt;&gt; the 2.0 configuration file may change before release. Cuttlefish makes
+&gt;&gt; changing the names of these variables easy, and some names were just
+&gt;&gt; transposed from their Erlang counterparts. If you have a better name for
+&gt;&gt; some setting in Riak, please reach out to me. While I can't promise to use
+&gt;&gt; your suggestion, I'm always interested in how people are actually thinking
+&gt;&gt; about configuration.
+&gt;&gt;
+&gt;&gt; Stay rad,
+&gt;&gt; --joe
+&gt;&gt;
+&gt;&gt; ---
+&gt;&gt; Software Engineer at Basho
+&gt;&gt; @joedevivo
+&gt;&gt; jdev...@basho.com
+&gt;&gt; irc: joedevivo
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12854.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd7.html#12855">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#12855">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12836.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12835.html">Configuring Riak 2.0</a></span> <span class="sender italic">Joe DeVivo</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12852.html">Re: Configuring Riak 2.0</a></span> <span class="sender italic">Chris Read</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12854.html">Re: Configuring Riak 2.0</a></span> <span class="sender italic">Joe DeVivo</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Configuring Riak 2.0</span> <span class="sender italic">Chris Read</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Configuring Riak 2.0">
+<input type="hidden" name="msgid" value="CACahnQa=Gjsm0+WjHS5VmzATShpVCqVa5JGw_onu9gArMF1QJA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12855.html">
+<input type="submit" value=" Chris Read ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Configuring+Riak+2.0%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12854.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12836.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACahnQa=Gjsm0+WjHS5VmzATShpVCqVa5JGw_onu9gArMF1QJA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

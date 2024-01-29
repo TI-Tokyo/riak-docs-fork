@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: About Vector Clocks</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02090" id="c">
+<link rel="index" href="maillist.html#02090" id="i">
+<link rel="prev" href="msg02089.html" id="p">
+<link rel="next" href="msg02093.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02090.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+About+Vector+Clocks%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: About Vector Clocks</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kresten+Krab+Thorup%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kresten Krab Thorup</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110124" rel="nofollow">Mon, 24 Jan 2011 05:07:11 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>OK, found it, ... if you want to follow my train of though, feel free to read 
+along ...</pre><pre>
+
+Turns out vector clocks can be merged, even if one is not derived from the 
+other. A vector clock is a list of {agent-id, time} pairs, which has no 
+duplicate agent-id's in the list.
+
+Merging is done by
+
+        - including all clock entries that are only in one of the clocks, and
+        - including the &quot;latest&quot; (greater) of time/clock entries that are in 
+both.
+
+This operation is commutative and transitive, and does not introduce any new 
+information so it can perfectly be done on two distinct nodes (which may 
+realize the conflict independently) and then later re-reconciled.
+
+Reconciling the values is a simple operation of computing the union of the 
+values (i.e. remove duplicates in the combined set).  Notice that if two agents 
+did the same update, then the reconciled value is just a single value.
+
+so .. the reconciled object ( vclock x [value] ) is in conflict exactly iff 
+there is more than one value.  
+
+When a client sees a multi-valued object, all it knows is that it in conflict.  
+It can't say which agents caused the conflict, or when in terms of vector-clock 
+time.  Only that it happened &quot;before&quot; the new vector clock time.
+
+And it's important to develop some patterns or strategies for how to resolve 
+conflicts.  Because this is one of the issues that most developers think are 
+scary when they hear of these concepts.
+
+Perhaps what I'd like to know is information like ... 
+
+        &quot;Peter updated the object to A at 15:00, and Eve updated it to B at 
+14:58&quot;
+
+Such information may be useful to a client in order to handle the conflict.  
+
+If you need such information, you'll have to push it through X-Riak-Meta- 
+headers; because the meta data is part of the value.
+
+Hmm, ... cool stuff.  Love learning about this.
+
+Kresten
+
+
+
+
+
+On Jan 24, 2011, at 11:24 , Kresten Krab Thorup wrote:
+
+&gt; Still trying to grok vector clocks, here's a question.
+&gt; 
+&gt; When riak realizes that two peers did successfully update the same key, those 
+&gt; two riak_object's will have different (one not deriving from the other) 
+&gt; vector clocks.  This could happen when e.g. synchronizing using long-haul 
+&gt; replication.
+&gt; 
+&gt; When these are then consolidated into a single multi-valued object, how is 
+&gt; the vector clock of the resulting object computed?  
+&gt; 
+&gt; In other words, why does it keep the two vclocks, one per value?  
+&gt; 
+&gt; I would think that a riak_object should be structured thus:
+&gt; 
+&gt;       object ::= { bucket,  key,  [ vclock x value ] }
+&gt; 
+&gt; But, it is structured like this:
+&gt; 
+&gt;       object ::= { bucket,  key,  vclock,  [ value ] }
+&gt; 
+&gt; This structure implies that a new vclock is computed by an agent doing the 
+&gt; merge [involving a client id of that agent], but what happens if two agents 
+&gt; independently realizes the conflict and tries to do the merge?  Will those 
+&gt; two independent merges have conflicting vector clocks?
+&gt; 
+&gt; So why not keep both vector clocks around, so that independent agents can do 
+&gt; merges that will then be conciliable because no new information is created 
+&gt; when merging?
+&gt; 
+&gt; Kresten
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02089.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02090">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02090">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02093.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02089.html">About Vector Clocks</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: About Vector Clocks</span> <span class="sender italic">Kresten Krab Thorup</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: About Vector Clocks">
+<input type="hidden" name="msgid" value="13C4EE81-552F-4073-A990-C60A0DABBB4D@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02090.html">
+<input type="submit" value=" Kresten Krab Thorup ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+About+Vector+Clocks%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02089.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02093.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">13C4EE81-552F-4073-A990-C60A0DABBB4D@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

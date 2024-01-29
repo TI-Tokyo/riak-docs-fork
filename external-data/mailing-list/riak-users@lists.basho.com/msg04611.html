@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Clustering Changes in 1.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04611" id="c">
+<link rel="index" href="maillist.html#04611" id="i">
+<link rel="prev" href="msg04658.html" id="p">
+<link rel="next" href="msg04626.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04611.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Clustering+Changes+in+1.0%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Clustering Changes in 1.0</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jens+Rantil%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jens Rantil</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110908" rel="nofollow">Thu, 08 Sep 2011 04:19:26 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Out of curiousity, what was the reason for the 'join' command behaviour to 
+change?</pre><pre>
+
+
+
+Regards,
+
+Jens
+
+
+
+-----------------------------------------------------------
+
+Date: Wed, 7 Sep 2011 18:12:40 -0600
+
+From: Joseph Blomstedt &lt;j...@basho.com&gt;
+
+To: riak-users Users &lt;riak-users@lists.basho.com&gt;
+
+Subject: Riak Clustering Changes in 1.0
+
+Message-ID:
+
+            
+&lt;CANvk2KRPpath-ZJaDuhZo0b+pEByn0MhxyJ-9LEB+b_12d=v...@mail.gmail.com&gt;
+
+Content-Type: text/plain; charset=ISO-8859-1
+
+
+
+Given that 1.0 prerelease packages are now available, I wanted to
+
+mention some changes to Riak's clustering capabilities in 1.0. In
+
+particular, there are some subtle semantic differences in the
+
+riak-admin commands. More complete docs will be updated in the near
+
+future, but I hope a quick email suffices for now.
+
+
+
+[nodeB/riak-admin join nodeA] is now strictly one-way. It joins nodeB
+
+to the cluster that nodeA is a member of. This is semantically
+
+different than pre-1.0 Riak in which join essentially joined clusters
+
+together rather than joined a node to a cluster. As part of this
+
+change, the joining node (nodeB in this case) must be a singleton
+
+(1-node) cluster.
+
+
+
+In pre-1.0, leave and remove were essentially the same operation, with
+
+leave just being an alias for 'remove this-node'. This has changed.
+
+Leave and remove are now very different operations.
+
+
+
+[nodeB/riak-admin leave] is the only safe way to have a node leave the
+
+cluster, and it must be executed by the node that you want to remove.
+
+In this case, nodeB will start leaving the cluster, and will not leave
+
+the cluster until after it has handed off all its data. Even if nodeB
+
+is restarted (crashed/shutdown/whatever), it will remain in the leave
+
+state and continue handing off partitions until done. After handoff,
+
+it will leave the cluster, and eventually shutdown.
+
+
+
+[nodeA/riak-admin remove nodeB] immediately removes nodeB from the
+
+cluster, without handing off its data. All replicas held by nodeB are
+
+therefore lost, and will need to be re-generated through read-repair.
+
+Use this command carefully. It's intended for nodes that are
+
+permanently unrecoverable and therefore for which handoff doesn't make
+
+sense. By the final 1.0 release, this command may be renamed
+
+&quot;force-remove&quot; just to make the distinction clear.
+
+
+
+There are now two new commands that provide additional insight into
+
+the cluster. [riak-admin member_status] and [riak-admin ring_status].
+
+
+
+Underneath, the clustering protocol has been mostly re-written. The
+
+new approach has the following advantages:
+
+1. It is no longer necessary to wait on [riak-admin ringready] in
+
+between adding/removing nodes from the cluster, and adding/removing is
+
+also much more sound/graceful. Starting up 16 nodes and issuing
+
+[nodeX: riak-admin join node1] for X=1:16 should just work.
+
+
+
+2. Data is first transferred to new partition owners before handing
+
+over partition ownership. This change fixes numerous bugs, such as
+
+404s/not_founds during ownership changes. The Ring/Pending columns in
+
+[riak-admin member_status] visualize this at a high-level, and the
+
+full transfer status in [riak-admin ring_status] provide additional
+
+insight.
+
+
+
+3. All partition ownership decisions are now made by a single node in
+
+the cluster (the claimant). Any node can be the claimant, and the duty
+
+is automatically taken over if the previous claimant is removed from
+
+the cluster. [riak-admin member_status] will list the current
+
+claimant.
+
+
+
+4. Handoff related to ownership changes can now occur under load;
+
+hinted handoff still only occurs when a vnode is inactive. This change
+
+allows a cluster to scale up/down under load, although this needs to
+
+be further benchmarked and tuned before 1.0.
+
+
+
+To support all of the above, a new limitation has been introduced.
+
+Cluster changes (member addition/removal, ring rebalance, etc) can
+
+only occur when all nodes are up and reachable. [riak-admin
+
+ring_status] will complain when this is not the case. If a node is
+
+down, you must issue [riak-admin down &lt;node&gt;] to mark the node as
+
+down, and the remaining nodes will then proceed to converge as usual.
+
+Once the down node comes back online, it will automatically
+
+re-integrate into the cluster. However, there is nothing preventing
+
+client requests being served by a down node before it re-integrates.
+
+Before issuing [down &lt;node&gt;], make sure to update your load balancers
+
+/ connection pools to not include this node. Future releases of Riak
+
+may make offlining a node an automatic operation, but it's a
+
+user-initiated action in 1.0.
+
+
+
+-Joe
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04658.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04611">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04611">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04626.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04595.html">Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04598.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Nicholas Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04599.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04602.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04610.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04645.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Matt Ranney</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04647.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04656.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04658.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Matt Ranney</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Clustering Changes in 1.0</span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04626.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04634.html">SV: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04639.html">Re: Riak Clustering Changes in 1.0</a></span> <span class="sender italic">Jeff Pollard</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04640.html">Re: Riak Clustering Changes in...</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04655.html">Re: Riak Clustering Changes in...</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04659.html">Re: Riak Clustering Change...</a></span> <span class="sender italic">Jeff Pollard</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04660.html">Re: Riak Clustering Ch...</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Clustering Changes in 1.0">
+<input type="hidden" name="msgid" value="850092711C09C042B93EC2F4F2E8B1E70276A83BC6@ex-mbx4.hosting.local">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04611.html">
+<input type="submit" value=" Jens Rantil ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Clustering+Changes+in+1.0%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04658.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04626.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">850092711C09C042B93EC2F4F2E8B1E70276A83BC6@ex-mbx4.hosting.local</li>
+</ul>
+</div>
+</body>
+</html>

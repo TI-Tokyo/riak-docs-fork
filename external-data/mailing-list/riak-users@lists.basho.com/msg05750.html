@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: "consistent" map/reduce</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05750" id="c">
+<link rel="index" href="maillist.html#05750" id="i">
+<link rel="prev" href="msg05699.html" id="p">
+<link rel="next" href="msg05755.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05750.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22consistent%5C%22+map%5C%2Freduce%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: "consistent" map/reduce</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Fink%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Fink</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111128" rel="nofollow">Mon, 28 Nov 2011 07:17:27 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Mon, Nov 21, 2011 at 2:46 PM, Kresten Krab Thorup &lt;k...@trifork.com&gt; wrote:
+&gt; I'd like to be able to do a &quot;consistent map/reduce&quot; job i.e., with &quot;R=2 
+&gt; semantics&quot; for an &quot;N=3 bucket&quot;.  Maybe other people have the same need, but I 
+&gt; can't see if this is possible ... perhaps with the new riak_pipe 
+&gt; infrastructure?</pre><pre>
+
+Hi, Kresten.  Indeed, this same topic came up in an independent
+conversation last week.  I think there are a few ways to attack it.
+Let's start with yours:
+
+&gt; The map function yields {Key, [{VectorClock,1,Hash}]} for each replica, but 
+&gt; needs to run on *all* replicas of objects in a given Bucket.   Hash is the 
+&gt; real value I'm interested in i.e., the content-hash for the object; but it 
+&gt; could be some other &quot;map&quot; function output.
+&gt;
+&gt; Then, the reduce phase needs to &quot;merge&quot; a list of {VectorClock,N,Hash} 
+&gt; tuples, by considering the VectorClocks to determine if results are in 
+&gt; &quot;conflict&quot;, or if one is before/after the other.  N is reduced to the sum of 
+&gt; all elements with equal Hash value.
+
+I like many of the ideas in this approach.  It has a nice distributed
+data-provenance feel to it.  I think the danger lies in the work that
+the reduce phase would have to do.  With distributed parallel
+keylisting, there's no way to guarantee the order that the map results
+arrive at the reduce processor.  This means that the reduce state may
+become quite large tracking all of the key/version pairs
+produced-but-not-yet-satisfying-R.  Maybe this is manageable, though,
+so I'll also try to answer your questions:
+
+&gt; - How can I have a M/R job run on *all* vnodes?  Not just for objects that 
+&gt; are owned by a primary?
+
+The only way to do this right now is to use Riak Pipe directly.  Setup
+a pipe with your &quot;map&quot; and &quot;reduce&quot; fittings, then send inputs to it
+such that one input hashes to each vnode.  Using riak_pipe_qcover_fsm
+with N=1 might ease this process.
+
+&gt; - The M/R &quot;input&quot; is essentially  listkeys(Bucket)  ... can this be done 
+&gt; using &quot;async keylisting&quot;, so that the operation does not hold up the vnode 
+&gt; while listing?
+
+Yes, absolutely.  The riak_kv_pipe_listkeys module does just this, and
+is also an example of using riak_pipe_qcover_fsm.
+
+These two questions and answers lead to the basic pipe layout of:
+
+[
+ {module= riak_kv_pipe_listkeys}, %% setup with qcover N=1
+
+ {module= riak_kv_pipe_get,
+  chashfun= follow},              %% each vnode processes keys it produces
+
+ {module= riak_kv_mrc_map,
+  chashfun= follow},
+
+ {module= riak_kv_w_reduce,
+  chashfun= ContstantOrCustom}    %% see below
+]
+
+Riak KV reduce fittings are normally set up with a constant chashfun,
+such that *all* results are processed in one place.  To help alleviate
+the reduce-state-size problem, I might suggest using a chashfun that
+spreads results, yet makes sure all results for each key end up at the
+same reducer (most likely, hash the result's key, just as you would
+for determining its KV preflist).
+
+Note also that the &quot;get&quot; fitting has a 'follow' chashfun.  This is
+also different from normal MR usage, since we would normally set N=3
+(or whatever the bucket has set) for the qcover-ing listkeys fitting.
+The normal setting ensures that each key is produced only once, but
+N=1 will produce the same key multiple times for buckets where N&gt;1.
+You want each result processed locally ('follow') to get the
+possibly-different vclock/hash stored at that vnode.
+
+It may also be possible to take a completely different approach.  A
+simple modification of riak_kv_pipe_get could allow it to attempt to
+read all N replicas, perhaps even by simply starting a
+riak_kv_get_fsm.  In this case, all of the merging of vclocks would
+happen before the mapping instead of after.  But, it would also miss
+keys that were not fully replicated, since you'd likely want to
+maintain N=3 for the keylisting qcover operation.  I also haven't put
+as much thought into this path, so there may be other demons lurking.
+
+&gt; If someone can sketch a solution, I'd be happy to go hacking on it ...
+
+Hopefully that's enough sketching to at least generate a second round
+of questions.  ;)  I'd be very interested in hearing how it goes.
+Please fire back with anything that needs more explanation.
+
+-Bryan
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05699.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05750">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05750">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05755.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05699.html">&quot;consistent&quot; map/reduce</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: &quot;consistent&quot; map/reduce</span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05755.html">Re: &quot;consistent&quot; map/reduce</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05800.html">Re: &quot;consistent&quot; map/reduce</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05803.html">Re: &quot;consistent&quot; map/reduce</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05806.html">Re: &quot;consistent&quot; map/reduce</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05823.html">Re: &quot;consistent&quot; map/r...</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05834.html">Re: &quot;consistent&quot; m...</a></span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: &quot;consistent&quot; map/reduce">
+<input type="hidden" name="msgid" value="CAOLR_oYOpP5tgX6-oMQPJ9xm6agi4g7w=dOuJToQAMePVzFfhw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05750.html">
+<input type="submit" value=" Bryan Fink ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22consistent%5C%22+map%5C%2Freduce%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05699.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05755.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOLR_oYOpP5tgX6-oMQPJ9xm6agi4g7w=dOuJToQAMePVzFfhw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

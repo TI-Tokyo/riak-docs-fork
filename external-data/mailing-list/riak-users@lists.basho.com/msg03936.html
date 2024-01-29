@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: mr_queue gone wild</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03936" id="c">
+<link rel="index" href="maillist.html#03936" id="i">
+<link rel="prev" href="msg03884.html" id="p">
+<link rel="next" href="msg03998.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03936.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+mr_queue+gone+wild%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: mr_queue gone wild</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Fink%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Fink</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110705" rel="nofollow">Tue, 05 Jul 2011 12:37:38 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Thu, Jun 30, 2011 at 4:52 PM, Sylvain Niles &lt;sylvain.ni...@gmail.com&gt; wrote:
+&gt; Is there a way to list the m/r jobs in the queue in case there's
+&gt; something else going on? Is there a reason they never get removed?</pre><pre>
+
+Hi, Sylvain.  As Aphyr noted, the mr_queue is a bitcask.  Because
+bitcask is append-only storage, its size alone does not give a good
+indication of the active dataset.  More specifically, unless you have
+tweaked your bitcask parameters, you can expect the mr_queue directory
+to grow to at least 2GB before purging unused data.  This is normal
+and expected.
+
+A few things worth noting:
+
+ - The mr_queue is only used for Javascript MapReduce phases.  Erlang
+   phases never touch it.  This is because there are a limited number
+   of Javascript VMs available on a node, and all vnodes compete for
+   them.  The mr_queue provides a place to offload the backlog of
+   pending requeusts for Javascript interpreters, rather than keeping
+   them in memory.
+
+ - To check the depth of the mr_queue, connect to any Riak node's
+   console (bin/riak attach), and call
+   riak_kv_map_master:queue_depth/0.  It should show you the active
+   depth of the mr_queue on each node in the cluster:
+
+   $ bin/riak attach
+   (dev1@127.0.0.1)&gt; riak_kv_map_master:queue_depth().
+   [{'dev1@127.0.0.1',0},
+    {'dev2@127.0.0.1',0},
+    {'dev3@127.0.0.1',0},
+    {'dev4@127.0.0.1',0}]
+
+   A result like the above means there are no pending map requests
+   waiting.  A result like the following means there are 242 map
+   requests waiting on the dev1 node, 128 on dev2, etc.:
+
+   [{'dev1@127.0.0.1',242},
+    {'dev2@127.0.0.1',128},
+    {'dev3@127.0.0.1',212},
+    {'dev4@127.0.0.1',230}]
+
+   These numbers may be slightly confusing because a single logical
+   map phase gets split into a separate map request for each vnode.
+   So, you may have only one MapReduce request outstanding, but see
+   numbers greater than 1 in this output.
+
+Hope this helps,
+
+Bryan Fink
+Senior Software Developer,
+Basho Technologies
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03884.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03936">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03936">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03998.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03850.html">mr_queue gone wild</a></span> <span class="sender italic">Sylvain Niles</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03859.html">Re: mr_queue gone wild</a></span> <span class="sender italic">Mathias Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03883.html">Re: mr_queue gone wild</a></span> <span class="sender italic">Sylvain Niles</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03884.html">Re: mr_queue gone wild</a></span> <span class="sender italic">Aphyr</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: mr_queue gone wild</span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03998.html">Re: mr_queue gone wild</a></span> <span class="sender italic">Sylvain Niles</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: mr_queue gone wild">
+<input type="hidden" name="msgid" value="CAOLR_oa-_gP91Am4dQzXa93AyWuxvA1vf-rW3pnc6UaYSHrAHg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03936.html">
+<input type="submit" value=" Bryan Fink ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+mr_queue+gone+wild%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03884.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03998.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOLR_oa-_gP91Am4dQzXa93AyWuxvA1vf-rW3pnc6UaYSHrAHg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

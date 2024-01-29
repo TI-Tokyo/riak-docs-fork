@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: SV: Riak + Disco (MapReduce alternative)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10925" id="c">
+<link rel="index" href="maillist.html#10925" id="i">
+<link rel="prev" href="msg10922.html" id="p">
+<link rel="next" href="msg10926.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10925.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+SV%5C%3A+Riak+%5C%2B+Disco+%5C%28MapReduce+alternative%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: SV: Riak + Disco (MapReduce alternative)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Antonio+Rohman+Fernandez%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Antonio Rohman Fernandez</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130417" rel="nofollow">Wed, 17 Apr 2013 09:00:32 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+
+
+<p>I think it might not be much of a problem to not repeat Maps... From this example on their site:</p>
+<p>---------------------------------------------------------------<br />from disco.core import Job, result_iterator</p>
+<p>def map(line, params):<br />&nbsp; for word in line.split():<br />&nbsp; &nbsp; yield word, 1</p>
+<p>def reduce(iter, params):<br />&nbsp; from disco.util import kvgroup<br />&nbsp; for word, counts in kvgroup(sorted(iter)):<br />&nbsp; &nbsp; yield word, sum(counts)</p>
+<p>if __name__ == '__main__':<br />&nbsp; input = ["http://discoproject.org/media/text/chekhov.txt"]<br />&nbsp; job = Job().run(input=input, map=map, reduce=reduce)<br />&nbsp; for word, count in result_iterator(job.wait()):<br />&nbsp; &nbsp; print word, count<br />---------------------------------------------------------------</p>
+<p>I can imagine putting the URL to an index on the __main__ section to get an array of keys... split by lines the array of keys in plain text and send it to the maps functions... i deduce from the example that each map represents a line in the input... in which i will do a Riak GET of that key ( line ) and select the data i want to reduce from that object to send it to the reduce function...</p>
+<p>Example:<br />RIAK INDEX: get all sales of today<br />MAP: get a key, check if the customer is a woman between 18 and 25 years old, then return 1 ( any other return 0 )<br />REDUCE: sum all the 1s to give a total counter</p>
+<p>Riak MR can do it also, but for what we saw in the list some time ago, is not wise to use MR for this can of operation ( moreover on demand basis )</p>
+<p>I still have to try it and see... but it would be a nice way to do a distributed multiGET and reduce the data to a result without hustling Riak...</p>
+<p>Thanks,<br />Rohman</p>
+<p>On 17.04.2013 16:19, Jens Rantil wrote:</p>
+<blockquote style="padding-left: 5px; border-left: #1010ff  2px  solid; margin-left: 5px; width: 100%;">
+<div class="WordSection1">
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">Hi,</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">&nbsp;</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">I've been following the Disco Project for a couple of years. The tricky part with using Disco with Riak would be to make sure each map phase is not executed multiple times over the same data*. Also, since each map phase would (preferably) run on the same host as its data (for data locality), you would also have to make sure to only iterate over data that is associated with the vnode for that physical host.</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">&nbsp;</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">If you can easily extract host-specific keys for a specific vnode, then this is doable. However, either the Disco master or the Disco job submitter will need to have all this data when a job is submitted.</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">&nbsp;</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">Also, I'm not sure that it will help very much that both are written in Erlang.</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">&nbsp;</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">Some ideas,</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">Jens</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">&nbsp;</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">* Obviously, you could also chain your mapreduce jobs in Disco to remove duplicate maps, but this introduces overhead.</span></p>
+<p class="MsoNormal"><span style="font-size: 11.0pt; color: #1f497d;">&nbsp;</span></p>
+<div>
+<div style="border: none; border-top: solid   #B5C4DF   1.0pt; padding: 3.0pt   0cm   0cm   0cm;">
+<p class="MsoNormal"><strong><span style="font-size: 10.0pt;">Fr&aring;n:</span></strong><span style="font-size: 10.0pt;"> riak-users [mailto:riak-users-boun...@lists.basho.com] <strong>F&ouml;r </strong>Antonio Rohman Fernandez<br /><strong>Skickat:</strong> den 17 april 2013 13:15<br /><strong>Till:</strong> riak-users@lists.basho.com<br /><strong>&Auml;mne:</strong> Riak + Disco (MapReduce alternative)</span></p>
+</div>
+</div>
+<p class="MsoNormal">&nbsp;</p>
+<p>Hello everybody,</p>
+<p>Has anyone tried to use Riak with Disco? [&nbsp;<a rel="nofollow" href="http://discoproject.org">http://discoproject.org</a> ] I was looking for Hadoop alternatives ( as the RIAK-HADOOP connector project seems not going anywhere ) and I think Disco is quite interesting, moreover is written in Erlang same as Riak. Looks like it would be a good match!</p>
+<p>As seen in the mailing list, seems that Riak's built-in MapReduce is not suitable for much of the queries I would be interested on doing... My idea would be to leverage the MapReduce work to a Hadoop ( or Disco, or another ) cluster that will do the GETs on the Riak cluster through an Index ( as suggested on this list... do multi-gets instead of MR ) and reduce the data independently. Does anybody has suggestions about this?</p>
+<p>Thanks,<br /> Rohman</p>
+<div>
+<div>
+<p class="MsoNormal"><img id="_x0000_i1025" alt="line" width="643" height="7" border="0" /></p>
+<table class="MsoNormalTable" style="width: 643px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td style="width: 142.5pt; padding: 0cm   0cm   0cm   0cm;" valign="top" width="190">
+<p class="MsoNormal" style="margin-bottom: 5.25pt;"><a rel="nofollow" href="http://mahalostudio.com"><span style="text-decoration: none;"><img id="_x0000_i1026" alt="logo" width="162" height="44" border="0" /></span></a></p>
+</td>
+<td style="width: 7.5pt; padding: 0cm   0cm   0cm   0cm;" width="10">
+<p class="MsoNormal" style="margin-bottom: 5.25pt;">&nbsp;</p>
+</td>
+<td style="width: 168.75pt; padding: 0cm   0cm   0cm   0cm;" valign="top" width="225">
+<p class="MsoNormal" style="margin-bottom: 5.25pt;"><strong><span style="color: #5f5f5f;">Antonio Rohman Fernandez</span></strong><br /><span style="font-size: 8.5pt; color: #5f5f5f;">CEO, Founder &amp; Lead Engineer</span><span style="font-size: 7.5pt; color: #5f5f5f;"><br /><a rel="nofollow" href="mailto:roh...@mahalostudio.com"><span style="font-size: 8.5pt; color: #519f3f; text-decoration: none;">roh...@mahalostudio.com</span></a></span></p>
+</td>
+<td style="width: 7.5pt; padding: 0cm   0cm   0cm   0cm;" width="10">
+<p class="MsoNormal" style="margin-bottom: 5.25pt;">&nbsp;</p>
+</td>
+<td style="width: 168.75pt; padding: 0cm   0cm   0cm   0cm;" valign="top" width="225">
+<p class="MsoNormal" style="margin-bottom: 5.25pt;"><strong><span style="color: #5f5f5f;">Projects</span></strong><br /><span style="font-size: 7.5pt; color: #5f5f5f;"><a rel="nofollow" href="http://marubatsu.es"><span style="font-size: 8.5pt; color: #2e974d; text-decoration: none;">MaruBatsu.es</span></a><br /><a rel="nofollow" href="http://pupcloud.com"><span style="font-size: 8.5pt; color: #519f3f; text-decoration: none;">PupCloud.com</span></a><br /><a rel="nofollow" href="http://wedding.mahalostudio.com"><span style="font-size: 8.5pt; color: #519f3f; text-decoration: none;">Wedding Album</span></a></span></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="MsoNormal"><img id="_x0000_i1027" alt="line" width="643" height="7" border="0" /></p>
+</div>
+</div>
+</div>
+</blockquote>
+<p>&nbsp;</p>
+<div>-- <br />
+<div><img src="gifByYfDB3j7c.gif" alt="line" width="643" height="7" />
+<table style="margin-bottom: 7px; width: 643px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="top" width="190"><a rel="nofollow" href="http://mahalostudio.com"><img style="margin-left: 10px;" src="gifByYfDB3j7c.gif" alt="logo" width="162" height="44" border="0" /></a></td>
+<td width="10">&nbsp;</td>
+<td valign="top" width="225"><span style="color: #5f5f5f; font-family: Verdana,Arial,Helvetica,sans-serif; font-size: small;"><strong>Antonio Rohman Fernandez</strong></span><br /><span style="color: #5f5f5f; font-family: Arial,Helvetica,sans-serif; font-size: xx-small;"><span style="font-size: 8.5pt; color: #5f5f5f;">CEO, Founder &amp; Lead Engineer</span><br /><a rel="nofollow" style="text-decoration: none;" href="mailto:roh...@mahalostudio.com"><span style="font-size: 8.5pt; color: #519f3f;">roh...@mahalostudio.com</span></a></span></td>
+<td width="10">&nbsp;</td>
+<td valign="top" width="225"><span style="color: #5f5f5f; font-family: Verdana,Arial,Helvetica,sans-serif; font-size: small;"><strong>Projects</strong></span><br /><span style="color: #5f5f5f; font-family: Arial,Helvetica,sans-serif; font-size: xx-small;"><a rel="nofollow" style="text-decoration: none;" href="http://marubatsu.es"><span style="font-size: 8.5pt; color: #2e974d;">MaruBatsu.es</span></a><br /><a rel="nofollow" style="text-decoration: none;" href="http://pupcloud.com"><span style="font-size: 8.5pt; color: #519f3f;">PupCloud.com</span></a><br /><a rel="nofollow" style="text-decoration: none;" href="http://wedding.mahalostudio.com"><span style="font-size: 8.5pt; color: #519f3f;">Wedding Album</span></a></span></td>
+</tr>
+</tbody>
+</table>
+<img src="gifByYfDB3j7c.gif" alt="line" width="643" height="7" /></div>
+</div>
+<div>-- <br />
+<div><img src="" alt="line" width="643" height="7" />
+<table style="margin-bottom: 7px; width: 643px;" border="0" cellspacing="0" cellpadding="0">
+<tbody>
+<tr>
+<td valign="top" width="190"><a rel="nofollow" href="http://mahalostudio.com" target="_blank"><img style="margin-left: 10px;" src="" alt="logo" width="162" height="44" border="0" /></a></td>
+<td width="10">&nbsp;</td>
+<td valign="top" width="225"><span style="color: #5f5f5f; font-family: Verdana,Arial,Helvetica,sans-serif; font-size: small;"><strong>Antonio Rohman Fernandez</strong></span><br /><span style="color: #5f5f5f; font-family: Arial,Helvetica,sans-serif; font-size: xx-small;"><span style="font-size: 8.5pt; color: #5f5f5f;">CEO, Founder &amp; Lead Engineer</span><br /><a rel="nofollow" style="text-decoration: none;" href="mailto:roh...@mahalostudio.com" target="_blank"><span style="font-size: 8.5pt; color: #519f3f;">roh...@mahalostudio.com</span></a></span></td>
+<td width="10">&nbsp;</td>
+<td valign="top" width="225"><span style="color: #5f5f5f; font-family: Verdana,Arial,Helvetica,sans-serif; font-size: small;"><strong>Projects</strong></span><br /><span style="color: #5f5f5f; font-family: Arial,Helvetica,sans-serif; font-size: xx-small;"><a rel="nofollow" style="text-decoration: none;" href="http://marubatsu.es" target="_blank"><span style="font-size: 8.5pt; color: #2e974d;">MaruBatsu.es</span></a><br /><a rel="nofollow" style="text-decoration: none;" href="http://pupcloud.com" target="_blank"><span style="font-size: 8.5pt; color: #519f3f;">PupCloud.com</span></a><br /><a rel="nofollow" style="text-decoration: none;" href="http://wedding.mahalostudio.com" target="_blank"><span style="font-size: 8.5pt; color: #519f3f;">Wedding Album</span></a></span></td>
+</tr>
+</tbody>
+</table>
+<img src="" alt="line" width="643" height="7" /></div>
+</div>
+
+<pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10922.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10925">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10925">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10926.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10917.html">Riak + Disco (MapReduce alternative)</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10918.html">Re: Riak + Disco (MapReduce alternative)</a></span> <span class="sender italic">Chris Corbyn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10919.html">Re: Riak + Disco (MapReduce alternative)</a></span> <span class="sender italic">Chris Corbyn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10920.html">Re: Riak + Disco (MapReduce alternative)</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10921.html">Re: Riak + Disco (MapReduce alternat...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10923.html">Re: Riak + Disco (MapReduce alte...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10924.html">Re: Riak + Disco (MapReduce alte...</a></span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10922.html">SV: Riak + Disco (MapReduce alternative)</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: SV: Riak + Disco (MapReduce alternative)</span> <span class="sender italic">Antonio Rohman Fernandez</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: SV: Riak + Disco (MapReduce alternative)">
+<input type="hidden" name="msgid" value="aa151af5698b12e2f5b1c3bbf45384f5@mahalostudio.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10925.html">
+<input type="submit" value=" Antonio Rohman Fernandez ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+SV%5C%3A+Riak+%5C%2B+Disco+%5C%28MapReduce+alternative%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10922.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10926.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">aa151af5698b12e2f5b1c3bbf45384f5@mahalostudio.com</li>
+</ul>
+</div>
+</body>
+</html>

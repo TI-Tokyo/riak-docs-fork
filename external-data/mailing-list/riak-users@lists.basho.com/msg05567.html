@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Is Riak suitable for a short-term scatter/gather sort of data	store?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05567" id="c">
+<link rel="index" href="maillist.html#05567" id="i">
+<link rel="prev" href="msg05566.html" id="p">
+<link rel="next" href="msg05568.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05567.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+Riak+suitable+for+a+short%5C-term+scatter%5C%2Fgather+sort+of+data%09store%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Is Riak suitable for a short-term scatter/gather sort of data	store?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Keith+Irwin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Keith Irwin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111112" rel="nofollow">Sat, 12 Nov 2011 15:43:44 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Nov 12, 2011, at 2:32 PM, Gordon Tillman wrote:
+
+&gt; Keith I have an idea that might work for you.  This is a bit vague but I 
+&gt; would be glad to put together a more concrete example if you like.</pre><pre>
+
+Okay, thanks! Not sure I understand everything, though.
+
+&gt; Use secondary indexes to tag each entry with the device id.
+
+I get the tagging part, but I'm not sure what the bucket and key being tagged 
+would look like. Are you taking a single bucket for all data?
+
+put /buckets/mydata/keys/&lt;device&gt;-&lt;timestamp&gt;
+x-riak-index-device_bin: FF06541287AB
+
+Something like that?
+
+&gt; You can then find all of the entries  for a given device by using the the 
+&gt; secondary index to feed into a simple map phase operation that returns only 
+&gt; the entries that you want; i.e., those that are in a given time range.
+
+This I don't know how to do based on my reading of the docs. Something like:
+
+    get /buckets/mydata/index/device_bin/FF345678912
+
+which would return a list of .... what, device-timestamp compound keys? And 
+then would I feed a potentially huge list of &quot;bucket/key&quot; pairs into a gigantic 
+javascript query for the map-reduce phase?
+
+&gt; In addition, to easily find all of the registered device ids easily you can 
+&gt; create one entry for each device.  The key can be most anything (even the 
+&gt; device id if you encode it properly -- hash it), and you could tag each of 
+&gt; those entries with a secondary index whose field is something like &quot;type&quot; or 
+&gt; whatever and whose value is &quot;deviceid&quot;.  The value for each entry could be 
+&gt; just a simple text/plain value whose contents is just the device id of the 
+&gt; registered device.
+
+Okay, I think I get this:
+
+When a device comes in, just do something like:
+
+put /buckets/devices/&lt;device-id&gt;
+x-riak-index-type_bin: &quot;device&quot;
+
+When I want a list of device IDs, I can:
+
+get /buckets/devices/index/type_bin/device
+
+and get them all, right? This is more efficient than the various list 
+functions? That makes sense to me.
+
+I guess I'll have to try a few examples and see what happens. What you're 
+telling me is that what I want to do is possible, or is at least not pressing 
+against Riak's particular trade-offs too much. Or at least I hope that's what 
+you're telling me. ;)
+
+Keith
+
+
+&gt; 
+&gt; --gordon
+&gt; 
+&gt; On Nov 12, 2011, at 16:19 , Keith Irwin wrote:
+&gt; 
+&gt;&gt; Folks--
+&gt;&gt; 
+&gt;&gt; (Apologies up front for the length of this.)
+&gt;&gt; 
+&gt;&gt; I'm wondering if you can let me know if Riak is a good fit for a simple 
+&gt;&gt; not-quite-key-value scenario described below. MongoDB or (say) Postgresql 
+&gt;&gt; seem a more natural fit conceptually, but I really, really like Riak's 
+&gt;&gt; distribution strategy.
+&gt;&gt; 
+&gt;&gt; ## context
+&gt;&gt; 
+&gt;&gt; The basic overview is this: 
+&gt;&gt; 
+&gt;&gt; 50K devices push data once a second to web services which need to store that 
+&gt;&gt; data in short-term storage (Riak). Once an hour, a sweeper needs to take an 
+&gt;&gt; hour's worth of data per device (if there is any) and ship it off to long 
+&gt;&gt; term storage, then delete it from short-term storage. Ideally, there'd only 
+&gt;&gt; ever be slightly more than 1 hour's worth of data still in short-term 
+&gt;&gt; storage for any given device. The goal is to write down the data as simply 
+&gt;&gt; and safely as possible, with little or no processing on that data.
+&gt;&gt; 
+&gt;&gt; Each second's worth of data is:
+&gt;&gt; 
+&gt;&gt; * A device identifier
+&gt;&gt; * A timestamp (epoch seconds, integer) for the slice of time the data 
+&gt;&gt; represents
+&gt;&gt; * An opaque blob of binary data (2 to 4k)
+&gt;&gt; 
+&gt;&gt; Once an hour, I'd like to do something like:
+&gt;&gt; 
+&gt;&gt; * For each device:
+&gt;&gt;      * Find (and concat) all the data between time1 and time2 (an hour).
+&gt;&gt;      * Move that data to long-term storage (not Riak) as a single blob.
+&gt;&gt;      * Delete that data from Riak.
+&gt;&gt; 
+&gt;&gt; For an SQL db, this is a really simple problem, conceptually. You can have a 
+&gt;&gt; table with three columns: device-id, timestamp, blob. You can index the 
+&gt;&gt; first two columns and roll up the data easily enough and then delete it via 
+&gt;&gt; single SQL statements (or buffer as needed). The harder part is 
+&gt;&gt; partitioning, replication, etc, etc.
+&gt;&gt; 
+&gt;&gt; For MongoDB, it's also fairly simple. Just use a document with the same 
+&gt;&gt; device-id, timestamp and binary-array data (as JSON), make sure indexes are 
+&gt;&gt; declared, and query/delete just as in SQL. MongoDB provides sharding, 
+&gt;&gt; replica-sets, recovery, etc. Set up, while less complicated than an RDBMS, 
+&gt;&gt; still seems way more complicated than necessary.
+&gt;&gt; 
+&gt;&gt; These solutions also provide sorting (which, while nice, isn't a requirement 
+&gt;&gt; for my case).
+&gt;&gt; 
+&gt;&gt; ## question
+&gt;&gt; 
+&gt;&gt; I've been reading the Riak docs, and I'm just not sure if this simple 
+&gt;&gt; &quot;queryable&quot; case can really fit all that well. I'm not so concerned about 
+&gt;&gt; having to send 50K &quot;deletes&quot; to delete data. I'm more concerned about being 
+&gt;&gt; able to find it. Given what I've written above, I may be blocked 
+&gt;&gt; conceptually by the above index/query mentality such that I'm just not 
+&gt;&gt; seeing the Riak way of doing things.
+&gt;&gt; 
+&gt;&gt; Anyway, I can &quot;tag&quot; (via the secondary index feature) each blob of data with 
+&gt;&gt; the device-id and the timestamp. I could then do a range query similar to:
+&gt;&gt; 
+&gt;&gt;   GET /buckets/devices/index/timestamp/start/end
+&gt;&gt; 
+&gt;&gt; However, this doesn't allow me to group based on device-id. I could create a 
+&gt;&gt; separate bucket for every device, such that I could do:
+&gt;&gt; 
+&gt;&gt;   GET /buckets/device-id/index/timestamp/start/end
+&gt;&gt; 
+&gt;&gt; but if I do this, how can I get a list of the device-ids I need so that I 
+&gt;&gt; can create that specific URL? The docs say listing buckets and keys is 
+&gt;&gt; problematic.
+&gt;&gt; 
+&gt;&gt; Might be that Riak just isn't a good case for this sort of thing, especially 
+&gt;&gt; given I want to use it for short-term transient data, and that's fine. But I 
+&gt;&gt; wanted to ask you all just to make sure that I'm not missing something 
+&gt;&gt; somewhere.
+&gt;&gt; 
+&gt;&gt; For instance, might link walking help? How about a map/reduce to find a 
+&gt;&gt; unique list of device-ids within a given time-horizon, and a streaming map 
+&gt;&gt; job to gather the data for export? Does that seem pretty reasonable?
+&gt;&gt; 
+&gt;&gt; Thanks!
+&gt;&gt; 
+&gt;&gt; Keith
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05566.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05567">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05567">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05568.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05564.html">Is Riak suitable for a short-term scatter/gather sort of da...</a></span> <span class="sender italic">Keith Irwin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05566.html">Re: Is Riak suitable for a short-term scatter/gather s...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Is Riak suitable for a short-term scatter/gath...</span> <span class="sender italic">Keith Irwin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05568.html">Re: Is Riak suitable for a short-term scatter/...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05570.html">2i Performance on EC2</a></span> <span class="sender italic">Jim Adler</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Is Riak suitable for a short-term scatter/gather sort of data	store?">
+<input type="hidden" name="msgid" value="D43D9028-0C0F-4DB6-8E58-D7CD46308AA9@zentrope.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05567.html">
+<input type="submit" value=" Keith Irwin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+Riak+suitable+for+a+short%5C-term+scatter%5C%2Fgather+sort+of+data%09store%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05566.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05568.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D43D9028-0C0F-4DB6-8E58-D7CD46308AA9@zentrope.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Riak Bitcask merging</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04416" id="c">
+<link rel="index" href="maillist.html#04416" id="i">
+<link rel="prev" href="msg04411.html" id="p">
+<link rel="next" href="msg04425.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04416.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Riak+Bitcask+merging%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Riak Bitcask merging</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nathan+Wilken%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nathan Wilken</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110823" rel="nofollow">Tue, 23 Aug 2011 01:48:40 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>How about this?
+
+#!/bin/sh
+...
+for i in data/expiring_bitcask/* ; do $ERTS_PATH/to_erl $PIPE_DIR&lt;&lt;EOF
+bitcask:merge(&quot;$i/&quot;,[{dead_bytes_merge_trigger, 0},{dead_bytes_threshold, 
+0},{small_file_threshold, 16#80000000},{expiry_secs, 86400}]).
+EOF
+done</pre><pre>
+
+I have a backend (part of a multi_backend) used exclusively for storing data 
+with 9-hour TTL (and so my config expires the data after 24 hours).  It's 
+seldom that k/v's are deleted, so merging during my nightly merge window only 
+slightly compacts the data files into nice, huge, zero-dead-byte files that 
+never again will trigger a merge, and are included in merges triggered by new 
+files since they fall under the small_file_threshold (which is huge for this 
+reason).
+
+&gt;From app.config:
+                   {&lt;&lt;&quot;expiring_bitcask&quot;&gt;&gt;, riak_kv_bitcask_backend, [
+                          {expiry_secs, 86400},
+                          {max_file_size, 134217728},
+                          {dead_bytes_merge_trigger, 10485760},
+                          {dead_bytes_threshold, 10485760},
+                          {small_file_threshold, 16#80000000},
+                          {merge_window, {1, 5}},
+                          {data_root, &quot;data/expiring_bitcask&quot;}
+
+I use dead-byte trigger and threshold values of 0 for manual merges in order to 
+force a merge, and 10mb values in the config to avoid continual merging during 
+my overnight window.
+
+Does this make sense?  I'd have thought my app.config would keep the bitcasks 
+small, but it seems they just grow bigger and never get cleared of much expired 
+data.  The manual config I use above immediately shrinks the data files 
+dramatically.
+
+Any suggestions for a cleaner approach?
+
+-Nate
+
+
+
+________________________________
+From: riak-users-boun...@lists.basho.com [riak-users-boun...@lists.basho.com] 
+On Behalf Of Anthony Molinaro [antho...@alumni.caltech.edu]
+Sent: Monday, August 22, 2011 10:18 AM
+To: Dan Reverri
+Cc: raghwani sohil; riak-users@lists.basho.com
+Subject: Re: Riak Bitcask merging
+
+While I didn't ask this time, I'll explain why I think manual
+merging as an option would be great.
+
+As far as I know specifying a merge window doesn't guarantee the
+merging happens, only that it might if other thresholds are met.
+
+With our cassandra cluster we've ended up scheduling twice weekly
+full compactions (the close equivalent to merging I believe), via
+cron.  The days and times are specificaly chosen based on traffic
+patterns, and can be changed without restarting the servers.
+
+We don't have this convenience with riak.  We can set it up to only
+merge during a window, but can't guarantee everything was merged
+or even that any merges will occur.  If I wanted to change when I
+do the merging, I have to restart the servers to pick up the new
+config (at least I think I would).  I have no way to stagger the
+merging (have different nodes merge at different times), unless
+I have slightly different config on each node.
+
+If there were a riak-admin command called merge/compact/cleanup/expire
+or something which triggered a manual merge I know we would use it.
+
+And while I'm pining for additional command line tools, any idea if
+transfers will ever work without disrupting the actual transfers?
+It's sort of annoying that it's listed as one of the steps for a
+rolling upgrade/restart but if you actually use it, it can cause
+upgrade or startup to take longer.  Also, it tends to timeout on
+a highly trafficked cluster.
+
+Anyway, sorry about hijacking someone else's question, but
+figured more information from users is usually welcome?
+
+-Anthony
+
+On Mon, Aug 22, 2011 at 09:14:06AM -0700, Dan Reverri wrote:
+&gt; There is no way to manually trigger a Bticask merge. What's the use case for
+&gt; needing to manually trigger the merge? Are you concerned about the size of
+&gt; the data files? Are you trying to avoid merging at a particular time?
+&gt;
+&gt; Not sure if this will help but you can restrict Bitcask merging to a
+&gt; specified window of time:
+&gt; <a  rel="nofollow" href="http://wiki.basho.com/Bitcask-Configuration.html#Merge-Window">http://wiki.basho.com/Bitcask-Configuration.html#Merge-Window</a>
+&gt;
+&gt; Thanks,
+&gt; Dan
+&gt;
+&gt; Daniel Reverri
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; d...@basho.com
+&gt;
+&gt;
+&gt; On Sun, Aug 21, 2011 at 11:36 PM, raghwani sohil &lt;sohil4...@gmail.com&gt;wrote:
+&gt;
+&gt; &gt;
+&gt; &gt; Hi All,
+&gt; &gt;
+&gt; &gt; Is there any way to run  bitcask merging process manually ?
+&gt; &gt;
+&gt; &gt; thanks ,
+&gt; &gt; Sohil Raghwani .
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt; &gt;
+
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+--
+------------------------------------------------------------------------
+Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04411.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04416">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04416">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04425.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04402.html">Riak Bitcask merging</a></span> <span class="sender italic">raghwani sohil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04404.html">Re: Riak Bitcask merging</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04405.html">Re: Riak Bitcask merging</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04411.html">Re: Riak Bitcask merging</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email tSliceCur"><span class="subject">RE: Riak Bitcask merging</span> <span class="sender italic">Nathan Wilken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04425.html">Re: Riak Bitcask merging</a></span> <span class="sender italic">David Smith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Riak Bitcask merging">
+<input type="hidden" name="msgid" value="C7C48F42-6E7E-4DEF-876E-9C37E4208AC7@mimectl">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04416.html">
+<input type="submit" value=" Nathan Wilken ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Riak+Bitcask+merging%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04411.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04425.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">C7C48F42-6E7E-4DEF-876E-9C37E4208AC7@mimectl</li>
+</ul>
+</div>
+</body>
+</html>

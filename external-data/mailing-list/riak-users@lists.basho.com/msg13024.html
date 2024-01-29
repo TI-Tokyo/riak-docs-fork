@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Ownership handoff never completes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#13024" id="c">
+<link rel="index" href="mail6.html#13024" id="i">
+<link rel="prev" href="msg13016.html" id="p">
+<link rel="next" href="msg13028.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13024.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Ownership+handoff+never+completes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Ownership handoff never completes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mark+Phillips%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mark Phillips</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131119" rel="nofollow">Tue, 19 Nov 2013 14:19:03 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Jeppe,
+
+As you suspected, this looks like index corruption in Search that's
+preventing handoff from finishing.  Specifically, you'll need to
+delete the
+segment files for the two partitions' indexes and rebuild those
+indexes post-transfer.</pre><pre>
+
+Here's the full process:
+
+- Stop each node that owns the partitions in question.
+- Delete the data directory for each partition (which contains the
+segment files). It should be something like:
+
+&quot;rm -rf /var/lib/riak/merge_index/&lt;p&gt;&quot;
+
+- Restart each node
+- Wait for the transfers to complete
+- Rebuild the indexes in question [1]
+
+Let us know if you run into any further issues.
+
+Mark
+
+[1] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/recovery/repairing-indexes/">http://docs.basho.com/riak/latest/ops/running/recovery/repairing-indexes/</a>
+
+
+
+On Tue, Nov 19, 2013 at 4:26 AM, Jeppe Toustrup &lt;je...@falconsocial.com&gt;wrote:
+
+&gt; Hi
+&gt;
+&gt; I have recently added two extra nodes to the now seven node Riak
+&gt; cluster. The rebalancing following the expansion worked fine, except
+&gt; for two partitions which seem to not being able to go through. Running
+&gt; &quot;riak-admin ring-status&quot; shows the following:
+&gt;
+&gt; ============================== Ownership Handoff
+&gt; ==============================
+&gt; Owner:      riak@10.0.0.96
+&gt; Next Owner: riak@10.0.0.93
+&gt;
+&gt; Index: 239777612374601260017792042867515182912301432832
+&gt;   Waiting on: []
+&gt;   Complete:   [riak_kv_vnode,riak_pipe_vnode]
+&gt;
+&gt; Index: 696496874040508421956443553091353626554780352512
+&gt;   Waiting on: []
+&gt;   Complete:   [riak_kv_vnode,riak_pipe_vnode]
+&gt;
+&gt;
+&gt; -------------------------------------------------------------------------------
+&gt;
+&gt; I can see from the log file on the source node (10.0.0.96) that it has
+&gt; made numerous attempt to transfer the partitions, but it ends up
+&gt; failing all the time. Here's an except of the log file showing the
+&gt; lines from when the transfer attempt ends up failing:
+&gt;
+&gt; 2013-11-18 12:29:03.694 [error] emulator Error in process &lt;0.5745.8&gt;
+&gt; on node 'riak@10.0.0.96' with exit value:
+&gt; {badarg,[{erlang,binary_to_term,[&lt;&lt;29942
+&gt;
+&gt; bytes&gt;&gt;],[]},{mi_segment,iterate_all_bytes,2,[{file,&quot;src/mi_segment.erl&quot;},{line,167}]},{mi_server,'-group_iterator/2-fun-1-',2,[{file,&quot;src/mi_server.erl&quot;},{line,725}]},{mi_server,'-group_iterator/2-fun-0-'...
+&gt; 2013-11-18 12:29:03.885 [error] &lt;0.3269.0&gt;@mi_server:handle_info:524
+&gt; lookup/range failure:
+&gt;
+&gt; {badarg,[{erlang,binary_to_term,[&lt;&lt;131,109,0,0,244,240,108,109,102,97,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,...&gt;&gt;],...},...]}
+&gt; 2013-11-18 12:29:03.889 [error]
+&gt; &lt;0.30353.0&gt;@merge_index_backend:async_fold_fun:116 failed to iterate
+&gt; the index with reason
+&gt;
+&gt; {badarg,[{erlang,binary_to_term,[&lt;&lt;131,109,0,0,244,240,108,109,102,97,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,111,...&gt;&gt;],...},...]}
+&gt; and partial acc
+&gt;
+&gt; {{ho_acc,1,{error,closed},#Fun&lt;riak_core_handoff_sender.15.9980475&gt;,riak_search_vnode,&lt;0.3268.0&gt;,#Port&lt;0.133923&gt;,{696496874040508421956443553091353626554780352512,696496874040508421956443553091353626554780352512},{ho_stats,{1384,775537,708230},undefined,249,1050473},gen_tcp,246,1053542,[&lt;&lt;1,131,104,4,109,0,0,0,8,109,111,114,101,111,118,101,114,109,0,0,0,13,99,97,110,111,110,105,99,97,108,68,97,116,101,109,0,0,0,14,50,48,49,51,49,48,48,55,49,50,49,49,53,52,108,0,0,0,57,104,3,109,0,0,0,47,50,48,49,51,49,48,48,55,49,50,49,49,53,52,35,102,98,56,55,98,102,50,51,55,51,98,51,98,56,56,100,52,48,51,52,51,50,100,97,97,55,51,99,55,101,98,99,108,0,0,0,1,104,2,100,0,1,112,107,0,1,0,106,110,7,0,154,61,194,52,243,234,4,104,3,109,0,0,0,47,50,48,49,51,49,48,48,55,49,50,49,49,53,52,35,102,51,101,54,55,54,57,56,99,55,52,49,102,57,56,50,101,50,102,48,55,54,101,57,57,101,97,56,100,100,102,57,108,0,0,0,1,104,2,100,0,1,112,107,0,1,0,106,110,7,0,137,181,162,60,243,234,4,104,3,109,0,0,0,47,50,48,49,51,49,48,48,55,49,50,49,49,53,52,35,101,98,57,51,102,52,55,48,53,52,55,52,50,56,98,49,49,50,101,57,98,50,98,49,52,51,52,57,52,52,98,50,108,0,0,0,1,104,2,100,0,1,112,107,0,1,0,106,110,7,0,31,143,101,69,243,234,4,104,3,109,0,0,0,47,50,48,49,51,49,48,48,55,49,50,49,49,53,52,35,101,55,49,52,57,49,53,52,49,102,48,55,102,102,97,99,51,48,98,51,52,51,56,52,49,98,56,50,54,55,56,48,108,0,0,0,1,104,2,100,0,1,112,107,0,1,0,106,110,7,0,214,30,30,54,243,234,4,104,3,109,0,0,0,47,50,48,49,51,49,48,48,55,49,50,49,49,53,52,35,101,53,56,53,97,52,48,49,98,55,97,52,56,57,56,48,53,55,54,53,101,99,98,98,98,98,101,52,97,101,48,100,108,0,0,0,1,104,2,100,0,1,112,107,0,1,0,106,110,7,0,41,65,120,56,243,234,4,104,3,109,0,0,0,47,50,48,49,51,49,48,48,55,49,50,49,49,53,52,35,100,101,56,99,99,99,51,56,53,56,52,48,53,97,51,49,57,49,48,97,51,55,57,57,98,49,54,52,53,100,55,50,108,0,0,0,1,104,2,100,0,1,112,107,0,1,0,106,110,7,0,222,186,251,66,243,234,4,104,3,109,0,0,0,47,50,48,49,51,49,48,48,55,49,50,49,49,...&gt;&gt;,...],...},...}
+&gt; 2013-11-18 12:29:03.889 [error]
+&gt; &lt;0.15384.7&gt;@riak_core_handoff_sender:start_fold:269 ownership_transfer
+&gt; transfer of riak_search_vnode from 'riak@10.0.0.96'
+&gt; 696496874040508421956443553091353626554780352512 to 'riak@10.0.0.93'
+&gt; 696496874040508421956443553091353626554780352512 failed because of
+&gt; error:{badrecord,ho_acc}
+&gt;
+&gt; [{riak_core_handoff_sender,start_fold,5,[{file,&quot;src/riak_core_handoff_sender.erl&quot;},{line,193}]}]
+&gt;
+&gt;
+&gt; I've got an idea that it me be caused by corrupt data, but the
+&gt; question is then how I can get this corrected, enabling the transfer
+&gt; to complete. Any suggestions?
+&gt;
+&gt; We are using Riak 1.4.2 with LevelDB as the backend on Ubuntu 12.04.
+&gt; Riak was installed through the apt.basho.com repository. Let me know
+&gt; if you need any more information.
+&gt;
+&gt; --
+&gt; Jeppe Fihl Toustrup
+&gt; Operations Engineer
+&gt; Falcon Social
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13016.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#13024">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#13024">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13028.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13016.html">Ownership handoff never completes</a></span> <span class="sender italic">Jeppe Toustrup</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Ownership handoff never completes</span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13028.html">Re: Ownership handoff never completes</a></span> <span class="sender italic">Jeppe Toustrup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13032.html">Re: Ownership handoff never completes</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13038.html">Re: Ownership handoff never completes</a></span> <span class="sender italic">Jeppe Toustrup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13039.html">Ownership handoff never completes</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13040.html">Re: Ownership handoff never compl...</a></span> <span class="sender italic">Brian Sparrow</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Ownership handoff never completes">
+<input type="hidden" name="msgid" value="CAE8zJQGpY1afjZybjxDst+8P6ebjwtdjbO2=ZLNEOzPgnCH=UQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13024.html">
+<input type="submit" value=" Mark Phillips ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Ownership+handoff+never+completes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13016.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13028.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAE8zJQGpY1afjZybjxDst+8P6ebjwtdjbO2=ZLNEOzPgnCH=UQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: OpenLDAP MDB backend for riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08757" id="c">
+<link rel="index" href="maillist.html#08757" id="i">
+<link rel="prev" href="msg08756.html" id="p">
+<link rel="next" href="msg08915.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08757.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+OpenLDAP+MDB+backend+for+riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: OpenLDAP MDB backend for riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Zabrane+Mickael%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Zabrane Mickael</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120930" rel="nofollow">Sun, 30 Sep 2012 10:58:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Any volunteer to test EMDB as a new Riak backend:
+<a  rel="nofollow" href="https://github.com/alepharchives/emdb">https://github.com/alepharchives/emdb</a></pre><pre>
+
+Regards,
+Zabrane
+
+On Sep 30, 2012, at 6:15 PM, Howard Chu wrote:
+
+&gt; Kresten Krab Thorup wrote:
+&gt;&gt; Howard,
+&gt;&gt; 
+&gt;&gt; I took a look at MDB, and it does look quite promising!
+&gt;&gt; 
+&gt;&gt; Perhaps you can enlighten us a bit on these aspects of MDB:
+&gt;&gt; 
+&gt;&gt; - How do you back up an MDB instance? Can you do that while it is actively
+&gt; updating, or do you need to stop it? I'm asking because the operational ease
+&gt; of the log-structured stores is one of the features that many Riak'ers like
+&gt; quite a lot.
+&gt; 
+&gt; Since this was originally developed for OpenLDAP slapd we currently use 
+&gt; slapcat to backup an MDB instance. That won't be useful in general though, so 
+&gt; we will be providing an mdb_dump/mdb_load utility shortly. There is no need 
+&gt; to stop the database while performing a backup, but...
+&gt;  MDB uses MVCC, so once a read transaction starts, it is guaranteed a 
+&gt; self-consistent view of the database until the transaction ends.
+&gt;  Keeping a read txn open for a very long time will prevent the dirty page 
+&gt; reclaimer from re-using the pages that are referenced by that read txn. As 
+&gt; such, any ongoing write activity will be forced to use new pages. The DB size 
+&gt; can grow very rapidly in these situations, until the read txn ends.
+&gt; 
+&gt;&gt; - What is the typical response-time distribution for inserts? I've tried
+&gt;&gt; to
+&gt; work with BDB some time back, and one of the issues with that is that every
+&gt; once in a while it slows down quite significantly as B-tree rebalancing makes
+&gt; some requests unreasonably slow.
+&gt; 
+&gt; MDB is also a B+tree; at a high level it will have similar characteristics to 
+&gt; BDB. It's always possible for an insert that results in a page split to have 
+&gt; a cascade effect, causing page splits all the way back up to the root of the 
+&gt; tree. But in general MDB is still more efficient than BDB so the actual 
+&gt; variance will be much smaller.
+&gt; 
+&gt; Also note that if you're bulk loading records in sorted order, using the 
+&gt; MDB_APPEND option basically degenerates into sequential write operations - 
+&gt; when one page fills, instead of splitting it in half as usual, we just 
+&gt; allocate a new sibling page and continue filling it. Page &quot;splits&quot; of this 
+&gt; sort can still ripple upward, but they're so cheap as to be unmeasurable.
+&gt; 
+&gt;&gt; - Does an MDB instance exploit multiple cores? If so, what is the
+&gt;&gt; structure
+&gt; of this usage? In Riak, we have the benefit that a typical Riak node runs
+&gt; multiple independent databases (one for each data partition/vnode), and so at
+&gt; least that can provide some concurrency to better leverage I/O and CPU
+&gt; concurrency.
+&gt; 
+&gt; Within an MDB environment, multiple readers can run concurrently with a 
+&gt; single writer. Readers are never blocked by anything. (Readers don't block 
+&gt; writers, but as mentioned above, can prevent old pages from being reused.)
+&gt; 
+&gt;&gt; Kresten
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Sep 29, 2012, at 9:50 PM, Kresten Krab Thorup 
+&gt;&gt; &lt;k...@trifork.com&lt;<a  rel="nofollow" href="mailto:k...@trifork.com">mailto:k...@trifork.com</a>&gt;&gt; wrote:
+&gt;&gt; 
+&gt;&gt; BETS May be a good template for MDB NIFs since the MDB API looks like bdb. 
+&gt;&gt; It doesn't implement the Riak backend API but an ets subset.
+&gt;&gt; 
+&gt;&gt; <a  rel="nofollow" href="https://github.com/krestenkrab/bets">https://github.com/krestenkrab/bets</a>
+&gt;&gt; 
+&gt;&gt; Kresten
+&gt;&gt; Trifork
+&gt;&gt; 
+&gt;&gt; On 28/09/2012, at 13.50, &quot;Howard Chu&quot; 
+&gt;&gt; &lt;h...@symas.com&lt;<a  rel="nofollow" href="mailto:h...@symas.com">mailto:h...@symas.com</a>&gt;&gt; wrote:
+&gt;&gt; 
+&gt;&gt; yaoxinming wrote:
+&gt;&gt; mdb looks very good ,you can use nif ,maybe you can look the eleveldb
+&gt;&gt; project,that's a good example.
+&gt;&gt; 
+&gt;&gt; Thanks for the tip, I'll look into eleveldb.
+&gt;&gt; 
+&gt;&gt; 2012/9/27 Howard Chu &lt;h...@symas.com&lt;<a  rel="nofollow" href="mailto:h...@symas.com">mailto:h...@symas.com</a>&gt; 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:h...@symas.com">mailto:h...@symas.com</a>&gt;&gt;
+&gt;&gt; 
+&gt;&gt;    Hi, I'm interested in developing a backend using OpenLDAP's memory-mapped
+&gt;&gt;    database library (MDB). Unfortunately Erlang is not a language I've used
+&gt;&gt;    before. Any tips on where to get started?
+&gt;&gt; 
+&gt;&gt;    You can find information on MDB here: <a  rel="nofollow" href="http://highlandsun.com/hyc/__mdb/">http://highlandsun.com/hyc/__mdb/</a>
+&gt;&gt;    &lt;<a  rel="nofollow" href="http://highlandsun.com/hyc/mdb/">http://highlandsun.com/hyc/mdb/</a>&gt;
+&gt;&gt; 
+&gt;&gt;    Its read performance is several times faster than anything else out there,
+&gt;&gt;    and scales perfectly linearly since readers require no locks. Its write
+&gt;&gt;    performance is also quite fast...
+&gt;&gt;    --
+&gt;&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt;  -- Howard Chu
+&gt;  CTO, Symas Corp.           <a  rel="nofollow" href="http://www.symas.com">http://www.symas.com</a>
+&gt;  Director, Highland Sun     <a  rel="nofollow" href="http://highlandsun.com/hyc/">http://highlandsun.com/hyc/</a>
+&gt;  Chief Architect, OpenLDAP  <a  rel="nofollow" href="http://www.openldap.org/project/">http://www.openldap.org/project/</a>
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08756.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08757">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08757">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08915.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08726.html">OpenLDAP MDB backend for riak</a></span> <span class="sender italic">Howard Chu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08731.html">Re: OpenLDAP MDB backend for riak</a></span> <span class="sender italic">yaoxinming</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08741.html">Re: OpenLDAP MDB backend for riak</a></span> <span class="sender italic">Howard Chu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08745.html">Re: OpenLDAP MDB backend for riak</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08752.html">Re: OpenLDAP MDB backend for riak</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08754.html">Re: OpenLDAP MDB backend for riak</a></span> <span class="sender italic">Howard Chu</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08755.html">Re: OpenLDAP MDB backend for riak</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08756.html">Re: OpenLDAP MDB backend for ria...</a></span> <span class="sender italic">Howard Chu</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: OpenLDAP MDB backend for...</span> <span class="sender italic">Zabrane Mickael</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08915.html">Re: OpenLDAP MDB backend for ria...</a></span> <span class="sender italic">Howard Chu</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: OpenLDAP MDB backend for riak">
+<input type="hidden" name="msgid" value="FE556006-4077-4ECD-B70C-37948434A96B@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08757.html">
+<input type="submit" value=" Zabrane Mickael ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+OpenLDAP+MDB+backend+for+riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08756.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08915.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">FE556006-4077-4ECD-B70C-37948434A96B@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

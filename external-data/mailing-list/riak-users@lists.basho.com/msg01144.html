@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: large time series advice</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01144" id="c">
+<link rel="index" href="maillist.html#01144" id="i">
+<link rel="prev" href="msg01143.html" id="p">
+<link rel="next" href="msg01145.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01144.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+large+time+series+advice%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: large time series advice</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100927" rel="nofollow">Mon, 27 Sep 2010 09:21:06 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Inline...
+</pre><pre>
+
+@siculars on twitter
+<a  rel="nofollow" href="http://siculars.posterous.com">http://siculars.posterous.com</a>
+
+Sent from my iPhone
+
+On Sep 27, 2010, at 11:45, Jason McInerney &lt;wwwslin...@gmail.com&gt; wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Throughout the year I've seen several conversations about Riak
+discussing ideas on how to store, retrieve, and manipulate large
+(250MB+) data sets, and I'm wondering if anyone has implemented a good
+system yet with Riak.
+My situation:
+1) data files come in as 2 columns: time-from-start (usually a fixed
+interval in milliseconds) and value, with meta data
+2) files can have hundreds of millions of rows
+3) retrieval will be as all data, raw subsets, subsets smoothed over
+time, or subsets according to meta data
+
+I've had some success storing as a bucket per file, with keys as a
+milliseconds from start, and retrieval is awesome.  M/R works well
+getting subsets.
+
+Problems are:
+a) the speed of getting the data into Riak -- I fork off 100 - 1000
+threads and do PUTs on each row (basically chunk &amp; fork), but this is
+really slow.  But so is one process, a row at a time.
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>Are you using protobuf or http interface? I would use the former.  
+</tt><tt>There are lots and lots of resources on how to best chunk large text  
+</tt><tt>files in your favorite language and there may well be a protobuf lib  
+</tt><tt>for riak in that language.
+</tt><tt>-Whichever interface you are using make sure your lib is not returning  
+</tt><tt>the data in it's reply or doing any enhanced riak stuff like waiting  
+</tt><tt>on n successful replies.
+</tt><tt>-in your connection, supply the client id. Otherwise riak auto gens  
+</tt><tt>one for you (optimization, but extra processing nonetheless).
+</tt><pre style="margin: 0em;">
+-round robin your ip's if you have a cluster of riak nodes.
+</pre><tt>-If you are testing on one node make n val equal 1 in your app.conf  
+</tt><tt>file or you just churning disk.
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+b) memory (RAM) usage after a few files are in remains very high
+(30-40%), so I worry that this may no perform well with thousands of
+files
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>If you are using a bitcask backend (default) memory is governed by  
+</tt><tt>total keys in the cask. Add more keys, eat more ram. There is a metric  
+</tt><tt>floating around (off the top of my head I think it's 40b 
+</tt><tt>+keylength*keys). Innodb backend may be better for this mem wise  
+</tt><tt>although it does consume file descriptors on a per bucket basis.
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+c) I simply don't know if this is the best way to do this sort of
+work.  Other DBs are an option, but I prefer Riak's features.
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>Take a look at basho_bench to get a feel for ops/sec of your own  
+</tt><tt>setup. You may be hitting some max ops/s due to some hardware  
+</tt><tt>constraints. Lots of nobs to tweak there.
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Any and all advice is wellcome!
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01143.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01144">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01144">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01145.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01142.html">large time series advice</a></span> <span class="sender italic">Jason McInerney</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01143.html">Re: large time series advice</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: large time series advice</span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01145.html">Re: large time series advice</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: large time series advice">
+<input type="hidden" name="msgid" value="4C4B6C50-9CA1-457F-AA9F-CACA41B1313D@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01144.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+large+time+series+advice%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01143.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01145.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4C4B6C50-9CA1-457F-AA9F-CACA41B1313D@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

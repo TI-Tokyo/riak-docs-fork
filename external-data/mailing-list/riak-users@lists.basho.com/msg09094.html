@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Issue with clustering Riak nodes on CentOS servers.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09094" id="c">
+<link rel="index" href="maillist.html#09094" id="i">
+<link rel="prev" href="msg09093.html" id="p">
+<link rel="next" href="msg09087.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09094.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Issue+with+clustering+Riak+nodes+on+CentOS+servers.%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Issue with clustering Riak nodes on CentOS servers.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Hughes%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Hughes</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121030" rel="nofollow">Tue, 30 Oct 2012 21:20:29 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi James,
+
+</pre><tt>Gonna move this back to the list so that others can add to the 
+</tt><tt>discussion.  Definitely sounds like it may be a firewall issue. You 
+</tt><tt>should get &quot;Firewall is stopped&quot; if it is actually stopped.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+$ sudo service iptables status
+Firewall is stopped.
+
+</pre><tt>From your output, it is still running.  Here are some instructions on 
+</tt><tt>how to permanently turn it off.
+</tt><pre style="margin: 0em;">
+
+<a  rel="nofollow" href="http://www.cyberciti.biz/faq/disable-linux-firewall-under-centos-rhel-fedora/">http://www.cyberciti.biz/faq/disable-linux-firewall-under-centos-rhel-fedora/</a>
+
+</pre><tt>Since it sounds like you are safe in your companies intranet, I would 
+</tt><tt>suggest trying the above and turn off the firewall completely.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>In regards to our install - for a production solution, we build from 
+</tt><tt>sources in a manner that we can actually have multiple installs of both 
+</tt><tt>Erlang and Riak (we are 100% Erlang) to allow us to roll back quickly.  
+</tt><tt>This gives us fine grain control over 1) when we want to upgrade to a 
+</tt><tt>new release, 2) the mount point for our data (we use bitcask), and 3) 
+</tt><tt>the ability to roll back to a previous release. This is true for both 
+</tt><tt>Erlang and Riak.  This also assumes that a RIAK upgrade does not 
+</tt><tt>transform physical data - which it has never yet as far as I am aware.
+</tt><pre style="margin: 0em;">
+
+Our solution is pretty simple and is based on a blog post by Robert Aloi:
+
+<a  rel="nofollow" href="http://aloiroberto.wordpress.com/2010/11/24/how-to-manage-multiple-erlang-installations/">http://aloiroberto.wordpress.com/2010/11/24/how-to-manage-multiple-erlang-installations/</a>
+
+</pre><tt>Here are the steps that I follow (sorry, havent made a shell script out 
+</tt><tt>of it).  Would love to hear any feedback from anyone on the list on 
+</tt><tt>where we could be doing better.  Following this, I can build a new 5 
+</tt><tt>node cluster from scratch within an hour.
+</tt><pre style="margin: 0em;">
+
+Configuring Erlang
+</pre><tt>./configure --prefix=/home/riak/erlang/R15B01 --enable-ssl=yes 
+</tt><tt>--enable-kernel-poll --enable-hipe --enable-smp-support --enable-threads 
+</tt><tt>--enable-m64-build
+</tt><pre style="margin: 0em;">
+
+FOR THE MAC:
+</pre><tt>CFLAGS=-O0 ./configure --enable-hipe --enable-smp-support 
+</tt><tt>--enable-threads --enable-kernel-poll --enable-darwin-64bit 
+</tt><tt>--prefix=/opt/erlang/R15B01
+</tt><pre style="margin: 0em;">
+
+As root:
+ 1. useradd -m -G wheel riak
+ 2. visudo to enable wheel sudoers
+ 3. passwd riak &lt;whatever&gt;
+ 4. su - riak
+
+As riak:
+[building erlang]
+</pre><tt> 5. sudo yum install gcc gcc-c++ glibc-devel make ncurses-devel 
+</tt><tt>openssl-devel autoconf git
+</tt><pre style="margin: 0em;">
+
+NOTE: If yum can not install git, do the following:
+</pre><tt>     wget 
+</tt><tt><a  rel="nofollow" href="http://packages.sw.be/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.i386.rpm">http://packages.sw.be/rpmforge-release/rpmforge-release-0.3.6-1.el5.rf.i386.rpm</a>
+</tt><pre style="margin: 0em;">
+     rpm -Uvh <a  rel="nofollow" href="http://repo.webtatic.com/yum/centos/5/latest.rpm">http://repo.webtatic.com/yum/centos/5/latest.rpm</a>
+     yum install --enablerepo=webtatic git-all
+
+ 6. mkdir erlang
+ 7. cd erlang
+ 8. mkdir R15B01
+ 9. wget <a  rel="nofollow" href="http://erlang.org/download/otp_src_R15B01.tar.gz">http://erlang.org/download/otp_src_R15B01.tar.gz</a>
+10. tar zxvf otp_src_R15B01.tar.gz
+11. cd otp_src_R15B01
+</pre><tt>12. ./configure --prefix=/home/riak/erlang/R15B01 --enable-ssl=yes 
+</tt><tt>--enable-kernel-poll --enable-hipe --enable-smp-support --enable-threads 
+</tt><tt>--enable-m64-build
+</tt><pre style="margin: 0em;">
+13. make
+14. make install
+15. cd ~
+16. mkdir bin
+17. vi .bashrc (add)
+RIAK_HOME=$HOME/riak-1.2.0/rel/riak
+PATH=$PATH:/$HOME/bin:/sbin:/usr/bin:$RIAK_HOME/bin
+
+18. . .bashrc
+19. cd bin
+20. vi e15 (add)
+#!/bin/bash
+env PATH=/home/riak/erlang/R15B01/bin:$PATH &quot;$@&quot;
+
+
+21. chmod +x e15
+to test, type the following on the command line:
+e15 erl
+
+</pre><tt>22. Do the following. Append these in /etc/sysctl.conf then run sysctl 
+</tt><tt>-p to apply them. No need to reboot, now your kernel should be able to 
+</tt><tt>handle a lot more open connections, yay.
+</tt><pre style="margin: 0em;">
+
+# General gigabit tuning:
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+
+# this gives the kernel more memory for tcp
+# which you need with many (100k+) open socket connections
+
+net.ipv4.tcp_mem = 50576   64768   98152
+net.core.netdev_max_backlog = 2500
+
+23. Make sure the file max is high enough
+sysctl fs.file-max
+
+[building riak]
+24. cd /home/riak
+</pre><tt>25. wget 
+</tt><tt><a  rel="nofollow" href="http://downloads.basho.com.s3-website-us-east-1.amazonaws.com/riak/CURRENT/riak-1.2.0.tar.gz">http://downloads.basho.com.s3-website-us-east-1.amazonaws.com/riak/CURRENT/riak-1.2.0.tar.gz</a>
+</tt><pre style="margin: 0em;">
+26. tar zxvf riak-1.2.0.tar.gz
+27. cd riak-1.2.0
+28. e15 make rel
+29. ifconfig to get ipaddress
+
+[configuring the firewall (if needed)]
+30. Add
+
+## Firewall
+{ kernel, [
+            {inet_dist_listen_min, 6000},
+            {inet_dist_listen_max, 7999}
+          ]},
+
+to app.config at top level (same as risk.core)
+
+</pre><tt>31. sudo vi /etc/sysconfig/iptables (and add the following to 
+</tt><tt>RH-Firewall-1-INPUT just above the icmp-host-prohibited)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 4369 
+</tt><tt>-j ACCEPT
+</tt><tt>-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 8099 
+</tt><tt>-j ACCEPT
+</tt><tt>-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 
+</tt><tt>7010:7015 -j ACCEPT
+</tt><pre style="margin: 0em;">
+
+32. sudo service iptables restart
+
+
+Cheers,
+Bryan
+
+On 10/30/12 8:14 PM, SWEENEY, JAMES wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+</pre><tt>Hey thanks for the reply Bryan,  I did go through the instructions 
+</tt><tt>below.   Plus I had checked the iptables right away after I installed, 
+</tt><tt>and iptables does not seem to be running on any of my centos servers  
+</tt><tt>ie this is the result I get when running service iptables status --
+</tt><pre style="margin: 0em;">
+
+[root@essd-riak-test-server ~]# sudo service iptables status
+
+Table: filter
+
+Chain INPUT (policy ACCEPT)
+
+num target     prot opt source               destination
+
+Chain FORWARD (policy ACCEPT)
+
+num target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+
+num target     prot opt source               destination
+
+[root@essd-riak-test-server ~]#
+
+</pre><tt>The type of install I have done is installed from the dev package from 
+</tt><tt>the riak site,  not installed from source code.  Does that matter for 
+</tt><tt>clustering?   Everything about my install seems fine except that it my 
+</tt><tt>cluster commands fail and I can't join nodes for a clustered environment.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The nodes are on a cloud server that is controlled by another group in 
+</tt><tt>my company.  We have made sure the ports that riak needs are opened 
+</tt><tt>for centos to centos communication, and I can telnet from one centos / 
+</tt><tt>riak server to another successfully,  but just can join a node.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>*From:*riak-users [<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>] *On 
+</tt><tt>Behalf Of *Bryan Hughes
+</tt><pre style="margin: 0em;">
+*Sent:* Tuesday, October 30, 2012 5:36 PM
+*To:* riak-users@lists.basho.com
+*Subject:* Re: Issue with clustering Riak nodes on CentOS servers.
+
+Hi James,
+
+</pre><tt>We have a 5 node cluster running in production with no problems on 
+</tt><tt>CentOS.  We have each node isolated on a private lan.  Our application 
+</tt><tt>server has two interfaces, one to the outside world with a very 
+</tt><tt>restricted firewall, and the second connected to the private lan with 
+</tt><tt>the 5 nodes.
+</tt><pre style="margin: 0em;">
+
+Assuming you set the node names accordingly and followed:
+
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/cookbooks/Basic-Cluster-Setup/">http://docs.basho.com/riak/latest/cookbooks/Basic-Cluster-Setup/</a>
+
+</pre><tt>One thing to check would your firewall, which is by default on with 
+</tt><tt>CentOS.
+</tt><pre style="margin: 0em;">
+
+&gt;sudo service iptables status
+
+</pre><tt>If you have your 4 nodes on a private lan, or perhaps well protected 
+</tt><tt>behind a firewall as an internal deployment, then it is relatively 
+</tt><tt>straight forward.  You can just turn off your firewall on the 4 machines.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If your machines are not on a isolated private lan and are exposed to 
+</tt><tt>the internet, or just need to be protected behind a firewall, you will 
+</tt><tt>need to do the following.
+</tt><pre style="margin: 0em;">
+
+<a  rel="nofollow" href="http://docs.basho.com/riak/1.2.0/cookbooks/Network-Security-and-Firewall-Configurations/">http://docs.basho.com/riak/1.2.0/cookbooks/Network-Security-and-Firewall-Configurations/</a>
+
+</pre><tt>First, in your app.config, you will need to add the following at the 
+</tt><tt>top level (same as riak.core).  You can pick whatever min and max 
+</tt><tt>range you want - here I arbitrarily chosen 4 ports:
+</tt><pre style="margin: 0em;">
+
+{ kernel, [
+            {inet_dist_listen_min, 7010},
+            {inet_dist_listen_max, 7014}
+          ]},
+
+</pre><tt>Next, on each or our riak nodes, you will need to edit your iptables.  
+</tt><tt>I tend to edit them manually using sudo.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>&gt; sudo vi /etc/sysconfig/iptables (and add the following to 
+</tt><tt>RH-Firewall-1-INPUT just above the icmp-host-prohibited)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 4369 
+</tt><tt>-j ACCEPT
+</tt><tt>-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 8087 
+</tt><tt>-j ACCEPT
+</tt><tt>-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 8099 
+</tt><tt>-j ACCEPT
+</tt><tt>-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 
+</tt><tt>7010:7014 -j ACCEPT
+</tt><pre style="margin: 0em;">
+
+&gt; sudo service iptables restart
+
+</pre><tt>After doing this on all the nodes, they should all be visible to each 
+</tt><tt>other.  If you wanted to lock down your firewall even further, you can 
+</tt><tt>specify a range of IP addresses.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Finally, on the machine that your erlang application or Riak client, 
+</tt><tt>you will need to do the following:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>sudo vi /etc/sysconf/iptable (and add the following to 
+</tt><tt>RH-Firewall-1-INPUT just above the icmp-host-prohibited)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 8098 
+</tt><tt>-j ACCEPT
+</tt><tt>-A RH-Firewall-1-INPUT -m state --state NEW -m tcp -p tcp --dport 8087 
+</tt><tt>-j ACCEPT
+</tt><pre style="margin: 0em;">
+
+&gt; sudo service iptables restart
+
+
+Hope this helps...
+Bryan
+
+On 10/30/12 11:39 AM, SWEENEY, JAMES wrote:
+
+    Hello,  I am attempting to create a 4 node riak installation on 4 separate 
+CentOS servers.   Installation of Riak went well.  We have run simple tests 
+like riak ping, sudo curl \-v<a  rel="nofollow" href="http://127.0.0.1:8098/riak/test">http://127.0.0.1:8098/riak/test</a>, ect,  and 
+everything seems fine with the riak servers,  they all start up with no errors. 
+ We used the default ports in the app.config files.   Ie:  epmd listener: 
+TCP:4369
+
+    handoff_port listener: TCP:8099
+
+    web_port: TCP:8098
+
+    pb_port: TCP:8087
+
+</pre><tt>      
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    We have updated all ip addresses in the config files as instructed on the 
+riak site.  Also, we have verified by telnet that the ports are all open and 
+that I can telnet between the riak servers.    Still after all of that,  when I 
+try to do a cluster command I get the following response:
+
+</pre><tt>      
+</tt><tt>
+</tt><tt>      
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    [root@essd-riak-test-server ~]# riak-admin cluster joinriak@10.1.78.9  
+&lt;<a  rel="nofollow" href="mailto:riak@10.1.78.9">mailto:riak@10.1.78.9</a>&gt;
+
+    Attempting to restart script through sudo -H -u riak
+
+    Noderiak@10.1.78.9  &lt;<a  rel="nofollow" href="mailto:riak@10.1.78.9">mailto:riak@10.1.78.9</a>&gt;  is not reachable!
+
+    [root@essd-riak-test-server ~]#
+
+</pre><tt>      
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    I have been stuck on this issue for quite a while and tried everything I 
+found on the riak web site to resolve this.  Any help you could offer would 
+greatly be appreciated.   Thanks in advance.
+
+</pre><tt>      
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    Sincerely,
+
+</pre><tt>      
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    James Sweeney
+
+</pre><tt>      
+</tt><tt>
+</tt><tt>      
+</tt><tt>
+</tt><tt>      
+</tt><tt>
+</tt><tt>      
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    _______________________________________________
+
+    riak-users mailing list
+
+    riak-users@lists.basho.com  &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><tt>    -- 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    Bryan Hughes
+    CTO and Founder / *Go Factory*
+    (415) 515-7916
+    <a  rel="nofollow" href="http://www.go-factory.net">http://www.go-factory.net</a>
+
+    /&quot;Art is never finished, only abandoned. - Leonardo da Vinci&quot;/
+
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+
+Bryan Hughes
+CTO and Founder / *Go Factory*
+(415) 515-7916
+<a  rel="nofollow" href="http://www.go-factory.net">http://www.go-factory.net</a>
+
+/&quot;Art is never finished, only abandoned. - Leonardo da Vinci&quot;/
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09093.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09094">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09094">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09087.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09085.html">Issue with clustering Riak nodes on CentOS servers.</a></span> <span class="sender italic">SWEENEY, JAMES</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09086.html">Re: Issue with clustering Riak nodes on CentOS serv...</a></span> <span class="sender italic">Callixte Cauchois</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09091.html">Re: Issue with clustering Riak nodes on CentOS serv...</a></span> <span class="sender italic">Tin Le</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09093.html">Re: Issue with clustering Riak nodes on CentOS serv...</a></span> <span class="sender italic">Bryan Hughes</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Issue with clustering Riak nodes on CentOS ...</span> <span class="sender italic">Bryan Hughes</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Issue with clustering Riak nodes on CentOS servers.">
+<input type="hidden" name="msgid" value="5090A6FE.6090104@go-factory.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09094.html">
+<input type="submit" value=" Bryan Hughes ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Issue+with+clustering+Riak+nodes+on+CentOS+servers.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09093.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09087.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5090A6FE.6090104@go-factory.net</li>
+</ul>
+</div>
+</body>
+</html>

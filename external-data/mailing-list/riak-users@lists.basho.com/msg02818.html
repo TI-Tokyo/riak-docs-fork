@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>erlang pb client pooling + test results</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02818" id="c">
+<link rel="index" href="maillist.html#02818" id="i">
+<link rel="prev" href="msg02816.html" id="p">
+<link rel="next" href="msg02820.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02818.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22erlang+pb+client+pooling+%5C%2B+test+results%22&amp;o=newest" rel="nofollow"><span itemprop="name">erlang pb client pooling + test results</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22David+Weldon%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">David Weldon</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110331" rel="nofollow">Thu, 31 Mar 2011 16:32:50 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I recently tried to use the erlang pb client under moderate load (100
+qps) and found it failed pretty hard because I was creating a new
+connection for each query. While I'm not new to riak, I have been
+using it under fairly light load up until now so I went searching for
+a solution to the problem. The common answer was: use a connection
+pool. This wasn't talked about on the wiki, so I checked this forum
+and found a few connection pool implementations. Most implementations
+didn't guarantee anything about simultaneous client usage, most didn't
+compile, etc. So I went about writing my own and doing a few
+experiments. Below are my findings. Please comment, check out the
+code, and feel free to tell me where/if I went wrong. :)</pre><pre>
+
+Executive Summary
+=================
+Under moderate load, creating a new connection per request works fine,
+provided that you call riakc_pb_socket:stop/1 when you are done with
+it. I also created a client pooling application that seems to work but
+is not in production yet.
+
+Testing
+=======
+I created a test which queries a local riak DB (ets backend) at a rate
+of 500 qps for 10 seconds. Each query does some random work (80%
+chance of a put/update, 20% chance of a delete) on a finite key-space.
+After each job is completed the calling thread sleeps for 100 ms
+before completing. Riak was restarted after each test. I tested three
+scenarios:
+
+for each query...
+
+1) call to riakc_pb_socket:start_link/2 without a subsequent call to
+riakc_pb_socket:stop/1
+2) call to riakc_pb_socket:start_link/2 with a subsequent call to
+riakc_pb_socket:stop/1
+3) use riakpool (my pooling application)
+
+Riakpool
+========
+Riakpool maintains a queue of connection pids as the state in a
+gen_server. Pids are checked in and out by calling clients so as to
+prevent simultaneous use. If no connections exist in the queue, a new
+one is created. All connections are supervised by a simple_one_for_one
+supervisor. Pids are explicitly checked for liveness before being
+checked out.
+
+You can find the project here:
+<a  rel="nofollow" href="https://github.com/dweldon/riakpool">https://github.com/dweldon/riakpool</a>
+
+Results
+======
+1) Fails almost immediately. I assume this is because the max number
+of file handles gets reached.
+2) Works without error.
+3) Works without error. At the end of the test, there were roughly 50
+open connections which is what we expect from little's law.
+
+Conclusions
+===========
+Bryan's statement here:
+<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2010-February/000497.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2010-February/000497.html</a>
+seems to be incorrect, although it was probably made prior to the PB
+client. Apart from potential vector clock bloat as a result of
+changing client ids as mentioned here:
+<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2010-April/000843.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2010-April/000843.html</a>
+I'm unsure why pooling is really even necessary (at least at the
+tested level of load). I think Basho should have some official
+position on this on the wiki.
+
+Comments and suggestions are very welcome!
+
+Dave
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02816.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02818">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02818">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02820.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="erlang pb client pooling + test results">
+<input type="hidden" name="msgid" value="AANLkTimafRd9i5YKLnANdgXr0t7c8OofMKgGBgH1=u8Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02818.html">
+<input type="submit" value=" David Weldon ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22erlang+pb+client+pooling+%5C%2B+test+results%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02816.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02820.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTimafRd9i5YKLnANdgXr0t7c8OofMKgGBgH1=u8Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

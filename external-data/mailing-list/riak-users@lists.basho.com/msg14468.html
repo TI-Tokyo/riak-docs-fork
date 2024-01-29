@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: leveldb Hot Threads in 1.4.9?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14468" id="c">
+<link rel="index" href="maillist.html#14468" id="i">
+<link rel="prev" href="msg14460.html" id="p">
+<link rel="next" href="msg14470.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14468.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+leveldb+Hot+Threads+in+1.4.9%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: leveldb Hot Threads in 1.4.9?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Tom+Lanyon%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Tom Lanyon</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140707" rel="nofollow">Mon, 07 Jul 2014 19:56:31 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Matthew,
+
+On Sunday, 6 July 2014 at 3:04, Matthew Von-Maszewski wrote: 
+&gt; Tom,
+&gt; 
+&gt; Basho prides itself on quickly responding to all user queries. I have failed 
+&gt; that tradition in this case. Please accept my apologies.
+No problem; I appreciate you taking the time to look into our LOG.
+ 
+&gt; 
+&gt; The LOG data suggests leveldb is not stalling, especially not for 4 hours. 
+&gt; Therefore the problem is related to disk utilization.</pre><pre>
+
+ That matches our experience - leveldb itself is working hard on disk 
+operations whilst Riak fails to respond to... anything, causing an apparent 
+'stall' from the client application's perspective.
+
+&gt; You appear to have large values. I see .sst files where the average value is 
+&gt; 100K to 1Mbyte in size. Is this intentional, or might you have a sibling 
+&gt; problem?
+Yes, we have a split between very small (headers only, no body) items and 1MB 
+binary chunks.  If we had our time again we'd probably use multi-backend to 
+store these 1MB chunks in bitcask and keep leveldb for the small body-less 
+items which require 2i.
+
+&gt; My assessment is that your lower levels are full and therefore cascading 
+&gt; regularly. &quot;cascading&quot; is like the typical champagne glass pyramid you see at 
+&gt; weddings. Once all the glasses are full, new champagne at the top causes each 
+&gt; subsequent layer to overflow into the one below that. You have the same 
+&gt; problem, but with data. 
+&gt; 
+&gt; Your large values have filled each of the lower levels and regularly cause 
+&gt; cascading data between multiple levels. The cascading is causing each 100K 
+&gt; value write to become the equivalent of a 300K or 500K value as levels 
+&gt; overflow. This cascading is chewing up your hard disk performance (by 
+&gt; reducing the amount of time the hard drive has available for read requests).
+By increasing the size of the lower levels (as you show below), does this mean 
+there's more capacity for writes to occur in those levels before compaction is 
+triggered and hence compacting them less frequently?
+
+I guess this turns your champagne fountain analogy into more of a 'tipping 
+bucket' where the data is no longer 'flowing' through the levels but is instead 
+building up in each level before tipping into the next when it's at capacity?  
+(pictorial representation: 
+<a  rel="nofollow" href="http://4.bp.blogspot.com/_DUDhlpPD8X8/SIcN8D66j9I/AAAAAAAAASs/2Va3_n3vamk/s400/23157087_261a5da413.jpg">http://4.bp.blogspot.com/_DUDhlpPD8X8/SIcN8D66j9I/AAAAAAAAASs/2Va3_n3vamk/s400/23157087_261a5da413.jpg</a>)
+
+&gt; The leveldb code for Riak 2.0 has increased the size of all the levels. The 
+&gt; table of sizes is found at the top of leveldb's db/version_set.cc 
+&gt; (<a  rel="nofollow" href="http://version_set.cc">http://version_set.cc</a>). You could patch your current code if desired with 
+&gt; this table from 2.0:
+&gt; 
+&gt; { 
+&gt; {10485760, 262144000, 57671680, 209715200, 0, 420000000, true}, 
+&gt; {10485760, 82914560, 57671680, 419430400, 0, 209715200, true}, 
+&gt; {10485760, 314572800, 57671680, 3082813440, 200000000, 314572800, false}, 
+&gt; {10485760, 419430400, 57671680, 6442450944ULL, 4294967296ULL, 419430400, 
+&gt; false}, 
+&gt; {10485760, 524288000, 57671680, 128849018880ULL, 85899345920ULL, 524288000, 
+&gt; false}, 
+&gt; {10485760, 629145600, 57671680, 2576980377600ULL, 1717986918400ULL, 
+&gt; 629145600, false}, 
+&gt; {10485760, 734003200, 57671680, 51539607552000ULL, 34359738368000ULL, 
+&gt; 734003200, false} 
+&gt; }; 
+&gt; 
+&gt; 
+&gt; You cannot take the entire 2.0 leveldb into your 1.4 code base due to various 
+&gt; option changes.
+I assume leveldb will just 'handle' making the levels larger once nodes are 
+restarted with this updated configuration?  I also assume that it would not be 
+wise to then rollback the change to smaller levels after this has been done?
+&gt; Let me know if this helps. I have previously hypothesized that &quot;grooming&quot; 
+&gt; compactions should be limited to one thread total. However my test datasets 
+&gt; never demonstrated a benefit. Your dataset might be the case that proves the 
+&gt; benefit. I will go find the grooming patch to hot_threads for you if the 
+&gt; above table proves insufficient.
+
+Do I understand correctly that this would mean compactions would continue, but 
+limited to one thread, so that the rest of the application can still respond to 
+client requests?  If so, that sounds like it may help a situation like ours - 
+although I'd wonder whether the rate-limited compaction would ever &quot;keep up&quot; 
+with the inflowing data.
+
+Thanks,
+Tom
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14460.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14468">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14468">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14470.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14342.html">leveldb Hot Threads in 1.4.9?</a></span> <span class="sender italic">Tom Lanyon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14344.html">Re: leveldb Hot Threads in 1.4.9?</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14460.html">Re: leveldb Hot Threads in 1.4.9?</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: leveldb Hot Threads in 1.4.9?</span> <span class="sender italic">Tom Lanyon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14470.html">Re: leveldb Hot Threads in 1.4.9?</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: leveldb Hot Threads in 1.4.9?">
+<input type="hidden" name="msgid" value="91A7566195C54919A0D0627ABF6D2BB0@oneshoeco.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14468.html">
+<input type="submit" value=" Tom Lanyon ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+leveldb+Hot+Threads+in+1.4.9%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14460.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14470.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">91A7566195C54919A0D0627ABF6D2BB0@oneshoeco.com</li>
+</ul>
+</div>
+</body>
+</html>

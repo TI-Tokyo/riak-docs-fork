@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Map phase timeout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10754" id="c">
+<link rel="index" href="maillist.html#10754" id="i">
+<link rel="prev" href="msg10746.html" id="p">
+<link rel="next" href="msg10774.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10754.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Map+phase+timeout%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Map phase timeout</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dmitri+Zagidulin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dmitri Zagidulin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130408" rel="nofollow">Mon, 08 Apr 2013 08:12:43 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Matt,
+
+My recommendation to you is - don't use MapReduce for this use case. Fetch
+the objects via regular Riak GETs (using connection pooling and
+multithreading, preferably).</pre><pre>
+
+I'm assuming that you have a list of keys (either by keeping track of them
+externally to Riak, or via a Secondary Index query or a Search query), and
+you want to back up those objects.
+
+The natural inclination, once you know the keys, is to want to fetch all of
+those objects via a single query, and MapReduce immediately comes to mind.
+(And to most developers, writing the MR function in Javascript is easier
+and more familiar than in Erlang). Unfortunately, as Christian mentioned,
+it's very easy for the JS VMs to run out of resources and crash or time
+out. In addition, I've found that rewriting the MapReduce in Erlang affords
+only a bit more resources -- once you hit a certain number of keys that you
+want to fetch, or a certain object size threshold, even Erlang MR jobs can
+time out (keep in mind, while the Map phase can happen in parallel on all
+of the nodes in a cluster, all the object values have to be serialized on
+the single coordinating node, which becomes the bottleneck).
+
+The workaround for this, even though it might seem counter-intuitive, is --
+if you know the list of keys, fetch them using GETs. Even a naive
+single-threaded &quot;while loop&quot; way of fetching the objects can often be
+faster than a MapReduce job (for this use case), and it doesn't time out.
+Add to that connection-pooling and multiple worker threads, and this method
+is invariably faster.
+
+Dmitri
+
+On Mon, Apr 8, 2013 at 4:27 AM, Christian Dahlqvist &lt;christ...@basho.com&gt;wrote:
+
+&gt; Hi Matt,
+&gt;
+&gt; If you have a complicated mapreduce job containing multiple phases
+&gt; implemented in JavaScript, you will most likely see a lot of contention for
+&gt; the JavaScript VMs which will cause problems. While you can tune the
+&gt; configuration [1], you may find that you will need a very large pool size
+&gt; in order to properly support your job, especially for map phases as these
+&gt; run in parallel.
+&gt;
+&gt; The best way to speed up the mapreduce job and get around the VM pool
+&gt; contention is to implement the mapreduce functions in Erlang.
+&gt;
+&gt; Best regards,
+&gt;
+&gt; Christian
+&gt;
+&gt; [1]
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/1.2.0/references/appendices/MapReduce-Implementation/#Configuration-Tuning-for-Javascript">http://docs.basho.com/riak/1.2.0/references/appendices/MapReduce-Implementation/#Configuration-Tuning-for-Javascript</a>
+&gt;
+&gt;
+&gt;
+&gt; --------------------
+&gt; Christian Dahlqvist
+&gt; Client Services Engineer
+&gt; Basho Technologies
+&gt; EMEA Office
+&gt; E-mail: christ...@basho.com
+&gt; Skype: c.dahlqvist
+&gt; Mobile: +44 7890 590 910
+&gt;
+&gt; On 8 Apr 2013, at 08:20, Matt Black &lt;matt.bl...@jbadigital.com&gt; wrote:
+&gt;
+&gt; Thanks for the reply, Christian.
+&gt;
+&gt; I didn't explain well enough in my first post - the map reduce operation
+&gt; is merely loading a bunch of objects, and a Python script which makes the
+&gt; connection to Riak then will write these objects to disk. (It's probably
+&gt; obvious, but I'm using javascript and riak python client.)
+&gt;
+&gt; The query itself has many map phases where a composite object is built up
+&gt; from related objects spread across many buckets.
+&gt;
+&gt; I was hoping there may be some kind of timeout I could adjust on a per-map
+&gt; phase basis - clutching at straws really.
+&gt;
+&gt; Cheers
+&gt; Matt
+&gt;
+&gt;
+&gt; On 8 April 2013 17:14, Christian Dahlqvist &lt;christ...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; Hi,
+&gt;&gt;
+&gt;&gt; Without having access to the mapreduce functions you are running, I would
+&gt;&gt; assume that a mapreduce job both writing data to disk as well as deleting
+&gt;&gt; the written record from Riak might be quite slow. This is not really a use
+&gt;&gt; case mapreduce was designed for, and when a mapreduce job crashes or times
+&gt;&gt; out it is difficult to know how far along the processing of different
+&gt;&gt; records it got.
+&gt;&gt;
+&gt;&gt; I would therefore recommend considering running this type of archiving
+&gt;&gt; and delete job as an external batch process instead as it will give you
+&gt;&gt; better control over the execution and avoid timeout problems.
+&gt;&gt;
+&gt;&gt; Best regards,
+&gt;&gt;
+&gt;&gt; Christian
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On 8 Apr 2013, at 00:49, Matt Black &lt;matt.bl...@jbadigital.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; &gt; Dear list,
+&gt;&gt; &gt;
+&gt;&gt; &gt; I'm currently getting a timeout during a single phase of a multi-phase
+&gt;&gt; map reduce query. Is there anything I can do to assist this in running?
+&gt;&gt; &gt;
+&gt;&gt; &gt; It's purpose is to backup and remove objects from Riak, so it will run
+&gt;&gt; periodically during quiet times moving old data out of Riak into file
+&gt;&gt; storage.
+&gt;&gt; &gt;
+&gt;&gt; &gt; Traceback (most recent call last):
+&gt;&gt; &gt;   File &quot;./tools/rolling_backup.py&quot;, line 185, in &lt;module&gt;
+&gt;&gt; &gt;     main()
+&gt;&gt; &gt;   File &quot;./tools/rolling_backup.py&quot;, line 181, in main
+&gt;&gt; &gt;     args.func(**kwargs)
+&gt;&gt; &gt;   File &quot;/srv/backup/tools/mapreduce.py&quot;, line 295, in do_map_reduce
+&gt;&gt; &gt;     raise e
+&gt;&gt; &gt; Exception:
+&gt;&gt; {&quot;phase&quot;:2,&quot;error&quot;:&quot;timeout&quot;,&quot;input&quot;:&quot;[&lt;&lt;\&quot;cart-products\&quot;&gt;&gt;,&lt;&lt;\&quot;cd67d7f6e2688bc2089e6fa79506ac05-2\&quot;&gt;&gt;,{struct,[{&lt;&lt;\&quot;uid\&quot;&gt;&gt;,&lt;&lt;\&quot;cd67d7f6e2688bc2089e6fa79506ac05\&quot;&gt;&gt;},{&lt;&lt;\&quot;cart\&quot;&gt;&gt;,{struct,[{&lt;&lt;\&quot;expired_ts\&quot;&gt;&gt;,&lt;&lt;\&quot;2013-03-05T19:12:23.906228\&quot;&gt;&gt;},{&lt;&lt;\&quot;last_updated\&quot;&gt;&gt;,&lt;&lt;\&quot;2013-03-05T19:12:23.906242\&quot;&gt;&gt;},{&lt;&lt;\&quot;tags\&quot;&gt;&gt;,{struct,[{&lt;&lt;\&quot;type\&quot;&gt;&gt;,&lt;&lt;\&quot;AB\&quot;&gt;&gt;}]}},{&lt;&lt;\&quot;completed\&quot;&gt;&gt;,false},{&lt;&lt;\&quot;created\&quot;&gt;&gt;,&lt;&lt;\&quot;2013-03-04T02:10:18.638413\&quot;&gt;&gt;},{&lt;&lt;\&quot;products\&quot;&gt;&gt;,[{struct,[{&lt;&lt;\&quot;cost\&quot;&gt;&gt;,0},{&lt;&lt;\&quot;bundleName\&quot;&gt;&gt;,&lt;&lt;\&quot;Product\&quot;&gt;&gt;},...]},...]},...]}},...]}]&quot;,&quot;type&quot;:&quot;exit&quot;,&quot;stack&quot;:&quot;[{riak_kv_w_reduce,'-js_runner/1-fun-0-',3,[{file,\&quot;src/riak_kv_w_reduce.erl\&quot;},{line,283}]},{riak_kv_w_reduce,reduce,3,[{file,\&quot;src/riak_kv_w_reduce.erl\&quot;},{line,206}]},{riak_kv_w_reduce,maybe_reduce,2,[{file,\&quot;src/riak_kv_w_reduce.erl\&quot;},{line,157}]},{riak_pipe_vnode_worker,process_input,3,[{file,\&quot;src/riak_pipe_vnode_worker.erl\&quot;},{line,444}]},{riak_pipe_vnode_worker,wait_for_input,2,[{file,\&quot;src/riak_pipe_vnode_worker.erl\&quot;},{line,376}]},{gen_fsm,handle_msg,7,[{file,\&quot;gen_fsm.erl\&quot;},{line,494}]},{proc_lib,...}]&quot;}
+&gt;&gt; &gt;
+&gt;&gt; &gt;
+&gt;&gt; &gt; _______________________________________________
+&gt;&gt; &gt; riak-users mailing list
+&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10746.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10754">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10754">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10774.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10740.html">Map phase timeout</a></span> <span class="sender italic">Matt Black</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10744.html">Re: Map phase timeout</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10745.html">Re: Map phase timeout</a></span> <span class="sender italic">Matt Black</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10746.html">Re: Map phase timeout</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Map phase timeout</span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10774.html">Re: Map phase timeout</a></span> <span class="sender italic">Matt Black</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10794.html">Re: Map phase timeout</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10809.html">Re: Map phase timeout</a></span> <span class="sender italic">Matt Black</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10820.html">Re: Map phase timeout</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Map phase timeout">
+<input type="hidden" name="msgid" value="CA+TO3kWv90200MpGhOuUZNwPXOYdgzEPG4jpX0SPKXb7eOYcwA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10754.html">
+<input type="submit" value=" Dmitri Zagidulin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Map+phase+timeout%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10746.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10774.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+TO3kWv90200MpGhOuUZNwPXOYdgzEPG4jpX0SPKXb7eOYcwA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

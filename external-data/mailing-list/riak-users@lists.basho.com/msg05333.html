@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Search failure: stream_timeout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05333" id="c">
+<link rel="index" href="maillist.html#05333" id="i">
+<link rel="prev" href="msg05238.html" id="p">
+<link rel="next" href="msg05334.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05333.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Search+failure%5C%3A+stream_timeout%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Search failure: stream_timeout</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111027" rel="nofollow">Thu, 27 Oct 2011 13:06:46 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Fri, Oct 21, 2011 at 5:44 PM, Elias Levy &lt;fearsome.lucid...@gmail.com&gt;wrote:</pre><pre>
+
+&gt; On Fri, Oct 21, 2011 at 2:23 PM, Elias Levy 
+&gt; &lt;fearsome.lucid...@gmail.com&gt;wrote:
+&gt;
+&gt;&gt; I found that if I limited the timestamps to a range that covers a
+&gt;&gt; reasonable number of records the query succeeds.  But if the query is of the
+&gt;&gt; form 'ts:[0 TO 1319228408]', then Riak generates that error and the client
+&gt;&gt; connection it shutdown.  I am guessing that that queries covers too many
+&gt;&gt; records, which is causing the nodes to take longer than expected to respond,
+&gt;&gt; and that some timeout is being reached and Riak kills the query.  Is that
+&gt;&gt; correct?
+&gt;&gt;
+&gt;
+&gt; I should have probably mentioned that the are other terms in the query that
+&gt; limit the results.  I am now wondering if this is caused by the fact that
+&gt; Riak Search is sharded by term, rather than document, causing it to search
+&gt; for each term in the query independently and then creating an intersection
+&gt; of matches to return as the query result.
+&gt;
+&gt; If that is the case, then a single query term that select a large portion
+&gt; of the index will cause trouble, even if other terms limit the results, as
+&gt; the system will need return a good portion of the keys in the bucket, before
+&gt; they can be whittled down by other query terms.
+&gt;
+&gt; If so, it would seem the only solution is to break up the query into
+&gt; smaller, more manageable chunks and aggregate them on the client side.  Is
+&gt; this correct?
+&gt;
+&gt;
+Elias,
+
+This is indeed the case.  Even in the case of an intersection, Search will
+run all sub-queries to completion and then combine them at a coordinator
+based on the query plan.  If any of the sub-queries returns a large number
+of results then latency will start to suffer and timeouts may occur.
+ However, all hope is not lost.  Search has a notion of &quot;inline fields.&quot;
+ These fields are analyzed just like any other field but unlike a normal
+field the results are stored alongside _every_ term entry in the index for
+efficient access.  For example if you have an object like the following you
+could index the `bio` field as usual but index the `born` field as an inline
+field (and use the no-op analyzer).  For each term entry generated from the
+`bio` field Search will then store a copy of the `born` field _inside_ the
+index.
+
+{&quot;name&quot;:&quot;Ryan Zezeski&quot;,
+ &quot;born&quot;:&quot;1983-03-17&quot;,
+ &quot;gender&quot;:&quot;male&quot;,
+ &quot;bio&quot;:&quot;Once upon a time, a child was begot between an Irish/Polish man and
+a Welsh/Italian woman...&quot;}
+
+During query time Search can filter based on this field at the index level
+rather then merging the results at the coordinator level.  This can save
+network, memory, and time overhead.  The price you pay is more disk space.
+ It also requires that you have one field indexed normally and use it during
+query time.  For this example you could maybe use name as the query field
+but something like &quot;name:Ryan&quot; could still come back with a lot of results.
+
+Here are my general guidelines for inline fields:
+
+1) You have a field that you always query that should return a minimal
+amount of results.  Minimal being the least amount you can get away with.
+ E.g. querying `bio` fits this description.
+
+2) You have a field that you want to filter on but could potentially match a
+large subset of the index.  E.g. `born` and `gender` match that category.
+
+3) You have extra disk space to dole out which will be proportional to the
+size of your inline field.
+
+
+If you don't have #1 then I would say it's a sign you probably want to use
+secondary indices because #2 is basically a form of tagging and that's what
+secondary indices were built for.
+
+To learn more about inline fields chekout
+<a  rel="nofollow" href="https://github.com/rzezeski/try-try-try/tree/master/2011/riak-search-inline-fields">https://github.com/rzezeski/try-try-try/tree/master/2011/riak-search-inline-fields</a>
+
+-Ryan
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05238.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05333">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05333">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05334.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05237.html">Search failure: stream_timeout</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05238.html">Re: Search failure: stream_timeout</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Search failure: stream_timeout</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05334.html">Re: Search failure: stream_timeout</a></span> <span class="sender italic">Elias Levy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Search failure: stream_timeout">
+<input type="hidden" name="msgid" value="CACZcpemud+KqSCdxW7ioaxqqpZA=i89-8YZUcrYfq_VbwRxNeA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05333.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Search+failure%5C%3A+stream_timeout%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05238.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05334.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpemud+KqSCdxW7ioaxqqpZA=i89-8YZUcrYfq_VbwRxNeA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

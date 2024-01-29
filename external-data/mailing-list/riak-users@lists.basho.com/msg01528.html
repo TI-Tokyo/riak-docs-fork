@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Understanding Riaks rebalancing and handoff behaviour</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01528" id="c">
+<link rel="index" href="maillist.html#01528" id="i">
+<link rel="prev" href="msg01527.html" id="p">
+<link rel="next" href="msg01538.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01528.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Understanding+Riaks+rebalancing+and+handoff+behaviour%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Understanding Riaks rebalancing and handoff behaviour</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101112" rel="nofollow">Fri, 12 Nov 2010 06:58:12 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Am Freitag, den 12.11.2010, 08:43 +0100 schrieb Sven Riedel:
+&gt; &gt; 
+&gt; &gt; It's not a problem right away. But since the replicated data is not
+&gt; &gt; actively synchronized in the background the keys that were not copied
+&gt; &gt; until the node dies have one less replica. That is until they are read
+&gt; &gt; at least once, at which point read repair does replicate the key again.
+&gt; &gt; So it depends on your setup and requirements, if this is acceptable or
+&gt; &gt; not.
+&gt; 
+&gt; So if the relevant data isn't read in a while and two more nodes go down 
+&gt; (with 
+&gt; an n_val of 3), there is a chance that some data is lost.
+&gt; </pre><pre>
+
+Correct. This might be highly unlikely though.
+
+&gt; &gt; 
+&gt; &gt;&gt; 
+&gt; &gt;&gt; So this still leaves me with some of my original questions open:
+&gt; &gt;&gt;&gt;&gt; 
+&gt; &gt;&gt;&gt;&gt; 1. What would normally trigger a rebalancing of the nodes? 
+&gt; &gt;&gt;&gt;&gt; 2. Is there a way to manually trigger a rebalancing?
+&gt; &gt;&gt;&gt;&gt; 3. Did I do anything wrong with the procedure described above to
+&gt; &gt;&gt;&gt;&gt; be left in the current odd state by riak?
+&gt; &gt;&gt; 
+&gt; &gt; 
+&gt; &gt; Every vnode, which is responsible for one partition, checks after 60
+&gt; &gt; seconds of inactivity if its is residing one the node where it should
+&gt; &gt; be, according to the ring state. If not, the data is send to the correct
+&gt; &gt; node. So the rebalancing of data is triggered by rebalancing the
+&gt; &gt; partitions among the nodes in the ring.
+&gt; &gt; The ring is balanced during the gossiping of the ring state, which is
+&gt; &gt; done by every node with another random node at every 0-60 (also
+&gt; &gt; randomly) seconds.
+&gt; &gt; In the worst case it could take some minutes before the ring stabilizes,
+&gt; &gt; but its statistically likely to converge faster.
+&gt; 
+&gt; Ah, if the partition ownership changes, the data should get relocated 
+&gt; straight away.
+&gt; I had gossip put down only for immediate topology changes (which worked fine 
+&gt; in my case, it just never got around to redistributing the data).
+&gt; 
+&gt; &gt; 
+&gt; &gt; So there's is nothing to trigger manually really. One problem I see has
+&gt; &gt; to do again with restarting a node, which still has data that should be
+&gt; &gt; handed off to another node. Initially only the vnodes that are owned by
+&gt; &gt; a node started, which by definition don't include the ones to be handed
+&gt; &gt; off. But if the vnodes are never started, they won't perform the
+&gt; &gt; handoff.
+&gt; 
+&gt; This sounds less confidence inspiring. On the off-chance that the node (or 
+&gt; hardware) crashes between telling a node to leave the ring and the data 
+&gt; handoff having been completed, you'll have more work on your hands than just 
+&gt; restarting the node, and you have to know about this as well. This isn't a 
+&gt; scenario that will happen often, but from the point of view of someone who 
+&gt; wants the least amount of manual intervention when something goes wrong, I'd 
+&gt; prefer resilience over performance.
+&gt; 
+As I mentioned in my next paragraph (not very clearly I must confess)
+the handoff would eventually start, if not for the node watcher problem
+I also mentioned in my first post. Scott Lystig Fritchie created a bug
+report for this (<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=878">https://issues.basho.com/show_bug.cgi?id=878</a>). But this
+problem only exists for nodes that are to be removed.
+Other nodes might also need to handoff data, if some of their partitions
+should be moved to another node. This happens also if you add a node.
+
+The handoffs will eventually start, but it will take longer then normal.
+At the start of the node and at every ring update a random vnode for a
+parition not owned by the node is started, which might be empty, and
+performs a handoff, which consequently might not have to do anything.
+When the handoff finishes another random vnode is started (could be the
+same vnode though).
+
+Effectively all partitions in the ring are eventually tested, one after
+another, and transferred if necessary. But how long it will take to
+transfer all partitions is somewhat unpredictable because of the random
+part. Also, only one at a time will be transferred, which might take
+longer than usual.
+
+
+&gt; &gt; It kind of works anyway, but the vnodes are started and transfered
+&gt; &gt; sequentially. Normally four partitions are transferred in parallel, so I
+&gt; &gt; don't know if this is by design or by accident. The details are
+&gt; &gt; convoluted enough to suspect the latter.
+&gt; &gt; In any case this would also make also have the effect that those
+&gt; &gt; partitions won't show up in the output of riak-admin transfers, since
+&gt; &gt; only running vnodes are considered.
+&gt; 
+&gt; From what I saw in my case the number of handoffs were displayed correctly in 
+&gt; the beginning, however the numbers didn't decrease (or change at all) as data 
+&gt; got handed around.
+&gt; 
+
+If the node is not restarted, all vnodes are still running, so the
+number would be correct. Most likely no handoffs were being done
+anymore, because four of them crashed and the locks are not cleared in
+this case. By default only four handoffs are allowed at the same time.
+Have you looked in for the error messages I mentioned in your logs?
+
+&gt; &gt; 
+&gt; &gt; I also forgot, that I patched another problem in my own version of riak,
+&gt; &gt; which will prevent any further handoff of data after four of them failed
+&gt; &gt; with an error or timeout. This probably happened in your case, if your A
+&gt; &gt; nodes became unresponsive for 30 minutes (did the machine swap by the
+&gt; &gt; way?).
+&gt; 
+&gt; A was up and responsive the entire time. No swapping; the machines don't have 
+&gt; any swap space configured. However, they were rather weak in the IO 
+&gt; department, so the load did rise to 10 and above on bulk inserts, and to 
+&gt; around 6 during the handoffs IIRC (on a two core machine). One of the reasons 
+&gt; I wanted to check things out on instances with more IO performance.
+&gt; 
+
+You wrote riak-admin status said the nodes were down, thats what I
+meant. It means at least that the Erlang VM was unresponsive.
+
+&gt; &gt; I should probably create a bug report for this, with my patch attached.
+&gt; &gt; Stupid laziness!
+&gt; &gt; 
+&gt; &gt; After reading your original post again, I think almost all of the things
+&gt; &gt; you saw can be explained by the bug that I mentioned in my first answer
+&gt; &gt; (the ring status of removed nodes is not synchronized with the remaining
+&gt; &gt; nodes). The problem obviously becomes worse if you remove several nodes
+&gt; &gt; at a time.
+&gt; 
+&gt; Which means that I shouldn't just wait for riak-admin ringready to return 
+&gt; TRUE, but for the data handoffs to have completed as well before changing the 
+&gt; network topology again?
+&gt; 
+
+Yes. By using e.g. 'df' or listing the directories in your bitcask dir,
+which should be empty if everything went well.
+But with the two bugs that are still present it might never finish.
+The workaround for this is quite involved at the moment.
+I will try to create bug reports in the next few days.
+
+&gt; Thanks for your answers, they have been enlightening.
+&gt; 
+&gt; Regards,
+&gt; Sven
+&gt; 
+&gt; ------------------------------------------
+&gt; Scoreloop AG, Brecherspitzstrasse 8, 81541 Munich, Germany, www.scoreloop.com
+&gt; sven.rie...@scoreloop.com
+&gt; 
+&gt; Sitz der Gesellschaft: München, Registergericht: Amtsgericht München, HRB 
+&gt; 174805 
+&gt; Vorstand: Dr. Marc Gumpinger (Vorsitzender), Dominik Westner, Christian van 
+&gt; der Leeden, Vorsitzender des Aufsichtsrates: Olaf Jacobi 
+&gt; 
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01527.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01528">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01528">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01538.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01510.html">Understanding Riaks rebalancing and handoff behaviou...</a></span> <span class="sender italic">Sven Riedel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01508.html">Re: Understanding Riaks rebalancing and handoff...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01515.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01516.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Sven Riedel</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01520.html">Re: Understanding Riaks rebalancing and handoff...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01521.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Sven Riedel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01522.html">Re: Understanding Riaks rebalancing and...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01527.html">Re: Understanding Riaks rebalancing...</a></span> <span class="sender italic">Sven Riedel</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Understanding Riaks rebala...</span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01538.html">Re: Understanding Riaks re...</a></span> <span class="sender italic">Sven Riedel</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01523.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Scott Lystig Fritchie</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Understanding Riaks rebalancing and handoff behaviour">
+<input type="hidden" name="msgid" value="1289573877.2156.269.camel@erdnuss1.virtualminds-office.de">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01528.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Understanding+Riaks+rebalancing+and+handoff+behaviour%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01527.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01538.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1289573877.2156.269.camel@erdnuss1.virtualminds-office.de</li>
+</ul>
+</div>
+</body>
+</html>

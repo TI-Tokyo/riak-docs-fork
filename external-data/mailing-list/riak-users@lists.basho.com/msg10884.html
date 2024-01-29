@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using Riak to perform aggregate queries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd11.html#10884" id="c">
+<link rel="index" href="mail11.html#10884" id="i">
+<link rel="prev" href="msg10883.html" id="p">
+<link rel="next" href="msg10885.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10884.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Riak+to+perform+aggregate+queries%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using Riak to perform aggregate queries</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Chris+Corbyn%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Chris Corbyn</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130414" rel="nofollow">Sun, 14 Apr 2013 20:11:04 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>&gt; MapReduce works well when:
+&gt; 
+&gt; a) you know the set of objects you're going to MapReduce over
+&gt; b) you need to return the entire object
+&gt; c) when you plan to manipulate a lot of data inside Riak - read all sales 
+&gt; records and write them out as shipping invoices</pre><pre>
+
+Right, thanks. I do know the set of objects… that set is the full bucket, 
+because our finance department want to be able to request report on the sales 
+data over many years. I actually tried getting all the keys in a separate 
+place, then requesting my data using a list of bucket-key pairs. This caused my 
+app to run out of memory on the client side.
+
+&gt;  
+&gt; 
+&gt; Everywhere I read, people say you shouldn't use Riak's MapReduce over an 
+&gt; entire bucket and that there are other ways of achieving your goals. I'm not 
+&gt; sure how, though. I'm also not clear on why using an entire bucket is slow, 
+&gt; if you only have one bucket in the entire system, so either way, you need to 
+&gt; go over all the entries. Passing in a list of key-bucket pairs has the same 
+&gt; effect. Maybe the rule should be &quot;don't use MapReduce with more than a 
+&gt; handful of keys&quot;. Which makes me wonder (apart from link traversal) what use 
+&gt; it really has in the real world.
+&gt; 
+&gt; From my limited understanding of things, MR across an entire bucket is slow 
+&gt; because you need to scan the entire key space. Much like a SELECT with no 
+&gt; WHERE clause, a MapReduce without a key list is going to sweep across the 
+&gt; entire bucket pulling all data off of disk in the process. Someone better 
+&gt; versed in Riak internals would have to chime in on why this is so slow.
+&gt; 
+&gt; I do know, however, that having on master bucket o' things may not be the 
+&gt; best idea. If you're storing sales data, a better approach may be to segment 
+&gt; buckets out by primary querying criteria.
+
+The thing is, the *only* querying criteria for this app is to aggregate the 
+data for the purpose of reporting. Our finance guys want to be able to check a 
+few boxes to specify how they want the data grouped, then generate the report. 
+We actually do this data warehousing style in MySQL at the moment, where the 
+data is renormalized about as far as we can, but still allowing for some run 
+time use of GROUP BY and ordering.
+
+I could use separate buckets for each product, perhaps, but we'd still be 
+looking at a lot of data and I'd have to repeatedly query for each product, 
+then merge all those aggregates together.
+
+&gt;  
+&gt; 
+&gt; I have a list of 500K+ documents that represent sales data. I need to view 
+&gt; this data in different ways: for example, how much revenue was made in each 
+&gt; month the business was operating? How much revenue did each product raise? 
+&gt; How many of each product were sold in a given month? I always thought 
+&gt; MapReduce was supposed to be good at solving these types of aggregate 
+&gt; problems. That sounds like a myth now though, unless we're just looking at 
+&gt; Hadoop.
+&gt; 
+&gt; MapReduce can aggregate well. RDBMSes can aggregate well, too. But there are 
+&gt; practical limits to each paradigm that you have to be aware of. From watching 
+&gt; the list and working with people in the real world there are some paradigms 
+&gt; that you want to use in Riak that don't immediately seem obvious coming from 
+&gt; the RDBMS world.
+&gt; 
+&gt; - Know your queries. Examine your application and make a list of common 
+&gt; queries that you're going to be running. You'll want to be familiar with this 
+&gt; list because you're going to try to write your data in a way that answers 
+&gt; these questions.
+
+As I say, the only query we'll be running is to aggregate the data for the 
+purpose of reporting. I was exploring Riak because its MapReduce attracted me 
+and reading various articles they show off FaceBook-like networks (which are 
+naturally huge) and Twitter stream analysis etc. But for aggregating data from 
+huge record sets, it just seems like it can't do it. People say to use 
+secondary indexes, but that only helps to you to narrow down your recordset… if 
+you *know* your recordset is going to contain hundreds of thousands of records, 
+then it seems like Riak is going to give you hell. In other systems, the place 
+where MapReduce shines is for big data processing; but in Riak's case its the 
+inverse.
+
+&gt; - Know your query pattern. Understand how these queries are working with the 
+&gt; data itself. If many queries retrieve data aggregated for a day, week, month, 
+&gt; store, sales region, or other logical division then you'll want to make sure 
+&gt; that you can answer them quickly. (See Choosing the Right Tool [3])
+
+We're never requesting just a view on a single day, or month etc… on the UI we 
+present a table with a row for each period that has been grouped by (e.g. a row 
+for each month that the business has been operating). I'm actually ripping the 
+data out of MySQL and into Riak for this, but keeping it in MySQL in the first 
+place seems way more efficient. Especially if I have to employ the same data 
+warehousing tricks to pre-aggregate the data as much as I can anyway. I could 
+probably iterate through each month and perform repeated MapReduce queries 
+across those months, but I suspect that would be extremely slow too, due to the 
+repeat querying.
+
+Is this just a current limitation in Riak, or a fundamental design conflict 
+that means Riak can never be used to solve these kinds of problems?
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10883.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd11.html#10884">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail11.html#10884">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10885.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10879.html">Using Riak to perform aggregate queries</a></span> <span class="sender italic">Chris Corbyn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10881.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10882.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">Chris Corbyn</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10883.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using Riak to perform aggregate queries</span> <span class="sender italic">Chris Corbyn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10885.html">Re: Using Riak to perform aggregate que...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10887.html">Re: Using Riak to perform aggregate...</a></span> <span class="sender italic">Paul Barry</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10890.html">Re: Using Riak to perform aggregate...</a></span> <span class="sender italic">Paul Barry</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13055.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">NC</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13066.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">Hector Castro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13074.html">Re: Using Riak to perform aggregate que...</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10892.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10895.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">Toby Corkindale</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using Riak to perform aggregate queries">
+<input type="hidden" name="msgid" value="C0D44631-9027-42A3-87E7-298A0E6747BE@w3style.co.uk">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10884.html">
+<input type="submit" value=" Chris Corbyn ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Riak+to+perform+aggregate+queries%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10883.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10885.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">C0D44631-9027-42A3-87E7-298A0E6747BE@w3style.co.uk</li>
+</ul>
+</div>
+</body>
+</html>

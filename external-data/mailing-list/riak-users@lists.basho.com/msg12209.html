@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Multi-backend, eLevelDB, & Too many open files</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd10.html#12209" id="c">
+<link rel="index" href="mail10.html#12209" id="i">
+<link rel="prev" href="msg12206.html" id="p">
+<link rel="next" href="msg12214.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12209.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Multi%5C-backend%2C+eLevelDB%2C+%5C%26+Too+many+open+files%22&amp;o=newest" rel="nofollow"><span itemprop="name">Multi-backend, eLevelDB, & Too many open files</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matt+Black%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matt Black</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130908" rel="nofollow">Sun, 08 Sep 2013 21:17:36 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hey list,
+
+We're migrating from our currently operational cluster to a new one in a
+different EC2 region. As part of this migration, we'd like to move from
+Bitcask to eLevelDB - mostly for the benefits provided by secondary indexes.</pre><pre>
+
+We also use Multi-backend configuration, in order to split our various
+client's data into entirely separate spaces on disk (this is useful for
+legal reasons). I made the simple change from &quot;riak_kv_bitcask_backend&quot; to
+&quot;riak_kv_eleveldb_backend&quot; in our config, and did some calculations for
+&quot;max_open_files&quot;, and then started a new node.
+
+It fails with the following error in short order:
+
+&gt; cat error.log
+2013-09-09 03:49:51.391 [error] &lt;0.715.0&gt;@riak_kv_vnode:init:375 Failed to
+start riak_kv_multi_backend Reason: [{riak_kv_eleveldb_backend,{db_open,&quot;IO
+error:
+/mnt/riak/eleveldb/client1/365375409332725729550921208179070754913983135744/000015.dbtmp:
+Too many open files&quot;}}]
+2013-09-09 03:49:51.392 [error] &lt;0.940.0&gt;@riak_kv_vnode:init:375 Failed to
+start riak_kv_multi_backend Reason: [{riak_kv_eleveldb_backend,{db_open,&quot;IO
+error:
+/mnt/riak/eleveldb/client2/570899077082383952423314387779798054553098649600/CURRENT:
+Too many open files&quot;}},{riak_kv_eleveldb_backend,{db_open,&quot;IO error:
+/mnt/riak/eleveldb/client3/570899077082383952423314387779798054553098649600/CURRENT:
+Too many open files&quot;}},{riak_kv_eleveldb_backend,{db_open,&quot;IO error:
+/mnt/riak/eleveldb/client4/570899077082383952423314387779798054553098649600/CURRENT:
+Too many open files&quot;}},{riak_kv_eleveldb_backend,{db_open,&quot;IO error:
+/mnt/riak/eleveldb/client5/570899077082383952423314387779798054553098649600/CURRENT:
+Too many open files&quot;}},{riak_kv_eleveldb_backend,{db_open,&quot;IO error:
+/mnt/riak/eleveldb/client6/570899077082383952423314387779798054553098649600/CURRENT:
+Too many open files&quot;}}]
+
+And some relevant app.config:
+
+            {multi_backend_default, &lt;&lt;&quot;default&quot;&gt;&gt;},
+            {multi_backend, [
+                %% Default fallback: this is unused
+                {&lt;&lt;&quot;default&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+                    {data_root, &quot;/mnt/riak/eleveldb/default&quot;}
+                ]},
+                {&lt;&lt;&quot;eleveldb_client1&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+                    {data_root, &quot;/mnt/riak/eleveldb/client1&quot;}
+                ]},
+                {&lt;&lt;&quot;eleveldb_client2&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+                    {data_root, &quot;/mnt/riak/eleveldb/client2&quot;}
+                ]},
+                {&lt;&lt;&quot;eleveldb_client3&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+                    {data_root, &quot;/mnt/riak/eleveldb/client3&quot;}
+                ]},
+                {&lt;&lt;&quot;eleveldb_client4&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+                    {data_root, &quot;/mnt/riak/eleveldb/client4&quot;}
+                ]},
+                {&lt;&lt;&quot;eleveldb_client5&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+                    {data_root, &quot;/mnt/riak/eleveldb/client5&quot;}
+                ]},
+                {&lt;&lt;&quot;eleveldb_client6&quot;&gt;&gt;, riak_kv_eleveldb_backend, [
+                    {data_root, &quot;/mnt/riak/eleveldb/client6&quot;}
+                ]}
+            ]},
+
+            .. snip ..
+
+             %% Default cache size of 8MB
+             {cache_size, 8388608},
+             %% Maximum number of files open at once per partition
+             {max_open_files, 50}
+
+I've set the &quot;riak soft/hard nofile 65536&quot; in /etc/security/limits.conf, so
+presumably this &quot;Too many open files&quot; error is referring to the
+&quot;max_open_files&quot; option as part of eLevelDB config. The RAM in each machine
+is 3.5GB free, so I calculated on a 5 node cluster this 50 max_open_files
+limit.
+
+- Is there something about Multi-backend I haven't taken into account?
+- Do I need a larger max_open_files? (And thus more RAM? :)
+
+Cheers!
+Matt
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12206.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd10.html#12209">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail10.html#12209">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12214.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Multi-backend, eLevelDB, &amp; Too many open files</span> <span class="sender italic">Matt Black</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12214.html">Re: Multi-backend, eLevelDB, &amp; Too many open files</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12219.html">Re: Multi-backend, eLevelDB, &amp; Too many open file...</a></span> <span class="sender italic">Matt Black</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Multi-backend, eLevelDB, &amp; Too many open files">
+<input type="hidden" name="msgid" value="CAHPGP1EHzkG8q+TeQnHJ9jdSXi9h9EhivPOEM5dHq6YZLCDqtQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12209.html">
+<input type="submit" value=" Matt Black ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Multi%5C-backend%2C+eLevelDB%2C+%5C%26+Too+many+open+files%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12206.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12214.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHPGP1EHzkG8q+TeQnHJ9jdSXi9h9EhivPOEM5dHq6YZLCDqtQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

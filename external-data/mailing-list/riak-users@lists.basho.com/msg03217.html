@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Core Question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03217" id="c">
+<link rel="index" href="maillist.html#03217" id="i">
+<link rel="prev" href="msg03213.html" id="p">
+<link rel="next" href="msg03214.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03217.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Core+Question%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Core Question</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22David+Dawson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">David Dawson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110503" rel="nofollow">Tue, 03 May 2011 16:11:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Jo,
+
+Thanks for getting back to me, I actually have already tried the solution you 
+suggested, although I still came across the problem where in the event of a 
+primary coming back after a failure I would end up with 2 active processes. I 
+am sure I could get around my issue if I could ask the question: &quot;Where would 
+my fallback node be in the event of a failure of the primary? and is it 
+active?&quot;. Anyway assuming that it can not be done and storing state somewhere 
+would become a bottleneck I like the idea of a group of processes with an 
+elected leader that just deals with the requests, and in the event of it dying 
+/ disappearing another process can take over. I will have a look at the 
+gen_leader work although it may be an overkill and I could do something very 
+simple such as:</pre><pre>
+
+        Assuming N=3
+
+        1. Take the 3 primary nodes returned from 
+riak_core_apl:get_primary_apl()
+        
+        2. Spawn a process on each of them ( FSM's in a state of inactive )
+        
+        3. With each of the Pids do a quick sort on them to find the smallest
+
+        4. Send a request to the smallest pid to make it active but also supply 
+the other pids as part of the args so it can check  that they are not active 
+
+        5. If this returns an ok, then send the desired request otherwise try 
+again a random amount of time later
+
+        6. If one of the 3 processes dies and it happens to be the active one 
+then another will naturally take over on the next request. 
+
+        7. If the process comes back some time later and happens to still have 
+the smallest pid then it will ask the current leader to send it it's current 
+queue of requests ( I will store this in the state ), finish it's current work 
+then  go inactive and let it know once this is done so the new process can go 
+active.
+ 
+
+After writing the above I am getting the impression I am re-inventing the wheel 
+and probably should use a tried and tested election algorithm, or even riak_zab 
+if I decide to go down this route.
+
+Dave
+
+
+On 3 May 2011, at 21:54, Joseph Blomstedt wrote:
+
+&gt; If you want to determine if a vnode is a primary or secondary node,
+&gt; you can check if a vnode owns the particular index it is handling. If
+&gt; it owns the index, it's a primary; otherwise, a secondary.
+&gt; riak_core_ring:index_owner is the function to look into. The
+&gt; should_handoff function in riak_core_vnode serves as a good example.
+&gt; Handoff is triggered when a secondary node determines that the primary
+&gt; node is up.
+&gt; 
+&gt; However, I am not sure if this helps much. Unless you already have a
+&gt; solution that works if you can determine this information. Of course,
+&gt; there may be other approaches.
+&gt; 
+&gt; The command/sync_command logic inside riak_core does not directly
+&gt; handle routing / re-routing between primary and fallback nodes. You
+&gt; have flexibility in your application to route to partitions as
+&gt; desired. Yes, the riak_core_apl module handles primary / secondaries,
+&gt; but there is no inherent need to use that code.
+&gt; 
+&gt; So, it is entirely possible for you to have logic within your
+&gt; application that is smart in choosing which {node, index} pair to send
+&gt; your requests to. The idea would be to favor the actual partition
+&gt; owner (ie. the primary) and only fallback to secondaries (adjacent
+&gt; partitions in the ring) when the primary is down. Basically, the same
+&gt; thing riak_core_apl / riak_kv does. However, you could have additional
+&gt; book-keeping that knows where current outstanding requests are and
+&gt; ensure no parallel requests.
+&gt; 
+&gt; Of course, this assumes you have somewhere to do this book-keeping,
+&gt; eg. state outside of riak_core.
+&gt; 
+&gt; In some ways, one instance of this problem is effectively reducible to
+&gt; leader election. You could always consider a set of primary/secondary
+&gt; vnodes as a group and use a leader election algorithm to always ensure
+&gt; a single vnode is the leader at any point -- and only send request to
+&gt; that leader. The existing gen_leader module you can find online may
+&gt; fit this bill.
+&gt; 
+&gt; -Joe
+&gt; 
+&gt; On Tue, May 3, 2011 at 1:06 PM, David Dawson &lt;david.daw...@gmail.com&gt; wrote:
+&gt;&gt; I have a quick question regarding riak_core:
+&gt;&gt; 
+&gt;&gt;        Basically I am trying to build an application on top of riak_core 
+&gt;&gt; that allows me to spawn a session per user interaction, so I can both hold 
+&gt;&gt; state and queue requests to ensure ( as best I can ) that a user will only 
+&gt;&gt; be interacting with my system in a serialised manner.
+&gt;&gt; 
+&gt;&gt;        My understandings are as follows with riak_core:
+&gt;&gt; 
+&gt;&gt;        1. You obtain a list of possible vnodes that can serve your request 
+&gt;&gt; based on a hash of a key which in my case is a user_id
+&gt;&gt;        2. You then use each of the vnodes in the list to execute your 
+&gt;&gt; request which in my case is 1 as I have N=1.
+&gt;&gt; 
+&gt;&gt;        In my situation I want to kill a node ( simulate a failure ) send 
+&gt;&gt; some further long running requests in that whose primary node is the one 
+&gt;&gt; that has been killed, and then bring back up the dead node and send some 
+&gt;&gt; more requests in with the safe knowledge that I will not end up with 2 
+&gt;&gt; vnodes  (  primary  and fallback ) that are processing the requests at the 
+&gt;&gt; same time. Has anyone got any suggestions how I may achieve this? as I have 
+&gt;&gt; scoured the riak_core source code and can not find a way to test if a vnode 
+&gt;&gt; is present on a primary and fallback node at the same time, or am I barking 
+&gt;&gt; up the wrong tree and trying to achieve the unachievable.
+&gt;&gt; 
+&gt;&gt;        Also I know I can not protect from a spit brain using this approach, 
+&gt;&gt; although this is okay as under these rare occasions I have plans to deal 
+&gt;&gt; with this in the business logic of the App.
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; Dave
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03213.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03217">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03217">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03214.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03211.html">Riak Core Question</a></span> <span class="sender italic">David Dawson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03213.html">Re: Riak Core Question</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Core Question</span> <span class="sender italic">David Dawson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Core Question">
+<input type="hidden" name="msgid" value="D472A9B1-7641-4361-89F3-DF903985F21F@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03217.html">
+<input type="submit" value=" David Dawson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Core+Question%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03213.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03214.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D472A9B1-7641-4361-89F3-DF903985F21F@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

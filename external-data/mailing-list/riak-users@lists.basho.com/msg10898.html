@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Simple mapreduce with 2i returns different result</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10898" id="c">
+<link rel="index" href="maillist.html#10898" id="i">
+<link rel="prev" href="msg10874.html" id="p">
+<link rel="next" href="msg10903.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10898.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Simple+mapreduce+with+2i+returns+different+result%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Simple mapreduce with 2i returns different result</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mattias+Sj%C3%B6linder%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mattias Sjölinder</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130416" rel="nofollow">Tue, 16 Apr 2013 07:53:27 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I have tested with a bucket with as low as 10 documents as well as another
+a couple of hundreds, both in the same cluster, and both returning
+stochastic numbers of documents in the result. For the bucket with 10
+documents the result varies from around 3/10 docs to 10/10 documents and
+the MapReduce is looking like this:</pre><pre>
+
+{
+    &quot;inputs&quot;:{
+        &quot;bucket&quot;:&quot;som-bucket&quot;,
+        &quot;index&quot;:&quot;userid_bin&quot;,
+        &quot;key&quot;:&quot;18481123123&quot;
+    },
+    &quot;query&quot;:[
+        {
+            &quot;map&quot;:{
+                &quot;language&quot;:&quot;javascript&quot;,
+                &quot;name&quot;:&quot;Riak.mapValuesJson&quot;,
+                &quot;keep&quot;:true
+            }
+        }
+    ]
+}
+
+I have also tested without using index but using keyfilters instead but
+with the same result.
+
+We are using CorrugatedIron as client for all the Riak communication and
+one of my colleagues is discussing with developers of the client lib about
+the same issue.
+
+
+Best regards,
+Mattias
+
+
+
+
+2013/4/12 Christian Dahlqvist &lt;christ...@basho.com&gt;
+
+&gt; Hi Mattias,
+&gt;
+&gt; When Riak executes a MapReduce job, it will determine a covering set of
+&gt; vnodes/partitions that will handle the processing. The vnodes selected will
+&gt; vary between runs, and if the partitions do not all hold the same data,
+&gt; there may be differences in the results between consecutive runs.
+&gt;
+&gt; - How many records do you have in the bucket?
+&gt;
+&gt; - How large portion of the results typically differs between runs?
+&gt;
+&gt; - What does the mapreduce jobs look like?
+&gt;
+&gt; Best regards,
+&gt;
+&gt; Christian
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; On 12 Apr 2013, at 11:05, Mattias Sjölinder &lt;matt...@sjolinder.se&gt; wrote:
+&gt;
+&gt; Thanks for you response Christian!
+&gt;
+&gt; We are having AAE enabled in our cluster. The thing that bothers me most
+&gt; is that even if I get the expected dataset once in my MapReduce, a
+&gt; consecutive identically request is often returning a subset of the result
+&gt; even if no changes have been done to entire bucket. The same thing seems to
+&gt; happen for all our MapReduce queries. The bucket in the example have both
+&gt; allow_mult and last_write_wins set to false.
+&gt;
+&gt; Regards
+&gt; Mattias
+&gt;
+&gt;
+&gt; 2013/4/12 Christian Dahlqvist &lt;christ...@basho.com&gt;
+&gt;
+&gt;&gt; Hi Mattias,
+&gt;&gt;
+&gt;&gt; MapReduce in Riak executes based on the data in a single partition and
+&gt;&gt; does, for efficiency reasons, not perform a quorum read (which greatly
+&gt;&gt; reduces the required amount of network traffic). As Riak is eventually
+&gt;&gt; consistent, it is possible that all partitions do not hold exactly the same
+&gt;&gt; data or version of the data at any point in time. What you are seeing could
+&gt;&gt; very well be a result of all replicas of some data not being in sync across
+&gt;&gt; all partitions holding a copy.
+&gt;&gt;
+&gt;&gt; This would however be corrected either through read-repair or AAE (Active
+&gt;&gt; Anti-Entropy) if you have this enabled. If you were to perform a GET on a
+&gt;&gt; key that is missing, triggering read-repair, I would expect it to
+&gt;&gt; consistently show up in the results from that point on, at least until it
+&gt;&gt; is updated again.
+&gt;&gt;
+&gt;&gt; Best regards,
+&gt;&gt;
+&gt;&gt; Christian
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On 12 Apr 2013, at 08:13, Mattias Sjölinder &lt;matt...@sjolinder.se&gt; wrote:
+&gt;&gt;
+&gt;&gt; Hi
+&gt;&gt;
+&gt;&gt; I struggling to get a grip around MapReduce and why it is sometimes
+&gt;&gt; returning only a subset of what is expected. Is it the nodes processing the
+&gt;&gt; map phase that after a specific time returning the found matches so far? I
+&gt;&gt; would rather have it returning timeout instead of a subset of the actual
+&gt;&gt; match.
+&gt;&gt;
+&gt;&gt; An example is this simple MapReduce:
+&gt;&gt;
+&gt;&gt; {
+&gt;&gt;     &quot;inputs&quot;:{
+&gt;&gt;         &quot;bucket&quot;:&quot;som-bucket&quot;,
+&gt;&gt;         &quot;index&quot;:&quot;userid_bin&quot;,
+&gt;&gt;         &quot;key&quot;:&quot;18481123123&quot;
+&gt;&gt;     },
+&gt;&gt;     &quot;query&quot;:[
+&gt;&gt;         {
+&gt;&gt;             &quot;map&quot;:{
+&gt;&gt;                 &quot;language&quot;:&quot;javascript&quot;,
+&gt;&gt;                 &quot;name&quot;:&quot;Riak.mapValuesJson&quot;,
+&gt;&gt;                 &quot;keep&quot;:true
+&gt;&gt;             }
+&gt;&gt;         }
+&gt;&gt;     ]
+&gt;&gt; }
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Any thoughts?
+&gt;&gt;
+&gt;&gt; Regards
+&gt;&gt; Mattias
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10874.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10898">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10898">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10903.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10864.html">Simple mapreduce with 2i returns different result</a></span> <span class="sender italic">Mattias Sjölinder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10866.html">Re: Simple mapreduce with 2i returns different re...</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10869.html">Re: Simple mapreduce with 2i returns differen...</a></span> <span class="sender italic">Mattias Sjölinder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10874.html">Re: Simple mapreduce with 2i returns diff...</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Simple mapreduce with 2i returns ...</span> <span class="sender italic">Mattias Sjölinder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10903.html">Re: Simple mapreduce with 2i ret...</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10909.html">Re: Simple mapreduce with 2i...</a></span> <span class="sender italic">Mattias Sjölinder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10910.html">Re: Simple mapreduce wit...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10911.html">Re: Simple mapreduce wit...</a></span> <span class="sender italic">OJ Reeves</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10916.html">Re: Simple mapreduce wit...</a></span> <span class="sender italic">Mattias Sjölinder</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Simple mapreduce with 2i returns different result">
+<input type="hidden" name="msgid" value="CAAM1tiQyD7PhrBMR=yrkOadeEXpXHOX79vsLKH2-2ErVKyk0eg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10898.html">
+<input type="submit" value=" Mattias Sjölinder ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Simple+mapreduce+with+2i+returns+different+result%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10874.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10903.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAM1tiQyD7PhrBMR=yrkOadeEXpXHOX79vsLKH2-2ErVKyk0eg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

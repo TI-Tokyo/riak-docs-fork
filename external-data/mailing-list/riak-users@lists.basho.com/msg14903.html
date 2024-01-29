@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Yokozuna Scale</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14903" id="c">
+<link rel="index" href="maillist.html#14903" id="i">
+<link rel="prev" href="msg14902.html" id="p">
+<link rel="next" href="msg14904.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14903.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Yokozuna+Scale%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Yokozuna Scale</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Eric+Redmond%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Eric Redmond</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140916" rel="nofollow">Tue, 16 Sep 2014 22:45:13 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+On Sep 16, 2014, at 9:37 PM, anandm &lt;an...@zerebral.co.in&gt; wrote:
+
+&gt; I started checking out Riak as an alternative for one my projects. We are
+&gt; currently using SolrCloud 4.8 (36 Shards + 3 Replica each) - and all stored
+&gt; fields (64 fields per doc + each doc at about 6kb on average)
+&gt; I want to get this thing migrated - so push all data out of Solr and store
+&gt; it in a KV - like Riak, but keep the indexes going in Solr (as I have a lot
+&gt; of code written already around Solr)
+&gt; 
+&gt; Came across Yokozuna today and sounds like thats going to be a perfect match
+&gt; for my requirement...
+&gt; 
+&gt; Just a couple of questions I have - I tried searching online for answers
+&gt; (but couldn't find references to large Scale Yokozuna deployments)</pre><pre>
+
+That's because it's only been released for about 2 weeks. Give it some time :)
+
+&gt; 1. I have over 250M documents indexed &amp; stored (thats very bad) in current
+&gt; SolrCloud deployment - with the replication factor of 3 - total Solr Index +
+&gt; Data Size is about 4.5TB spread across 6 Servers (12 core (24 threads) +
+&gt; 96GB)
+
+&gt;    Index Search performance and write performance is good enough with 36
+&gt; Shards and Composite Id routing - I want to migrate this straight to Riak
+&gt; with Yokozuna enabled.
+&gt;    I'll be deploying a 5-6 node Riak Cluster - that would mean roughly
+&gt; about 50M docs will be stored on each node - and Yokozuna will index it
+&gt; locally on each node's Solr too (only indexed fields) -
+
+Riak also replicates data to maintain high availability. By default, this 
+replication value
+(n_val) is 3. So if you have 250M values, you'll end up with 750M documents by 
+default,
+or 150M per node if you stick with 6. If you reduce the n_val, you'll reduce 
+both the
+object count, as well as reduce availability.
+
+&gt;           a. Will this Solr instance have just one core to index the data?
+&gt; (As of now I just plan to have one bucket)
+
+If you only create one index, yes.. There's one node per Riak node. You can, 
+however,
+run more than one Riak node per physical server, thus increasing the solr core 
+count.
+
+&gt;           b. Would it be able to handle the load of searching through 50M
+&gt; docs with just one core? I think RAM wont be an issue - but I have not seen
+&gt; a single Solr instance serving 50M docs so a bit worried about that.
+
+We've tested up to 10M per node, so you may require more nodes. But it's worth
+running a small test to be sure.
+
+&gt; 2. Every time I query the Solr instance via Riak - /search hander - The
+&gt; actual search query will run in a distributed manner on Solr nodes in the
+&gt; cluster - but will Yokozuna also fetch the Stored fields for the docs or the
+&gt; entire docs from the underlying Riak instances too and return that to the
+&gt; search request? Or would my client app need to query the Riak docs in a
+&gt; separate query?
+
+Riak will fetch whatever you've configured the schema/query to fetch. If you're
+simply trying to get a full object, you may be better off performing the search 
+query,
+and then using the resulting document's key value (_yz_kv) to get the full
+object from Riak KV.
+
+&gt; 3. Anybody with a large scale Yokozuna deployment and if you could make a
+&gt; quick comment on the deployment size, the hardware and overall throughput -
+&gt; that will help. 
+
+You may be deploying the first Yokozuna deployment of that size. I'm interested
+in your results. If this is a fixed set of documents, you may get away with a 
+lower
+n_val such as 2. Furthermore, you can try increasing the node count.
+
+
+&gt; Thanks.
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; --
+&gt; View this message in context: 
+&gt; <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Yokozuna-Scale-tp4031808.html">http://riak-users.197444.n3.nabble.com/Yokozuna-Scale-tp4031808.html</a>
+&gt; Sent from the Riak Users mailing list archive at Nabble.com.
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14902.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14903">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14903">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14904.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14902.html">Yokozuna Scale</a></span> <span class="sender italic">anandm</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Yokozuna Scale</span> <span class="sender italic">Eric Redmond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14904.html">Re: Yokozuna Scale</a></span> <span class="sender italic">anandm</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14905.html">Re: Yokozuna Scale</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14906.html">Re: Yokozuna Scale</a></span> <span class="sender italic">anandm</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14907.html">Re: Yokozuna Scale</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14908.html">Re: Yokozuna Scale</a></span> <span class="sender italic">anandm</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14909.html">Re: Yokozuna Scale</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Yokozuna Scale">
+<input type="hidden" name="msgid" value="AA470BDC-2007-4E5F-B26F-89D8A0BB58CB@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14903.html">
+<input type="submit" value=" Eric Redmond ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Yokozuna+Scale%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14902.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14904.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AA470BDC-2007-4E5F-B26F-89D8A0BB58CB@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

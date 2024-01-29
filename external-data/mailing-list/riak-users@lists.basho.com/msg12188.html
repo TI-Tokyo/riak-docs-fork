@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Missing keys in bucket?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd10.html#12188" id="c">
+<link rel="index" href="mail10.html#12188" id="i">
+<link rel="prev" href="msg12189.html" id="p">
+<link rel="next" href="msg12185.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12188.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Missing+keys+in+bucket%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Missing keys in bucket?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anders+Hedstr%C3%B6m%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anders Hedström</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130903" rel="nofollow">Tue, 03 Sep 2013 09:05:00 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>The funny thing is that there's no delete's issued... Can I still get
+Tombstone objects?</pre><pre>
+
+
+On Tue, Sep 3, 2013 at 4:30 PM, Jeremiah Peschka &lt;jeremiah.pesc...@gmail.com
+&gt; wrote:
+
+&gt; TL;DR: Distributed databases are spooky, your app must account for
+&gt; entertaining side effects like you described.
+&gt;
+&gt; Long form:
+&gt;
+&gt; There is some window of time between issuing a delete, Riak writing the
+&gt; initial tombstone, and then Riak deleting the underlying data from disk [1].
+&gt;
+&gt; In any situation where you're querying for data and there's a chance it
+&gt; could go away, you need to make sure that you're double checking that the
+&gt; data is present and that you're accounting for failures.
+&gt;
+&gt; Secondary indexes ($bucket included) perform a coverage query. That is -
+&gt; when you query an index, Riak will not read from R partitions (notice that
+&gt; you can't set an R-value for index reads?), instead it reads from enough
+&gt; partitions to get 1 copy of the data. See [2] for more details on coverage
+&gt; queries.
+&gt;
+&gt; In theory, you could be reading rows from a node before the delete has
+&gt; been replicated or between the tombstoning and reclamation of the object.
+&gt;
+&gt; [1]:
+&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html</a>
+&gt; [2]:
+&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006237.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006237.html</a>
+&gt;
+&gt;
+&gt;
+&gt; ---
+&gt; Jeremiah Peschka - Founder, Brent Ozar Unlimited
+&gt; MCITP: SQL Server 2008, MVP
+&gt; Cloudera Certified Developer for Apache Hadoop
+&gt;
+&gt;
+&gt; On Fri, Aug 30, 2013 at 5:54 AM, Anders Hedström &lt;
+&gt; anders.hedstr...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; Hello,
+&gt;&gt;
+&gt;&gt; I've got a riak cluster with 3 nodes.
+&gt;&gt;
+&gt;&gt; I use the $bucket index to get all keys for a bucket. Then I loop thru
+&gt;&gt; the returned list and try to fetch each object for each key. For some keys
+&gt;&gt; that was returned I get a 404 back when trying to fetch the object... How
+&gt;&gt; is this possible? What can have gone wrong? I've got no clue... When the
+&gt;&gt; $bucket index returns a key I expect it to exist.
+&gt;&gt;
+&gt;&gt; I appreciate any response...
+&gt;&gt;
+&gt;&gt; Cheers
+&gt;&gt; //Anders
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+
+
+-- 
+-------------------------------------------------
+LinkedIn: <a  rel="nofollow" href="http://www.linkedin.com/in/andershedstrom">http://www.linkedin.com/in/andershedstrom</a>
+GTalk: anders.hedstr...@gmail.com
+Skype: anders.hedstrom
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12189.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd10.html#12188">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail10.html#12188">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12185.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12182.html">Missing keys in bucket?</a></span> <span class="sender italic">Anders Hedström</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12183.html">Re: Missing keys in bucket?</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12184.html">Re: Missing keys in bucket?</a></span> <span class="sender italic">Anders Hedström</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg12186.html">Missing keys in bucket?</a></span> <span class="sender italic">Anders Hedström</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12187.html">Re: Missing keys in bucket?</a></span> <span class="sender italic">Tom Santero</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12189.html">Re: Missing keys in bucket?</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Missing keys in bucket?</span> <span class="sender italic">Anders Hedström</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Missing keys in bucket?">
+<input type="hidden" name="msgid" value="CAD_EjH4XcxBPU20q55w5z4A01E9vGyc0iQ055ef4Rum8cX2=0A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12188.html">
+<input type="submit" value=" Anders Hedström ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Missing+keys+in+bucket%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12189.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12185.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAD_EjH4XcxBPU20q55w5z4A01E9vGyc0iQ055ef4Rum8cX2=0A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Troubleshooting riak inserts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03943" id="c">
+<link rel="index" href="maillist.html#03943" id="i">
+<link rel="prev" href="msg03927.html" id="p">
+<link rel="next" href="msg03919.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03943.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Troubleshooting+riak+inserts%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Troubleshooting riak inserts</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Fyodor+Yarochkin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Fyodor Yarochkin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110706" rel="nofollow">Wed, 06 Jul 2011 02:19:08 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Greetings,
+
+Thanks for the response. The recommendation  on simply taking out the
+corrupted buffer file worked! There was indeed single  buffer file
+(buffer.13), which apparently was causing the crash. Once renamed, the
+node stopped hanging on new data inserts. Thanks for the
+interpretation of the issue. As for the 'binary' brackets in the data
+dump, I can't tell exactly what that it, as it doesn't directly match
+any of the data I am writing (json objects that are mainly composed of
+string sequences of printable ASCII text). I can share the corrupted
+buffer file if that'd be helpful in investigating the root cause.</pre><pre>
+
+As for the cause of truncation/corruption - the machine and the
+riaksearch node has been continually up for more than 3 months with
+two occasional crashes, which looked like this in syslog:
+
+ node kernel: [ 2282.474990] beam[2396]: segfault at 24a5d ip 081016a2
+sp bfd68600 error 4 in beam[8048000+15c000]
+...
+I suspect the corrupted segments might have been caused by beam
+segfaults. Anyway, thanks alot for pointers to corrupted buffer files.
+This indeed resolved the issue.
+
+Per Rusty's request, here's detailed information of the platform where
+the issue was observed:
+
+    What platform are you running?
+
+Debian 5.3 (Lenny)
+
+    What version of Riak Search are you using?
+
+At the time when problem appeared, the riak-search_0.14.2-1_i386.deb
+was installed on the system. The node was upgraded from
+riak-search_0.14.0-1_i386.deb (the updade procedure was like
+riaksearch stop; dpkg -i ..; riaksearch start)
+
+    Did you install Riak Search from our pre-built binaries, or did
+you compile from source?
+
+pre-build binaries (.deb packages)
+
+    If you compiled from source, what version of Erlang are you running?
+
+Erlang R14A (erts-5.8)
+
+    What interface are you using to index the files? (Solr or KV?)
+
+the data is indexed by riaksearch precommit hook when stored in the
+bucket (if that was the question)
+
+
+I'll send email regarding the data sampling offlist
+
+
+
+
+
+On Tue, Jul 5, 2011 at 9:15 PM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+&gt; Fyodor,
+&gt; I can't tell you exactly what caused this to happen but I can tell you how
+&gt; to move past it.  Search uses two data structures to store the index:
+&gt; buffers and segments.  A buffer is an in-memory structure backed by a file
+&gt; on disk.  Overtime buffers are converted to segments.  All segments live on
+&gt; disk but there is an in-memory offset table to perform lookups.  During a
+&gt; request if the vnode to handle that request is not already up it will be
+&gt; started.  During the vnode's initialization it will read all buffers and
+&gt; segment tables into memory.  In your case, each time the vnode is started it
+&gt; crashes while trying to read the buffer file.  Looking at the binary in your
+&gt; trace it looks like somehow the data became corrupted.  First off, I'm
+&gt; confused by the syntax of the binary in your stack trace.  I.e. what's up
+&gt; with the brackets surrounding that binary data?  That aside, I see two terms
+&gt; in that data, i.e. there are two occurrences of the byte '131' which
+&gt; indicates the start of a term.  The second term is valid:
+&gt; [{{&lt;&lt;&quot;logs&quot;&gt;&gt;,&lt;&lt;&quot;text&quot;&gt;&gt;,&lt;&lt;&quot;SEQ=1&quot;&gt;&gt;},
+&gt;   &lt;&lt;&quot;ae2b12ae-a155-11e0-9e33-00219bfc3293&quot;&gt;&gt;,
+&gt;   -1309244813808575,
+&gt;   [{p,[14]}]}]
+&gt; However, the first term seems to have been truncated/corrupted somehow.
+&gt;  Why?  I'm not sure. My immediate guess would be that a write failed at some
+&gt; point, writing bad data to the buffer file, the vnode crashed, and then when
+&gt; it started back up it couldn't read back the buffer file.  The code to read
+&gt; the buffer data expects correct data or it will simply crash, as you see.
+&gt;  This will cause a perpetual series of crashes until the problem is manually
+&gt; resolved.  In this case you can just move your buffer files, for the
+&gt; crashing vnodes, one at a time until the problem goes away.  This will cause
+&gt; you to lose some of your indexed data.  For example, in your case the
+&gt; crashing vnode is for
+&gt; partition 433883298582611803841718934712646521460354973696.  You can cd to
+&gt; riak_search/data/merge_index/433883298582611803841718934712646521460354973696
+&gt; and then mv your buffer.* files to something like corrupt-buffer.*.
+&gt; TL;DR - For one reason or another a buffer file became corrupted.  As a
+&gt; workaround you can move your buffer files out of the way.
+&gt; -Ryan
+&gt; On Sat, Jul 2, 2011 at 6:40 AM, Fyodor Yarochkin &lt;fyodo...@armorize.com&gt;
+&gt; wrote:
+&gt;&gt;
+&gt;&gt; Greetings,
+&gt;&gt;
+&gt;&gt;  I've been running a single node riaksearch instance, while came
+&gt;&gt; across this problem: after inserting roughly 200Mb of data every
+&gt;&gt; consequential insert (into any bucket) would start to time out with a
+&gt;&gt; sequence of errors logs that point on  riak_search_vnode_master crash:
+&gt;&gt;
+&gt;&gt; =SUPERVISOR REPORT==== 2-Jul-2011::06:04:57 ===
+&gt;&gt;     Supervisor: {local,riak_search_sup}
+&gt;&gt;     Context:    child_terminated
+&gt;&gt;     Reason:
+&gt;&gt;
+&gt;&gt; {{badmatch,{error,{{badmatch,{error,{badarg,[{erlang,binary_to_term,[&lt;&lt;[131,108,0,0,0,2,104,4,104,3,109,0,0,0,4,108,111,103,115,109,0,0,0,4,116,101,120,116,109,0,0,0,16,91,49,50,49,49,49,56,48,46,55,49,54,51,55,52,93,109,0,0,0,36,97,97,54,55,53,52,53,99,45,97,49,53,53,45,49,49,101,48,45,57,101,51,51,45,48,48,50,49,57,98,102,99,51,50,57,51,110,7,1,112,21,181,79,192,166,4,108,0,0,0,1,104,0,0,0,106,131,108,0,0,0,1,104,4,104,3,109,0,0,0,4,108,111,103,115,109,0,0,0,4,116,101,120,116,109,0,0,0,5,83,69,81,61,49,109,0,0,0,36,97,101,50,98,49,50,97,101,45,97,49,53,53,45,49,49,101,48,45,57,101,51,51,45,48,48,50,49,57,98,102,99,51,50,57,51,110,7,1,191,19,13,80,192,166,4,108,0,0,0,1,104,2,100,0,1,112,107,0,1,14,106,106]&gt;&gt;]},{mi_buffer,read_value,1},{mi_buffer,open_inner,2},{mi_buffer,new,1},{mi_server,read_buffers,4},{mi_server,read_buf_and_seg,1},{mi_server,init,1},{gen_server,init_it,6}]}}},[{merge_index_backend,start,2},{riak_search_vnode,init,1},{riak_core_vnode,init,1},{gen_fsm,init_it,6},{proc_lib,init_p_do_apply,3}]}}},[{riak_core_vnode_master,get_vnode,2},{riak_core_vnode_master,handle_call,3},{gen_server,handle_msg,5},{proc_lib,init_p_do_apply,3}]}
+&gt;&gt;     Offender:
+&gt;&gt;
+&gt;&gt; [{pid,&lt;0.754.0&gt;},{name,riak_search_vnode_master},{mfa,{riak_core_vnode_master,start_link,[riak_search_vnode]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; (the full paste of error dump log is here <a  rel="nofollow" href="http://pastebin.com/0Bj5cJAQ">http://pastebin.com/0Bj5cJAQ</a>)
+&gt;&gt;
+&gt;&gt; Reads still work and I am slighly confused on the reason of the crash.
+&gt;&gt; The availability of RAM is one of the things I suspect here:
+&gt;&gt; &quot;mem_total&quot;:1059192832,&quot;mem_allocated&quot;:893632512,&quot;. There is no
+&gt;&gt; shortage of the disk space or other resources on the system.  I am
+&gt;&gt; abit stuck as to where to start troubleshooting this issue. Any
+&gt;&gt; pointers or hints would be appreciated greatly! :)
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; regards,
+&gt;&gt; -F
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03927.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03943">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03943">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03919.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03917.html">Troubleshooting riak inserts</a></span> <span class="sender italic">Fyodor Yarochkin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03926.html">Re: Troubleshooting riak inserts</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03927.html">Re: Troubleshooting riak inserts</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Troubleshooting riak inserts</span> <span class="sender italic">Fyodor Yarochkin</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Troubleshooting riak inserts">
+<input type="hidden" name="msgid" value="CAAocTJxKuX2DdBvUMr0kN1JxJcM4GCAnq1eYR761zNPM=6op1A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03943.html">
+<input type="submit" value=" Fyodor Yarochkin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Troubleshooting+riak+inserts%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03927.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03919.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAocTJxKuX2DdBvUMr0kN1JxJcM4GCAnq1eYR761zNPM=6op1A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

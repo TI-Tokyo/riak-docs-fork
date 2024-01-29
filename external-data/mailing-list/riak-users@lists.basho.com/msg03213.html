@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Core Question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03213" id="c">
+<link rel="index" href="maillist.html#03213" id="i">
+<link rel="prev" href="msg03211.html" id="p">
+<link rel="next" href="msg03217.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03213.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Core+Question%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Core Question</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110503" rel="nofollow">Tue, 03 May 2011 13:54:41 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>If you want to determine if a vnode is a primary or secondary node,
+you can check if a vnode owns the particular index it is handling. If
+it owns the index, it's a primary; otherwise, a secondary.
+riak_core_ring:index_owner is the function to look into. The
+should_handoff function in riak_core_vnode serves as a good example.
+Handoff is triggered when a secondary node determines that the primary
+node is up.</pre><pre>
+
+However, I am not sure if this helps much. Unless you already have a
+solution that works if you can determine this information. Of course,
+there may be other approaches.
+
+The command/sync_command logic inside riak_core does not directly
+handle routing / re-routing between primary and fallback nodes. You
+have flexibility in your application to route to partitions as
+desired. Yes, the riak_core_apl module handles primary / secondaries,
+but there is no inherent need to use that code.
+
+So, it is entirely possible for you to have logic within your
+application that is smart in choosing which {node, index} pair to send
+your requests to. The idea would be to favor the actual partition
+owner (ie. the primary) and only fallback to secondaries (adjacent
+partitions in the ring) when the primary is down. Basically, the same
+thing riak_core_apl / riak_kv does. However, you could have additional
+book-keeping that knows where current outstanding requests are and
+ensure no parallel requests.
+
+Of course, this assumes you have somewhere to do this book-keeping,
+eg. state outside of riak_core.
+
+In some ways, one instance of this problem is effectively reducible to
+leader election. You could always consider a set of primary/secondary
+vnodes as a group and use a leader election algorithm to always ensure
+a single vnode is the leader at any point -- and only send request to
+that leader. The existing gen_leader module you can find online may
+fit this bill.
+
+-Joe
+
+On Tue, May 3, 2011 at 1:06 PM, David Dawson &lt;david.daw...@gmail.com&gt; wrote:
+&gt; I have a quick question regarding riak_core:
+&gt;
+&gt;        Basically I am trying to build an application on top of riak_core that 
+&gt; allows me to spawn a session per user interaction, so I can both hold state 
+&gt; and queue requests to ensure ( as best I can ) that a user will only be 
+&gt; interacting with my system in a serialised manner.
+&gt;
+&gt;        My understandings are as follows with riak_core:
+&gt;
+&gt;        1. You obtain a list of possible vnodes that can serve your request 
+&gt; based on a hash of a key which in my case is a user_id
+&gt;        2. You then use each of the vnodes in the list to execute your request 
+&gt; which in my case is 1 as I have N=1.
+&gt;
+&gt;        In my situation I want to kill a node ( simulate a failure ) send some 
+&gt; further long running requests in that whose primary node is the one that has 
+&gt; been killed, and then bring back up the dead node and send some more requests 
+&gt; in with the safe knowledge that I will not end up with 2 vnodes  (  primary  
+&gt; and fallback ) that are processing the requests at the same time. Has anyone 
+&gt; got any suggestions how I may achieve this? as I have scoured the riak_core 
+&gt; source code and can not find a way to test if a vnode is present on a primary 
+&gt; and fallback node at the same time, or am I barking up the wrong tree and 
+&gt; trying to achieve the unachievable.
+&gt;
+&gt;        Also I know I can not protect from a spit brain using this approach, 
+&gt; although this is okay as under these rare occasions I have plans to deal with 
+&gt; this in the business logic of the App.
+&gt;
+&gt;
+&gt; Dave
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03211.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03213">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03213">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03217.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03211.html">Riak Core Question</a></span> <span class="sender italic">David Dawson</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Core Question</span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03217.html">Re: Riak Core Question</a></span> <span class="sender italic">David Dawson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Core Question">
+<input type="hidden" name="msgid" value="BANLkTi=WMKdCYmV4kgDRdHTRrS5XY_Tdcg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03213.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Core+Question%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03211.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03217.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTi=WMKdCYmV4kgDRdHTRrS5XY_Tdcg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

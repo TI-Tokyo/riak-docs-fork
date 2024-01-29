@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Performance Issues with LevelDB Backend on 1.0.0RC1</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#04881" id="c">
+<link rel="index" href="mail4.html#04881" id="i">
+<link rel="prev" href="msg04882.html" id="p">
+<link rel="next" href="msg04886.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04881.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Performance+Issues+with+LevelDB+Backend+on+1.0.0RC1%22&amp;o=newest" rel="nofollow"><span itemprop="name">Performance Issues with LevelDB Backend on 1.0.0RC1</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22JB+Smith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">JB Smith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110926" rel="nofollow">Mon, 26 Sep 2011 11:40:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We are seeing similar issues using levelDB with 1.0.0RC1
+
+We run a 6 way cluster on EC2 64bit micro instances.</pre><pre>
+
+Initially we had assumed that there may be some issue with small memory 
+environments.
+
+on 0.14.2 things would seem to balance out and stabilize.
+
+on 1.0.0RC1, once this sort of report starts showing up, it tends to run out of 
+control until the node crashes.
+
+We also use a multi backend configuration as follows:
+
+{storage_backend, riak_kv_multi_backend},
+{multi_backend_default, &lt;&lt;&quot;eleveldb&quot;&gt;&gt;},
+{multi_backend, [
+      {&lt;&lt;&quot;eleveldb&quot;&gt;&gt;,  riak_kv_eleveldb_backend, []},
+      {&lt;&lt;&quot;sessions&quot;&gt;&gt;, riak_kv_bitcask_backend, [
+           {expiry_secs, 7200},
+           {data_root, &quot;/riak/data/bitcask_sessions&quot;}]}
+]},
+
+We are now storing over  150,000  keys in the levelDB buckets
+
+17:17:03.282 [error] CRASH REPORT Process [] with 0 neighbours crashed with 
+reason: 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,122743301572712549771012593372656581728916209664,'riak...@riak004.xx.com','riak...@riak005.xx.com',riak_pipe_vnode}]}}
+17:17:04.299 [error] Supervisor riak_core_vnode_sup had child undefined started 
+with {riak_core_vnode,start_link,undefined} at &lt;0.16220.0&gt; exit with reason 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,122743301572712549771012593372656581728916209664,'riak...@riak004.xx.com','riak...@riak005.xx.com',riak_pipe_vnode}]}}
+ in context child_terminated
+17:17:05.814 [info] monitor long_gc &lt;0.44.0&gt; 
+[{name,lager_crash_log},{initial_call,{lager_crash_log,init,1}},{almost_current_function,{gen,do_call,4}}]
+ 
+[{timeout,1501},{old_heap_block_size,0},{heap_block_size,1597},{mbuf_size,0},{stack_size,285},{old_heap_size,0},{heap_size,1179}]
+17:17:07.349 [error] gen_fsm &lt;0.16589.0&gt; in state active terminated with 
+reason: 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,161992613122126446500115457532517697979441741824,'riak...@riak004.xx.com','riak...@riak006.xx.com',riak_pipe_vnode}]}}
+17:17:07.351 [info] monitor long_gc &lt;0.101.0&gt; 
+[{name,riak_core_ring_manager},{initial_call,{gen,init_it,7}},{almost_current_function,{erl_syntax,is_tree,1}}]
+ 
+[{timeout,1510},{old_heap_block_size,0},{heap_block_size,317811},{mbuf_size,0},{stack_size,2363},{old_heap_size,0},{heap_size,275697}]
+17:17:10.345 [error] CRASH REPORT Process [] with 0 neighbours crashed with 
+reason: 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,161992613122126446500115457532517697979441741824,'riak...@riak004.xx.com','riak...@riak006.xx.com',riak_pipe_vnode}]}}
+17:17:10.348 [info] monitor long_gc &lt;0.17891.0&gt; 
+[{initial_call,{erlang,apply,2}},{almost_current_function,{erl_scan,set_attribute,3}}]
+ 
+[{timeout,1481},{old_heap_block_size,0},{heap_block_size,121393},{mbuf_size,0},{stack_size,99},{old_heap_size,0},{heap_size,116704}]
+17:17:11.847 [error] gen_server &lt;0.16590.0&gt; terminated with reason: 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,161992613122126446500115457532517697979441741824,'riak...@riak004.xx.com','riak...@riak006.xx.com',riak_pipe_vnode}]}}
+17:17:13.339 [info] monitor long_gc &lt;0.17891.0&gt; 
+[{initial_call,{erlang,apply,2}},{almost_current_function,{erl_expand_records,expr,2}}]
+ 
+[{timeout,1473},{old_heap_block_size,0},{heap_block_size,317811},{mbuf_size,0},{stack_size,1364},{old_heap_size,0},{heap_size,151085}]
+17:17:13.342 [error] CRASH REPORT Process [] with 0 neighbours crashed with 
+reason: 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,161992613122126446500115457532517697979441741824,'riak...@riak004.xx.com','riak...@riak006.xx.com',riak_pipe_vnode}]}}
+17:17:14.842 [error] Supervisor riak_core_vnode_sup had child undefined started 
+with {riak_core_vnode,start_link,undefined} at &lt;0.16589.0&gt; exit with reason 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,161992613122126446500115457532517697979441741824,'riak...@riak004.xx.com','riak...@riak006.xx.com',riak_pipe_vnode}]}}
+ in context child_terminated
+17:17:14.857 [error] gen_fsm &lt;0.15083.0&gt; in state active terminated with 
+reason: 
+{timeout,{gen_server,call,[riak_core_gossip,{finish_handoff,72076008481650973993443441457199504387328704512,'riak...@riak004.xx.com','riak...@riak006.xx.com',riak_kv_vnode}]}}
+17:17:16.338 [info] monitor long_gc &lt;0.17891.0&gt; 
+[{initial_call,{erlang,apply,2}},{almost_current_function,{zlib,deflateInit,2}}]
+ 
+[{timeout,1470},{old_heap_block_size,0},{heap_block_size,75025},{mbuf_size,0},{stack_size,34},{old_heap_size,0},{heap_size,36434}]
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04882.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#04881">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#04881">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04886.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04878.html">Performance Issues with LevelDB Backend on 1.0.0RC1</a></span> <span class="sender italic">Patrick Van Stee</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04879.html">Re: Performance Issues with LevelDB Backend on 1.0.0...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04883.html">Re: Performance Issues with LevelDB Backend on 1...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04884.html">Re: Performance Issues with LevelDB Backend ...</a></span> <span class="sender italic">Patrick Van Stee</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04885.html">Re: Performance Issues with LevelDB Back...</a></span> <span class="sender italic">Dan Reverri</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04880.html">Performance Issues with LevelDB Backend on 1.0.0RC1</a></span> <span class="sender italic">JB Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04882.html">Re: Performance Issues with LevelDB Backend on 1...</a></span> <span class="sender italic">Jon Meredith</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Performance Issues with LevelDB Backend on 1.0.0RC1</span> <span class="sender italic">JB Smith</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Performance Issues with LevelDB Backend on 1.0.0RC1">
+<input type="hidden" name="msgid" value="12BA7B95-518F-4A83-9A2F-37662D3A5880@mac.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04881.html">
+<input type="submit" value=" JB Smith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Performance+Issues+with+LevelDB+Backend+on+1.0.0RC1%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04882.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04886.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">12BA7B95-518F-4A83-9A2F-37662D3A5880@mac.com</li>
+</ul>
+</div>
+</body>
+</html>

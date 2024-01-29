@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Range Loop Timeout Error after (after disk space over limit)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#07988" id="c">
+<link rel="index" href="mail2.html#07988" id="i">
+<link rel="prev" href="msg07987.html" id="p">
+<link rel="next" href="msg07994.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07988.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Range+Loop+Timeout+Error+after+%5C%28after+disk+space+over+limit%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Range Loop Timeout Error after (after disk space over limit)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Arnaud+Wetzel%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Arnaud Wetzel</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120718" rel="nofollow">Wed, 18 Jul 2012 13:40:18 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Actually I had never seen this error before, and dont see it anymore now
+(maybe it was because of the migration to 1.2.0-rc1). The problem is
+difficult to describe because there are different errors every time I make
+tests : here is a list of them (error appears during uncorrelated riak
+search queries) :
+ {{nocatch,stream_timeout},[{riak_search_op_utils,gather_stream_results,4}]}
+(correlated with other errors)
+{{badmatch,{error,emfile}},[{mi_segment,iterate_by_keyinfo,7},{mi_server,'-lookup/8-lc$^1/1-1-',4},{mi_server,'-lookup/8-lc$^1/1-1-',4},{mi_server,lookup,8}]}</pre><pre>
+
+After the migration to 1.2.0-rc1 I saw (never saw this error before, that's
+why it's not in the first mail) :
+{{badfun,#Fun&lt;riak_search_client.9.8393097&gt;},[{mi_server,iterate,6},{mi_server,lookup,8}]}
+
+But the main error (the one that appears most often) is :
+{error,{throw,{timeout,range_loop},[{riak_search_backend,collect_info_response,3},{riak_search_op_term,info,3},{riak_search_op_term,preplan,2},{riak_search_op,'-preplan/2-lc$^0/1-0-',2},{riak_search_op_intersection,preplan,2},{riak_search_op,'-preplan/2-lc$^0/1-0-',2},{riak_search_op,'-preplan/2-lc$^0/1-0-',2},{riak_search_op_intersection,preplan,2}]}}
+
+My riak cluster has 5 nodes, now they all use the 1.2.0-rc1 version of
+Riak, with default configuration in app.config. The ulimit is 2048 for all
+nodes.
+To avoid error during indexing, I had in vm.arg :
+-env ERL_MAX_ETS_TABLES 50000
+
+On each node there is approximately :
+- 53G of merge_index data
+- 26G of bitcast data
+There are around two hundred different riak search indexes.
+
+The errors began after indexing many documents into riak search (there were
+3 nodes), a node reached is disk capacity so I had to add 2 nodes, then
+restart the indexation that succeed, but the errors describe above starts
+on some random search queries.
+
+Thank you very much for your answer, I will try the repair command on every
+partitions tonight.
+
+Regards.
+
+2012/7/18 Ryan Zezeski &lt;rzeze...@basho.com&gt;
+
+&gt; The `badfun` is a new error.  That wasn't in your original email.  I'm not
+&gt; sure why you are seeing that.  Are all your Riak nodes using 1.2.0-rc1?
+&gt;  Can you give me more information on your cluster setup?  Are there any
+&gt; other errors in you logs?  The more information the more I can help.
+&gt;
+&gt; The repair &quot;command&quot; is not actually available from the command line yet.
+&gt;  You need to attach to the Riak console to access it.  The APIs are
+&gt; `riak_kv_vnode:repair(PartitionNumber)` and
+&gt; `riak_search_vnode:repair(PartitionNumber)`.
+&gt;
+&gt;
+&gt; On Wed, Jul 18, 2012 at 1:02 PM, Arnaud Wetzel &lt;arnaud.wet...@gmail.com&gt;wrote:
+&gt;
+&gt;&gt; Ryan,
+&gt;&gt; Increasing &quot;ulimit -n&quot; (current value is 4096, I have tested from 1024 to
+&gt;&gt; 200000) does not change anything, always the same errors :
+&gt;&gt; {timeout,range_loop}
+&gt;&gt; lookup/range failure:
+&gt;&gt; {{badfun,#Fun&lt;riak_search_client.9.8393097&gt;},[{mi_server,iterate,6},{mi_server,lookup,8}]}
+&gt;&gt;
+&gt;&gt; I cannot find the command &quot;repair&quot; that you talk about in your email (on
+&gt;&gt; riak1.2.0-rc1), is it a function directly in an erlang module and not
+&gt;&gt; accessible yet with riak-admin ?
+&gt;&gt;
+&gt;&gt;  Thank you very much.
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; Arnaud Wetzel
+&gt;&gt; KBRW Ad-Venture
+&gt;&gt;  13 rue st Anastase, 75003 Paris
+&gt;&gt;
+&gt;&gt; 2012/7/16 Ryan Zezeski &lt;rzeze...@basho.com&gt;
+&gt;&gt;
+&gt;&gt;&gt; Arnaud,
+&gt;&gt;&gt;
+&gt;&gt;&gt; The 'stream_timeout' and 'emfile' should be correlated.  Whenever you
+&gt;&gt;&gt; see the 'emfile' you should see a corresponding timeout.  The index server
+&gt;&gt;&gt; errors causing the result collector to timeout later.  First, adjust your
+&gt;&gt;&gt; file descriptor limit and then go from there.
+&gt;&gt;&gt;
+&gt;&gt;&gt; For the 1.2 release a &quot;repair&quot; command has been added to rebuild KV or
+&gt;&gt;&gt; index data for a given partition.  In releases before that you must reindex
+&gt;&gt;&gt; all your data.  You don't have to worry about removing the current indexes
+&gt;&gt;&gt; as merge index will garbage collect that for you as it merges.  As I said,
+&gt;&gt;&gt; first I would fix the 'emfile' issue and then see if further action is
+&gt;&gt;&gt; needed.
+&gt;&gt;&gt;
+&gt;&gt;&gt; -Z
+&gt;&gt;&gt;
+&gt;&gt;&gt; P.S. If you want to be absolutely sure what your FD limit is in Riak you
+&gt;&gt;&gt; can `riak attach` and then `os:cmd(&quot;ulimit -n&quot;).`  Make sure to use Ctrl-D
+&gt;&gt;&gt; to exit from the Riak shell.
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Mon, Jul 16, 2012 at 5:21 AM, Arnaud Wetzel 
+&gt;&gt;&gt; &lt;arnaud.wet...@gmail.com&gt;wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Hi,
+&gt;&gt;&gt;&gt; Friday evening one of our riak node has reach his disk space limit
+&gt;&gt;&gt;&gt; during indexing in riak-search. Then after adding some nodes, some requests
+&gt;&gt;&gt;&gt; fail, and it is impossible to find the correlation between requests with
+&gt;&gt;&gt;&gt; error or those who succeed.
+&gt;&gt;&gt;&gt; The errors are :
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; {{nocatch,stream_timeout},[{riak_search_op_utils,gather_stream_results,4}]}
+&gt;&gt;&gt;&gt; {timeout,range_loop}
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; and sometimes (not always) :
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; {{badmatch,{error,emfile}},[{mi_segment,iterate_by_keyinfo,7},{mi_server,'-lookup/8-lc$^1/1-1-',4},{mi_server,'-lookup/8-lc$^1/1-1-',4},{mi_server,lookup,8}]}
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; So anyone else has experienced these errors ? Is it possible that they
+&gt;&gt;&gt;&gt; come from the disk over limit error ? How can I try to repair merge index
+&gt;&gt;&gt;&gt; data ? If it is not possible, what is the good process to delete entirely
+&gt;&gt;&gt;&gt; all the indexes (only indexes, keeping riak datas).
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thank you very much.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Regards.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt; Arnaud Wetzel
+&gt;&gt;&gt;&gt; KBRW Ad-Venture
+&gt;&gt;&gt;&gt; 13 rue st Anastase, 75003 Paris
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07987.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#07988">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#07988">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07994.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07957.html">Range Loop Timeout Error after (after disk space over limit)</a></span> <span class="sender italic">Arnaud Wetzel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07959.html">Re: Range Loop Timeout Error after (after disk space ov...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07986.html">Re: Range Loop Timeout Error after (after disk spac...</a></span> <span class="sender italic">Arnaud Wetzel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07987.html">Re: Range Loop Timeout Error after (after disk ...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Range Loop Timeout Error after (after d...</span> <span class="sender italic">Arnaud Wetzel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07994.html">Re: Range Loop Timeout Error after (af...</a></span> <span class="sender italic">Arnaud Wetzel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07996.html">Re: Range Loop Timeout Error after...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Range Loop Timeout Error after (after disk space over limit)">
+<input type="hidden" name="msgid" value="CAHHTVj4Wy9sR53fJM7am2Db52wo-MW3g+iQVZ+z15QAqAuMgUQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07988.html">
+<input type="submit" value=" Arnaud Wetzel ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Range+Loop+Timeout+Error+after+%5C%28after+disk+space+over+limit%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07987.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07994.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHHTVj4Wy9sR53fJM7am2Db52wo-MW3g+iQVZ+z15QAqAuMgUQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

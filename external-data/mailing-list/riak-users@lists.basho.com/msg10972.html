@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: handling the ETag</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10972" id="c">
+<link rel="index" href="maillist.html#10972" id="i">
+<link rel="prev" href="msg10971.html" id="p">
+<link rel="next" href="msg10962.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10972.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+handling+the+ETag%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: handling the ETag</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Simon+Majou%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Simon Majou</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130425" rel="nofollow">Thu, 25 Apr 2013 10:58:46 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Yes thank you Dmitri
+Le 25 avr. 2013 19:52, &quot;Dmitri Zagidulin&quot; &lt;dzagidu...@basho.com&gt; a écrit :</pre><pre>
+
+&gt; Hi Simon,
+&gt;
+&gt; You are correct - setting the ETag in the Riak object header when doing a
+&gt; PUT or POST does not work (there is no way to specify or change the ETag on
+&gt; most riak clients).
+&gt;
+&gt; The good news is, I think you can solve your particular problem (caching
+&gt; users' web pages) without that capability. You don't really need the ETag
+&gt; of the riak _object_ in which the page is stored to match the ETag of the
+&gt; actual web page that the user's browser interacts with. (What etags are
+&gt; actually used in Riak for, is with 'If-None-Match' or 'If-Modified-Since'
+&gt; conditional HTTP semantics).
+&gt;
+&gt; The easiest way to implement this caching behavior is - use the Etag of
+&gt; the webpage as the key (or part of the key) for the riak object that stores
+&gt; the web page. So:
+&gt;
+&gt; 1) The web page is generated, and sent to the user with an etag 'abcd'.
+&gt; 2) Store that web page in Riak using the etag as the key (here, 'abcd') or
+&gt; as part of the key (something like 'your-url/index.html-abcd')
+&gt; Ignore the fact that the etag in the riak object will be something
+&gt; completely different, 'efgh'. You don't really need to use riak's etag.
+&gt;
+&gt; 3) When subsequent requests for that web page come in from the user's
+&gt; browser, make a GET call to Riak for the etag 'abcd' and return it if it
+&gt; exists, or else generate it &amp; store it as usual.
+&gt;
+&gt; (You're probably wondering about cache expiration, and how to clean up all
+&gt; those stored web pages. Here, I would recommend using the Bitcask back end
+&gt; and setting it to auto-expire (see the Automatic Expiration section of
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/tutorials/choosing-a-backend/Bitcask/">http://docs.basho.com/riak/latest/tutorials/choosing-a-backend/Bitcask/</a>). The 
+&gt; other alternative is to keep track of the web pages and their
+&gt; expiration externally, and to issue explicit DELETE calls as part of a cron
+&gt; job.)
+&gt;
+&gt; Does that make sense?
+&gt;
+&gt; Dmitri
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; On Wed, Apr 24, 2013 at 12:30 PM, Simon Majou &lt;si...@majou.org&gt; wrote:
+&gt;
+&gt;&gt; Hello,
+&gt;&gt;
+&gt;&gt; I am building a basic architecture : user / application server / riak.
+&gt;&gt; The web pages are generated on the application server, then sent to the
+&gt;&gt; user and finally stored (cached) in Riak. I would like the page sent to the
+&gt;&gt; user &amp; the page stored in Riak to have the same ETag, so new requests with
+&gt;&gt; Etags are handled easily by forwarding them to Riak.
+&gt;&gt;
+&gt;&gt; I tried to set the ETag header when doing a PUT, but it doesn't have any
+&gt;&gt; effect.
+&gt;&gt;
+&gt;&gt; So how can I do that ? Obviously I don't want to store the page in Riak
+&gt;&gt; before sending it to the user as it would add latency.
+&gt;&gt;
+&gt;&gt; Simon
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10971.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10972">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10972">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10962.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10961.html">handling the ETag</a></span> <span class="sender italic">Simon Majou</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10971.html">Re: handling the ETag</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: handling the ETag</span> <span class="sender italic">Simon Majou</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: handling the ETag">
+<input type="hidden" name="msgid" value="CAEoZr1k4oW+45Gzk9q5Mxv8CKAWFYJqKA7m5fR=XR2KwsXgViA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10972.html">
+<input type="submit" value=" Simon Majou ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+handling+the+ETag%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10971.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10962.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEoZr1k4oW+45Gzk9q5Mxv8CKAWFYJqKA7m5fR=XR2KwsXgViA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

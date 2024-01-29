@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Logical operators in Ripple</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03562" id="c">
+<link rel="index" href="maillist.html#03562" id="i">
+<link rel="prev" href="msg03552.html" id="p">
+<link rel="next" href="msg03565.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03562.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Logical+operators+in+Ripple%22&amp;o=newest" rel="nofollow"><span itemprop="name">Logical operators in Ripple</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Caught%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Caught</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110605" rel="nofollow">Sun, 05 Jun 2011 19:47:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+I'm having a problem with Ripple and logical operator key filters.  Has
+anyone managed to get &quot;and&quot; or &quot;or&quot; key filter combinations working?</pre><pre>
+
+When I run the following:
+
+require 'ripple'
+
+client = Riak::Client.new
+bucket = client.bucket(&quot;test_bucket&quot;)
+
+one = Riak::RObject.new(bucket, &quot;test-123&quot;)
+one.content_type = &quot;application/json&quot;
+one.data = '{&quot;name&quot;: &quot;test-123&quot;}'
+one.store
+
+two = Riak::RObject.new(bucket, &quot;test-456&quot;)
+two.content_type = &quot;application/json&quot;
+two.data = '{&quot;name&quot;: &quot;test-456&quot;}'
+two.store
+
+
+results_1 = Riak::MapReduce.new(client).
+          add(&quot;visitors&quot;, [[&quot;tokenize&quot;, &quot;-&quot;, 1], [&quot;eq&quot;, &quot;test&quot;]]).
+          map(&quot;Riak.mapValuesJson&quot;, :keep =&gt; true).run
+# Works as expected
+p results_1
+
+results_2 = Riak::MapReduce.new(client).
+          add(&quot;visitors&quot;, [[&quot;ends_with&quot;, &quot;123&quot;]]).
+          map(&quot;Riak.mapValuesJson&quot;, :keep =&gt; true).run
+# Works as expected
+p results_2
+
+results_3 = Riak::MapReduce.new(client).
+          add(&quot;test_bucket&quot;, [&quot;and&quot;, [[&quot;tokenize&quot;, &quot;-&quot;, 1], [&quot;eq&quot;, &quot;test&quot;]],
+                                     [[&quot;ends_with&quot;, &quot;123&quot;]]
+                          ]).
+          map(&quot;Riak.mapValuesJson&quot;, :keep =&gt; true).run
+# Error
+p results_3
+
+
+
+
+This is what the error report says:
+
+=ERROR REPORT==== 5-Jun-2011::19:42:34 ===
+webmachine error: path=&quot;/mapred&quot;
+{error,{error,function_clause,
+              [{riak_client,build_exprs,
+                            [[&lt;&lt;&quot;and&quot;&gt;&gt;,
+                              [[&lt;&lt;&quot;tokenize&quot;&gt;&gt;,&lt;&lt;&quot;-&quot;&gt;&gt;,1],
+                               [&lt;&lt;&quot;eq&quot;&gt;&gt;,&lt;&lt;&quot;test&quot;&gt;&gt;]],
+                              [[&lt;&lt;&quot;ends_with&quot;&gt;&gt;,&lt;&lt;&quot;123&quot;&gt;&gt;]]],
+                             [],
+                             {riak_client,'riak@127.0.0.1
+',&lt;&lt;6,82,5,153&gt;&gt;}]},
+               {riak_client,build_filter,2},
+               {riak_client,stream_list_keys,6},
+               {riak_client,mapred_bucket_stream,7},
+               {riak_client,mapred_bucket,6},
+               {riak_kv_wm_mapred,process_post,2},
+               {webmachine_resource,resource_call,3},
+               {webmachine_resource,do,3}]}}
+
+
+Any ideas?
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03552.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03562">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03562">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03565.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Logical operators in Ripple</span> <span class="sender italic">Ryan Caught</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03565.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03563.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">Ryan Caught</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03564.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03566.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">Ryan Caught</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03569.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03572.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">David Mitchell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03583.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">Ryan Caught</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03590.html">Re: Logical operators in Ripple</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Logical operators in Ripple">
+<input type="hidden" name="msgid" value="BANLkTinx82T51X6pdv8K9ZZgTnSbZHEVAg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03562.html">
+<input type="submit" value=" Ryan Caught ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Logical+operators+in+Ripple%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03552.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03565.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTinx82T51X6pdv8K9ZZgTnSbZHEVAg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

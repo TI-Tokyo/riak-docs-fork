@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Strange Exception in java-client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09926" id="c">
+<link rel="index" href="maillist.html#09926" id="i">
+<link rel="prev" href="msg09925.html" id="p">
+<link rel="next" href="msg09935.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09926.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Strange+Exception+in+java%5C-client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Strange Exception in java-client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Brian+Roach%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Roach</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130130" rel="nofollow">Wed, 30 Jan 2013 13:43:27 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Ingo -
+
+Riak is returning an object with no contents (which ends up being an
+empty String passed to Jackson).</pre><pre>
+
+Unless you've somehow mangled the data yourself (which sounds unlikely
+given the bit about the 404 from the command line; more on that in a
+bit) what's happening is that you're encountering a tombstone; an
+object that has been deleted via a delete operation but hasn't been
+removed yet. This causes an &quot;empty&quot; object to be returned (the
+tombstone) and causes Jackson to puke (HTTP will actually return this
+as a 404 but if you look there's still a X-Riak-Vclock: header with a
+vclock).
+
+Probably the best description of how this works in Riak is a post by
+Jon Meredith which can be found here:
+<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html</a>
+
+Unfortunately this is something the Java client doesn't know what to
+do with when using the default JSONConverter and your own POJOs. And
+it's not as simple as &quot;just return null&quot; because of a case where a
+tombstone could actually be a sibling and the client then needs to
+resolve the conflict which is the next step in the process. It's
+something I'm going to have to think about.
+
+As you've discovered, when the tombstone isn't a sibling simply
+retrying will often work because by then the delete has fully
+completed and the tombstones have been removed from the Riak nodes.
+
+Is there a reason you're rapidly doing a delete then a store (which
+triggers that fetch)?
+
+Thanks,
+Brian Roach
+
+On Wed, Jan 30, 2013 at 9:06 AM, Ingo Rockel
+&lt;ingo.roc...@bluelionmobile.com&gt; wrote:
+&gt; Hi Dmitri,
+&gt;
+&gt; it doesn't happen in my code and it does happen while the riak-client tries
+&gt; to deserialize a fetched object from riak in a &quot;fetch-before-store&quot; (see the
+&gt; stack), I also get this error randomly while trying just to fetch an object
+&gt; from the database.
+&gt;
+&gt; And if I try to fetch the object from the cmdline I just get a 404. So I
+&gt; would expect the java-client just returns a null-result for this fetch and
+&gt; not to throw an exception.
+&gt;
+&gt; All my objects are stored using the riak-java-client and the
+&gt; json-serializer.
+&gt;
+&gt; Ahh, just tested: if I retry it sometimes works, although most of the time
+&gt; still fails (haven't tried with a sleep so far).
+&gt;
+&gt; Ingo
+&gt;
+&gt; Am 30.01.2013 16:57, schrieb Dmitri Zagidulin:
+&gt;&gt;
+&gt;&gt; Hi Ingo.
+&gt;&gt;
+&gt;&gt; It's difficult to diagnose the exact reason without looking at your code.
+&gt;&gt; But that error is a JSON parser error. It gets thrown whenever the code
+&gt;&gt; tries to parse an empty string as a json object.
+&gt;&gt; The general-case solution is to validate your strings or input streams
+&gt;&gt; that you're turning into JSON objects, or to catch an exception when
+&gt;&gt; creating that object and deal with it accordingly.
+&gt;&gt;
+&gt;&gt; But again, it's hard to say why it's happening exactly, in your case --
+&gt;&gt; try to determine where in your code that's happening and think of ways
+&gt;&gt; some input or result is empty, and check for that.
+&gt;&gt;
+&gt;&gt; Dmitri
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Wed, Jan 30, 2013 at 10:44 AM, Ingo Rockel
+&gt;&gt; &lt;ingo.roc...@bluelionmobile.com &lt;<a  rel="nofollow" href="mailto:ingo.roc...@bluelionmobile.com">mailto:ingo.roc...@bluelionmobile.com</a>&gt;&gt;
+&gt;&gt;
+&gt;&gt; wrote:
+&gt;&gt;
+&gt;&gt;     Hi,
+&gt;&gt;
+&gt;&gt;     I wrote a java tool to convert part of our data from a
+&gt;&gt;     mysql-database into riak. As this tool is running while our system
+&gt;&gt;     is still up, it needs to replay all modifications done in the mysql
+&gt;&gt;     database, during these modifications I sometimes get this exception
+&gt;&gt;     from the riak client:
+&gt;&gt;
+&gt;&gt;     com.basho.riak.client.convert.__ConversionException:
+&gt;&gt;
+&gt;&gt;     java.io.EOFException: No content to map to Object due to end of input
+&gt;&gt;     com.basho.riak.client.convert.__ConversionException:
+&gt;&gt;
+&gt;&gt;     java.io.EOFException: No content to map to Object due to end of input
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.basho.riak.client.convert.__JSONConverter.toDomain(__JSONConverter.java:167)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.basho.riak.client.__operations.FetchObject.__execute(FetchObject.java:110)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.basho.riak.client.__operations.StoreObject.__execute(StoreObject.java:112)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.bluelionmobile.qeep.__messaging.db.impl.__MessageKVImpl.__storeUniqueMessageDto(__MessageKVImpl.java:264)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.bluelionmobile.qeep.__messaging.db.impl.__MessageKVImpl.__createDataFromDTO(__MessageKVImpl.java:138)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.bluelionmobile.qeep.__messaging.db.impl.__MessageKVImpl.__updateDataFromDTO(__MessageKVImpl.java:205)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.bluelionmobile.qeep.__messaging.db.utils.Replay$__ReplayRunner.run(Replay.java:__243)
+&gt;&gt;              at java.lang.Thread.run(Thread.__java:722)
+&gt;&gt;
+&gt;&gt;     Caused by: java.io.EOFException: No content to map to Object due to
+&gt;&gt;     end of input
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; org.codehaus.jackson.map.__ObjectMapper._initForReading(__ObjectMapper.java:2775)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; org.codehaus.jackson.map.__ObjectMapper._readMapAndClose(__ObjectMapper.java:2718)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; org.codehaus.jackson.map.__ObjectMapper.readValue(__ObjectMapper.java:1863)
+&gt;&gt;              at
+&gt;&gt;
+&gt;&gt; com.basho.riak.client.convert.__JSONConverter.toDomain(__JSONConverter.java:156)
+&gt;&gt;
+&gt;&gt;              ... 7 more
+&gt;&gt;
+&gt;&gt;     it only happens once every few thousand updates and if I check the
+&gt;&gt;     object from the cmdline I only get a 404.
+&gt;&gt;
+&gt;&gt;     Any ideas what might cause this and how to fix/workaround it?
+&gt;&gt;
+&gt;&gt;     Ingo
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;     _________________________________________________
+&gt;&gt;     riak-users mailing list
+&gt;&gt;     riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;     <a  rel="nofollow" href="http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com">http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com</a>
+&gt;&gt;     &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Software Architect
+&gt;
+&gt; Blue Lion mobile GmbH
+&gt; Tel. +49 (0) 221 788 797 14
+&gt; Fax. +49 (0) 221 788 797 19
+&gt; Mob. +49 (0) 176 24 87 30 89
+&gt;
+&gt; ingo.roc...@bluelionmobile.com
+&gt;&gt;&gt;&gt; qeep: Hefferwolf
+&gt;
+&gt; www.bluelionmobile.com
+&gt; www.qeep.net
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09925.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09926">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09926">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09935.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09923.html">Strange Exception in java-client</a></span> <span class="sender italic">Ingo Rockel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09924.html">Re: Strange Exception in java-client</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09925.html">Re: Strange Exception in java-client</a></span> <span class="sender italic">Ingo Rockel</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Strange Exception in java-client</span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09935.html">Re: Strange Exception in java-client</a></span> <span class="sender italic">Ingo Rockel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09942.html">Re: Strange Exception in java-clien...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09945.html">Re: Strange Exception in java-c...</a></span> <span class="sender italic">Ingo Rockel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09968.html">Re: Strange Exception in ja...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09988.html">Re: Strange Exception in ja...</a></span> <span class="sender italic">Ingo Rockel</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Strange Exception in java-client">
+<input type="hidden" name="msgid" value="CAM+FMBtVyqvQf_h9=QZA04O4vz5Cgq-NaGsMP5_D2vqWL_AAXQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09926.html">
+<input type="submit" value=" Brian Roach ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Strange+Exception+in+java%5C-client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09925.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09935.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAM+FMBtVyqvQf_h9=QZA04O4vz5Cgq-NaGsMP5_D2vqWL_AAXQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

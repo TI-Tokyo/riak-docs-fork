@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: DELETE and vclocks</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd10.html#12348" id="c">
+<link rel="index" href="mail10.html#12348" id="i">
+<link rel="prev" href="msg12345.html" id="p">
+<link rel="next" href="msg12349.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12348.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+DELETE+and+vclocks%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: DELETE and vclocks</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Gints+Gail%C4%ABtis%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Gints Gailītis</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130923" rel="nofollow">Mon, 23 Sep 2013 12:16:05 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sorry, should have mentioned that, I do set allow_mult=true.
+
+Also, it seems I had a problem with my initial test - what was failing to
+find the object was my map reduce query, a simple find by key worked just
+fine. But now there seem to be two issues:</pre><pre>
+
+1) How does Riak handle siblings when doing a map reduce query? I assumed
+that there would simply be more elements in the values array, but it seems
+that this is not the case. Basically, the beginning of my javascript map
+function looks something like this:
+function(param) {
+    for ( var i=0; i &lt; param.values.length; i++ ) {
+        ... do stuff with param.values[i] ...
+
+but this does not seem to let me access all the siblings (or I might have
+screwed something up elsewhere in my code, of course).
+
+Is this how siblings should be handled in map reduce? If not, how?
+
+2) Now I'm running into another issue where even a simple find by key seems
+to act weird.
+
+When I PUT the object for the first time, I get this vclock:
+a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5rEyzHy95TRfFgA=
+
+Then I read the object, and get the same vclock back:
+a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5rEyzHy95TRfFgA=
+
+Then, I modify it, PUT it again, and get a new vclock:
+a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5bEyzHy95TRfFgA=
+
+Then, I do two deletes, one with each of the vlocks:
+a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5rEyzHy95TRfFgA=
+a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5bEyzHy95TRfFgA=
+
+Then, I do another read, and I get a 300 response with 3 siblings, two
+marked X-Riak-Deleted and a third one whose value matches the second PUT.
+The vclock I get along with the 300 response is:
+a85hYGBgzGDKBVIcypz/fgZJFyllMCWy5LEyzHy95TRfFgA=
+
+(Full packet capture, including the setup of the bucket attached).
+
+Why does Riak create the third sibling? All I've basically done is created
+a new object, modified it, and then deleted it, once with a stale vclock,
+once with the latest vclock.
+
+
+
+
+On Mon, Sep 23, 2013 at 7:19 PM, Brady Wetherington &lt;br...@bespincorp.com&gt;wrote:
+
+&gt; Well, I'm not sure, and I'm new to Riak too, but I *think* you'd need to
+&gt; set allow_multi on the bucket.
+&gt;
+&gt; -B.
+&gt;
+&gt;
+&gt; On Mon, Sep 23, 2013 at 4:01 AM, Gints &lt;gints.gaili...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; I did a PUT, and the vclock that came back was:
+&gt;&gt; a85hYGBgzGDKBVIcypz/fgZJFylnMCUy5rEyNOdtOc2XBQA=
+&gt;&gt;
+&gt;&gt; Then I read the object back, modified it, and PUT it again, providing the
+&gt;&gt; old vclock, and got a new vclock:
+&gt;&gt; a85hYGBgzGDKBVIcypz/fgZJFylnMCUy5bEyNOdtOc2XBQA=
+&gt;&gt;
+&gt;&gt; (Notice they are slightly different: Uy5rEy -&gt; Uy5bEy)
+&gt;&gt;
+&gt;&gt; Then, I did a DELETE, using the first vector clock, not the second,
+&gt;&gt; updated
+&gt;&gt; one.
+&gt;&gt;
+&gt;&gt; After that the object was gone, I could not find it in the database any
+&gt;&gt; more.
+&gt;&gt;
+&gt;&gt; Is this supposed to be like that - deleting an object providing a stale
+&gt;&gt; vclock actually deletes it? Or am I probably doing something wrong?
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; Gints
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; View this message in context:
+&gt;&gt; <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/DELETE-and-vclocks-tp4029176.html">http://riak-users.197444.n3.nabble.com/DELETE-and-vclocks-tp4029176.html</a>
+&gt;&gt; Sent from the Riak Users mailing list archive at Nabble.com.
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt;
+</pre><pre>------------------------------------------------------------------
+PUT /buckets/14926742_test_objects/props HTTP/1.1
+Host: localhost:8098
+Accept: */*
+Content-Type: application/json
+Content-Length: 54
+
+{&quot;props&quot;:{&quot;n_val&quot;:3,&quot;r&quot;:2,&quot;w&quot;:2,&quot;dw&quot;:2,&quot;pr&quot;:2,&quot;pw&quot;:2}}
+
+HTTP/1.1 204 No Content
+Vary: Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: application/json
+Content-Length: 0
+
+------------------------------------------------------------------
+PUT /buckets/14926742_test_objects/props HTTP/1.1
+Host: localhost:8098
+Accept: */*
+Content-Type: application/json
+Content-Length: 29
+
+{&quot;props&quot;:{&quot;allow_mult&quot;:true}}
+
+HTTP/1.1 204 No Content
+Vary: Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: application/json
+Content-Length: 0
+
+------------------------------------------------------------------
+PUT /buckets/14926742_test_objects/keys/123?returnbody=true HTTP/1.1
+Host: localhost:8098
+Accept: */*
+Content-Type: application/json
+x-riak-index-_sync_worker_num_int: 0
+x-riak-index-id_int: 123
+Content-Length: 169
+
+{&quot;id&quot;:123,&quot;int&quot;:1,&quot;_last_update_mts&quot;:1379954585386,&quot;_deleted&quot;:false,&quot;_vtags&quot;:&quot;a:1:{s:48:\&quot;001379954585386:5c91802edbfb6ed98dd3f11673df1884\&quot;;i:1;}&quot;,&quot;_sync_worker_num&quot;:0}
+
+HTTP/1.1 200 OK
+X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5rEyzHy95TRfFgA=
+x-riak-index-id_int: 123
+x-riak-index-_sync_worker_num_int: 0
+Vary: Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Link: &lt;/buckets/14926742_test_objects&gt;; rel=&quot;up&quot;
+Last-Modified: Mon, 23 Sep 2013 16:43:05 GMT
+ETag: &quot;7tE0kxbo5ovXc49Njz6jZ&quot;
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: application/json
+Content-Length: 169
+
+{&quot;id&quot;:123,&quot;int&quot;:1,&quot;_last_update_mts&quot;:1379954585386,&quot;_deleted&quot;:false,&quot;_vtags&quot;:&quot;a:1:{s:48:\&quot;001379954585386:5c91802edbfb6ed98dd3f11673df1884\&quot;;i:1;}&quot;,&quot;_sync_worker_num&quot;:0}
+
+------------------------------------------------------------------
+GET /buckets/14926742_test_objects/keys/123 HTTP/1.1
+Host: localhost:8098
+Accept: multipart/mixed
+Accept: application/json
+
+HTTP/1.1 200 OK
+X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5rEyzHy95TRfFgA=
+x-riak-index-id_int: 123
+x-riak-index-_sync_worker_num_int: 0
+Vary: Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Link: &lt;/buckets/14926742_test_objects&gt;; rel=&quot;up&quot;
+Last-Modified: Mon, 23 Sep 2013 16:43:05 GMT
+ETag: &quot;7tE0kxbo5ovXc49Njz6jZ&quot;
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: application/json
+Content-Length: 169
+
+{&quot;id&quot;:123,&quot;int&quot;:1,&quot;_last_update_mts&quot;:1379954585386,&quot;_deleted&quot;:false,&quot;_vtags&quot;:&quot;a:1:{s:48:\&quot;001379954585386:5c91802edbfb6ed98dd3f11673df1884\&quot;;i:1;}&quot;,&quot;_sync_worker_num&quot;:0}
+
+------------------------------------------------------------------
+PUT /buckets/14926742_test_objects/keys/123?returnbody=true HTTP/1.1
+Host: localhost:8098
+Accept: */*
+Content-Type: application/json
+X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5rEyzHy95TRfFgA=
+
+x-riak-index-_sync_worker_num_int: 0
+x-riak-index-id_int: 123
+Content-Length: 231
+
+{&quot;id&quot;:123,&quot;int&quot;:2,&quot;_last_update_mts&quot;:1379954585402,&quot;_deleted&quot;:false,&quot;_vtags&quot;:&quot;a:2:{s:48:\&quot;001379954585386:5c91802edbfb6ed98dd3f11673df1884\&quot;;i:1;s:48:\&quot;001379954585402:eedf0a117d3d00de7dfb77728337c3c6\&quot;;i:1;}&quot;,&quot;_sync_worker_num&quot;:0}
+
+HTTP/1.1 200 OK
+X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5bEyzHy95TRfFgA=
+x-riak-index-id_int: 123
+x-riak-index-_sync_worker_num_int: 0
+Vary: Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Link: &lt;/buckets/14926742_test_objects&gt;; rel=&quot;up&quot;
+Last-Modified: Mon, 23 Sep 2013 16:43:05 GMT
+ETag: &quot;1SPC3oOtT5H9voW0eIcMsw&quot;
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: application/json
+Content-Length: 231
+
+{&quot;id&quot;:123,&quot;int&quot;:2,&quot;_last_update_mts&quot;:1379954585402,&quot;_deleted&quot;:false,&quot;_vtags&quot;:&quot;a:2:{s:48:\&quot;001379954585386:5c91802edbfb6ed98dd3f11673df1884\&quot;;i:1;s:48:\&quot;001379954585402:eedf0a117d3d00de7dfb77728337c3c6\&quot;;i:1;}&quot;,&quot;_sync_worker_num&quot;:0}
+
+------------------------------------------------------------------
+DELETE /buckets/14926742_test_objects/keys/123 HTTP/1.1
+Host: localhost:8098
+Accept: */*
+X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5rEyzHy95TRfFgA=
+
+
+HTTP/1.1 204 No Content
+Vary: Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: application/json
+Content-Length: 0
+
+------------------------------------------------------------------
+DELETE /buckets/14926742_test_objects/keys/123 HTTP/1.1
+Host: localhost:8098
+Accept: */*
+X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fgZJFyllMCUy5bEyzHy95TRfFgA=
+
+
+HTTP/1.1 204 No Content
+Vary: Accept, Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: text/plain
+Content-Length: 0
+
+------------------------------------------------------------------
+GET /buckets/14926742_test_objects/keys/123 HTTP/1.1
+Host: localhost:8098
+Accept: multipart/mixed
+Accept: application/json
+
+HTTP/1.1 300 Multiple Choices
+X-Riak-Vclock: a85hYGBgzGDKBVIcypz/fgZJFyllMCWy5LEyzHy95TRfFgA=
+Vary: Accept, Accept-Encoding
+Server: MochiWeb/1.1 WebMachine/1.10.0 (never breaks eye contact)
+Last-Modified: Mon, 23 Sep 2013 16:43:05 GMT
+ETag: &quot;5z0Amml5azjy81APTysbPZ&quot;
+Date: Mon, 23 Sep 2013 16:43:05 GMT
+Content-Type: multipart/mixed; boundary=UiTacyd0BczYDw1Dow5QYRlfDZt
+Content-Length: 969
+
+
+--UiTacyd0BczYDw1Dow5QYRlfDZt
+Content-Type: application/octet-stream
+Link: &lt;/buckets/14926742_test_objects&gt;; rel=&quot;up&quot;
+Etag: 2bhNOw6eQgfGfZnNm1j6Hi
+Last-Modified: Mon, 23 Sep 2013 16:43:05 GMT
+X-Riak-Deleted: true
+
+
+--UiTacyd0BczYDw1Dow5QYRlfDZt
+Content-Type: application/octet-stream
+Link: &lt;/buckets/14926742_test_objects&gt;; rel=&quot;up&quot;
+Etag: 6VyhkLsUYMj1bCtBTJFue4
+Last-Modified: Mon, 23 Sep 2013 16:43:05 GMT
+X-Riak-Deleted: true
+
+
+--UiTacyd0BczYDw1Dow5QYRlfDZt
+Content-Type: application/json
+Link: &lt;/buckets/14926742_test_objects&gt;; rel=&quot;up&quot;
+Etag: 1SPC3oOtT5H9voW0eIcMsw
+Last-Modified: Mon, 23 Sep 2013 16:43:05 GMT
+x-riak-index-_sync_worker_num_int: 0
+x-riak-index-id_int: 123
+
+{&quot;id&quot;:123,&quot;int&quot;:2,&quot;_last_update_mts&quot;:1379954585402,&quot;_deleted&quot;:false,&quot;_vtags&quot;:&quot;a:2:{s:48:\&quot;001379954585386:5c91802edbfb6ed98dd3f11673df1884\&quot;;i:1;s:48:\&quot;001379954585402:eedf0a117d3d00de7dfb77728337c3c6\&quot;;i:1;}&quot;,&quot;_sync_worker_num&quot;:0}
+--UiTacyd0BczYDw1Dow5QYRlfDZt--
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12345.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd10.html#12348">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail10.html#12348">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12349.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12344.html">DELETE and vclocks</a></span> <span class="sender italic">Gints</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12345.html">Re: DELETE and vclocks</a></span> <span class="sender italic">Brady Wetherington</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: DELETE and vclocks</span> <span class="sender italic">Gints Gailītis</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12349.html">Re: DELETE and vclocks</a></span> <span class="sender italic">Gints Gailītis</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12347.html">Re: DELETE and vclocks</a></span> <span class="sender italic">Gints Gailītis</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg12346.html">Re: DELETE and vclocks</a></span> <span class="sender italic">Gints</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: DELETE and vclocks">
+<input type="hidden" name="msgid" value="CAPtjdfVAN4cP2UR6BCJOg7muknRg+h=+nntVF16Jd=vEDqJOFw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12348.html">
+<input type="submit" value=" Gints Gailītis ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+DELETE+and+vclocks%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12345.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12349.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAPtjdfVAN4cP2UR6BCJOg7muknRg+h=+nntVF16Jd=vEDqJOFw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

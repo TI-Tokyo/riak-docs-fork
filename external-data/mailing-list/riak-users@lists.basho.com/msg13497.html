@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Search and Yokozuna Backup Strategy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#13497" id="c">
+<link rel="index" href="mail4.html#13497" id="i">
+<link rel="prev" href="msg13496.html" id="p">
+<link rel="next" href="msg13498.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13497.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Search+and+Yokozuna+Backup+Strategy%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Search and Yokozuna Backup Strategy</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140127" rel="nofollow">Mon, 27 Jan 2014 12:30:26 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Elias,
+</pre><pre>
+
+On Mon, Jan 27, 2014 at 2:40 PM, Elias Levy &lt;fearsome.lucid...@gmail.com&gt;wrote:
+
+&gt;
+&gt;
+&gt; Any comments on the backup strategy for Yokozuna?  Will it make use of
+&gt; Solr's Replication Handler, or something more lower level?  Will the node
+&gt; need to be offline to backup it up?
+&gt;
+
+There is no use of any Solr replication code--at all. Yokozuna (new Riak
+Search, yes I know the naming is confusing) can be thought of as secondary
+data to KV. It is a collection of index postings based on the canonical and
+authoritative KV data. Therefore, the postings can always be rebuilt from
+the KV data. AAE provides an automatic integrity check between the KV
+object and its postings that is run constantly in the background.
+
+Given that, there are two ways I see backup/restore working.
+
+1. From a local, file-level perspective. You take a snapshot of your node's
+local filesystem and use that as a save point in case of future corruption.
+In this case you don't worry yourself with cluster-wide consistency, it's
+just a local backup. If you ever have to restore this data then AAE and
+read-repair can deal with any divergence that is caused by using the
+restore. Although, you could end up with resurrected data depending on your
+delete policy and age of backup. Another issue is that various parts of
+Riak that write to disk may not be snapshot safe. It's already been
+discussed how leveldb isn't. I'm willing to bet Lucene isn't either. Any
+case where a logical operation requires multiple filesystem writes you have
+to worry about the snapshot occurring in the middle of the logical
+operation. I have no idea how Lucene would deal with snapshots that occur
+at the wrong time. I'm unsure how good it is at detecting, and more
+importantly, recovering from corruption. This is one reason why AAE is so
+important. I do demos at my talks where I literally rm -rf the entire index
+dir and AAE rebuilds it from scratch. This will not necessarily be a fast
+operation in a real production database but it's good to know that the data
+can always be re-built from the KV data. If you can cover the KV data then
+you can always rebuild the indexes.
+
+2. Backup/restore as a logical operation in Riak itself. We currently have
+a backup/restore but from what I hear it has various issues and needs to be
+fixed/replaced. But, assuming there was a backup command that worked I
+suppose you could try playing games with Yokozuna. Perhaps Yokozuna could
+freeze an index from merging segments and backup important files. Perhaps
+there are replication hooks built into Solr/Lucene that could be used. I'm
+not sure. I'm handwaving on purpose because I'm sure there are multiple
+avenues to explore. However, another option is to punt. As I said above the
+indexes can be rebuilt from the KV data. So if you have a backup that only
+works for KV then the restore operation would simply re-index the data as
+it is written. Yokozuna currently uses a low-level hook inside the KV vnode
+that notices any time that KV data is written so it should &quot;just work&quot;
+assuming restore goes through the KV code path and doesn't build files
+directly.
+
+-Z
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13496.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#13497">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#13497">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13498.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13432.html">Re: Riak Search and Yokozuna Backup Strateg...</a></span> <span class="sender italic">Sean McKibben</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13439.html">Re: Riak Search and Yokozuna Backup Str...</a></span> <span class="sender italic">Daniel Iwan</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13463.html">Re: Riak Search and Yokozuna Backup Strategy</a></span> <span class="sender italic">Joe Caswell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13464.html">Re: Riak Search and Yokozuna Backup Strategy</a></span> <span class="sender italic">Joe Caswell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13468.html">Re: Riak Search and Yokozuna Backup Strateg...</a></span> <span class="sender italic">Dave Martorana</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13470.html">Re: Riak Search and Yokozuna Backup Str...</a></span> <span class="sender italic">Sargun Dhillon</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13493.html">Re: Riak Search and Yokozuna Backup Strategy</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13494.html">Re: Riak Search and Yokozuna Backup Strateg...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13495.html">Re: Riak Search and Yokozuna Backup Str...</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13496.html">Re: Riak Search and Yokozuna Backup...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Search and Yokozuna Backup Strateg...</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13498.html">Re: Riak Search and Yokozuna Backup Str...</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13499.html">Re: Riak Search and Yokozuna Backup...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Search and Yokozuna Backup Strategy">
+<input type="hidden" name="msgid" value="CACZcpe=FB_Swq1rEBL03wkT1tbo8hZx+FJEj3zcr4mXFmhp8Gg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13497.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Search+and+Yokozuna+Backup+Strategy%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13496.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13498.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpe=FB_Swq1rEBL03wkT1tbo8hZx+FJEj3zcr4mXFmhp8Gg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

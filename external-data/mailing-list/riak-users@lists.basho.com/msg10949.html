@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: "expected_binaries" error in search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10949" id="c">
+<link rel="index" href="maillist.html#10949" id="i">
+<link rel="prev" href="msg10930.html" id="p">
+<link rel="next" href="msg10805.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10949.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22expected_binaries%5C%22+error+in+search%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: "expected_binaries" error in search</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130422" rel="nofollow">Mon, 22 Apr 2013 14:13:40 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Rob,
+
+I reproduced this at the command line. Here I'm storing two documents, with
+&gt; IDs 'doc8' and 'doc9', into a search-enabled bucket named 'test-search'.
+&gt;
+&gt; # This command works, even though 'lsh' is empty. I believe this is
+&gt; because I've never put a field named 'lsh' in this bucket, 'test-search'.
+&gt; curl -v -XPUT -H &quot;Content-Type: application/json&quot; -d '{&quot;terms&quot;: &quot;empty|en
+&gt; string|en test|en&quot;, &quot;lsh&quot;: &quot;&quot;, &quot;segments&quot;: &quot;d do doc docs&quot;}' '
+&gt; <a  rel="nofollow" href="http://riak.lumi:8098/riak/test-search/doc8?returnbody=true">http://riak.lumi:8098/riak/test-search/doc8?returnbody=true</a>'
+&gt;
+&gt; # However, if I use the empty string for a field that has ever been
+&gt; indexed before, *then* I get a crash.
+&gt; curl -v -XPUT -H &quot;Content-Type: application/json&quot; -d '{&quot;terms&quot;: &quot;&quot;,
+&gt; &quot;segments&quot;: &quot;d do doc docs&quot;}' '
+&gt; <a  rel="nofollow" href="http://riak.lumi:8098/riak/test-search/doc9?returnbody=true">http://riak.lumi:8098/riak/test-search/doc9?returnbody=true</a>'
+&gt;</pre><pre>
+
+I copy/pasted your commands and could not reproduce.  Both docs indexed
+correctly and were returned when running the following search.  However,
+the reason this works is because it's going through KV and using the commit
+hook to index.  The error you originally pasted is from data being indexed
+via the Riak Search Solr endpoint.  They are two different things.
+
+As it turns out there is a bug(?) in the Solr end-point.  It doesn't like
+empty fields.  E.g. if I send the following XML I can reproduce the error.
+
+---
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;add&gt;
+  &lt;doc&gt;
+    &lt;id&gt;docA&lt;/id&gt;
+    &lt;field name=&quot;terms&quot;&gt;empty|en string|en test|en&lt;/field&gt;
+    &lt;field name=&quot;lsh&quot;&gt;&lt;/field&gt;
+    &lt;field name=&quot;segments&quot;&gt;d do doc docs&lt;/field&gt;
+  &lt;/doc&gt;
+&lt;/add&gt;
+---
+
+To confirm, here's what I see in the log:
+
+2013-04-22 17:02:56.394 [error]
+&lt;0.4452.0&gt;@riak_solr_indexer_wm:malformed_request:37 Unable to parse
+request: {expected_binaries,&lt;&lt;&quot;lsh&quot;&gt;&gt;,[]}
+
+I filed an issue: <a  rel="nofollow" href="https://github.com/basho/riak_search/issues/141">https://github.com/basho/riak_search/issues/141</a>
+
+
+
+&gt;
+&gt; As requested, I typed that redbug command into the Erlang console, and at
+&gt; the moment of the crash I get some output. The output baffles me, though.
+&gt; The included ID is in the style of ID we use for actual documents, which
+&gt; are stored in totally different buckets, and which I didn't refer to at all
+&gt; in my testing.
+&gt;
+
+My guess is you tested this on the system while other writes were coming
+in.  This is what redbug is picking up.
+
+-Z
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10930.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10949">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10949">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10805.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10804.html">&quot;expected_binaries&quot; error in search</a></span> <span class="sender italic">Rob Speer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10814.html">Re: &quot;expected_binaries&quot; error in search</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10854.html">Re: &quot;expected_binaries&quot; error in search</a></span> <span class="sender italic">Rob Speer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10901.html">Re: &quot;expected_binaries&quot; error in searc...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10928.html">Re: &quot;expected_binaries&quot; error in s...</a></span> <span class="sender italic">Rob Speer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10929.html">Re: &quot;expected_binaries&quot; error...</a></span> <span class="sender italic">Rob Speer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10930.html">Re: &quot;expected_binaries&quot; e...</a></span> <span class="sender italic">Rob Speer</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: &quot;expected_binaries&quot; error...</span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: &quot;expected_binaries&quot; error in search">
+<input type="hidden" name="msgid" value="CACZcpen=Y4H-ZpPYgE3WD1uh2nn9H5tr5_wM53fZAK02otqPpg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10949.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22expected_binaries%5C%22+error+in+search%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10930.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10805.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpen=Y4H-ZpPYgE3WD1uh2nn9H5tr5_wM53fZAK02otqPpg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

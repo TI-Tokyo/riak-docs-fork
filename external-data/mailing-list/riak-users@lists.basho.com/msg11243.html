@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: setting n_val</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd15.html#11243" id="c">
+<link rel="index" href="mail15.html#11243" id="i">
+<link rel="prev" href="msg11244.html" id="p">
+<link rel="next" href="msg11246.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11243.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+setting+n_val%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: setting n_val</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dmitri+Zagidulin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dmitri Zagidulin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130610" rel="nofollow">Mon, 10 Jun 2013 09:44:48 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Alexander,
+
+Your question about n_val on a one-node server is very valid (and also the
+question of, so how do you migrate to a larger n_val size when you grow
+your cluster).</pre><pre>
+
+As an aside -- as John mentioned, Riak is designed from the ground up to be
+run on multi-node clusters, so you have to keep that in mind when choosing
+to run on just one node (when you're a startup on a budget, and just
+testing out an application, etc), in terms of expected performance.
+
+Anyways, you have two options:
+
+1) Start with the eventual n_val in mind (n=3, or n=2 as in your case) and
+live with slow performance on a single node. (The upside is - no migration
+required when adding new nodes, as the extra replicas will be moved to the
+appropriate new machines).
+
+2) Start with n_val=1 on a single node. The benefit of this is - faster
+performance (less replicas to deal with that don't help when you're on one
+node). The drawback is - you need to have some sort of migration strategy
+when expanding your Riak deployment to more nodes.
+It doesn't have to be complicated, but you will have to deal with the fact
+that, if you have a set of data with n=1, and then increase n to 2 in the
+app config when you add a new node, half of the vnodes are going to be
+missing data for any given request. This is not disastrous, but you do need
+to either rely on read-repair to create the missing replicas, or you need
+to do it yourself.
+Here are the options as I see it:
+
+a) If you can afford downtime when adding a new cluster, you could back up
+the contents of your one-node cluster, then add the new node &amp; up n_val to
+2. And then restore to the new cluster. The writes from the restore are
+going to create the new number of replicas (n_val=2). You can you logical
+backup tools like 'riak-admin backup' or Riak Data Migrator. (Backing up
+and restoring the data directory won't work, for adding a new node).
+
+b) You can add retries to your application logic. If you get a Not Found
+(and you know that the value is supposed to be there), you can re-try the
+GET. (After the first get and a 404, read-repair takes place to fill in
+missing values, so the second read should be fine).
+
+c) If you're on 1.3+ and have Active Anti-Entropy enabled, you can increase
+n_val to 2, and wait for AAE to fill in the missing replicas (this should
+probably still be paired with option b, as you'll need to retry some reads
+while it's working).
+
+The few times that I've built single-node apps (during hackathons, etc), I
+usually go with option 2 (a), and backup/restore the data. But your use
+case requirements may difer.
+
+Dmitri
+
+
+
+On Mon, Jun 10, 2013 at 12:01 PM, Alexander Ilyin &lt;alexan...@rutarget.ru&gt;wrote:
+
+&gt; Hi all,
+&gt;
+&gt; I have a question regarding setting the n_val.
+&gt; In the documentation (
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/tutorials/fast-track/Tunable-CAP-Controls-in-Riak/">http://docs.basho.com/riak/latest/tutorials/fast-track/Tunable-CAP-Controls-in-Riak/</a>)
+&gt; it is stated that:
+&gt;
+&gt; n_val must be greater than 0 and less than or equal to the number of
+&gt; actual nodes in your cluster to get all the benefits of replication.
+&gt; And, we advise against modifying the n_val of a bucket after its initial
+&gt; creation as this may result in failed reads because the new
+&gt; value may not be replicated to all the appropriate partitions.
+&gt;
+&gt; But this seems contradictory to me. Which value I have to set if I'm
+&gt; setting up one node right now but planning to add second one later?
+&gt; Setting n_val=2 means this value will be greater than actual number of
+&gt; nodes. But setting n_val=1 is also not advisable since
+&gt; I will have to change it later to n_val=2 (I'm planning to have two
+&gt; replicas in the end).
+&gt;
+&gt; I'm also concerned about the performance in case of one node and n_val=2.
+&gt; Will it degrade since both replicas are stored on the same server?
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11244.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd15.html#11243">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail15.html#11243">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11246.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11240.html">setting n_val</a></span> <span class="sender italic">Alexander Ilyin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11241.html">Re: setting n_val</a></span> <span class="sender italic">John Daily</span></li>
+<li class="icons-email"><span class="subject"><a href="msg11242.html">Re: setting n_val</a></span> <span class="sender italic">Eric Redmond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11244.html">Re: setting n_val</a></span> <span class="sender italic">Alexander Ilyin</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: setting n_val</span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11246.html">Re: setting n_val</a></span> <span class="sender italic">Alexander Ilyin</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: setting n_val">
+<input type="hidden" name="msgid" value="CA+TO3kWO0qf_nmvnhe2pR+6z8VMYoFyp8KX67bBfX2OQTYsTyg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11243.html">
+<input type="submit" value=" Dmitri Zagidulin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+setting+n_val%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11244.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11246.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+TO3kWO0qf_nmvnhe2pR+6z8VMYoFyp8KX67bBfX2OQTYsTyg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

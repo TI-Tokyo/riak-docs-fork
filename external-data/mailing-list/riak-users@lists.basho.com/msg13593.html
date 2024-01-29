@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: RIAK API for Oracle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd3.html#13593" id="c">
+<link rel="index" href="mail3.html#13593" id="i">
+<link rel="prev" href="msg13592.html" id="p">
+<link rel="next" href="msg13595.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13593.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RIAK+API+for+Oracle%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: RIAK API for Oracle</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140205" rel="nofollow">Wed, 05 Feb 2014 02:33:37 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+The short answer is no, there is nothing that can fulfil your requirements</pre><pre>
+
+</pre><tt>We developed something similar for PostgreSQL, we call it Hybrid DAOs, 
+</tt><tt>basically each POJO is annotated as Riak KV and also as Eclipselink JPA 
+</tt><tt>entity, I can only give you partial code and some hints.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You need a standard ORM, Eclipselink IMHO is perfect, faster, simpler 
+</tt><tt>and less cluttered than Hibernate, then using JPA interceptors you 
+</tt><tt>should be able to read/write your Object from Riak and the DB at the 
+</tt><tt>same time, finally, you need a cloning policy and use some hacks to make 
+</tt><tt>JPA write back, if you modify a non-mapped JPA property, it won't write 
+</tt><tt>back and hence won't call the interceptor, sample interceptor:
+</tt><pre style="margin: 0em;">
+
+   public class JPA2RiakListener&lt;K extends Comparable, T extends
+   RiakKeyValue&lt;K, T&gt;&gt;
+   {
+      @PostLoad
+      @SuppressWarnings(&quot;unchecked&quot;)
+      public void onLoad(final T target) throws Exception
+      {
+        final RiakKeyValue&lt;K, T&gt;
+   
+keyValue=getDAOFor(target.getClass()).fetchKeyValue(target.getKeyName(),target.getId());
+        if(keyValue != null){
+          JPAQueryUtils.copyNotNullProperties(keyValue,target);
+        }
+      }
+
+      @PostPersist
+      @PostUpdate
+      @SuppressWarnings(&quot;unchecked&quot;)
+      public void onPersistOrUpdate(final T target) throws Exception
+      {
+        ((RiakDAO&lt;K, T&gt;)
+   getDAOFor(target.getClass())).saveKeyValue(target);
+      }
+
+      @PostRemove
+      @SuppressWarnings(&quot;unchecked&quot;)
+      public void onRemove(final T target) throws Exception
+      {
+   
+getDAOFor(target.getClass()).deleteKeyValue(target.getKeyName(),target.getId());
+      }
+   }
+
+</pre><tt>Also, you need your mapped POJO's annotated with some clone policy, a 
+</tt><tt>clone policy will make sure non-mapped properties will be replicated, 
+</tt><tt>say, a column that is mapped to Riak but not mapped to your relational DB.
+</tt><pre style="margin: 0em;">
+
+   @Entity
+   @Table(name=&quot;foo&quot;)
+   @EntityListeners(JPA2RiakListener.class)
+   @CloneCopyPolicy(method=&quot;cloneThis&quot;,workingCopyMethod=&quot;cloneThis&quot;)
+   public class Foo extends RiakKeyValue&lt;Integer, Foo&gt; {
+       ...
+   }
+
+Sample cloneThis() method:
+
+     public RiakKeyValue&lt;K, T&gt; cloneThis() throws Exception
+     {
+       @SuppressWarnings({&quot;unchecked&quot;})
+       final RiakKeyValue&lt;K, T&gt; result=this.getClass().newInstance();
+       JPAQueryUtils.copyNotNullProperties(this,result);
+       return result;
+     }
+
+Hope that helps,
+
+Guido.
+
+On 05/02/14 10:06, Ajit Prasad(RMG00) wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Hi,
+
+</pre><tt>We have a requirement for pulling Oracle data as JSON and putting the 
+</tt><tt>same in RIAK db. Didn't find any suitable RIAK API in RIAK docs. Pls. 
+</tt><tt>let me know whether any API or any third party tools which can perform 
+</tt><tt>the above activity.
+</tt><pre style="margin: 0em;">
+
+Thanks and regards,
+
+Ajit
+
+Cell:+91-9980084384
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Disclaimer~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</pre><tt>Information contained and transmitted by this e-mail is confidential 
+</tt><tt>and proprietary to iGATE and its affiliates and is intended for use 
+</tt><tt>only by the recipient. If you are not the intended recipient, you are 
+</tt><tt>hereby notified that any dissemination, distribution, copying or use 
+</tt><tt>of this e-mail is strictly prohibited and you are requested to delete 
+</tt><tt>this e-mail immediately and notify the originator or 
+</tt><tt>mailad...@igate.com &lt;<a  rel="nofollow" href="mailto:mailad...@igate.com">mailto:mailad...@igate.com</a>&gt;. iGATE does not enter 
+</tt><tt>into any agreement with any party by e-mail. Any views expressed by an 
+</tt><tt>individual do not necessarily reflect the view of iGATE. iGATE is not 
+</tt><tt>responsible for the consequences of any actions taken on the basis of 
+</tt><tt>information provided, through this email. The contents of an 
+</tt><tt>attachment to this e-mail may contain software viruses, which could 
+</tt><tt>damage your own computer system. While iGATE has taken every 
+</tt><tt>reasonable precaution to minimise this risk, we cannot accept 
+</tt><tt>liability for any damage which you sustain as a result of software 
+</tt><tt>viruses. You should carry out your own virus checks before opening an 
+</tt><tt>attachment. To know more about iGATE please visit www.igate.com 
+</tt><tt>&lt;<a  rel="nofollow" href="http://www.igate.com">http://www.igate.com</a>&gt;.
+</tt><tt>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13592.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd3.html#13593">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail3.html#13593">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13595.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13592.html">RIAK API for Oracle</a></span> <span class="sender italic">Ajit Prasad(RMG00)</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: RIAK API for Oracle</span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: RIAK API for Oracle">
+<input type="hidden" name="msgid" value="52F21330.3040408@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13593.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RIAK+API+for+Oracle%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13592.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13595.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">52F21330.3040408@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

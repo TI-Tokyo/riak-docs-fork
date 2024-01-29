@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Difference between 2I and Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05321" id="c">
+<link rel="index" href="maillist.html#05321" id="i">
+<link rel="prev" href="msg05315.html" id="p">
+<link rel="next" href="msg05324.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05321.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Difference+between+2I+and+Search%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Difference between 2I and Search</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kresten+Krab+Thorup%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kresten Krab Thorup</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111026" rel="nofollow">Wed, 26 Oct 2011 08:42:29 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Perhaps as follow-up FAQ-style questions, you could also answer these questions:</pre><pre>
+
+1. What is the typical execution profile of 2i vs solr queries?  Do all queries 
+go to all nodes in the cluster, or does it depend on the query?  I imagine that 
+range-queries need to go to all vnodes, whereas simple &quot;prop=value&quot; queries may 
+be more directly to a node holding the given index.
+
+2. What is the reliability N,R,W / replication / failover properties of these 
+indexes?  How do the two different index types reconcile after a netsplit / 
+crash?
+
+3. What are the edge conditions if nodes crash in the middle of a put? I.e., 
+how dependable are the indexes?  Is the index updated before or after the &quot;riak 
+put&quot;, or as part of the &quot;same transaction&quot; somehow?
+
+4. What is the storage cost for indexes?  Some of it go into the leveldb 
+storage, and some go in merge indexes?
+
+Kresten
+
+
+Mobile: + 45 2343 4626 | Skype: krestenkrabthorup | Twitter: @drkrab
+Trifork A/S  |  Margrethepladsen 4  | DK- 8000 Aarhus C |  Phone : +45 8732 
+8787  |  www.trifork.com&lt;<a  rel="nofollow" href="http://www.trifork.com/">http://www.trifork.com/</a>&gt;
+
+
+On Oct 25, 2011, at 2:09 PM, Rusty Klophaus wrote:
+
+Hi Soren,
+
+Excellent question. As you noted, Secondary Indexes and Search cover some of 
+the same ground. But, there are key differences.
+
+As a rule of thumb: Developers should try Secondary Indexes first, and only use 
+Riak Search if they need more flexibility around querying. Secondary Indexes 
+has fewer moving parts, and in technology, that's an advantage.
+
+Here's another way to look at it: &quot;Secondary Indexes vs. Search&quot; is kind of 
+like &quot;MySQL vs. Solr&quot;. While both solutions allow you to store and retrieve 
+data, Riak Search works best for applications that need full-text search on 
+documents that don't change very much, and are in JSON, XML, or plain-text 
+format.
+
+To elaborate, there are two core differences between Secondary Indexes and 
+Search.
+
+1. In Secondary Indexes, the *application* tokenizes the document
+
+80% of the problems that developers face when first using Riak Search relate to 
+either the schema, document formats, or tokenization. Setting this up correctly 
+can be confusing and error prone.
+
+Secondary Indexes skips these issues by pushing responsibility for tokenizing 
+the document to the application. This simplifies indexing; Riak indexes your 
+object exactly how you instruct it to, no more, no less.
+
+2. Secondary Indexes use document partitioning (aka: local indexes)
+
+Document partitioning means that the index for a document is stored locally on 
+the same server (or in our case, vnode) as the document itself. Picture many 
+small indexes that work together to form a big index. This is the approach that 
+Secondary Indexes use. Riak Search, on the other hand, uses term partitioning 
+(aka: a global index). The document is tokenized, and then the postings (the 
+entries in the index) are written to the different vnodes in the cluster. 
+Picture one big index.
+
+There are many tradeoffs between the two approaches, but the most significant 
+is that term-partitioning (the Riak Search approach) has more overhead at write 
+time. In a typical &quot;search&quot; use case, documents don't change very often, so a 
+system sees more query traffic than write traffic. Losing some write 
+performance to gain query performance makes sense. Also, in a term partitioned 
+system, write overhead can be mitigated somewhat by writing documents in 
+batches, which Riak Search supports through the Solr interface.
+
+In comparison, document partitioning (the Secondary Index approach) is 
+optimized for the typical KV use case, where the system sees more KV reads and 
+writes and index queries. A document-partitioned system makes KV reads and 
+writes fast, but with more overhead at query time. That said, queries still run 
+within a typical web response time; we’ve done a lot of work to make sure that 
+this is fast.
+
+One thing to note is that the Secondary Indexes feature is new, and we’ve 
+deliberately aimed to keep things simple in this first release to get something 
+out there while still leaving room for more advanced features down the road. 
+Secondary Indexes won’t ever support the *full* query interface of Riak Search, 
+but I’m looking forward to seeing it get fleshed out in future releases.
+
+So to summarize, while there is some overlap, there are distinct ideal use 
+cases for both products. It's important to understand the tradeoffs, but in 
+general most applications that currently use Riak KV will be better served with 
+Secondary Indexes than Riak Search.
+
+Hope that helps!
+
+Best,
+Rusty
+
+On Tue, Oct 25, 2011 at 4:53 AM, Soren Hansen 
+&lt;so...@linux2go.dk&lt;<a  rel="nofollow" href="mailto:so...@linux2go.dk">mailto:so...@linux2go.dk</a>&gt;&gt; wrote:
+&gt;From a user's perspective, 2I and Search seem incredibly similar.
+
+Both offer a way to efficiently query Riak for objects based on things
+other than their keys. The fact that 2I uses explicitly set indices,
+while Riak Search indexes the contents of Riak objects[1] seems like a
+minor detail.
+
+The interface for Riak search is much richer, and notably supports
+querying on multiple terms in one go.
+
+My question is: What would be my motivation for using 2I? As far as I
+can tell, anything I can do with 2I, I can also do with Search, so the
+differences must lie elsewhere (performance? availability?
+consistency?), and I'm at a bit of a loss here.
+
+[1]: I realise Riak Search can index things that aren't in Riak KV,
+but that's beside the point for this particular discussion.
+
+--
+Soren Hansen        | <a  rel="nofollow" href="http://linux2go.dk/">http://linux2go.dk/</a>
+Ubuntu Developer    | <a  rel="nofollow" href="http://www.ubuntu.com/">http://www.ubuntu.com/</a>
+OpenStack Developer | <a  rel="nofollow" href="http://www.openstack.org/">http://www.openstack.org/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+--
+Rusty Klophaus (@rustyio)
+
+Basho Technologies, Inc.
+www.basho.com&lt;<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>&gt;
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05315.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05321">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05321">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05324.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05292.html">Difference between 2I and Search</a></span> <span class="sender italic">Soren Hansen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05315.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Difference between 2I and Search</span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05324.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Soren Hansen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05332.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05322.html">Re: Difference between 2I and Search</a></span> <span class="sender italic">Elias Levy</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Difference between 2I and Search">
+<input type="hidden" name="msgid" value="A97AE49D-4273-4A48-8D3B-4C8D39A5B014@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05321.html">
+<input type="submit" value=" Kresten Krab Thorup ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Difference+between+2I+and+Search%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05315.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05324.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">A97AE49D-4273-4A48-8D3B-4C8D39A5B014@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

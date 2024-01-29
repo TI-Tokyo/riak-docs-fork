@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: vnode_proxy_timeout during mapreduce</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#13007" id="c">
+<link rel="index" href="mail6.html#13007" id="i">
+<link rel="prev" href="msg13005.html" id="p">
+<link rel="next" href="msg13008.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13007.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+vnode_proxy_timeout+during+mapreduce%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: vnode_proxy_timeout during mapreduce</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christian+Dahlqvist%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christian Dahlqvist</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131118" rel="nofollow">Mon, 18 Nov 2013 13:13:23 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Jason,
+
+Processing all records in a large bucket will cause a lot of data to be read, 
+possibly from disk, and can therefore be slow. Having said that, there are a 
+number of things you can do to make your job more efficient.</pre><pre>
+
+The first thing is to increase the batch size for the reduce phase. This is by 
+default set to 20, and as it needs to recursively iterate process all inputs, 
+this means a lot of iterations for 16 million records. You can specify this 
+parameter as in the example below:
+
+curl -v -d '{&quot;inputs&quot;:&quot;mybucket&quot;,
+            &quot;timeout&quot;: 86400000,
+            &quot;query&quot;:[
+              {&quot;map&quot;:{
+                &quot;language&quot;:&quot;erlang&quot;,
+                &quot;module&quot;:&quot;riak_kv_mapreduce&quot;,
+                &quot;function&quot;:&quot;map_identity&quot;}
+              },
+              {&quot;reduce&quot;:{
+                 &quot;language&quot;:&quot;erlang&quot;,
+                  &quot;module&quot;:&quot;riak_kv_mapreduce&quot;,
+                  &quot;function&quot;:&quot;reduce_count_inputs&quot;,
+                  &quot;arg&quot;:{&quot;reduce_phase_batch_size&quot;:1000}}
+              }
+            ]}' -H &quot;Content-Type: application/json&quot; <a  rel="nofollow" href="http://riak01:8098/mapred">http://riak01:8098/mapred</a>
+
+Normally the reduce phase function is run only on the coordinating node, which 
+means that all data will need to be transferred there before it can get 
+processed. It is however possible to enable the first iteration of the reduce 
+phase to run on the server where the data is located. This can be done through 
+either an argument sent to the map phase preceding the reduce phase or by 
+adding {mapred_always_prereduce, true}, to the riak_kv section of the 
+app.config file (for all nodes in the cluster).
+
+I hope this helps improve performance.
+
+Best regards,
+
+Christian
+
+[0] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/configs/mapreduce/">http://docs.basho.com/riak/latest/ops/advanced/configs/mapreduce/</a>
+
+
+
+On 18 Nov 2013, at 20:42, Jason Strutz &lt;ja...@cumuluscode.com&gt; wrote:
+
+&gt; I have a riak bucket which contains roughly 16 million records. I'm trying to 
+&gt; run a simple count over all the keys in the bucket:
+&gt; 
+&gt; curl -v -d '{&quot;inputs&quot;:&quot;mybucket&quot;,
+&gt;             &quot;timeout&quot;: 86400000,
+&gt;             &quot;query&quot;:[
+&gt;               {&quot;map&quot;:{
+&gt;                 &quot;language&quot;:&quot;erlang&quot;,
+&gt;                 &quot;module&quot;:&quot;riak_kv_mapreduce&quot;,
+&gt;                 &quot;function&quot;:&quot;map_identity&quot;}
+&gt;               },
+&gt;               {&quot;reduce&quot;:{
+&gt;                  &quot;language&quot;:&quot;erlang&quot;,
+&gt;                   &quot;module&quot;:&quot;riak_kv_mapreduce&quot;,
+&gt;                   &quot;function&quot;:&quot;reduce_count_inputs&quot;}
+&gt;               }
+&gt;             ]}' -H &quot;Content-Type: application/json&quot; <a  rel="nofollow" href="http://riak01:8098/mapred">http://riak01:8098/mapred</a>
+&gt; 
+&gt; However, I receive the following error, after a few minutes of spinning:
+&gt; {&quot;phase&quot;:0,&quot;error&quot;:&quot;[{vnode_proxy_timeout,{2... &lt;&lt;truncated for clarity, rest 
+&gt; at <a  rel="nofollow" href="https://gist.github.com/jstrutz/b89efb6de825255135fe">https://gist.github.com/jstrutz/b89efb6de825255135fe</a> &gt;&gt;
+&gt; 
+&gt; I realize mapping over all the keys in a bucket is not ideal, but I would 
+&gt; like to be able to do so in a pinch, even if it means tweaking timeouts and 
+&gt; such.  I'm running riak 1.4.2.
+&gt; 
+&gt; Thanks,
+&gt; -Jason
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13005.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#13007">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#13007">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13008.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13005.html">vnode_proxy_timeout during mapreduce</a></span> <span class="sender italic">Jason Strutz</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: vnode_proxy_timeout during mapreduce</span> <span class="sender italic">Christian Dahlqvist</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: vnode_proxy_timeout during mapreduce">
+<input type="hidden" name="msgid" value="0D5E0D0E-7A24-4FB8-B33B-D651F2343D7C@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13007.html">
+<input type="submit" value=" Christian Dahlqvist ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+vnode_proxy_timeout+during+mapreduce%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13005.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13008.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">0D5E0D0E-7A24-4FB8-B33B-D651F2343D7C@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

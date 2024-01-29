@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: 0.14 and search schema</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02408" id="c">
+<link rel="index" href="maillist.html#02408" id="i">
+<link rel="prev" href="msg02396.html" id="p">
+<link rel="next" href="msg02397.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02408.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+0.14+and+search+schema%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: 0.14 and search schema</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rusty+Klophaus%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rusty Klophaus</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110222" rel="nofollow">Tue, 22 Feb 2011 12:38:24 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Gary,
+
+Sorry to hear you are having troubles. Hopefully I can help. Please see my
+responses inline below.</pre><pre>
+
+Best,
+Rusty
+
+On Mon, Feb 21, 2011 at 1:56 AM, Gary William Flake &lt;g...@flake.org&gt; wrote:
+
+&gt; I've been pulling my hair out over new behaviors with search-schema,
+&gt; and I am wondering if I've been simply doing it wrong.  Here's the
+&gt; issue: search-schema seem extremely brittle compared to the rest of
+&gt; the system in that one misstep requires that you effectively blow away
+&gt; your whole DB and try again.  Some specific examples:
+&gt;
+&gt; 1. Defaults don't seem to mean anything now in that if you add a new
+&gt; field to what you are storing, then riak will throw up on insert
+&gt; because the field isn't in the schema.
+&gt;
+
+Just to make sure we're on the same page, the &quot;default_field&quot; schema is only
+used to tell the system what field to use for searching if no field is
+specified, or what field to use for indexing if you index a &quot;Content-Type:
+text/plain&quot; document. It's the dynamic fields that allow you to add new
+fields to your schema.
+
+If you display the schema by running &quot;./bin/search-cmd show_schema
+BUCKETNAME&quot;, then you should see the following as the last field:
+
+        {dynamic_field, [
+            {name, &quot;*&quot;},
+            {type, string},
+            {analyzer_factory, {erlang, text_analyzers,
+whitespace_analyzer_factory}}
+        ]}
+
+This should catch any unknown fields and index them as a whitespace
+separated string. If you don't see this, or if you *do* see this but are
+still getting errors, can you send the results of the show_bucket command
+plus the error messages to me?
+
+
+&gt;
+&gt; 2. But if you add the new field to the schema, then it breaks all of
+&gt; your old records (e.g., they can't be deleted until you change the
+&gt; schema back or turn off hooks).
+&gt;
+
+Hrm... this shouldn't be the case except for certain edge cases where you
+*change* the type of field from string to integer and then try to view the
+results via the Solr interface. New fields should be fine. Can you send me
+the errors messages? If time permits a minimal failing test case would be
+extremely helpful.
+
+
+&gt;
+&gt; 3. The semantics are non-intuitive (at least to me).  I had thought
+&gt; that {skip, true} would mean &quot;this is data that I want but don't index
+&gt; over it&quot;.  Instead, it appears to mean &quot;riak will not index it, and if
+&gt; you do a search, we will not provide this field value in the results
+&gt; even though it exists&quot;.
+&gt;
+
+You're right, and this is a bug. The system should return the original
+field. This is now tracked at <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=1014">https://issues.basho.com/show_bug.cgi?id=1014</a>
+
+
+&gt;
+&gt; 4. To make it even more challenging, on ubuntu &quot;search-cmd set-schema
+&gt; ...&quot; ignores the last argument.  It seems to expect the schema to
+&gt; already exist in /var/lib/riak/scripts and I found that if I
+&gt; forcefully move and chmod the schema, then I can get it to stick.
+&gt;
+
+Is it only chopping off the last argument on a &quot;set-schema&quot; command, or is
+it doing this for all commands? Can you send me the command you are running
+and the error message?
+
+The command should be:
+
+# search-cmd set-schema bucket filename
+
+
+&gt; 5. But, BTW, /var/lib/riak doesn't exist as part of 0.14's deb
+&gt; package, so you better know to add it yourself.
+&gt;
+
+Riak Search should have a /var/lib/riaksearch directory, not a /var/lib/riak
+directory (or are you experiencing this problem in Riak KV?)
+
+
+&gt;
+&gt;
+&gt; Anyhow, am I doing something wrong?  Or is how it is supposed to be?
+&gt; Does anyone have any tricks for working around this brittleness?
+&gt;
+&gt; Thanks,
+&gt; -- GWF
+&gt;
+&gt; PS - here's a trick that may help you.  Define a field called &quot;future&quot;
+&gt; and make set up the standard analyzer in the search schema.  Then,
+&gt; when you are tempted to add a new field, don't.  Instead, force your
+&gt; new &quot;field:val&quot; bits into future instead.  This way, you can get away
+&gt; with not having to change the schema nor do you need to add a new
+&gt; field.  I am hoping that this trick will help me keep a riak instance
+&gt; stable long enough to work through migration issues for when I do need
+&gt; to change the schema.
+&gt;
+
+Hrm... this is not recommended behavior. You should be able to add fields to
+your documents using either named fields (if you know the field names in
+advance) or dynamic fields (using wildcard-style names). Let's get to the
+bottom of this! :)
+
+
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02396.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02408">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02408">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02397.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02396.html">0.14 and search schema</a></span> <span class="sender italic">Gary William Flake</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: 0.14 and search schema</span> <span class="sender italic">Rusty Klophaus</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: 0.14 and search schema">
+<input type="hidden" name="msgid" value="AANLkTiniop0oFJHKMM0mc4cGMa0H8jzyuxgJF4qu_s1U@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02408.html">
+<input type="submit" value=" Rusty Klophaus ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+0.14+and+search+schema%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02396.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02397.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTiniop0oFJHKMM0mc4cGMa0H8jzyuxgJF4qu_s1U@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

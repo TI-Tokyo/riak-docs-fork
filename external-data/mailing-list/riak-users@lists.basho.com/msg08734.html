@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Rial Search and key expiry: a difficult relationship?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08734" id="c">
+<link rel="index" href="maillist.html#08734" id="i">
+<link rel="prev" href="msg08733.html" id="p">
+<link rel="next" href="msg08735.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08734.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Rial+Search+and+key+expiry%5C%3A+a+difficult+relationship%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Rial Search and key expiry: a difficult relationship?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alfonso+De+Gregorio%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alfonso De Gregorio</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120928" rel="nofollow">Fri, 28 Sep 2012 02:22:26 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi All,
+
+I would like to store ephemeral objects in Riak, while retaining the
+ability to search among them before they expire. So far, I had no
+luck.</pre><pre>
+
+When I query the cache with the ephemeral objects, Riak Search returns
+the expired entries among the matches. AFAICT, it correctly indexes
+the entries at pre-commit time but don't update the index at key
+expiration time.
+
+I've tried rebuilding the index but, sadly, it didn't helped and, even
+if it would, the rebuild frequency would make the workaround too slow
+for any short lived data.
+
+Am I missing something? Probable. Any clues?
+
+Here is what I have done, so you can try to reproduce this behaviour
+-- running Riak 1.2.0 on Ubuntu 12.04.1 LTS:
+
+1. Configured Riak to use multi_backend to have both expiring and
+normal persistent data
+
+            {storage_backend, riak_kv_multi_backend},
+            {multi_backend_default, &lt;&lt;&quot;default&quot;&gt;&gt;},
+            {multi_backend, [
+                {&lt;&lt;&quot;default&quot;&gt;&gt;, riak_kv_bitcask_backend, []},
+                {&lt;&lt;&quot;cache&quot;&gt;&gt;, riak_kv_bitcask_backend, [{expiry_secs, 60}]}
+                    ]},
+
+2. Enabled search functionality, setting riak_search to 'true'
+
+3. Set up index for the cache bucket
+
+$ search-cmd install cache
+
+
+4. Cached some JSON encoded data
+
+$ curl -v -X PUT -H &quot;Content-Type: application/json&quot;  --data-binary
+@./data <a  rel="nofollow" href="http://localhost:8098/riak/cache/key1">http://localhost:8098/riak/cache/key1</a>
+$ curl -v -X PUT -H &quot;Content-Type: application/json&quot;  --data-binary
+@./data <a  rel="nofollow" href="http://localhost:8098/riak/cache/key2">http://localhost:8098/riak/cache/key2</a>
+
+5. Waited the expiration of the first key
+
+6. Searched
+
+$ sudo search-cmd search cache &quot;name:\&quot;Alyssa\&quot;&quot;
+
+Attempting to restart script through sudo -H -u riak
+
+ :: Searching for 'name:&quot;Alyssa&quot;' / '' in cache...
+
+------------------------------
+
+index/id: cache/key1
+p -&gt; [0]
+score -&gt; 0.35355339059327373
+
+------------------------------
+
+index/id: cache/key2
+p -&gt; [0]
+score -&gt; 0.35355339059327373
+
+------------------------------
+
+ :: Found 2 results.
+
+
+7.  Retrieved the keys
+
+$ curl <a  rel="nofollow" href="http://localhost:8098/riak/cache/key1">http://localhost:8098/riak/cache/key1</a>
+not found
+
+$ curl <a  rel="nofollow" href="http://localhost:8098/riak/cache/key2">http://localhost:8098/riak/cache/key2</a>
+{
+ &quot;name&quot;:&quot;Alyssa P. Hacker&quot;,
+ &quot;bio&quot;:&quot;I'm an engineer, making awesome things.&quot;,
+ &quot;favorites&quot;:{
+              &quot;book&quot;:&quot;The Moon is a Harsh Mistress&quot;,
+              &quot;album&quot;:&quot;Magical Mystery Tour&quot;
+             }
+}
+
+
+8. Tried the Solr-like interface -- it reports the presence of two
+matching keys and return (of course) only the one not expired yet
+
+$ curl 
+&quot;<a  rel="nofollow" href="http://localhost:8098/solr/cache/select?start=0&amp;rows=10000&amp;q=name:\&quot;Alyssa\&quot;&quot">http://localhost:8098/solr/cache/select?start=0&amp;rows=10000&amp;q=name:\&quot;Alyssa\&quot;&quot</a>;
+...
+  &lt;result name=&quot;response&quot; numFound=&quot;2&quot; start=&quot;0&quot; maxScore=&quot;0.353553&quot;&gt;
+    &lt;doc&gt;
+      &lt;str name=&quot;id&quot;&gt;key2
+      &lt;/str&gt;
+      &lt;str name=&quot;bio&quot;&gt;I'm an engineer, making awesome things.
+      &lt;/str&gt;
+      &lt;str name=&quot;favorites_album&quot;&gt;Magical Mystery Tour
+      &lt;/str&gt;
+      &lt;str name=&quot;favorites_book&quot;&gt;The Moon is a Harsh Mistress
+      &lt;/str&gt;
+      &lt;str name=&quot;name&quot;&gt;Alyssa P. Hacker
+      &lt;/str&gt;
+    &lt;/doc&gt;
+  &lt;/result&gt;
+
+
+9. Rebuild the index
+
+$ riak attach
+&gt; {ok, Ring} = riak_core_ring_manager:get_my_ring().
+&gt; Partitions = [P || {P, 'riak@127.0.0.1'} &lt;- riak_core_ring:all_owners(Ring)].
+&gt; [riak_kv_vnode:repair(P) || P &lt;- Partitions].
+
+10. Searched again, getting the same results as above
+
+
+
+Thank you.
+
+Cheers,
+
+-- 
+  Alfonso De Gregorio
+  <a  rel="nofollow" href="http://Plaintext.crypto.lo.gy/">http://Plaintext.crypto.lo.gy/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08733.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08734">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08734">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08735.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Rial Search and key expiry: a difficult relationship?</span> <span class="sender italic">Alfonso De Gregorio</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08735.html">Re: Rial Search and key expiry: a difficult relat...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08736.html">Re: Rial Search and key expiry: a difficult r...</a></span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Rial Search and key expiry: a difficult relationship?">
+<input type="hidden" name="msgid" value="CAEk7eQTiCNO2faF1bK7fttnr2K+S1Hxd5jsS8Dc9CG2F=8SY4A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08734.html">
+<input type="submit" value=" Alfonso De Gregorio ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Rial+Search+and+key+expiry%5C%3A+a+difficult+relationship%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08733.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08735.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEk7eQTiCNO2faF1bK7fttnr2K+S1Hxd5jsS8Dc9CG2F=8SY4A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Upgrade to 1.1.2 problems</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07328" id="c">
+<link rel="index" href="maillist.html#07328" id="i">
+<link rel="prev" href="msg07324.html" id="p">
+<link rel="next" href="msg07330.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07328.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Upgrade+to+1.1.2+problems%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Upgrade to 1.1.2 problems</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120425" rel="nofollow">Wed, 25 Apr 2012 16:40:02 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Phil,
+
+Given the following lines,</pre><pre>
+
+&gt;         {reason,
+&gt;          {{badmatch,{'EXIT',noproc}},
+&gt;           [{riak_core_vnode_proxy,call,2},
+
+I'm inclined to think this is an issue with the new vnode routing
+layer introduced in Riak 1.1. On your Riak 1.1.2 node, make sure your
+app.config does not contain {legacy_vnode_routing, false} in the
+riak_core section. If it does, either delete the line or change it to
+false. If this was the issue, you should set it back to false after
+upgrading the rest of your cluster.
+
+Also, if this turns out to be the issue, could you please let me know
+how you performed the upgrade? Our official packages are supposed to
+be designed so that they retain your old app.config file when
+installed over an existing Riak installation (and thus, this line
+would have been missing from the 1.0.3 config). It would be useful to
+know if you used an official package and the app.config was
+overwritten, or if you manually setup your app.config and simply
+missed this option.
+
+On the plus side, the next release of Riak should include built-in
+capability negotiation that should remove the need for users to have
+to manually deal with legacy, mapred, listkeys, etc settings during an
+upgrade.
+
+-Joe
+
+On Wed, Apr 25, 2012 at 2:05 PM, Phil Sorber &lt;p...@omniti.com&gt; wrote:
+&gt; We have a 4 node riak 1.0.0 cluster running in production that we want
+&gt; to upgrade to 1.1.2. We set up a test environment that closely mimic's
+&gt; the production one. As close as we possibly can with ec2 hosts. First
+&gt; attempt to jump from 1.0.0 -&gt; 1.1.2 failed. We took into account the
+&gt; mapred_system issue and the listkeys_backpressure issue. We decided to
+&gt; try 1.0.0 -&gt; 1.0.3 since that would involve the mapred_system issue
+&gt; only. That upgrade worked. We then tried to upgrade 1.0.3 -&gt; 1.1.2 and
+&gt; had similar problems. Details below.
+&gt;
+&gt; --
+&gt; # riak-admin transfers
+&gt; Attempting to restart script through sudo -u riak
+&gt; 'riak@50.16.31.226' waiting to handoff 14 partitions
+&gt; --
+&gt;
+&gt; Sometimes this would show as many as 48 transfers. Always from the
+&gt; node that we upgraded. It would eventually show no transfers left. The
+&gt; upgrade from 1.0.0 -&gt; 1.0.3 didn't do this.
+&gt;
+&gt; We tested a link walking query that is similar to what we run in
+&gt; production. On 2 of the 3 nodes still running 1.0.3 it worked fine. On
+&gt; the 3rd node, this happened:
+&gt;
+&gt; Curl run on 1.0.3 node:
+&gt;
+&gt; --
+&gt; curl -v <a  rel="nofollow" href="http://localhost:8098/riak/email_address/riakupgr...@gmail.com/_,_,1">http://localhost:8098/riak/email_address/riakupgr...@gmail.com/_,_,1</a>
+&gt; * About to connect() to localhost port 8098 (#0)
+&gt; *   Trying 127.0.0.1... connected
+&gt; * Connected to localhost (127.0.0.1) port 8098 (#0)
+&gt;&gt; GET /riak/email_address/riakupgr...@gmail.com/_,_,1 HTTP/1.1
+&gt;&gt; User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k 
+&gt;&gt; zlib/1.2.3.3 libidn/1.15
+&gt;&gt; Host: localhost:8098
+&gt;&gt; Accept: */*
+&gt;&gt;
+&gt; &lt; HTTP/1.1 500 Internal Server Error
+&gt; &lt; Server: MochiWeb/1.1 WebMachine/1.9.0 (someone had painted it blue)
+&gt; &lt; Expires: Wed, 25 Apr 2012 20:55:30 GMT
+&gt; &lt; Date: Wed, 25 Apr 2012 20:45:30 GMT
+&gt; &lt; Content-Type: text/html
+&gt; &lt; Content-Length: 2068
+&gt; &lt;
+&gt; &lt;html&gt;&lt;head&gt;&lt;title&gt;500 Internal Server
+&gt; Error&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Internal Server Error&lt;/h1&gt;The server
+&gt; encountered an error while processing this request:&lt;br&gt;&lt;pre&gt;{error,
+&gt;  {error,
+&gt;  {badmatch,
+&gt;   {eoi,[],
+&gt;    [{{reduce,0},
+&gt;      {trace,
+&gt;       [error],
+&gt;       {error,
+&gt;        [{module,riak_kv_w_reduce},
+&gt;         {partition,1438665674247607560106752257205091097473808596992},
+&gt;         {details,
+&gt;          [{fitting,
+&gt;            {fitting,&lt;0.848.0&gt;,#Ref&lt;0.0.0.5472&gt;,
+&gt;             #Fun&lt;riak_kv_mrc_pipe.3.19126064&gt;,1}},
+&gt;           {name,{reduce,0}},
+&gt;           {module,riak_kv_w_reduce},
+&gt;           {arg,{rct,#Fun&lt;riak_kv_mapreduce.reduce_set_union.2&gt;,none}},
+&gt;           {output,
+&gt;            {fitting,&lt;0.847.0&gt;,#Ref&lt;0.0.0.5472&gt;,
+&gt;             #Fun&lt;riak_kv_mrc_pipe.1.120571329&gt;,
+&gt;             #Fun&lt;riak_kv_mrc_pipe.2.112900629&gt;}},
+&gt;           {options,
+&gt;            [{sink,{fitting,&lt;0.119.0&gt;,#Ref&lt;0.0.0.5472&gt;,sink,undefined}},
+&gt;             {log,sink},
+&gt;             {trace,
+&gt;              {set,1,16,16,8,80,48,
+&gt;               {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+&gt;               {{[],[],[error],[],[],[],[],[],[],[],[],[],[],[],[],[]}}}}]},
+&gt;           {q_limit,64}]},
+&gt;         {reason,
+&gt;          {{badmatch,{'EXIT',noproc}},
+&gt;           [{riak_core_vnode_proxy,call,2},
+&gt;            {riak_pipe_vnode,queue_work_send,4},
+&gt;            {riak_pipe_vnode,queue_work_erracc,6},
+&gt;            {riak_kv_w_reduce,'-done/1-lc$^0/1-0-',3},
+&gt;            {riak_kv_w_reduce,done,1},
+&gt;            {riak_pipe_vnode_worker,wait_for_input,2},
+&gt;            {gen_fsm,handle_msg,7},
+&gt;            {proc_lib,init_p_do_apply,3}]}},
+&gt;         {state,{working,done}}]}}}]}},
+&gt;  [{riak_kv_mrc_pipe,collect_outputs,3},
+&gt;   {riak_kv_wm_link_walker,execute_segment,3},
+&gt;   {riak_kv_wm_link_walker,execute_query,3},
+&gt;   {riak_kv_wm_link_walker,to_multipart_mixed,2},
+&gt;   {webmachine_resource,resource_call,3},
+&gt;   {webmachine_resource,do,3},
+&gt;   {webmachine_decision_core,resource_call,1},
+&gt;   
+&gt; {webmachine_decision_core,decision,1}]}}&lt;/pre&gt;&lt;P&gt;&lt;HR&gt;&lt;ADDRESS&gt;mochiweb+webmachine
+&gt; web server&lt;/AD* Connection #0 to host localhost left intact
+&gt; * Closing connection #0
+&gt; --
+&gt;
+&gt; After that, this appeared in the error.log on that node:
+&gt;
+&gt; error.log on 1.0.3 node:
+&gt;
+&gt; --
+&gt; 2012-04-25 20:45:30.373 [error] &lt;0.119.0&gt; webmachine error:
+&gt; path=&quot;/riak/email_address/riakupgr...@gmail.com/_,_,1&quot;
+&gt; {error,{error,{badmatch,{eoi,[],[{{reduce,0},{trace,[error],{error,[{module,riak_kv_w_reduce},{partition,1438665674247607560106752257205091097473808596992},{details,[{fitting,{fitting,&lt;0.848.0&gt;,#Ref&lt;0.0.0.5472&gt;,#Fun&lt;riak_kv_mrc_pipe.3.19126064&gt;,1}},{name,{reduce,0}},{module,riak_kv_w_reduce},{arg,{rct,#Fun&lt;riak_kv_mapreduce.reduce_set_union.2&gt;,none}},{output,{fitting,&lt;0.847.0&gt;,#Ref&lt;0.0.0.5472&gt;,#Fun&lt;riak_kv_mrc_pipe.1.120571329&gt;,#Fun&lt;riak_kv_mrc_pipe.2.112900629&gt;}},{options,[{sink,{fitting,&lt;0.119.0&gt;,#Ref&lt;0.0.0.5472&gt;,sink,undefined}},{log,sink},{trace,{set,1,16,16,8,80,48,{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},{{[],[],[error],[],[],[],[],[],[],[],[],[],[],[],[],[]}}}}]},{q_limit,64}]},{reason,{{badmatch,{'EXIT',noproc}},[{riak_core_vnode_proxy,call,2},{riak_pipe_vnode,queue_work_send,4},{riak_pipe_vnode,queue_work_erracc,6},{riak_kv_w_reduce,'-done/1-lc$^0/1-0-',3},{riak_kv_w_reduce,done,1},{riak_pipe_vnode_worker,wait_for_input,2},{gen_fsm,handle_msg,7},{proc_lib,init_p_do_apply,3}]}},{state,{working,done}}]}}}]}},[{riak_kv_mrc_pipe,collect_outputs,3},{riak_kv_wm_link_walker,execute_segment,3},{riak_kv_wm_link_walker,execute_query,3},{riak_kv_wm_link_walker,to_multipart_mixed,2},{webmachine_resource,resource_call,3},{webmachine_resource,do,3},{webmachine_decision_core,resource_call,1},{webmachine_decision_core,decision,1}]}}
+&gt; --
+&gt;
+&gt; And this was in the error.log on the 1.1.2 node:
+&gt;
+&gt; error.log on 1.1.2 node:
+&gt;
+&gt; --
+&gt; 2012-04-25 20:45:30.234 [error] &lt;0.1710.0&gt; gen_fsm &lt;0.1710.0&gt; in state
+&gt; wait_for_input terminated with reason: no match of right hand value
+&gt; {'EXIT',noproc} in riak_core_vnode_proxy:call/2
+&gt; 2012-04-25 20:45:30.243 [error] &lt;0.1710.0&gt; CRASH REPORT Process
+&gt; &lt;0.1710.0&gt; with 0 neighbours crashed with reason: no match of right
+&gt; hand value {'EXIT',noproc} in riak_core_vnode_proxy:call/2
+&gt; 2012-04-25 20:45:30.245 [error] &lt;0.331.0&gt; Supervisor
+&gt; riak_pipe_vnode_worker_sup had child undefined started with
+&gt; {riak_pipe_vnode_worker,start_link,undefined} at &lt;0.1710.0&gt; exit with
+&gt; reason no match of right hand value {'EXIT',noproc} in
+&gt; riak_core_vnode_proxy:call/2 in context child_terminated
+&gt; --
+&gt;
+&gt; On the 1.1.2 node, running the same curl, it returned a 404 after a
+&gt; long timeout:
+&gt;
+&gt; Curl run on the 1.1.2 node:
+&gt;
+&gt; --
+&gt; curl -v <a  rel="nofollow" href="http://localhost:8098/riak/email_address/riakupgr...@gmail.com/_,_,1">http://localhost:8098/riak/email_address/riakupgr...@gmail.com/_,_,1</a>
+&gt; * About to connect() to localhost port 8098 (#0)
+&gt; *   Trying 127.0.0.1... connected
+&gt; * Connected to localhost (127.0.0.1) port 8098 (#0)
+&gt;&gt; GET /riak/email_address/riakupgr...@gmail.com/_,_,1 HTTP/1.1
+&gt;&gt; User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k 
+&gt;&gt; zlib/1.2.3.3 libidn/1.15
+&gt;&gt; Host: localhost:8098
+&gt;&gt; Accept: */*
+&gt;&gt;
+&gt; &lt; HTTP/1.1 404 Object Not Found
+&gt; &lt; Server: MochiWeb/1.1 WebMachine/1.9.0 (someone had painted it blue)
+&gt; &lt; Date: Wed, 25 Apr 2012 20:49:40 GMT
+&gt; &lt; Content-Type: text/html
+&gt; &lt; Content-Length: 193
+&gt; &lt;
+&gt; * Connection #0 to host localhost left intact
+&gt; * Closing connection #0
+&gt; &lt;HTML&gt;&lt;HEAD&gt;&lt;TITLE&gt;404 Not Found&lt;/TITLE&gt;&lt;/HEAD&gt;&lt;BODY&gt;&lt;H1&gt;Not
+&gt; Found&lt;/H1&gt;The requested document was not found on this
+&gt; server.&lt;P&gt;&lt;HR&gt;&lt;ADDRESS&gt;mochiweb+webmachine web
+&gt; server&lt;/ADDRESS&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+&gt; --
+&gt;
+&gt; There was nothing more in any error logs after this. Also pulling up
+&gt; direct keys fails on this node. Riak is installed from the debian
+&gt; packages. I can send you whatever other info is neccesary. We tried
+&gt; many different combinations, but I think this one is the most correct
+&gt; and produced the most useful error messages. Any help is appreciated.
+&gt;
+&gt; Thanks.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07324.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07328">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07328">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07330.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07324.html">Upgrade to 1.1.2 problems</a></span> <span class="sender italic">Phil Sorber</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Upgrade to 1.1.2 problems</span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07330.html">Re: Upgrade to 1.1.2 problems</a></span> <span class="sender italic">Phil Sorber</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07336.html">Re: Upgrade to 1.1.2 problems</a></span> <span class="sender italic">Phil Sorber</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Upgrade to 1.1.2 problems">
+<input type="hidden" name="msgid" value="CANvk2KSd6brnHotYxA=SfDqDVJqW7SO2g280b2ryiMxUzek6ig@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07328.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Upgrade+to+1.1.2+problems%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07324.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07330.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KSd6brnHotYxA=SfDqDVJqW7SO2g280b2ryiMxUzek6ig@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

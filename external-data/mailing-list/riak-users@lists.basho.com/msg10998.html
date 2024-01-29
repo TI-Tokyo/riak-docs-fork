@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Time series system on top of riak-core.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10998" id="c">
+<link rel="index" href="maillist.html#10998" id="i">
+<link rel="prev" href="msg10997.html" id="p">
+<link rel="next" href="msg11000.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10998.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Time+series+system+on+top+of+riak%5C-core.%22&amp;o=newest" rel="nofollow"><span itemprop="name">Time series system on top of riak-core.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Carter+Charbonneau%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Carter Charbonneau</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130501" rel="nofollow">Wed, 01 May 2013 08:35:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I want to store lots of time series data in a database. The data can be 
+organized into measurements which have values at specific times. There will be 
+a *lot* of data but it doesn't need to be accessed very often.
+The time value will most likely be something like the seconds since the unix 
+epoch. However, more precision would be useful. The time will be of a fixed 
+size.
+I want to store the data in such a way that losing a node with r=1 will only 
+lose data at specific intervals. I'm thinking to do this by choosing the vnode 
+to store the data on by time % num_vnodes and building on riak-core.</pre><pre>
+
+I have a idea for the actual storage format. Each measurement would be stored 
+separately. The data would be grouped into files of a specific size.
+
+The data would be grouped into blocks so that each block is a good size for 
+compression. Each block would be compressed with 
+
+The directory would look like:
+1367419556.keys -&gt; Keys file for time 1367419556 until the next file 
+(1367464288).
+1367419556.data -&gt; Data file for time 1367419556 until the next file 
+(1367464288).
+1367419556.updates -&gt; Updates/deletes/random inserts for the data. Searched 
+first.
+1367464288.keys
+1367464288.data
+
+
+The data file would be
+| time | value_size | value | 
+repeated for each time/value and grouped into compressed blocks. 
+
+The keys file would contain 
+| time of first item in block | offset |
+repeated for each block. 
+
+To get a value at a time first the file it is contained in would be found. 
+Next, the update file will be searched if it exists. Then the keys file would 
+be read. For each time, if it is greater than the time, the previous block will 
+be opened and read until the time is found. Range support will be necessary to 
+achieve reasonable speed.
+To insert a key at the end, it would be buffered until there is block size 
+buffered items. Then the data will be written in a block to the current keys 
+and data files.
+To update, delete, or insert a key not at the end it will be written to a 
+update file for the file it is stored in or it should be placed. The update 
+file can be processed periodically and be integrated into the keys and data 
+files.
+Downsampling of the data and keys file (aka increasing the block size) could 
+also be sone at the same time the updates are integrated.
+
+This may be silly but it seems to me like it would be efficient for storing 
+lots of time series data. Do you think this is realistic for storing time 
+series data?
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10997.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10998">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10998">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11000.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Time series system on top of riak-core.</span> <span class="sender italic">Carter Charbonneau</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11000.html">Re: Time series system on top of riak-core.</a></span> <span class="sender italic">gunin</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Time series system on top of riak-core.">
+<input type="hidden" name="msgid" value="29DFE94D720F4140BC051EF56A030761@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10998.html">
+<input type="submit" value=" Carter Charbonneau ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Time+series+system+on+top+of+riak%5C-core.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10997.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11000.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">29DFE94D720F4140BC051EF56A030761@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

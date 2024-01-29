@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: running naked : suggested firewall rules</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00106" id="c">
+<link rel="index" href="maillist.html#00106" id="i">
+<link rel="prev" href="msg00105.html" id="p">
+<link rel="next" href="msg00107.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00106.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+running+naked+%5C%3A+suggested+firewall+rules%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: running naked : suggested firewall rules</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Tilder%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Tilder</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100421" rel="nofollow">Wed, 21 Apr 2010 08:25:31 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>You have two classes[1] of access control for Riak:
+
+ - other Riak nodes in the ring
+ - clients making use of the Riak ring</pre><pre>
+
+For both access groups, the settings you want are in riak/etc/app.config.
+ The config directives you care about for client access all end in &quot;_ip&quot; and
+&quot;_port&quot;: web_ip, web_port, pb_ip, and pb_port.  Make note of those and
+configure your firewall to incoming TCP access to those ports or IP and port
+combinations.  The exceptions to this is the handoff_ip and handoff_port
+directives.  Those are for communication between Riak nodes only.
+
+Riak uses the Erlang distribution mechanism for most inter-node
+communication.  Riak identifies other machines in the ring using Erlang
+identifiers(&lt;identifier&gt;@&lt;hostname or IP&gt;, i.e. &quot;r...@10.9.8.7&quot;).  Erlang
+resolves these node identifiers to a TCP port on a given machine via the
+Erlang Port Mapper daemon(epmd) running on each machine in a ring.  epmd
+listens on TCP port 4369 on the wildcard interface.
+
+You can configure Riak to tell the Erlang interpreter(and thence epmd) to
+only use a limited range of ports in riak/etc/app.config.  If you want to
+restrict the range of ports that Erlang and epmd will use for inter-Erlang
+node communication to 6000-7999, you can add the following lines to
+riak/etc/app.config:
+
+{ kernel, [
+              {inet_dist_listen_min, 6000},
+              {inet_dist_listen_max, 7999}
+             ]},
+
+Then just configure your firewall to allow incoming access to TCP ports 6000
+to 7999 from whichever network(s) contain your riak nodes are located on.
+
+The short and sweet:
+
+ - Riak nodes need to be able to communicate freely on the following ports:
+   - epmd's listener: TCP:4369
+   - handoff_port listener: TCP:8099
+   - range of ports you configure in app.config
+ - Riak clients need to be able to contact a Riak node on the following
+ports:
+   - web_port: TCP:8098
+   - pb_port: TCP:8097
+
+One important note: if you do add the inet_dist_listen_min and
+inet_dist_listen_max entries to riak/etc/app.config, you need to kill off
+any running epmd so it it will pick up the new settings.  epmd will continue
+to run on a given machine even after all Erlang interpreters have exited.
+
+--Ryan
+
+1. Technically speaking there's a third class for inter-data center
+replication if you're using the enterprise edition of Riak but its access
+patterns are essentially that of a client.  See the handoff_port directive.
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00105.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00106">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00106">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00107.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00100.html">running naked : suggested firewall rules</a></span> <span class="sender italic">richard bucker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00101.html">Re: running naked : suggested firewall rules</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00102.html">Re: running naked : suggested firewall rules</a></span> <span class="sender italic">richard bucker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00103.html">Re: running naked : suggested firewall rule...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00104.html">Re: running naked : suggested firewall rule...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00105.html">Re: running naked : suggested firewall rule...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: running naked : suggested firewall ...</span> <span class="sender italic">Ryan Tilder</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: running naked : suggested firewall rules">
+<input type="hidden" name="msgid" value="s2n74616cfa1004210825y11d33c36m77a9b611341f476b@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00106.html">
+<input type="submit" value=" Ryan Tilder ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+running+naked+%5C%3A+suggested+firewall+rules%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00105.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00107.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">s2n74616cfa1004210825y11d33c36m77a9b611341f476b@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

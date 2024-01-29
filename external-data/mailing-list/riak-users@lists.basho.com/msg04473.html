@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Fwd: Riak Map Reduce Performance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04473" id="c">
+<link rel="index" href="maillist.html#04473" id="i">
+<link rel="prev" href="msg04431.html" id="p">
+<link rel="next" href="msg04435.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04473.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+Riak+Map+Reduce+Performance%22&amp;o=newest" rel="nofollow"><span itemprop="name">Fwd: Riak Map Reduce Performance</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Cribbs%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Cribbs</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110826" rel="nofollow">Fri, 26 Aug 2011 06:33:49 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>---------- Forwarded message ----------
+From: Sean Cribbs &lt;s...@basho.com&gt;
+Date: Fri, Aug 26, 2011 at 9:33 AM
+Subject: Re: Riak Map Reduce Performance
+To: &quot;Fisher, Ryan&quot; &lt;rfis...@cyberpointllc.com&gt;</pre><pre>
+
+
+Yes, list-keys is affected by the entire keyspace. Backends other than
+Bitcask may have better performance when listing keys (the newish LevelDB
+backend being one) because they store them in sorted order and can skip
+around. That said, it will still invoke the key-listing across 1/N of the
+vnodes in the cluster (aka &quot;spamming&quot;).  If you want to compare it to RDBMS,
+consider it a &quot;full-table scan&quot; across a table with no indexes. It's going
+to be slow!
+
+2011/8/26 Fisher, Ryan &lt;rfis...@cyberpointllc.com&gt;
+
+Hi Sean,
+&gt;
+&gt; Thanks for the reply!
+&gt;
+&gt; I have seen the 'list-keys' performance hit mentioned on the website and in
+&gt; a number of forum postings.  It certainly makes sense, and I will need to
+&gt; think about a way to structure our data to minimize or completely avoid the
+&gt; full bucket map reduce.  I have seen where people store the key names in
+&gt; another bucket under a second key/value pair, and others have even suggested
+&gt; using external solutions to tracking keys.  I have also considered moving to
+&gt; riak-search which might be more what I need for the full range and complex
+&gt; queries I want to build in the future anyway.
+&gt;
+&gt; A couple follow up questions if you don't mind:
+&gt;
+&gt; Does the 'list-keys' performance hit only apply to a single bucket or is it
+&gt; for the entire riak cluster key space?  As a test I added a new bucket named
+&gt; 'bucket1' with a single key in it named 'key1'.  I also changed my map
+&gt; reduce to erlang (to avoid any javascript marshaling performance hits), and
+&gt; I believe this particular one should grab the key from memory and avoid
+&gt; hitting the disk, right?  I'm using the python client by the way…
+&gt;
+&gt; &lt;code&gt;
+&gt;
+&gt; query = self.client.add(&quot;bucket1&quot;)
+&gt; query.reduce([&quot;riak_kv_mapreduce&quot;, &quot;reduce_identity&quot;])
+&gt; resultList = query.run(timeout=10*60*1000)
+&gt;
+&gt; &lt;/code&gt;
+&gt;
+&gt; The query takes 62 seconds to complete and the result is the single bucket
+&gt; and key pair, like I expect, just a lot slower then I would expect.
+&gt;  Alternatively if I retrieve the key directly… the key (plus the value even…
+&gt; Which should incur the disk I/O) returns in less than 1 second.
+&gt;
+&gt; As an additional data point the javascript map/reduce I mentioned below
+&gt; over the 'archive' bucket that has over 50,000 keys is taking 86 seconds
+&gt; this morning.  This is better then what it was a day ago, however it still
+&gt; seems to me like something is not running properly.
+&gt;
+&gt; I also noticed that there were some error / crashes in the erlang and sasl
+&gt; logs (which I attached to this email).
+&gt;
+&gt; I do have around 200k keys across all my buckets, so could this be a memory
+&gt; thing (I am using bitcask)?  I have 4 nodes w/ 8GB each which I believe
+&gt;  according to all the calculators should be more than adequate for the
+&gt; number and length of my bucket + keys + overhead…
+&gt;
+&gt; Thanks again,
+&gt; ryan
+&gt;
+&gt;
+&gt; From: Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Date: Wed, 24 Aug 2011 08:29:15 -0400
+&gt; To: Ryan Fisher &lt;rfis...@cyberpointllc.com&gt;
+&gt; Subject: Re: Riak Map Reduce Performance
+&gt;
+&gt; Ryan,
+&gt;
+&gt; It is most likely that you are running into the list-keys problem. That is,
+&gt; as the size of the keys stored in your cluster grows, the time it takes to
+&gt; list the keys in a single bucket gets longer and longer. If possible you
+&gt; will want to avoid doing full-bucket MapReduce queries (they start with
+&gt; list-keys), especially when your writes are so frequently creating new keys.
+&gt;
+&gt; On Tue, Aug 23, 2011 at 3:08 PM, Fisher, Ryan 
+&gt; &lt;rfis...@cyberpointllc.com&gt;wrote:
+&gt;
+&gt;&gt; Hi all,
+&gt;&gt;
+&gt;&gt; We have been using riak for a few months now (started using 14.0 and we
+&gt;&gt; have recently upgraded to 14.2).  Development of our app has been going
+&gt;&gt; well and I am now integrating my code w/ a larger system.  The testing of
+&gt;&gt; the overall read / write performance of our cluster seems good as well.
+&gt;&gt;
+&gt;&gt; I am now starting to dive further into map reduce queries, and unlike the
+&gt;&gt; regular read / writes that seem to perform very fast, I am seeing map
+&gt;&gt; reduce performance is getting worse as our data set grows.
+&gt;&gt;
+&gt;&gt; The query I am using to test the map / reduce speed and get a key count is
+&gt;&gt; this:
+&gt;&gt;
+&gt;&gt; map = function (v) { return [1]; }
+&gt;&gt; reduce = Riak.reduceSum
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; It takes 138 seconds using that query on a bucket w/ 50,000 keys.
+&gt;&gt; It takes around 20 seconds using that query on a bucket w/ 108 keys.
+&gt;&gt;
+&gt;&gt; Do these query times for map reduce seem appropriate?
+&gt;&gt;
+&gt;&gt; I'll try and give an overall picture of how we currently use riak and
+&gt;&gt; maybe someone can say if the performance of our map / reduce operations is
+&gt;&gt; on par or if there are things I could tweak to try and get the query times
+&gt;&gt; to come down a bit.
+&gt;&gt;
+&gt;&gt; The system we have sends data to riak at a fairly fast pace and we need to
+&gt;&gt; keep all incoming data for 30 minutes, so we can examine the data and
+&gt;&gt; retrieve any individual keys.  After 30 minutes we can aggregate messages
+&gt;&gt; into groups to reduce the overall number of keys and data.
+&gt;&gt;
+&gt;&gt; We currently have an &quot;incoming&quot; bucket where keys are written at a rate of
+&gt;&gt; around 20 / second.  An archiving thread checks every so often for keys
+&gt;&gt; that are older then 30 min. and if it finds any it removes them from the
+&gt;&gt; 'incoming' bucket and aggregates them into an 'archive' bucket for the
+&gt;&gt; given hour.
+&gt;&gt;
+&gt;&gt; As you can imagine this causes the bitcask files to fragment and grow
+&gt;&gt; fairly large, however it seems like the best way to maintain some
+&gt;&gt; granularity of the data, but not be forced to keep every single data point
+&gt;&gt; that flows into the system.  It also gives us a predictable growth rate
+&gt;&gt; for the 'archive' bucket even if the 'incoming' data increases beyond the
+&gt;&gt; 20 / second.
+&gt;&gt;
+&gt;&gt; One thing I was wondering and planning on trying was to reduce the bitcask
+&gt;&gt; configuration merge threshold and trigger values to help keep the files a
+&gt;&gt; little smaller which might help the map reduce performance some?  Or
+&gt;&gt; should that even matter since I'm only looking through keys and those
+&gt;&gt; should be in memory anyway?
+&gt;&gt;
+&gt;&gt; We currently have a 4 node cluster running ubuntu 11.04 x64.  Each riak
+&gt;&gt; node has 8 GB of memory, and 'free ­m' on the nodes reports around 4000
+&gt;&gt; used and 4000 free on average.
+&gt;&gt;
+&gt;&gt; Basho Bench using the riakc_pb.config with a get=1, update=2, and put=3
+&gt;&gt; for 5 minutes seems to be good... Here is the graph:
+&gt;&gt; <a  rel="nofollow" href="http://tinypic.com/r/30tm977/7">http://tinypic.com/r/30tm977/7</a>
+&gt;&gt;
+&gt;&gt; So does anyone have any similarly sized systems where they use map reduce?
+&gt;&gt;  Or can anyone recommend performance tweaks I can make that would help
+&gt;&gt; accelerate these queries?
+&gt;&gt;
+&gt;&gt; Thank you,
+&gt;&gt; -ryan
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+&gt;
+&gt;
+
+
+-- 
+Sean Cribbs &lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+
+
+
+-- 
+Sean Cribbs &lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04431.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04473">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04473">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04435.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04431.html">Riak Map Reduce Performance</a></span> <span class="sender italic">Fisher, Ryan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Fwd: Riak Map Reduce Performance</span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Fwd: Riak Map Reduce Performance">
+<input type="hidden" name="msgid" value="CAHsw=e0HnOZbgPLoP_QJ45WoaqvTT_5JoV=1HFd5tE4HPU5y_Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04473.html">
+<input type="submit" value=" Sean Cribbs ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+Riak+Map+Reduce+Performance%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04431.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04435.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHsw=e0HnOZbgPLoP_QJ45WoaqvTT_5JoV=1HFd5tE4HPU5y_Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

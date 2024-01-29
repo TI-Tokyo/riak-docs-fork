@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riaksearch memory growth issues</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#03579" id="c">
+<link rel="index" href="mail2.html#03579" id="i">
+<link rel="prev" href="msg03510.html" id="p">
+<link rel="next" href="msg03597.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03579.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+memory+growth+issues%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riaksearch memory growth issues</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Gordon+Tillman%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Gordon Tillman</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110606" rel="nofollow">Mon, 06 Jun 2011 08:01:53 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Good Morning Gilbert,
+
+I have posted this gist:</pre><pre>
+
+<a  rel="nofollow" href="https://gist.github.com/1010384">https://gist.github.com/1010384</a>
+
+&lt;<a  rel="nofollow" href="https://gist.github.com/1010384">https://gist.github.com/1010384</a>&gt;It is a minor update we made to 
+it_op_collector_loop/3 in riak_search_op_utils.  This update was done to 
+alleviate the situation that we observe here:
+
+<a  rel="nofollow" href="https://gist.github.com/1000735">https://gist.github.com/1000735</a>
+
+&lt;<a  rel="nofollow" href="https://gist.github.com/1000735">https://gist.github.com/1000735</a>&gt;But it was made with the understanding that 
+this is treating a symptom and not fixing the cause of the problem.
+
+A little bit of followup information: The problem seems to be exacerbated when 
+Riak is hit with a series of operations that are all generating the same 
+search/map/reduce operation (albeit with differing search input parameters).
+
+We installed 0.14.2 and tested this weekend (without our update applied) and 
+observed the same issues.
+
+If I found out anything else I will let you know.
+
+--gordon
+
+
+
+On May 31, 2011, at 18:09 , Gilbert Glåns wrote:
+
+Gordon,
+
+Great news!  Much appreciated.
+
+Gilbert
+
+On Tue, May 31, 2011 at 2:25 PM, Gordon Tillman 
+&lt;gtill...@mezeo.com&lt;<a  rel="nofollow" href="mailto:gtill...@mezeo.com">mailto:gtill...@mezeo.com</a>&gt;&gt; wrote:
+Howdy Gilbert,
+
+Hey we are testing a fix now.  If this works I will send you a copy of the 
+update file.
+
+--gordon
+
+
+On May 31, 2011, at 12:55 , Gilbert Glåns wrote:
+
+Hi Gordon,
+Thank you for sharing the information.  We are seeing the same exact
+type of behavior from our search cluster.  I have tracked the
+problem(s) though the query system.  It looks like the mailboxes we
+are both seeing are &quot;abandoned&quot; and / or the messages are never
+matched within the Erlang code (it_op_collector_loop,
+riak_search_op_utils.erl); the messages are then never processed,
+therefore the resources they utilize never released.  This is a major
+problem.
+
+I have been debugging this for some time and I wish I could say it was
+going well.  The implementation is convoluted -- have you gotten
+through it?  Can you verify the same cause?
+
+We have been internally discussing the possibility of removing this
+query processing implementation completely and replacing it with
+something built in-house because the problems we have uncovered trying
+to debug the &quot;abandoned mailbox&quot; problem are related and systemic:  1)
+indeterminate and possibly very large data structures created and
+manipulated for intermediate and final sets of results, 2) very poor
+or non-existent ability to gain any insight into what is executing
+within the &quot;plumbing&quot; of the current query execution system without
+&quot;herculean&quot; effort (in my opinion), and 3) unacceptable performance
+(predictably or subjectively) from the merge_index riak_search
+backend.
+
+Are there any other backends available for riak_search with the
+Enterprise Riak offering?  I really like the design of riak_search but
+the performance seems to be only a very small fraction of our
+equivalent SOLR installation, even with several times the amount of
+resources &quot;thrown at it&quot; -- it does not seem to use resources we
+&quot;throw at it&quot; well, either, or in the mailboxes case, responsibly.
+
+I will quickly admit I may be doing something wrong.  Is there a
+user-error situation in which mailboxes should be abandoned taking up
+memory?
+
+Does anyone else have experiences with equivalent riak_search vs. SOLR
+installations?
+
+Thanks again for sharing Gordon.  Your results make me feel like this
+may not be entirely stupidity on my part.
+
+Gilbert
+
+
+On Tue, May 31, 2011 at 8:51 AM, Gordon Tillman 
+&lt;gtill...@mezeo.com&lt;<a  rel="nofollow" href="mailto:gtill...@mezeo.com">mailto:gtill...@mezeo.com</a>&gt;&gt; wrote:
+Howdy Gilbert,
+I reproduced the issue this morning and then ran the command that you
+specified on two of the non-empty mailboxes.
+The output from that is posted here:
+<a  rel="nofollow" href="https://gist.github.com/1000735">https://gist.github.com/1000735</a>
+Please let me know if this corresponds to the issue that you are seeing.
+Thank you,
+--gordon
+
+On May 27, 2011, at 20:10 , Gilbert Glåns wrote:
+
+Gordon,
+Could you try:
+
+erlang:process_info(list_to_pid(&quot;&lt;0.16614.32&gt;&quot;), [messages,
+current_function, initial_call, links, memory, status]).
+
+in a riak search console for one/some of those mailboxes and share the
+results? I am curious to see if you are having the same systemic
+memory consumption I am experiencing.
+
+Gilbert
+
+On Fri, May 27, 2011 at 5:15 PM, Gordon Tillman 
+&lt;gtill...@mezeo.com&lt;<a  rel="nofollow" href="mailto:gtill...@mezeo.com">mailto:gtill...@mezeo.com</a>&gt;&gt; wrote:
+
+Howdy Gang,
+
+We are having a bit of an issue with our 3-node riaksearch cluster.  What is
+happing is this:
+
+Cluster is up and running.  We start testing our application against it.  As
+the application runs the erlang process consumes more and more memory
+without ever releasing it.
+
+In trying to investigate the issue we ran the riaksearch-admin cluster_info
+command.  It appears that the bulk of this memory is being consumed by a
+bunch of mailboxes.
+
+I have posted both the output of the cluster_info command and the app.config
+from one of the nodes here:
+
+<a  rel="nofollow" href="https://gist.github.com/996419">https://gist.github.com/996419</a>
+
+I would be very grateful if someone from Basho would take a look at the
+cluster_info and see if they can spot anything obvious.
+
+Each machine in the cluster has an 8-core Xeon and 16GB RAM.  I believe all
+of the platform details, etc., are in the cluster_info dump.
+
+Many thanks,
+
+--gordon
+
+_______________________________________________
+
+riak-users mailing list
+
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03510.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#03579">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#03579">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03597.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03465.html">riaksearch memory growth issues</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03466.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Gilbert Glåns</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03467.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03468.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03471.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Gordon Tillman</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03500.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03505.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Gilbert Glåns</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03509.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03510.html">Re: riaksearch memory growth issues</a></span> <span class="sender italic">Gilbert Glåns</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riaksearch memory growth issu...</span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03597.html">Re: riaksearch memory growth ...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03599.html">Re: riaksearch memory growth ...</a></span> <span class="sender italic">David Smith</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03601.html">Re: riaksearch memory growth ...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03814.html">Re: riaksearch memory growth ...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03815.html">Re: riaksearch memory growth ...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riaksearch memory growth issues">
+<input type="hidden" name="msgid" value="28C0C1C1-61DF-4EF8-B4D7-83274A20A5D7@mezeo.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03579.html">
+<input type="submit" value=" Gordon Tillman ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+memory+growth+issues%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03510.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03597.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">28C0C1C1-61DF-4EF8-B4D7-83274A20A5D7@mezeo.com</li>
+</ul>
+</div>
+</body>
+</html>

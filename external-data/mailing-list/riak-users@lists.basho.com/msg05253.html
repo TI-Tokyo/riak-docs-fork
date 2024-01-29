@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Key Filter Timeout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#05253" id="c">
+<link rel="index" href="maillist.html#05253" id="i">
+<link rel="prev" href="msg05251.html" id="p">
+<link rel="next" href="msg05254.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05253.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Key+Filter+Timeout%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Key Filter Timeout</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jim+Adler%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jim Adler</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111023" rel="nofollow">Sun, 23 Oct 2011 16:01:07 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks Kelly.  You were spot-on.  I had upgraded app.config on my other two
+nodes but had missed one.</pre><pre>
+
+So, I updated app.config, restarted all cluster nodes, and reran the same
+query.  It now looks like a pipe error:
+
+22:56:37.697 [error] Supervisor riak_pipe_builder_sup had child undefined
+started with {riak_pipe_builder,start_link,undefined} at &lt;0.449.0&gt; exit with
+reason killed in context child_terminated
+22:56:37.701 [error] Supervisor riak_pipe_fitting_sup had child undefined
+started with {riak_pipe_fitting,start_link,undefined} at &lt;0.450.0&gt; exit with
+reason killed in context child_terminated
+22:56:37.703 [error] gen_fsm &lt;0.452.0&gt; in state wait_pipeline_shutdown
+terminated with reason: {sink_died,killed}
+22:56:37.705 [error] CRASH REPORT Process &lt;0.452.0&gt; with 1 neighbours
+crashed with reason: {sink_died,killed}
+22:56:37.711 [error] Supervisor riak_pipe_fitting_sup had child undefined
+started with {riak_pipe_fitting,start_link,undefined} at &lt;0.453.0&gt; exit with
+reason {sink_died,killed} in context child_terminated
+22:56:37.712 [error] Supervisor riak_pipe_builder_sup had child undefined
+started with {riak_pipe_builder,start_link,undefined} at &lt;0.452.0&gt; exit with
+reason {sink_died,killed} in context child_terminated
+
+Ideas?
+
+Jim
+
+From:  Kelly McLaughlin &lt;ke...@basho.com&gt;
+Date:  Sun, 23 Oct 2011 14:13:09 -0600
+To:  Jim Adler &lt;jim.ad...@comcast.net&gt;
+Cc:  &quot;riak-users@lists.basho.com&quot; &lt;riak-users@lists.basho.com&gt;
+Subject:  Re: Key Filter Timeout
+
+Jim,
+
+Looks like you are possibly using both the legacy key listing option and the
+legacy map reduce. Assuming all your nodes are on Riak 1.0, check your
+app.config files on all nodes and make sure mapred_system is set to pipe and
+legacy_keylisting is set to false. If that's not already the case you should
+see better performance. If you are still getting the same or similar errors
+with those setting in place, please respond with what they are so we can
+look into it more. Thanks.
+
+Kelly
+
+On Oct 23, 2011, at 12:38 PM, Jim Adler wrote:
+
+&gt; I'm trying to run a very simplified key filter that's timing out.  I've got
+&gt; about 8M keys in a 3-node cluster, 15 GB memory, num_partitions=256, LevelDB
+&gt; backend.
+&gt; 
+&gt; I'm thinking this should be pretty quick. What am I doing wrong?
+&gt; 
+&gt; Jim
+&gt; 
+&gt; Here's the query:
+&gt; 
+&gt; curl -v -d 
+&gt; '{&quot;inputs&quot;:{&quot;bucket&quot;:&quot;nodes&quot;,&quot;key_filters&quot;:[[&quot;eq&quot;,&quot;user_id-xxxxxxx-info&quot;]]},&quot;q
+&gt; uery&quot;:[{&quot;reduce&quot;:{&quot;language&quot;:&quot;erlang&quot;,&quot;module&quot;:&quot;riak_kv_mapreduce&quot;,&quot;function&quot;:
+&gt; &quot;reduce_identity&quot;}}]}' -H &quot;Content-Type: application/json&quot;
+&gt; <a  rel="nofollow" href="http://xx.xx.xx.xx:8098/mapred">http://xx.xx.xx.xx:8098/mapred</a>
+&gt; 
+&gt; Here's the log:
+&gt; 
+&gt; 18:25:08.892 [error] gen_fsm &lt;0.20795.0&gt; in state executing terminated with
+&gt; reason: {error,flow_timeout}
+&gt; 18:25:08.961 [error] CRASH REPORT Process &lt;0.20795.0&gt; with 2 neighbours
+&gt; crashed with reason: {error,flow_timeout}
+&gt; 18:25:08.963 [error] Supervisor luke_flow_sup had child undefined started with
+&gt; {luke_flow,start_link,undefined} at &lt;0.20795.0&gt; exit with reason
+&gt; {error,flow_timeout} in context child_terminated
+&gt; 18:25:08.966 [error] gen_fsm &lt;0.20798.0&gt; in state waiting_kl terminated with
+&gt; reason: {error,flow_timeout}
+&gt; 18:25:08.971 [error] CRASH REPORT Process &lt;0.20798.0&gt; with 0 neighbours
+&gt; crashed with reason: {error,flow_timeout}
+&gt; 18:25:08.980 [error] Supervisor riak_kv_keys_fsm_legacy_sup had child
+&gt; undefined started with {riak_kv_keys_fsm_legacy,start_link,undefined} at
+&gt; &lt;0.20798.0&gt; exit with reason {error,flow_timeout} in context child_terminated
+&gt; 18:25:08.983 [error] Supervisor luke_phase_sup had child undefined started
+&gt; with {luke_phase,start_link,undefined} at &lt;0.20797.0&gt; exit with reason
+&gt; {error,flow_timeout} in context child_terminated
+&gt; 18:25:08.996 [error] Supervisor luke_phase_sup had child undefined started
+&gt; with {luke_phase,start_link,undefined} at &lt;0.20796.0&gt; exit with reason
+&gt; {error,flow_timeout} in context child_terminated
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05251.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#05253">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05253">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05254.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05233.html">RE: Riak 1.0</a></span> <span class="sender italic">jim.adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05243.html">Re: Riak 1.0</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05244.html">Re: Riak 1.0</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05245.html">Re: Riak 1.0</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05246.html">Re: Riak 1.0</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05247.html">Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05248.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Ryan Caught</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05249.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05250.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Aphyr</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05251.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Key Filter Timeout</span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05254.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05258.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05259.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Key Filter Timeout">
+<input type="hidden" name="msgid" value="CAC9EA1E.18701%jim.adler@comcast.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05253.html">
+<input type="submit" value=" Jim Adler ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Key+Filter+Timeout%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05251.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05254.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAC9EA1E.18701%jim.adler@comcast.net</li>
+</ul>
+</div>
+</body>
+</html>

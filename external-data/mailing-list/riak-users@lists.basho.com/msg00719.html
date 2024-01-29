@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Is it inefficient to map over a small bucket when you have 	millions of other buckets?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00719" id="c">
+<link rel="index" href="maillist.html#00719" id="i">
+<link rel="prev" href="msg00714.html" id="p">
+<link rel="next" href="msg00789.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00719.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+it+inefficient+to+map+over+a+small+bucket+when+you+have+%09millions+of+other+buckets%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Is it inefficient to map over a small bucket when you have 	millions of other buckets?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nicolas+Fouch%C3%A9%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nicolas Fouché</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100713" rel="nofollow">Tue, 13 Jul 2010 03:02:25 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Giving just a bucket WILL traverse the entire keyspace.
+Here is a conversation I had on IRC yesterday (GMT+1).</pre><pre>
+
+[4:18pm] danoyoung: this may be obvious, but I just want to confirm,
+on the QA session from the last webinar, it was stated that listing
+keys for a given bucket requires examining keys that don't belong to
+the requested bucket.....
+[4:18pm] danoyoung: So if I have a number of buckets, one with say
+1000 objects in it, but I have 25 million objects scatter throughout a
+number of buckets (on a given node), then a M/R query would need to
+visit all 25 million even though I'm only interested in the 1000
+objects?
+[4:21pm] justinsheehy: yes, that's correct.  (if you specify the M/R
+by bucket instead of getting the input keylist some other way)
+[4:21pm] justinsheehy: this is because the backends aren't required to
+separate the buckets in any way, and in some cases simply use {bucket,
+key} as their internal key.
+[4:21pm] justinsheehy: that's what allows buckets to be &quot;free&quot;
+[4:23pm] nfo: justinsheehy: so same behavior with  &quot;GET
+/riak/bucket?keys=true&quot; I suppose.
+[4:23pm] danoyoung: hmm..ok, thanx. so it seems that I'll need to have
+a secondary index somewhere (w/n riak or else) to keep track of all my
+keys w/n a given bucket...
+[4:24pm] justinsheehy: nfo: yes, that's effectively the same thing
+[4:24pm] danoyoung: to avoid expensive list keys operations....
+[4:27pm] nfo: justinsheehy: about this, I find &quot;sad&quot;, for beginners,
+that the Fast Track gives an example of a bucket listing without any
+warning. It's the very first map/reduce Riak query a person sees, and
+it's not efficient.
+[4:27pm] nfo: {&quot;inputs&quot;:&quot;goog&quot;,
+[4:27pm] nfo: 
+<a  rel="nofollow" href="https://wiki.basho.com/display/RIAK/Loading+Data+and+Running+MapReduce+Queries">https://wiki.basho.com/display/RIAK/Loading+Data+and+Running+MapReduce+Queries</a>
+[4:28pm] justinsheehy: nfo: fair enough, I'll make sure that gets (at
+least) a note.
+[4:28pm] danoyoung: if I had buckets with tens of thousands of object
+in them, then what would be the most effecient way to run M/R against
+them all, break up into multiple M/R jobs that process say 500
+bucket/key values at a time...tand then aggregate these results....
+[4:28pm] danoyoung: i meant 5000...
+[4:28pm] seancribbs: danoyoung: knowing the keys AOT is crucial
+[4:31pm] seancribbs: so if you have some way to build objects that
+have links to the objects you want to query across, and the first ones
+have intuitive keys, you'll avoid the cost of list-keys
+
+-Nicolas
+
+On Mon, Jul 12, 2010 at 4:44 PM, Alexander Sicular &lt;sicul...@gmail.com&gt; wrote:
+&gt; I believe the number of buckets are basically unlimited - as long as
+&gt; you use the default bucket properties (which can be changed by conf
+&gt; file), re. number of replicas. If you change bucket properties on the
+&gt; fly that info runs around the cluster in the gossip channel.
+&gt; Afaik, buckets are simply virtual namespaces. Your data structure
+&gt; could have a bucket per user listing collections. Map over that then
+&gt; use the collection value to deriv bucket/key pair to pass into
+&gt; additional map phases in an m/r chain.
+&gt;
+&gt; And no, I seriously doubt that riak traverses the entire key space for
+&gt; every m/r in the sense that it touches every key in the system
+&gt; regardless of bucket. That is why riak has an input param required for
+&gt; each m/r. I would love to hear otherwise.
+&gt;
+&gt; -Alexander
+&gt;
+&gt; On 2010-07-11, Daniel Einspanjer &lt;deinspan...@mozilla.com&gt; wrote:
+&gt;&gt;   I'm thinking about the pros and cons of Riak vs HBase for Mozilla's
+&gt;&gt; Weave (now Firefox Sync) 2.0 engine.
+&gt;&gt; <a  rel="nofollow" href="https://wiki.mozilla.org/Labs/Weave/Sync/2.0/API">https://wiki.mozilla.org/Labs/Weave/Sync/2.0/API</a>
+&gt;&gt;
+&gt;&gt; The primary use case is that when a user's client performs a sync, it
+&gt;&gt; needs to retrieve all the new items since the last time it synced for
+&gt;&gt; each collection (bookmarks, tabs, history, etc.) that the client is
+&gt;&gt; configured to sync.
+&gt;&gt;      If a particular client doesn't sync often, it is possible that
+&gt;&gt; there might be thousands of items to retrieve, this means that using
+&gt;&gt; links *might* run into issues.
+&gt;&gt;
+&gt;&gt; HBase's use of ordered keys pushes for a schema where you'd have the
+&gt;&gt; modified timestamp in the key.  That would allow for quick and easy
+&gt;&gt; scanning of just the new items.
+&gt;&gt;
+&gt;&gt; Riak however, has a few interesting features such as the on-demand
+&gt;&gt; creation of new buckets that might make it much more flexible... if
+&gt;&gt; there is a highly performant mechanism for the client to retrieve new data.
+&gt;&gt;
+&gt;&gt; What prompted me to post this message was something I thought I
+&gt;&gt; remembered seeing regarding mapping over buckets in Riak.  Unfortunately
+&gt;&gt; I can't find the reference now.
+&gt;&gt;
+&gt;&gt; Is it true that in order to map over all the keys in a single bucket,
+&gt;&gt; the Riak cluster must actually traverse the entire global keyspace of
+&gt;&gt; all buckets to find the keys that are part of the desired bucket?
+&gt;&gt;
+&gt;&gt; In the case where you have tens of millions of users, and you have
+&gt;&gt; either one bucket per user or (if it were feasible) one bucket per user
+&gt;&gt; per collection, it seems like it would be impossible to efficiently
+&gt;&gt; perform a map reduce on one user's bucket.
+&gt;&gt;
+&gt;&gt; That seems like such a common scenario, I must have misinterpreted what
+&gt;&gt; I read.  I'd really appreciate some clarification there and also would
+&gt;&gt; be very interested in any schema proposals or thoughts you might have
+&gt;&gt; about this use case.
+&gt;&gt;
+&gt;&gt; -Daniel
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt; --
+&gt; Sent from my mobile device
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00714.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00719">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00719">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00789.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00708.html">Is it inefficient to map over a small bucket when you ha...</a></span> <span class="sender italic">Daniel Einspanjer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00714.html">Re: Is it inefficient to map over a small bucket wh...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Is it inefficient to map over a small bucke...</span> <span class="sender italic">Nicolas Fouché</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00789.html">Re: Is it inefficient to map over a small b...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Is it inefficient to map over a small bucket when you have 	millions of other buckets?">
+<input type="hidden" name="msgid" value="AANLkTinXwjSp0aPvhBDhSSFlR451Y_7crC6slJr3brdn@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00719.html">
+<input type="submit" value=" Nicolas Fouché ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+it+inefficient+to+map+over+a+small+bucket+when+you+have+%09millions+of+other+buckets%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00714.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00789.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTinXwjSp0aPvhBDhSSFlR451Y_7crC6slJr3brdn@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

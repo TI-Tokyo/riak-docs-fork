@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Python transports</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04629" id="c">
+<link rel="index" href="maillist.html#04629" id="i">
+<link rel="prev" href="msg04620.html" id="p">
+<link rel="next" href="msg04632.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04629.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Python+transports%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Python transports</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Brett+Hoerner%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brett Hoerner</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110908" rel="nofollow">Thu, 08 Sep 2011 10:47:46 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I own the pull request that adds (very basic) pooling logic to the
+Riak client. I left Transports alone (each is a single connection) and
+decided to have pools be another class you pick just like transport.
+This allows you instantly use any pooling logic (never remove down
+servers, delete down servers, round robin, whatever) with *any*
+transport class: Http, Http keep-alive, PBC, CachedPBC, etc.</pre><pre>
+
+I've added pooling and timeouts and use both in production because I'm
+honestly not sure how you use Riak in a highly available way without
+them... so we need to make sure they both work well/easily under this
+new scheme.
+
+Do your changes make anything new possible or are they just about cleanup?
+
+
+
+On Thu, Sep 8, 2011 at 5:17 AM, Greg Stein &lt;gst...@gmail.com&gt; wrote:
+&gt; Yup, agreed. I can certainly see use-cases where a client may have
+&gt; particular knowledge about data/server locality, and wants to open
+&gt; connections to *just* those servers. The transports that I am
+&gt; advocating open connections to servers described by one layer higher.
+&gt; That layer could say &quot;all Riak servers in the cluster&quot;, or it could
+&gt; say &quot;these three servers holding copies of &lt;this&gt; data&quot;.
+&gt;
+&gt; An auto-discovery layer (to add and remove) in-between the client and
+&gt; the transport would be handy. I can envision that, and my proposed
+&gt; code makes it possible, but (at my current stage) I don't have a use
+&gt; for it. I'd hope that others can build on my connection pooling work
+&gt; to see that through.
+&gt;
+&gt; Cheers,
+&gt; -g
+&gt;
+&gt; On Thu, Sep 8, 2011 at 07:49, Phil Stanhope &lt;stanh...@gmail.com&gt; wrote:
+&gt;&gt; I like the idea of RiakTransport as you describe it. It opens the door to
+&gt;&gt; other potential underlying transports and isolating a client from knowledge
+&gt;&gt; of those (websockets, tcp, zeromq messaging come to mind). I'm not
+&gt;&gt; suggesting that RIAK will ever support these transports by this comment,
+&gt;&gt; however.
+&gt;&gt; I also agree with the need to have RiakRingAwareTransport as an additional
+&gt;&gt; layer that *might* be used by a client. There may be valid reasons why a
+&gt;&gt; client might want to force particular traffic onto a subset of the ring
+&gt;&gt; (e.g. M/R config, Search Config, forcing read/write traffic onto different
+&gt;&gt; nodes, etc). Again, I'm not suggesting that using a subset of the ring for
+&gt;&gt; particular operations is the best practice. But it may be necessary to do so
+&gt;&gt; in order to validate and do certain types of testing to prove or disprove
+&gt;&gt; certain access patterns.
+&gt;&gt; -phil
+&gt;&gt;
+&gt;&gt; On Thu, Sep 8, 2011 at 7:31 AM, Greg Stein &lt;gst...@gmail.com&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Hey, all...
+&gt;&gt;&gt;
+&gt;&gt;&gt; After a couple comments on my recent work, and some archaeology on the
+&gt;&gt;&gt; Python/Riak work over the past month... I've realized that I might
+&gt;&gt;&gt; have a very different view of RiakTransport compared to what I'm
+&gt;&gt;&gt; seeing in the current work. I figured it best to bring that to the
+&gt;&gt;&gt; forefront and discuss:
+&gt;&gt;&gt;
+&gt;&gt;&gt; In my view, RiakTransport is used by RiakClient (and others) to &quot;talk
+&gt;&gt;&gt; to the Riak server&quot;.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Some of the current work, and some proposed pull requests, seem to
+&gt;&gt;&gt; take the position that a RiakTransport is &quot;one connection to a server,
+&gt;&gt;&gt; and the client should manage those&quot;.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Needless to say, I'm in favor of my own position :-) ... I think it is
+&gt;&gt;&gt; best to transfer *all* responsibility for talking to the server(s) to
+&gt;&gt;&gt; the transport layer. I really don't think the client/bucket/object
+&gt;&gt;&gt; layers should know anything about talking to the server(s). I'd like
+&gt;&gt;&gt; to see the transport layer be told about all server(s) available, and
+&gt;&gt;&gt; then it Just Works.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm still a newbie with all this code, and need to keep plugging away
+&gt;&gt;&gt; at the higher levels of functionality and compensation for problems.
+&gt;&gt;&gt; I'd like to build up some code that contacts *one* given server, asks
+&gt;&gt;&gt; for all of the ring servers, and then opens connections to those
+&gt;&gt;&gt; servers. And then, it should (automatically) maintain client
+&gt;&gt;&gt; connections based on what is happening with the Riak cluster. The
+&gt;&gt;&gt; current (proposed) code manages connections to N servers, but has no
+&gt;&gt;&gt; automatic add/remove based on changes in the cluster status. I think
+&gt;&gt;&gt; this happens at a layer *just* above the actual transport. ie.
+&gt;&gt;&gt; something tracks the changes in the ring status and its servers, and
+&gt;&gt;&gt; transmits those changes into the transport layer, which alters its
+&gt;&gt;&gt; communication with that cluster (regardless of whether that
+&gt;&gt;&gt; communication is via HTTP or protobuf).
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; Okee doke. That's the end of my brain dump and future thoughts on the
+&gt;&gt;&gt; transport and communication layer. I'd really like some feedback,
+&gt;&gt;&gt; review, and thoughts.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thanks!
+&gt;&gt;&gt; -g
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04620.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04629">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04629">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04632.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04612.html">Python transports</a></span> <span class="sender italic">Greg Stein</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04616.html">Re: Python transports</a></span> <span class="sender italic">Phil Stanhope</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04620.html">Re: Python transports</a></span> <span class="sender italic">Greg Stein</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Python transports</span> <span class="sender italic">Brett Hoerner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04632.html">Re: Python transports</a></span> <span class="sender italic">Greg Stein</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04649.html">Re: Python transports</a></span> <span class="sender italic">Greg Stein</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04617.html">Re: Python transports</a></span> <span class="sender italic">Russell Brown</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Python transports">
+<input type="hidden" name="msgid" value="CAC8vSzZBR-JO_HqrjHDp-o3J1dN1EhE6Be2_tbOoOy7oSWp3Hg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04629.html">
+<input type="submit" value=" Brett Hoerner ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Python+transports%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04620.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04632.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAC8vSzZBR-JO_HqrjHDp-o3J1dN1EhE6Be2_tbOoOy7oSWp3Hg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

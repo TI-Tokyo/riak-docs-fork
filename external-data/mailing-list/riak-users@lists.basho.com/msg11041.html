@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Inconsistent cluster membership</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#11041" id="c">
+<link rel="index" href="maillist.html#11041" id="i">
+<link rel="prev" href="msg11032.html" id="p">
+<link rel="next" href="msg11034.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11041.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Inconsistent+cluster+membership%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Inconsistent cluster membership</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joe+Caswell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joe Caswell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130507" rel="nofollow">Tue, 07 May 2013 15:53:59 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>&gt;From: Pavel Kirienko &lt;pavel.kirienko.l...@gmail.com&gt;
+&gt;Date: Monday, May 6, 2013 6:29 AM
+&gt;To: &lt;riak-users@lists.basho.com&gt;
+&gt;Subject: Inconsistent cluster membership</pre><pre>
+
+&gt;Here are the questions:
+&gt;1. Why member-status output on different nodes is inconsistent, and what to do
+about it?
+
+Some occurrance has caused the nodes to no longer agree on the ring.  If you
+run riak-admin ring_status or riak-admin ringready you will likely see
+errors.  The first node appears to have completely lost its copy of the
+ring, and on the next restart created a new one as if it were a brand new
+node, i.e. 100% ownership.  One possible cause of this is disk corruption or
+disk full.
+The fix is (after ruling out hardware failure) issue a riak-admin cluster
+join command from the detached (first) node to cause it to get a fresh copy
+of the ring.  It will then engage in hinted handoffs to redistribute any
+data that should be stored on other nodes.
+
+&gt;2. Sometimes the first node returns error &quot;{insufficient_vnodes,0,need,2}&quot; on
+read queries. This error goes away for few days when the node restarted. I
+suspect that this has some relation to the first question.
+
+This indicates that the first node does not have any of the vnodes listed in
+a preflist currently running, and its incorrect ring prevents it from being
+able to query any other nodes .  This could be that it has vnodes that have
+stopped or crashed, or it could indicate a bad preflist caused by ongoing
+ring corruption.
+
+&gt;3. Node on 192.168.0.3 is desperately trying to join the cluster for at least
+10 days, still no luck. (overall data size is about 60GB, network is 100Mbit
+Ethernet)
+
+No operations that cause partition ownership to change (join/leave/replace)
+can occur until all the nodes in the cluster agree on the ring.  Fixing the
+first node should rectify this issue.
+
+&gt;Which additional info may help?
+
+&gt;As I said before, things went wrong when the cluster was updated to 1.3.1. So,
+maybe the right way to fix these problems is to install 1.3.1 cleanly, then
+restore the data from backup?
+
+You should not have lost any data, although you are currently partitioned.
+Once you have all of the nodes participating again, hinted handoff and AAE
+should restore consistency to its previous levels.
+
+&gt;Thanks in advance!
+&gt;Pavel.
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11032.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#11041">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#11041">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11034.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11032.html">Inconsistent cluster membership</a></span> <span class="sender italic">Pavel Kirienko</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Inconsistent cluster membership</span> <span class="sender italic">Joe Caswell</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Inconsistent cluster membership">
+<input type="hidden" name="msgid" value="CDAEF920.23A6F%jcaswell@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11041.html">
+<input type="submit" value=" Joe Caswell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Inconsistent+cluster+membership%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11032.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11034.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CDAEF920.23A6F%jcaswell@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

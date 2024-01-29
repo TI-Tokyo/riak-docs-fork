@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Join a Riak-1.0 node to a Riak-0.14 cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05281" id="c">
+<link rel="index" href="maillist.html#05281" id="i">
+<link rel="prev" href="msg05275.html" id="p">
+<link rel="next" href="msg05293.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05281.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Join+a+Riak%5C-1.0+node+to+a+Riak%5C-0.14+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Join a Riak-1.0 node to a Riak-0.14 cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111024" rel="nofollow">Mon, 24 Oct 2011 13:06:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Tomer,
+
+The issues you encountered aren't related to having a mixed 0.14/1.0
+cluster, or the overall upgrade cycle. They're issues with 0.14 Riak.</pre><pre>
+
+In pre-1.0 Riak, GETs would sometimes return 404s when adding/removing
+nodes to a cluster. The situation would be transient, and would sort
+itself out after the cluster stabilized, but there would be a period
+in which this behavior could occur. This has been fixed in Riak 1.0.
+However, the new protocol that fixes this does not take effect until
+the entire cluster is 1.0 nodes.
+
+Likewise, in 0.14 Riak there are instances in which a node would not
+finish handing off all its data before leaving. This has also been
+fixed in Riak 1.0. This behavior should be extremely rare, however,
+and isn't something that will normally happen. Your best bet is to
+rely on read-repair to restore your lost replicas. Simply re-reading
+your entire dataset using HEAD requests will ensure lost replicas are
+restored. There is also a manual approach you can consider, but I
+would only recommend that on a production server for users with a
+support contract who can get immediate help if things run awry:
+<a  rel="nofollow" href="https://help.basho.com/entries/20580987-node-left-cluster-before-handing-off-all-data-how-can-i-resolve">https://help.basho.com/entries/20580987-node-left-cluster-before-handing-off-all-data-how-can-i-resolve</a>
+
+Read-repair is likely the safest route.
+
+Again, all of these issue were resolved in Riak 1.0. But, until you
+have a full 1.0 cluster, you may still run into them.
+
+The issue Mark Smith brought up is related to replica restoration when
+handoff didn't occur. Such as using 'riak-admin remove' rather than
+'riak-admin leave'. If you remove a node without handoff (say, a
+failed node), Riak won't automatically restore replicas (yet). But, in
+normal cases, 'riak-admin leave' (which is different than remove),
+will ensure handoff of replicas before shutting down. It just so
+happens that 0.14 nodes sometimes would leave prematurely. Read-repair
+works for both cases because the problem is fundamentally lost
+replicas. However, in the premature leave case, there's also the
+manual approach to consider.
+
+-Joe
+
+On Mon, Oct 24, 2011 at 11:06 AM, Tomer Naor &lt;to...@conduit.com&gt; wrote:
+&gt; Well, it caused us some problems…
+&gt;
+&gt;
+&gt;
+&gt; The situation is as follows:
+&gt;
+&gt; we have a production cluster with five 0.14 nodes and which we want to
+&gt; replace with three new Riak 1.0.1 servers.
+&gt;
+&gt;
+&gt;
+&gt; This is what we did:
+&gt;
+&gt; 1.       join each of the 1.0 nodes to the 0.14 cluster.
+&gt;
+&gt; 2.       after that all the three 1.0 nodes were part of the ring members
+&gt; and handoff was over we did ‘admin-riak leave’ on one of the 0.14 nodes
+&gt; (eventually we’ll need to leave them all).
+&gt;
+&gt;
+&gt;
+&gt; The problem is that it looks like not all the data from the 0.14 node were
+&gt; handoff in the leaving process and it seems like we’ve lost some data.
+&gt;
+&gt; (Don’t know if it’s matter but the bitcask of the 0.14 node that we tried to
+&gt; ‘riak-admin leave’ was reduced from 120GB to 55GB)
+&gt;
+&gt;
+&gt;
+&gt; Another problem that we noticed is that the basic get api not always
+&gt; returned a consistent response, it sometimes returned the required data and
+&gt; sometimes returned 404 status code.
+&gt;
+&gt;
+&gt;
+&gt; what is the best/right/safe way to do it without losing data and without
+&gt; experience significant downtime as a result of the join and leave process.
+&gt;
+&gt;
+&gt;
+&gt; Thanks,
+&gt;
+&gt; Tomer.
+&gt;
+&gt;
+&gt;
+&gt; From: Sean Cribbs [<a  rel="nofollow" href="mailto:s...@basho.com">mailto:s...@basho.com</a>]
+&gt; Sent: Wednesday, October 12, 2011 14:37
+&gt; To: Tomer Naor
+&gt; Cc: riak-users@lists.basho.com
+&gt; Subject: Re: Join a Riak-1.0 node to a Riak-0.14 cluster
+&gt;
+&gt;
+&gt;
+&gt; It is possible but requires a slight modification from the directions
+&gt; in <a  rel="nofollow" href="http://wiki.basho.com/Rolling-Upgrades.html">http://wiki.basho.com/Rolling-Upgrades.html</a>.  When adding the new 1.0
+&gt; node, make sure these settings are in the 'riak_kv' section of its
+&gt; app.config:
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; {legacy_keylisting, true},
+&gt;
+&gt; {mapred_system, legacy},
+&gt;
+&gt; {vnode_vclocks, false}
+&gt;
+&gt; This will ensure that it does not try to use functionality that is
+&gt; unavailable on the 0.14.2 nodes.
+&gt;
+&gt;
+&gt;
+&gt; On Wed, Oct 12, 2011 at 6:30 AM, Tomer Naor &lt;to...@conduit.com&gt; wrote:
+&gt;
+&gt; Hi,
+&gt;
+&gt;
+&gt;
+&gt; Is it possible to join a Riak-1.0 node (not from rolling upgrade - new
+&gt; server with fresh 1.0.0 installation) to a cluster with Riak-0.14 nodes
+&gt; without any unexpected problems?
+&gt;
+&gt;
+&gt;
+&gt; Thanks,
+&gt;
+&gt; Tomer.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt;
+&gt; Developer Advocate
+&gt;
+&gt; Basho Technologies, Inc.
+&gt;
+&gt; <a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05275.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05281">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05281">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05293.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05132.html">Join a Riak-1.0 node to a Riak-0.14 cluster</a></span> <span class="sender italic">Tomer Naor</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05133.html">Re: Join a Riak-1.0 node to a Riak-0.14 cluster</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05273.html">RE: Join a Riak-1.0 node to a Riak-0.14 cluster</a></span> <span class="sender italic">Tomer Naor</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05275.html">Re: Join a Riak-1.0 node to a Riak-0.14 clus...</a></span> <span class="sender italic">Mark Smith</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Join a Riak-1.0 node to a Riak-0.14 clus...</span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05293.html">RE: Join a Riak-1.0 node to a Riak-0.14 ...</a></span> <span class="sender italic">Tomer Naor</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Join a Riak-1.0 node to a Riak-0.14 cluster">
+<input type="hidden" name="msgid" value="CANvk2KQfpbczn17+pdY3j7RWjGBGDYNA57QaiEd4JiBmZvWogg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05281.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Join+a+Riak%5C-1.0+node+to+a+Riak%5C-0.14+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05275.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05293.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KQfpbczn17+pdY3j7RWjGBGDYNA57QaiEd4JiBmZvWogg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

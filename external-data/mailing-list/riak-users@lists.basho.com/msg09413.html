@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Best practice -- duplicating and syncing objects</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09413" id="c">
+<link rel="index" href="maillist.html#09413" id="i">
+<link rel="prev" href="msg09412.html" id="p">
+<link rel="next" href="msg09414.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09413.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Best+practice+%5C-%5C-+duplicating+and+syncing+objects%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Best practice -- duplicating and syncing objects</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Eric+Redmond%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Eric Redmond</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121129" rel="nofollow">Thu, 29 Nov 2012 13:09:11 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+On Nov 29, 2012, at 9:46 AM, Felix Terkhorn &lt;fterkh...@exacttarget.com&gt; wrote:</pre><pre>
+
+&gt; Thanks, Eric.  This makes sense.  Right now we’re indeed handling the update 
+&gt; on the client side.
+&gt;  
+&gt; Your point about considering normalization in cases where we have to 
+&gt; duplicate a lot of data is well taken.  This actually applies to a couple of 
+&gt; use cases for us already – in one, we only have a single copy of the data; in 
+&gt; another, we could see as many as 10-50 copies.
+&gt;  
+&gt; For the first case, we can stick to client-side updates of both copies for 
+&gt; now.  For the second case, if we actually see that many copies starting to 
+&gt; crop up, we can certainly de-duplicate things a bit.
+&gt;  
+&gt; In case we do go about experimenting with post-commit hooks… my understanding 
+&gt; was that the can only be written in erlang.  I’m not entirely sure how this 
+&gt; syncs up with your mention of “the number of pooled connections in 
+&gt; javascript.”  Forgive me if I’m missing something obvious, there.  Is there 
+&gt; some config setting that I can visit to find out how many pooled connections 
+&gt; we have available to handle those post-commit hooks?
+
+Sorry. You're correct, post-commit has no javascript option, only pre-commit.
+
+&gt;  -f
+&gt;  
+&gt; From: Eric Redmond [<a  rel="nofollow" href="mailto:eredm...@basho.com">mailto:eredm...@basho.com</a>] 
+&gt; Sent: Thursday, November 29, 2012 11:17 AM
+&gt; To: Felix Terkhorn
+&gt; Cc: riak-users@lists.basho.com
+&gt; Subject: Re: Best practice -- duplicating and syncing objects
+&gt;  
+&gt; There's no general best practice for keeping denormalized data in sync, 
+&gt; beyond the obvious case, which is to update all values through whatever 
+&gt; client you use to update one. If your number of keys are few, this is not 
+&gt; going to be a hard hit on your updates. If you have an unbounded number of 
+&gt; keys, you may consider normalizing your data model a bit to reduce duplicate 
+&gt; data.
+&gt;  
+&gt; Correct, you do not have to wait for a post commit to fire (actually, you 
+&gt; can't).
+&gt;  
+&gt; You could functionally update objects in a post-commit, though I don't know 
+&gt; how commonly this is done. If the post-commit job is long running, you might 
+&gt; run out of pooled connections in javascript. You'd also have to be very 
+&gt; careful to avoid your aforementioned &quot;infinity loop&quot;, since whether by link 
+&gt; walking or postcommit hooks, you still run the risk of objects updating each 
+&gt; other recursively.
+&gt;  
+&gt; Eric
+&gt;  
+&gt; On Nov 29, 2012, at 7:53 AM, Felix Terkhorn &lt;fterkh...@exacttarget.com&gt; wrote:
+&gt; 
+&gt; 
+&gt; Greetings!
+&gt;  
+&gt; In the event that we have several documents, [A1, A2, …, An], which contain 
+&gt; the same data accessed via different keys, what is the best practice for 
+&gt; keeping the data in sync?
+&gt;  
+&gt; Also, do post commit hooks fire after the client receives a successful 201 or 
+&gt; 200 status on a PUT?  That is to say, we don’t have to wait for all 
+&gt; post-commit hooks to fire, in order for our client to receive an HTTP success 
+&gt; status, right?
+&gt;  
+&gt; That’s our assumption, and if true, we’d like to exploit that fact in order 
+&gt; to keep the response time of the PUT low.  Basically, client could PUT A1, 
+&gt; and we could let Riak handle the necessary updates in a post-processing step.
+&gt;  
+&gt; We could keep the list [A1, A2, …, An] somewhere else, and simply walk that 
+&gt; list every time any document in the list is updated, excluding the document 
+&gt; itself.  Is this a standard approach?
+&gt;  
+&gt; We thought of linking objects together, and having them update each other on 
+&gt; post-commit, but that seems like it will bring us into infinite loop 
+&gt; territory. :-D
+&gt;  
+&gt; Thanks,
+&gt; Felix
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;  
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09412.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09413">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09413">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09414.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09408.html">Best practice -- duplicating and syncing objects</a></span> <span class="sender italic">Felix Terkhorn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09409.html">Re: Best practice -- duplicating and syncing objects</a></span> <span class="sender italic">Eric Redmond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09412.html">RE: Best practice -- duplicating and syncing objec...</a></span> <span class="sender italic">Felix Terkhorn</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Best practice -- duplicating and syncing o...</span> <span class="sender italic">Eric Redmond</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Best practice -- duplicating and syncing objects">
+<input type="hidden" name="msgid" value="6BDC345E-9272-4B68-B7B9-A5796011A321@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09413.html">
+<input type="submit" value=" Eric Redmond ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Best+practice+%5C-%5C-+duplicating+and+syncing+objects%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09412.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09414.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">6BDC345E-9272-4B68-B7B9-A5796011A321@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

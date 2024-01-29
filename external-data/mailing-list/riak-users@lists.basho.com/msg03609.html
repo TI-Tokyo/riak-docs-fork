@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: A script to check bitcask keydir sizes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#03609" id="c">
+<link rel="index" href="maillist.html#03609" id="i">
+<link rel="prev" href="msg03608.html" id="p">
+<link rel="next" href="msg03613.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03609.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+script+to+check+bitcask+keydir+sizes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: A script to check bitcask keydir sizes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110608" rel="nofollow">Wed, 08 Jun 2011 07:18:31 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Justin,
+
+I wanted to write this earlier, but I just had to much on my plate:</pre><pre>
+
+Am 08.06.2011 16:11, schrieb Justin Sheehy:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+On Thu, Mar 24, 2011 at 1:51 PM, Nico Meyer&lt;nico.me...@adition.com&gt;  wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+The bigger concern for me would be the way the bucket/key tuple is
+serialized:
+
+Eshell V5.8  (abort with ^G)
+1&gt;  iolist_size(term_to_binary({&lt;&lt;&gt;&gt;,&lt;&lt;&gt;&gt;})).
+13
+
+That's 13 bytes of overhead per key were only 2 bytes is needed with
+reasonable bucket/key length limits of 256 bytes each. Or if that is not
+enough, one could also use a variable length encoding, so bucket/keys
+can be arbitrarily large and the most common cases (less then 128 bytes)
+still only use 2 bytes of overhead.
+</pre></blockquote><pre style="margin: 0em;">
+I've made a branch of bitcask that effectively does this.  It uses 3
+bytes per record instead of 13, saving 10 bytes (both in RAM and on
+disk) per element stored.
+
+The tricky thing, however, is backward compatibility.  There are many
+Riak installations out there with data stored in bitcask using the old
+key encoding, and we shouldn't force them all to do a very costly
+full-sweep of their existing data in order to get these savings.  When
+we sort out the best way to manage a smooth upgrade, I would happily
+push out the smaller encoding.
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>I think the possible gains of this change are fairly limited. Shaving of 
+</tt><tt>about 10 bytes per key compared to 43 bytes of overhead plus lets say at 
+</tt><tt>least 10 bytes for bucket and key combined is already less than 20 
+</tt><tt>percent savings.
+</tt><tt>The saving seems even smaller if you consider the overhead imposed by 
+</tt><tt>the memory allocator. I wrote a small test program in C++ which 
+</tt><tt>allocates one million blocks of memory of a given size and prints the 
+</tt><tt>overhead for each allocation. Turns out the overhead ranges from 8 to 23 
+</tt><tt>bytes in a sawtooth like pattern (on a 64bit Linux machine):
+</tt><pre style="margin: 0em;">
+
+size=56: overhead=8
+size=57: overhead=23
+size=58: overhead=22
+size=59: overhead=21
+size=60: overhead=20
+size=61: overhead=19
+size=62: overhead=18
+size=63: overhead=17
+size=64: overhead=16
+size=65: overhead=15
+size=66: overhead=14
+size=67: overhead=13
+size=68: overhead=12
+size=69: overhead=11
+size=70: overhead=10
+size=71: overhead=9
+size=72: overhead=8
+
+</pre><tt>Not much you can do about that, unless one wants to use unaligned 
+</tt><tt>memory, which one doesn't.
+</tt><pre style="margin: 0em;">
+
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+-Justin
+</pre></blockquote><pre style="margin: 0em;">
+
+
+Cheers,
+Nico
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03608.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#03609">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03609">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03613.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02666.html">A script to check bitcask keydir sizes</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02722.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02728.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02731.html">Re: A script to check bitcask keydir sizes</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02733.html">Re: A script to check bitcask keydir siz...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02738.html">Re: A script to check bitcask keydi...</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02739.html">Re: A script to check bitcask k...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02740.html">Re: A script to check bitcask k...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03608.html">Re: A script to check bitca...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: A script to check bitca...</span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03613.html">Re: A script to check bitca...</a></span> <span class="sender italic">Mike Oxford</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: A script to check bitcask keydir sizes">
+<input type="hidden" name="msgid" value="4DEF848F.9050007@adition.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03609.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+A+script+to+check+bitcask+keydir+sizes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03608.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03613.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4DEF848F.9050007@adition.com</li>
+</ul>
+</div>
+</body>
+</html>

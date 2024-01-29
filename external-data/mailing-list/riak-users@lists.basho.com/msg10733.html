@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Map reduce weirdness on Riak 1.3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10733" id="c">
+<link rel="index" href="maillist.html#10733" id="i">
+<link rel="prev" href="msg10732.html" id="p">
+<link rel="next" href="msg10734.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10733.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Map+reduce+weirdness+on+Riak+1.3%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Map reduce weirdness on Riak 1.3</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christian+Dahlqvist%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christian Dahlqvist</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130406" rel="nofollow">Sat, 06 Apr 2013 13:10:48 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Kartik,
+
+The reduce phase will normally run recursively a number of times as results 
+come in from map phases on different nodes [1]. This allows Riak to start 
+reducing the results before all data is available and will not require all 
+input data to be stored in memory on the coordinating node. The output from the 
+first iteration will be passed into the following iteration together with the 
+next batch of map phase results. When processing large amounts of data this is 
+the most efficient way to do it, and reduce functions should be written in a 
+way so that they can handle this.</pre><pre>
+
+If you know that the number of results will be manageable or the reduce phase 
+requires all results to be processed at once, there is an argument called 
+'reduce_phase_only_1' [1] that can be specified in order to force the reduce 
+phase to run only once all map phase results are available.
+
+In your case you might however be able to completely eliminate the reduce phase 
+if you made the map phase perform filtering and formatting. If a record does 
+not match the criteria, you just return [].
+
+This would give you a list of JSON documents instead of a single one, but would 
+most likely be more efficient.
+
+Best regards,
+
+Christian
+
+[1] 
+<a  rel="nofollow" href="http://docs.basho.com/riak/1.2.0/references/appendices/MapReduce-Implementation/">http://docs.basho.com/riak/1.2.0/references/appendices/MapReduce-Implementation/</a>
+
+
+On 6 Apr 2013, at 20:22, Kartik Thakore &lt;kthak...@aimed.cc&gt; wrote:
+
+&gt; I am not sure have you mean by re-reduce. Can you clarify what you mean? 
+&gt; 
+&gt; I was thinking the reduce phase happens after the whole map is done. Do I 
+&gt; have to implement a count waiter for the map results in the reduce code?
+&gt; 
+&gt; 
+&gt; On Sat, Apr 6, 2013 at 3:19 PM, Christian Dahlqvist &lt;christ...@basho.com&gt; 
+&gt; wrote:
+&gt; Hi Kartik,
+&gt; 
+&gt; What you are seeing is a result of you not accounting for re-reduce in you 
+&gt; reduce phase function. 
+&gt; 
+&gt; In Riak reduce phases generally run recursively and the input for each run 
+&gt; may contain both values from preceding map phase as well as output from 
+&gt; previous iterations of the reduce phase. In order for the reduce phase to 
+&gt; behave correctly you will need to distinguish between the different types of 
+&gt; input records in your reduce function. 
+&gt; 
+&gt; Best regards,
+&gt; 
+&gt; Christian
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; On 6 Apr 2013, at 19:09, Kartik Thakore &lt;kthak...@aimed.cc&gt; wrote:
+&gt; 
+&gt;&gt; Hello,
+&gt;&gt; 
+&gt;&gt; I recently setup a test cluster to try to do a tech demo web application on.
+&gt;&gt; 
+&gt;&gt; I have been having some weirdness with the map reduce functionality.
+&gt;&gt; 
+&gt;&gt; My database is here:
+&gt;&gt; 
+&gt;&gt; <a  rel="nofollow" href="http://aimed.cc:8098/riak/rekon/go#/buckets/test_rand_docs">http://aimed.cc:8098/riak/rekon/go#/buckets/test_rand_docs</a>
+&gt;&gt; 
+&gt;&gt; The cluster has 5 nodes
+&gt;&gt; ulimit 4096
+&gt;&gt; 
+&gt;&gt; This is Riak 1.3.0 release on Debian with 663 of free memory.
+&gt;&gt; 
+&gt;&gt; I am running this map reduce:
+&gt;&gt; 
+&gt;&gt; curl -X POST -H &quot;content-type: application/json&quot; \
+&gt;&gt;     <a  rel="nofollow" href="http://aimed.cc:8098/mapred">http://aimed.cc:8098/mapred</a> --data @-&lt;&lt;\EOF
+&gt;&gt; {&quot;inputs&quot;: &quot;test_rand_docs&quot;,
+&gt;&gt; &quot;query&quot;:[{&quot;map&quot;:{&quot;language&quot;:&quot;javascript&quot;,&quot;source&quot;:&quot;
+&gt;&gt;     function (v) {
+&gt;&gt;         var r = {};
+&gt;&gt;         var data = JSON.parse(v.values[0].data);
+&gt;&gt;         r.data = data;
+&gt;&gt;         r.key = v.key;
+&gt;&gt;         return [ r ];
+&gt;&gt;     }
+&gt;&gt; &quot;}},{&quot;reduce&quot;:{&quot;language&quot;:&quot;javascript&quot;,&quot;source&quot;:&quot;
+&gt;&gt;     function (v) {
+&gt;&gt;         var r = {};
+&gt;&gt;         for( var i in v )
+&gt;&gt;         {
+&gt;&gt;             var doc = v[i];
+&gt;&gt;             if( doc['data'] !== undefined) {
+&gt;&gt;                 var age = doc['data']['age_int'];
+&gt;&gt;                 if ( age !== undefined &amp;&amp; age &gt; 10 &amp;&amp; age &lt;25 ){
+&gt;&gt;                     r[doc['key']] = doc['data'];
+&gt;&gt;                 }
+&gt;&gt;             }
+&gt;&gt;         }
+&gt;&gt;         return  [ r ];
+&gt;&gt; 
+&gt;&gt;     }
+&gt;&gt; &quot;}}]
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; my result is randomly:
+&gt;&gt; 
+&gt;&gt; [{&quot;9DYMGV0B6Jdn5DivoTExiqyDYUC&quot;:{&quot;age_int&quot;:24},&quot;JQYUs2onC822EOzMaToz71j77e&quot;:{&quot;age_int&quot;:18},&quot;AcrUwotAdYaV5zitaMylnUgYsWY&quot;:{&quot;age_int&quot;:24}}]
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; or
+&gt;&gt; 
+&gt;&gt; [{&quot;LYJpg97ZA5qjZTTv2cfavmRgxLb&quot;:{&quot;age_int&quot;:11}}]
+&gt;&gt; 
+&gt;&gt; but it is clear with this:
+&gt;&gt; 
+&gt;&gt; <a  rel="nofollow" href="http://aimed.cc:8098/solr/test_rand_docs/select?q=age_int:[10%20TO%2025">http://aimed.cc:8098/solr/test_rand_docs/select?q=age_int:[10%20TO%2025</a>]
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; that there are 134 records ....
+&gt;&gt; 
+&gt;&gt; so what is going on?
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; Is it low memory? Or that it is on a XEN machine (Linode)? Is there a 
+&gt;&gt; scaleable memory server vendor (AWS or w/e) I should consider?
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; Kartik Thakore
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10732.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10733">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10733">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10734.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10731.html">Map reduce weirdness on Riak 1.3</a></span> <span class="sender italic">Kartik Thakore</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10732.html">Re: Map reduce weirdness on Riak 1.3</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Map reduce weirdness on Riak 1.3</span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10734.html">Re: Map reduce weirdness on Riak 1.3</a></span> <span class="sender italic">Kartik Thakore</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10737.html">Re: Map reduce weirdness on Riak 1.3</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Map reduce weirdness on Riak 1.3">
+<input type="hidden" name="msgid" value="A0AF4AD5-6D5C-4826-912C-AE886EE6A7D3@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10733.html">
+<input type="submit" value=" Christian Dahlqvist ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Map+reduce+weirdness+on+Riak+1.3%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10732.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10734.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">A0AF4AD5-6D5C-4826-912C-AE886EE6A7D3@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

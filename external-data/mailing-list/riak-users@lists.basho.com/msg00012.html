@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: model for a time index on realtime data</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00012" id="c">
+<link rel="index" href="maillist.html#00012" id="i">
+<link rel="prev" href="msg00003.html" id="p">
+<link rel="next" href="msg00022.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00012.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+model+for+a+time+index+on+realtime+data%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: model for a time index on realtime data</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100412" rel="nofollow">Mon, 12 Apr 2010 13:19:06 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Colin,
+
+You present an interesting use case whose exploration would help many people on 
+this list. I'll comment from my own experiences with the Riak HTTP interface, 
+which is where I primarily work and no inside knowledge of what is on the Riak 
+roadmap. Note that everything you can do in HTTP land will perform at least 
+marginally better to possibly significantly better in native Erlang. The way I 
+see it, here are some of my (non-exhaustive) considerations. Key size, which 
+includes both data size and header size, listing keys in a bucket, searching 
+for keys, M/R and backend persistent storage. I'll review them in order, then I 
+will move on to a potential solution. .</pre><pre>
+
+Key size is a consideration because Riak will not retrieve partial keys or only 
+links. They seem to be housed in the same internal data structure. So this is a 
+consideration when thinking about how to retrieve/update/save your data. Also 
+every update is a wipe. So you can't update just some of the links, you need to 
+update all of them. You can't update some of your data, you need to update all 
+of it. Not that this is not a bad thing per-se, it's just that one should be 
+aware of these limitations when designing. While we are on links, you 
+specifically mention &quot;time capsule buckets&quot;. Links are manifested at the key 
+level and not at the bucket level. Riak links link keys to other keys 
+regardless of bucket membership. 
+
+A significant deficiency that I have found with Riak is the costly list keys 
+function which practically necessitates the need for an external index, re. 
+Redis. If you have a real-time bucket where all new records are being written 
+to and a periodic data flush that takes some past time slice of data and puts 
+it somewhere else for archival then you most definitely need an external 
+indexing mechanism to GET those keys if you want anything close to real-time 
+performance. Also, remember there is no &quot;MOVE&quot; function there is only a GET, 
+PUT/POST and DELETE function, so you'll kinda need to roll your own 
+transactions. I've also done this without Redis and just using a specific 
+&quot;index&quot; key in a separate stats bucket in RIak. So I would have a bucket called 
+&quot;real-time-data&quot; and another bucket called &quot;real-time-data-stats&quot;. The list 
+keys function completion time increases (linearly or worse depending on number 
+of nodes, possibly mitigated by streaming keys?) at some function related to 
+total number of keys in a bucket. 
+
+A separate inconvenience is key retrieval. You can not retrieve a key or range 
+of keys from Riak with a regex. You actually need the full key name. It is 
+harder to deform keys in the primary retrieval mechanism (Riak) but that does 
+not stop you from using descriptive keys like YYYYMMDDHHMMSS to your advantage 
+in post processing like m/r. Note that Redis does allow you to do such key 
+retrieval. Also a consideration is that keys are not stored (retrieved) in any 
+order. This is of specific concern when dealing with time series data, or any 
+non idempotent data.
+
+AFAIK, Riak will accept only buckets or key lists as input for m/r functions. 
+The former will simply run it's own list keys function to generate all the keys 
+it will iterate over. I think the more performant way to do this would be to 
+create an m/r from your own key list based off of a key index you maintain in 
+Redis with periodic flush to it's own Riak bucket index bucket with key names 
+based on your own time frequency. A Riak m/r itself can be stored in a Riak key 
+so once you generate it you can keep it somewhere and retrieve it as easily you 
+would a key. If these are M/R jobs that you will be constantly executing you 
+should look into storing them in the specific M/R javascript script directory. 
+This will give you the added performance advantage of pre-caching those 
+functions. 
+
+Something to consider is that actual backend you will use. In my testing with 
+the innostore backend you need to be aware of file growth. Search the Riak list 
+for commentary on file growth with innostore, it may be a wiki writeup now, not 
+sure. In it the author talks about how you can calculate how many files will be 
+created on disk for every bucket that exists in Riak. This should definitely be 
+a consideration when thinking about the file system you use to format your 
+disks but more importantly the number of file descriptors your deployment 
+operating system can maintain and how you can change those settings. The 
+innostore backend configuration allows for a maximum number of fd's. Before I 
+got that information I managed to halt a lot of machines during my testing 
+phase.
+
+Now lets talk solutions. For instance, if you want 1 second granularity you 
+could write out one key with a name of YYYYMMDDHHMMSS in your stats bucket. 
+This key would be a dump of the identical key in Redis. This would give you 60 
+* 60 keys per bucket if you roll your keys up into hourly stats buckets and 
+3600 keys would not terribly blow out a list keys function on any hourly 
+bucket. In your case, if you do decide to go with descriptive key names I'm not 
+sure what advantage link walking will get you. If your primary axis is time, 
+then you could walk the tree in your application code without having to rely on 
+links. An added advantage of not having one megalithic bucket is that 
+replication and other Riak goodies are set on a per bucket basis. You could 
+possibly tweak those settings as your data ages.  Lastly, if you are using the 
+HTTP interface to Riak, might I suggest taking a look at the ElasticSearch 
+project, <a  rel="nofollow" href="http://github.com/elasticsearch/elasticsearch">http://github.com/elasticsearch/elasticsearch</a>, which will index data 
+you pass to it over HTTP as well. This could help you with deep internal data 
+searching other than just time. Whatever you decide, do keep us updated on your 
+progress.
+
+I think the combination of Riak as a persistent  distributed data store and 
+Redis as a volatile (not really due to it's VM/background save and Append only 
+disk writing), blazingly fast and flexible cache mechanism make a very 
+compelling solution to your specific use case. I would go so far as to say that 
+perhaps Basho should consider embedding Redis as it's internal caching layer in 
+Riak for just this type of problem. Riak could internally manage all the 
+indexing and whatnot via triggers or some internal mechanic.
+
+-Alexander
+
+
+On Apr 12, 2010, at 11:56 AM, Colin wrote:
+
+&gt; Hi,
+&gt; 
+&gt; I am trying to figure the best model in Riak for my application. I
+&gt; have read &amp; reread the docs, wiki and list threads but haven't put any
+&gt; possible solution to the test yet. I'd like your feedback to help me
+&gt; avoid dead end solutions if possible!
+&gt; 
+&gt; The basic idea is that I want to aggregate a large amount of realtime
+&gt; data and I want to easily retrieve this data using some time
+&gt; constraints (for example, all data for the past hour, day, etc). When
+&gt; I say large amount of data I mean in the order of hundreds items per
+&gt; second and each item should be stored individually. For this I will
+&gt; have a realtime items bucket.
+&gt; 
+&gt; Now, to create my &quot;time&quot; index I have a few ideas:
+&gt; 
+&gt; - create a &quot;time capsules&quot; buckets, with a new capsule created at some
+&gt; given interval. My application would use a periodic data flusher to
+&gt; accumulate and flush the data for my time capsule period, every second
+&gt; for example. These time capsules would only contain links to all items
+&gt; for this interval. I was actually thinking of two way links so for any
+&gt; realtime items I could also retrieve its corresponding time capsule.
+&gt; each time capsule would also be doubly-linked to allow walking forward
+&gt; or backward in time. New time capsules buckets could be created every
+&gt; day for example.
+&gt; 
+&gt; The problem I foresee with this structure is the possible number of
+&gt; links for each time capsules. In this example, I am thinking one
+&gt; capsule per second, with hundreds of realtime items resulting in
+&gt; hundreds of links in each capsule. From what I have read, it might not
+&gt; be the best of idea to deal with that many links and it will not scale
+&gt; if the rate grows to thousands of items per second.
+&gt; 
+&gt; - another idea would be to directly store my realtime items keys
+&gt; within each capsule instead of using links but still use links from
+&gt; realtime items to capsule and between capsules. This structure would
+&gt; allow me to gather all realtime items for a give timeframe by fetching
+&gt; the keys list within each capsule.
+&gt; 
+&gt; - yet another solution would be to use another external storage
+&gt; engine, like Redis, which supports sorted sets and store references to
+&gt; my realtime items. The problem with this is that I will not be able to
+&gt; easily launch map-reduce jobs to crunch data within a specific
+&gt; timeframe.
+&gt; 
+&gt; Finally, the end goal is for me to be able to run map-reduce jobs on
+&gt; my realtime data within a give timeframe to create other external
+&gt; indexes to my data, for fulltext search for example.
+&gt; 
+&gt; Any comments, hints, pointers will be appreciated!
+&gt; 
+&gt; Thanks,
+&gt; Colin
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00003.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00012">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00012">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00022.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00003.html">model for a time index on realtime data</a></span> <span class="sender italic">Colin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: model for a time index on realtime data</span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00022.html">Re: model for a time index on realtime data</a></span> <span class="sender italic">Colin Surprenant</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: model for a time index on realtime data">
+<input type="hidden" name="msgid" value="4FC54D94-B6B4-4803-A948-2A387D871366@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00012.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+model+for+a+time+index+on+realtime+data%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00003.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00022.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4FC54D94-B6B4-4803-A948-2A387D871366@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

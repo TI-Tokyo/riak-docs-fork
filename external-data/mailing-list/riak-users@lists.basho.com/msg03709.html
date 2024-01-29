@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Problem with deleting keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03709" id="c">
+<link rel="index" href="maillist.html#03709" id="i">
+<link rel="prev" href="msg03708.html" id="p">
+<link rel="next" href="msg03710.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03709.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problem+with+deleting+keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Problem with deleting keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Greg+Nelson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Greg Nelson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110616" rel="nofollow">Thu, 16 Jun 2011 08:42:02 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Well, it is kind of Riak specific. An implementation that treated DELETEs like 
+PUTs (tombstones w/ vector clocks for ordering), then this would not be an 
+issue, right? When no primary nodes are down, the tombstones can be physically 
+deleted on the backend. A logical delete could never reappear if that were how 
+it worked.</pre><pre>
+
+Is this essentially what is on the current master branch (not yet released)?
+
+On Thursday, June 16, 2011 at 8:22 AM, Nico Meyer wrote:
+
+&gt; The problem with unreachable nodes still remains, since you don't know 
+&gt; how long they will be gone. The only 'safe' minimum time to keep deleted 
+&gt; values is forever. This can be easily emulated in the application layer 
+&gt; by using a special value (or use Riak metadata for example).
+&gt; So it essentially a trade off like most things. If you are sure that no 
+&gt; node will ever be down for more than 24 hours, your solution would work.
+&gt; 
+&gt; If it is really essential for an application that deleted keys don't 
+&gt; ever reappear, you should just store this information explicitly (that 
+&gt; way you also know when the key was deleted btw.). If not, then one can 
+&gt; live with the current behaviour, which is much simpler implementation wise.
+&gt; 
+&gt; I would just separate the two issues of logically deleting and 
+&gt; physically deleting (which is just an operational issue as opposed to an 
+&gt; issue for your application design). The latter could be handled by the 
+&gt; storage backend. Bitcask already has a key expiration feature. If it 
+&gt; where fixed, so that expired key are actually counted towards the 
+&gt; triggering of merges, and the ttl could be set per key, you would be 
+&gt; good to go ;-).
+&gt; 
+&gt; Btw, this whole issue is not really Riak specific. It is essentially a 
+&gt; consequence of eventual consistency, where you have to make a trade off 
+&gt; between the amount of bookkeeping information you want to store and the 
+&gt; maximum amount of time (or number of updates) any part of the system can 
+&gt; diverge from the rest of the system before you get undesired results.
+&gt; 
+&gt; Cheers,
+&gt; Nico
+&gt; 
+&gt; Am 16.06.2011 16:50, schrieb Kresten Krab Thorup:
+&gt; &gt; ...when doing a delete, Riak actually stores a &quot;deleted&quot; record, but then 
+&gt; &gt; it is too eagerly deleting it for real after that. There should be a 
+&gt; &gt; configurable &quot;zombie time&quot; between requesting a delete and the &quot;deleted 
+&gt; &gt; record&quot; being deleted for real; so that the deleted record's vector clock 
+&gt; &gt; will show that the delete is more recent than the other value(s) in case 
+&gt; &gt; those are later reconciled. The current infrastructure just doesn't have a 
+&gt; &gt; good place to &quot;enqueue&quot; such a &quot;delete this for real in 24 hours&quot;-ish 
+&gt; &gt; request.
+&gt; &gt; 
+&gt; &gt; Also, the master branch now has support for specifying a vector clock with 
+&gt; &gt; a delete (in 14.x releases you can in stead do a PUT w/ X-Riak-Deleted=true 
+&gt; &gt; and a proper vector clock, and an empty content). That's better (more 
+&gt; &gt; consistent), but not a real fix.
+&gt; &gt; 
+&gt; &gt; Kresten
+&gt; &gt; 
+&gt; &gt; On 16/06/2011, at 11.58, &quot;Nico 
+&gt; &gt; Meyer&quot;&lt;nico.me...@adition.com&lt;<a  rel="nofollow" href="mailto:nico.me...@adition.com">mailto:nico.me...@adition.com</a>&gt;&gt; wrote:
+&gt; &gt; 
+&gt; &gt; Hello David,
+&gt; &gt; 
+&gt; &gt; this behaviour is quite expected if you think about how Riak works.
+&gt; &gt; Assuming you use the default replication factor of n=3, each key is stored 
+&gt; &gt; on all of your three nodes. If you delete a key while one node (let's call 
+&gt; &gt; it A) is down, the key is deleted from the two nodes that are still up 
+&gt; &gt; (let's call them B and C), and remains on the downed node A.
+&gt; &gt; Once node A is up again, the situation is indistinguishable from B and C 
+&gt; &gt; having a hard drive crash and loosing all their data, in that A has the key 
+&gt; &gt; and B and C know nothing about it.
+&gt; &gt; 
+&gt; &gt; If you do a GET of the deleted key at this point, the result depends on the 
+&gt; &gt; r-value that you choose. For r&gt;1 you will get a not_found on the first get. 
+&gt; &gt; For r=1 you might get the data or a not_found, depending on which two nodes 
+&gt; &gt; answer first (see&lt;<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=992">https://issues.basho.com/show_bug.cgi?id=992</a>&gt; 
+&gt; &gt; <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=992">https://issues.basho.com/show_bug.cgi?id=992</a> about basic quorum for an 
+&gt; &gt; explanation). Also, at that point read repair will kick in and re-replicate 
+&gt; &gt; the key to all nodes, so subsequent GETs will always return the original 
+&gt; &gt; datum.
+&gt; &gt; 
+&gt; &gt; listing keys on the other hand does not use quorum but just does a set 
+&gt; &gt; union of all keys of all the nodes in you cluster. Essentially it is 
+&gt; &gt; equivalent to r=1 without basic quorum. The same is true for map/reduce 
+&gt; &gt; queries to my knowledge
+&gt; &gt; 
+&gt; &gt; The essential problem is that a real physical delete is indistinguishable 
+&gt; &gt; from data loss (or never having had the data in the first place), while 
+&gt; &gt; those two things are logically different.
+&gt; &gt; If you want to be sure that a key is deleted with all its replicas you must 
+&gt; &gt; delete it with a write quorum setting of w=n. Also you need to tell Riak 
+&gt; &gt; not to count fallback vnodes toward you write quorum. This feature is quite 
+&gt; &gt; new and I believe only available in the head revision. Also I forgot the 
+&gt; &gt; name of the parameter and don't know if it is even applicable for DELETEs.
+&gt; &gt; Anyhow, if you do all this, your DELETEs will simply fail if any of the 
+&gt; &gt; nodes that has a copy of the key is down (so in your case, if any node is 
+&gt; &gt; down).
+&gt; &gt; 
+&gt; &gt; If you only want to logically delete, and don't care about freeing the disk 
+&gt; &gt; space and RAM that is used by the key, you should use a special value, 
+&gt; &gt; which is interpreted by your application as a not found. That way you also 
+&gt; &gt; get proper conflict resolution between DELETEs and PUTs (say one client 
+&gt; &gt; deletes a key while another one updates it).
+&gt; &gt; 
+&gt; &gt; Cheers,
+&gt; &gt; Nico
+&gt; &gt; 
+&gt; &gt; Am 16.06.2011 00:55, schrieb David Mitchell:
+&gt; &gt; Erlang: R13B04
+&gt; &gt; Riak: 0.14.2
+&gt; &gt; 
+&gt; &gt; I have a three node cluster, and while one node was down, I deleted every 
+&gt; &gt; key in a certain bucket. Then, I started the node that was down, and it 
+&gt; &gt; joined the cluster.
+&gt; &gt; 
+&gt; &gt; Now, when do a listing on these keys in this bucket, and I get the entire 
+&gt; &gt; list. I can also get the values of the bucket. However, when I try to 
+&gt; &gt; delete the keys, the keys are not deleted.
+&gt; &gt; 
+&gt; &gt; Can anyone help me get the nodes back in a consistent state? I have tried 
+&gt; &gt; restarting the nodes.
+&gt; &gt; 
+&gt; &gt; David
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; &gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt; 
+&gt; &gt; 
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com (<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>)
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03708.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03709">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03709">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03710.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03702.html">Problem with deleting keys</a></span> <span class="sender italic">David Mitchell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03703.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03705.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03707.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03708.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Problem with deleting keys</span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03710.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03711.html">Re: Problem with deleting ke...</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03721.html">Re: Problem with deletin...</a></span> <span class="sender italic">Andrew Thompson</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03713.html">Re: Problem with deleting ke...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03714.html">Re: Problem with deleting ke...</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03723.html">Re: Problem with deletin...</a></span> <span class="sender italic">Andrew Thompson</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03712.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Nico Meyer</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03716.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03718.html">Re: Problem with deleting keys</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03720.html">Re: Problem with deleting ke...</a></span> <span class="sender italic">David Leimbach</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Problem with deleting keys">
+<input type="hidden" name="msgid" value="762CCEB64F0D46CD8DEAC27A18343BC5@dropcam.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03709.html">
+<input type="submit" value=" Greg Nelson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problem+with+deleting+keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03708.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03710.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">762CCEB64F0D46CD8DEAC27A18343BC5@dropcam.com</li>
+</ul>
+</div>
+</body>
+</html>

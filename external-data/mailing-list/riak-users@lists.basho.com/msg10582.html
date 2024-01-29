@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: How to deal with tombstone values when writing a Riak (http)	client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10582" id="c">
+<link rel="index" href="maillist.html#10582" id="i">
+<link rel="prev" href="msg10581.html" id="p">
+<link rel="next" href="msg10583.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10582.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+deal+with+tombstone+values+when+writing+a+Riak+%5C%28http%5C%29%09client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: How to deal with tombstone values when writing a Riak (http)	client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Age+Mooij%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Age Mooij</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130325" rel="nofollow">Mon, 25 Mar 2013 07:06:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks Brian
+
+What do you think would be the proper way for Riak itself to deal with case 1? 
+Should it return a 200 with an empty body and the X-Riak-Deleted header?</pre><pre>
+
+Could you give me an example of a use case for reproducing case 1 in a unit 
+test? Case 2a is easy but I've tried several ways to reliably produce case 1 
+and I'm not getting anywhere.
+
+Do you have an idea of how many people actually use the option to &quot;return 
+deleted vclocks&quot;. 
+
+My Scala client basically just treats tombstones like completely deleted 
+values, so for case 1 that would lead to &quot;normal&quot; 404 behavior and during 
+conflict resolution it will just ignore/skip tombstones. But if lots of people 
+are interested in dealing with tombstones directly I might have to change that 
+to something similar to what you did in the java client.
+
+Are there any plans on adding a documentation section about tombstones and 
+deletes in Riak? I think that would definitely be helpful for other people 
+writing clients.
+
+Age
+
+
+On Mar 25, 2013, at 14:29, Brian Roach &lt;ro...@basho.com&gt; wrote:
+
+&gt; Hi Age,
+&gt; 
+&gt; I'm the author of the pull request for the Java client you cite.
+&gt; There's still inconsistency in how these are returned via the HTTP
+&gt; protocol. Partially that's my fault in that I didn't open an actual
+&gt; issue when I discovered the problem I note in my comments. While
+&gt; reviewing the issue to make sure I answered your question correctly, I
+&gt; found another.
+&gt; 
+&gt; As of right now (Riak 1.3), here's what you will find:
+&gt; 
+&gt; 1) If *only* a tombstone exists when you do a GET for a key, you will
+&gt; receive a 404 but it will contain the X-Riak-Vclock header (with a
+&gt; vclock). A &quot;normal&quot; 404 (when there's no object) will not have this
+&gt; header.
+&gt; 
+&gt; 2) If there is a set of siblings, and one of them is a tombstone:
+&gt; 
+&gt; 2a) Retrieving all the siblings at once by including &quot;Accept:
+&gt; multipart/mixed&quot; in the GET will return all the siblings, and the
+&gt; tombstone will include the &quot;X-Riak-Deleted: true&quot; header
+&gt; 
+&gt; 2b) Retrieving each sibling manually by adding ?vtag=XXXXXX to the GET
+&gt; will (unfortunately) return a 200 OK for the tombstone but it will
+&gt; have an empty body (Content-Length: 0).
+&gt; 
+&gt; I'm going to open issues for 1 and 2b just so we get things to be
+&gt; consistent. That being said, I can't think of a reason you'd ever want
+&gt; to do 2b so at least the impact there is minimized. For 1 you can
+&gt; obviously still identify a tombstone the same way I'm doing it in the
+&gt; Java client -&gt; 404 + vclock = tombstone.
+&gt; 
+&gt; Thanks,
+&gt; _ Roach
+&gt; 
+&gt; On Sun, Mar 24, 2013 at 2:09 PM, Age Mooij &lt;age.mo...@gmail.com&gt; wrote:
+&gt;&gt; Hi,
+&gt;&gt; 
+&gt;&gt; I've been trying to find some comprehensive docs on what Riak http clients
+&gt;&gt; need to do to properly support dealing with tombstone values. I ran into
+&gt;&gt; tombstones while debugging some unit tests and I was very surprised that the
+&gt;&gt; Basho (http) API docs don't mention anything about having to deal with them.
+&gt;&gt; 
+&gt;&gt; It's very hard to find any kind of complete description on when Riak will
+&gt;&gt; produce tombstone values in http responses and what the proper way of
+&gt;&gt; dealing with them is. This makes it very hard to write good unit tests and
+&gt;&gt; to implement the &quot;correct&quot; behaviour for my riak-scala-client.
+&gt;&gt; 
+&gt;&gt; Can anyone point me towards a comprehensive description of the expected
+&gt;&gt; behaviour? Or even a description of what most client libraries end up doing?
+&gt;&gt; 
+&gt;&gt; For now I just ignore siblings with the X-Riak-Deleted header (undocumented
+&gt;&gt; AFAIK) when resolving conflicts caused by a delete followed by a put (based
+&gt;&gt; on the same vclock). I'm not sure this header could (or should) occur in any
+&gt;&gt; other situation.
+&gt;&gt; 
+&gt;&gt; Here's the online stuff I've found so far:
+&gt;&gt; 
+&gt;&gt; - A pull request for the java client:
+&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client/pull/195">https://github.com/basho/riak-java-client/pull/195</a>
+&gt;&gt; 
+&gt;&gt; - The most important commit message for the above pull request:
+&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client/commit/416a901ff1de8e4eb559db21ac5045078d278e86">https://github.com/basho/riak-java-client/commit/416a901ff1de8e4eb559db21ac5045078d278e86</a>
+&gt;&gt; 
+&gt;&gt; - Some interesting code introduced in that commit:
+&gt;&gt; 
+&gt;&gt; // There is a bug in Riak where the x-riak-deleted header is not returned
+&gt;&gt; // with a tombstone on a 404 (x-riak-vclock exists). The following block can
+&gt;&gt; // be removed once that is fixed
+&gt;&gt; byte[] body = r.getBody();
+&gt;&gt; if (r.getStatusCode() == 404) {
+&gt;&gt;    headers.put(Constants.HDR_DELETED, &quot;true&quot;);
+&gt;&gt;    body = new byte[0]; // otherwise this will be &quot;not found&quot;
+&gt;&gt; }
+&gt;&gt; 
+&gt;&gt; That bug apparently still exists… do all clients implement this hack? Should
+&gt;&gt; they?
+&gt;&gt; 
+&gt;&gt; - A message to this mailing list from October 2011:
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html</a>
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; Age
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10581.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10582">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10582">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10583.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10576.html">How to deal with tombstone values when writing a Riak (http) c...</a></span> <span class="sender italic">Age Mooij</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10581.html">Re: How to deal with tombstone values when writing a Riak...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: How to deal with tombstone values when writing a ...</span> <span class="sender italic">Age Mooij</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10583.html">Re: How to deal with tombstone values when writin...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10584.html">Re: How to deal with tombstone values when wr...</a></span> <span class="sender italic">Age Mooij</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: How to deal with tombstone values when writing a Riak (http)	client">
+<input type="hidden" name="msgid" value="F9F90795-FD18-4DB7-ABF1-1911470CF4E2@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10582.html">
+<input type="submit" value=" Age Mooij ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+deal+with+tombstone+values+when+writing+a+Riak+%5C%28http%5C%29%09client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10581.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10583.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">F9F90795-FD18-4DB7-ABF1-1911470CF4E2@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

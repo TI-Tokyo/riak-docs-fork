@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak stalls, leveldb backend</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#15445" id="c">
+<link rel="index" href="mail2.html#15445" id="i">
+<link rel="prev" href="msg15442.html" id="p">
+<link rel="next" href="msg15688.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15445.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+stalls%2C+leveldb+backend%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak stalls, leveldb backend</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Drew+Pirrone%5C-Brusse%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Drew Pirrone-Brusse</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150106" rel="nofollow">Tue, 06 Jan 2015 16:30:30 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hey all,
+
+So, the long and short of it is that Riak doesn't handle objects
+larger than 2Mb very well at all. We try to be pretty up-front about
+this in the documentation (for example[1]) be we're also aware that
+sometimes you need to store big objects. Riak CS was actually created
+to deal with these exact performance issues, so I'd highly recommend
+you take a look at it, if your usecase requires large objects.</pre><pre>
+
+When talking specifically about LevelDB, we have some useful
+implementation details[2] in our docs. Take special note of the file
+sizes and total size limits for Level-0 and Level-1---each file is
+limited to 2Mb, and Level-1 will only store up to 10Mb. The disk I/O
+required to flush Level-0 and Level-1 completely so that you can write
+-- and then compact -- a &gt;10Mb file (as is your case, Andy) adds up
+pretty quickly.
+
+I hope that helps.
+Best,
+-Drew
+
+[1] - 
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/dev/using/application-guide/#What-Kind-of-Data-Are-You-Storing-">http://docs.basho.com/riak/latest/dev/using/application-guide/#What-Kind-of-Data-Are-You-Storing-</a>
+[2] - 
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/leveldb/#Implementation-Details">http://docs.basho.com/riak/latest/ops/advanced/backends/leveldb/#Implementation-Details</a>
+
+On Tue, Jan 6, 2015 at 6:01 AM, Sorin Manole &lt;sorin.man...@trustev.com&gt; wrote:
+&gt;
+&gt; Hey Andy,
+&gt;
+&gt; We had the same issue few days ago. We were getting timeouts when trying to 
+&gt; read a key from riak.
+&gt;
+&gt; Also we were seeing in the logs a warning about reading/writing a large 
+&gt; object. In our case that object was first read from riak and after written 
+&gt; back. It was that big (17Mb) because of some load testing that we did.
+&gt;
+&gt; We deleted the object and we didn't experience timeouts anymore.
+&gt;
+&gt; We tried to repro the issue, so we can be sure it was this and we posted a 
+&gt; 20Mb json to the same key and the timeouts came back again, deleted the 20Mb 
+&gt; object and everything worked fine again.
+&gt;
+&gt; I don't know why this is happening but we can say that this was the issue for 
+&gt; our timeouts.
+&gt;
+&gt; Maybe someone has a better understanding on this.. I'd like to be in the loop 
+&gt; of this conversation if possible.
+&gt;
+&gt; Thanks!
+&gt; Sorin.
+&gt;
+&gt; On 5 January 2015 at 18:07, Andy Pellett &lt;a...@embed.ly&gt; wrote:
+&gt;&gt;
+&gt;&gt; Hi all,
+&gt;&gt;
+&gt;&gt; I've been experiencing stalls where riak won't return any data (queries time 
+&gt;&gt; out) with my riak cluster. Here are some basic details:
+&gt;&gt;
+&gt;&gt; - 8 nodes
+&gt;&gt; - riak 1.4.10 (upgraded from 1.4.6 -&gt; 1.4.8 -&gt; 1.4.10)
+&gt;&gt; - leveldb backend
+&gt;&gt; - n_val is 2
+&gt;&gt; - allow_mult is false
+&gt;&gt; - ec2 i2.2xlarge boxes (8 cores, 61gb ram, 800gb disk space)
+&gt;&gt; - about 33% disk space utilization per node
+&gt;&gt;
+&gt;&gt; The riak cluster will stall for as long as a few minutes at a time, but will 
+&gt;&gt; otherwise work as expected for hours. There doesn't seem to be an obvious 
+&gt;&gt; pattern as to when the stalls happen.
+&gt;&gt;
+&gt;&gt; My first thought was that the stalls may be related to AAE, but I've 
+&gt;&gt; disabled that via 'riak attach' and the settings file. Sidenote, I still see 
+&gt;&gt; messages like:
+&gt;&gt;
+&gt;&gt; 2015-01-05 12:24:04.666 [info] 
+&gt;&gt; &lt;0.574.0&gt;@riak_kv_entropy_manager:perhaps_log_throttle_change:826 Changing 
+&gt;&gt; AAE throttle from 0 -&gt; 10 msec/key, based on maximum vnode mailbox size 209 
+&gt;&gt; from 'riak-user@riak-host'
+&gt;&gt;
+&gt;&gt; which makes me question whether AAE is actually turned off.
+&gt;&gt;
+&gt;&gt; Now I'm leaning towards leveldb compactions being the issue. What can I do 
+&gt;&gt; to verify this is the issue, and how can I fix it?
+&gt;&gt;
+&gt;&gt; I see log messages about large objects:
+&gt;&gt;
+&gt;&gt; 2015-01-05 16:11:28.046 [warning] 
+&gt;&gt; &lt;0.6398.0&gt;@riak_kv_vnode:encode_and_put_no_sib_check:1830 Writing very large 
+&gt;&gt; object (11307735 bytes) to &lt;&lt;&quot;BucketName&quot;&gt;&gt;/&lt;&lt;&quot;keys_1420466400&quot;&gt;&gt;
+&gt;&gt;
+&gt;&gt; Could these be causing longer-running compactions, or more frequent 
+&gt;&gt; compactions?
+&gt;&gt;
+&gt;&gt; Thanks for reading,
+&gt;&gt; Andy
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sorin Manole
+&gt; Senior Software Engineer, Trustev
+&gt; m:+353 86 051 2658 | e:sorin.man...@trustev.com | w:www.trustev.com| a: 
+&gt; Trustev Ltd, 2100 Airport Business Park, Cork, Ireland.
+&gt;
+&gt; This message is for the named person's use only. If you received this message 
+&gt; in error, please immediately delete it and all copies and notify the sender. 
+&gt; You must not, directly or indirectly, use, disclose, distribute, print, or 
+&gt; copy any part of this message if you are not the intended recipient. Any 
+&gt; views expressed in this message are those of the individual sender and not 
+&gt; Trustev Ltd. Trustev is registered in Ireland No. 516425 and trades from 2100 
+&gt; Cork Airport Business Park, Cork, Ireland.
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15442.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#15445">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#15445">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15688.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15441.html">Riak stalls, leveldb backend</a></span> <span class="sender italic">Andy Pellett</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15442.html">Re: Riak stalls, leveldb backend</a></span> <span class="sender italic">Sorin Manole</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak stalls, leveldb backend</span> <span class="sender italic">Drew Pirrone-Brusse</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15688.html">Re: Riak stalls, leveldb backend</a></span> <span class="sender italic">Andy Pellett</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15689.html">Re: Riak stalls, leveldb backend</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15755.html">Re: Riak stalls, leveldb backend</a></span> <span class="sender italic">Andy Pellett</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg15444.html">Re: Riak stalls, leveldb backend</a></span> <span class="sender italic">Michael Lewis</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak stalls, leveldb backend">
+<input type="hidden" name="msgid" value="CANXL_jxg7GjSjGruS08P8b8CNr+TeuYFLMuM432Y6zRZO7qmtw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15445.html">
+<input type="submit" value=" Drew Pirrone-Brusse ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+stalls%2C+leveldb+backend%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15442.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15688.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANXL_jxg7GjSjGruS08P8b8CNr+TeuYFLMuM432Y6zRZO7qmtw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

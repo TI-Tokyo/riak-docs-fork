@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Make bucket really "Public"</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#13151" id="c">
+<link rel="index" href="mail6.html#13151" id="i">
+<link rel="prev" href="msg13146.html" id="p">
+<link rel="next" href="msg13147.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13151.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Make+bucket+really+%5C%22Public%5C%22%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Make bucket really "Public"</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Neil+Soman%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Neil Soman</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131204" rel="nofollow">Wed, 04 Dec 2013 09:49:58 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi there,
+
+I don't think s3cmd lets you set public-read-write on buckets. Probably for
+a good reason, it is generally not a good idea :)</pre><pre>
+
+I have attached a quick patch against the latest s3cmd HEAD that should let
+you do this. I tested it quickly, so use at your own risk :)
+
+If you set the acl back to --acl-private, it will remove anonymous read as
+well as write.
+
+Hope that helps.
+neil
+
+
+On Wed, Dec 4, 2013 at 2:31 AM, Gavin Huang &lt;shuminghu...@gmail.com&gt; wrote:
+
+&gt; Hi, all
+&gt; I'm wondering is there any way to make a bucket in Riak-CS &quot;public-write&quot;?
+&gt; i tried to call s3cmd:
+&gt; s3cmd setacl --acl-public s3://test-bucket/
+&gt;
+&gt; but it only make bucket's read public:
+&gt; s3cmd info s3://test-bucket
+&gt;
+&gt;    Location:  any
+&gt;    ACL:       foobar: FULL_CONTROL
+&gt;    ACL:       *anon*: READ
+&gt;    URL:       <a  rel="nofollow" href="http://test-bucket.s3.amazonaws.com/">http://test-bucket.s3.amazonaws.com/</a>
+&gt;
+&gt;
+&gt; Thanks.
+&gt; Gavin
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>diff --git a/S3/ACL.py b/S3/ACL.py
+index 2408d06..8c03321 100644
+--- a/S3/ACL.py
++++ b/S3/ACL.py
+@@ -34,6 +34,9 @@ class Grantee(object):
+     def isAnonRead(self):
+         return self.isAllUsers() and (self.permission == &quot;READ&quot; or self.permission == &quot;FULL_CONTROL&quot;)
+ 
++    def isAnonWrite(self):
++        return self.isAllUsers() and (self.permission == &quot;WRITE&quot; or self.permission == &quot;FULL_CONTROL&quot;)
++
+     def getElement(self):
+         el = ET.Element(&quot;Grant&quot;)
+         grantee = ET.SubElement(el, &quot;Grantee&quot;, {
+@@ -54,6 +57,14 @@ class GranteeAnonRead(Grantee):
+         self.name = Grantee.ALL_USERS_URI
+         self.permission = &quot;READ&quot;
+ 
++class GranteeAnonWrite(Grantee):
++    def __init__(self):
++        Grantee.__init__(self)
++        self.xsi_type = &quot;Group&quot;
++        self.tag = &quot;URI&quot;
++        self.name = Grantee.ALL_USERS_URI
++        self.permission = &quot;WRITE&quot;
++
+ class GranteeLogDelivery(Grantee):
+     def __init__(self, permission):
+         &quot;&quot;&quot;
+@@ -119,13 +130,26 @@ class ACL(object):
+                 return True
+         return False
+ 
++    def isAnonWrite(self):
++        for grantee in self.grantees:
++            if grantee.isAnonWrite():
++                return True
++        return False
++
+     def grantAnonRead(self):
+         if not self.isAnonRead():
+             self.appendGrantee(GranteeAnonRead())
+ 
++    def grantAnonWrite(self):
++        if not self.isAnonWrite():
++            self.appendGrantee(GranteeAnonWrite())
++
+     def revokeAnonRead(self):
+         self.grantees = [g for g in self.grantees if not g.isAnonRead()]
+ 
++    def revokeAnonWrite(self):
++        self.grantees = [g for g in self.grantees if not g.isAnonWrite()]
++
+     def appendGrantee(self, grantee):
+         self.grantees.append(grantee)
+ 
+diff --git a/S3/Config.py b/S3/Config.py
+index c8dc99a..f9b3732 100644
+--- a/S3/Config.py
++++ b/S3/Config.py
+@@ -44,6 +44,7 @@ class Config(object):
+     skip_existing = False
+     recursive = False
+     acl_public = None
++    acl_public_read_write = None
+     acl_grants = []
+     acl_revokes = []
+     proxy_host = &quot;&quot;
+diff --git a/S3/S3.py b/S3/S3.py
+index 74e359e..b93443e 100644
+--- a/S3/S3.py
++++ b/S3/S3.py
+@@ -287,6 +287,8 @@ class S3(object):
+             check_bucket_name(bucket, dns_strict = False)
+         if self.config.acl_public:
+             headers[&quot;x-amz-acl&quot;] = &quot;public-read&quot;
++        if self.config.acl_public_read_write:
++            headers[&quot;x-amz-acl&quot;] = &quot;public-read-write&quot;
+         request = self.create_request(&quot;BUCKET_CREATE&quot;, bucket = bucket, headers = headers)
+         response = self.send_request(request, body)
+         return response
+@@ -427,6 +429,8 @@ class S3(object):
+         ## Other Amazon S3 attributes
+         if self.config.acl_public:
+             headers[&quot;x-amz-acl&quot;] = &quot;public-read&quot;
++        if self.config.acl_public_read_write:
++            headers[&quot;x-amz-acl&quot;] = &quot;public-read-write&quot;
+         if self.config.reduced_redundancy:
+             headers[&quot;x-amz-storage-class&quot;] = &quot;REDUCED_REDUNDANCY&quot;
+ 
+@@ -499,6 +503,8 @@ class S3(object):
+         headers['x-amz-metadata-directive'] = &quot;COPY&quot;
+         if self.config.acl_public:
+             headers[&quot;x-amz-acl&quot;] = &quot;public-read&quot;
++        if self.config.acl_public_read_write:
++            headers[&quot;x-amz-acl&quot;] = &quot;public-read-write&quot;
+         if self.config.reduced_redundancy:
+             headers[&quot;x-amz-storage-class&quot;] = &quot;REDUCED_REDUNDANCY&quot;
+         # if extra_headers:
+diff --git a/s3cmd b/s3cmd
+index 2e58604..26609c5 100755
+--- a/s3cmd
++++ b/s3cmd
+@@ -345,7 +345,7 @@ def cmd_object_put(args):
+                 output(u&quot;File '%s' stored as '%s' (%d bytes in %0.1f seconds, %0.2f %sB/s) %s&quot; %
+                        (unicodise(full_name_orig), uri_final, response[&quot;size&quot;], response[&quot;elapsed&quot;],
+                         speed_fmt[0], speed_fmt[1], seq_label))
+-        if Config().acl_public:
++        if Config().acl_public or Config().acl_public_read_write:
+             output(u&quot;Public URL of the object is: %s&quot; %
+                    (uri_final.public_url()))
+         if Config().encrypt and full_name != full_name_orig:
+@@ -588,7 +588,7 @@ def subcmd_cp_mv(args, process_fce, action_str, message):
+         try:
+             response = process_fce(src_uri, dst_uri, extra_headers)
+             output(message % { &quot;src&quot; : src_uri, &quot;dst&quot; : dst_uri })
+-            if Config().acl_public:
++            if Config().acl_public or Config().acl_public_read_write:
+                 info(u&quot;Public URL is: %s&quot; % dst_uri.public_url())
+         except S3Error, e:
+             if cfg.ignore_failed_copy and e.code == &quot;NoSuchKey&quot;:
+@@ -1810,7 +1810,24 @@ def update_acl(s3, uri, seq_label=&quot;&quot;):
+         else:
+             acl.revokeAnonRead()
+             something_changed = True
++        if not acl.isAnonWrite():
++            info(u&quot;%s: already Private, skipping %s&quot; % (uri, seq_label))
++        else:
++            acl.revokeAnonWrite()
++            something_changed = True
+ 
++    elif cfg.acl_public_read_write == True:
++        if acl.isAnonRead():
++            info(u&quot;%s: already Public Read, skipping %s&quot; % (uri, seq_label))
++        else:
++            acl.grantAnonRead()
++            something_changed = True
++        if acl.isAnonWrite():
++            info(u&quot;%s: already Public Write, skipping %s&quot; % (uri, seq_label))
++        else:
++            acl.grantAnonWrite()
++            something_changed = True
++         
+     # update acl with arguments
+     # grant first and revoke later, because revoke has priority
+     if cfg.acl_grants:
+@@ -1915,6 +1932,7 @@ def main():
+     optparser.add_option(      &quot;--no-check-md5&quot;, dest=&quot;check_md5&quot;, action=&quot;store_false&quot;, help=&quot;Do not check MD5 sums when comparing files for [sync]. Only size will be compared. May significantly speed up transfer but may also miss some changed files.&quot;)
+     optparser.add_option(&quot;-P&quot;, &quot;--acl-public&quot;, dest=&quot;acl_public&quot;, action=&quot;store_true&quot;, help=&quot;Store objects with ACL allowing read for anyone.&quot;)
+     optparser.add_option(      &quot;--acl-private&quot;, dest=&quot;acl_public&quot;, action=&quot;store_false&quot;, help=&quot;Store objects with default ACL allowing access for you only.&quot;)
++    optparser.add_option(      &quot;--acl-public-read-write&quot;, dest=&quot;acl_public_read_write&quot;, action=&quot;store_true&quot;, help=&quot;Store objects with ACL allowing read/write for anyone.&quot;)
+     optparser.add_option(      &quot;--acl-grant&quot;, dest=&quot;acl_grants&quot;, type=&quot;s3acl&quot;, action=&quot;append&quot;, metavar=&quot;PERMISSION:EMAIL or USER_CANONICAL_ID&quot;, help=&quot;Grant stated permission to a given amazon user. Permission is one of: read, write, read_acp, write_acp, full_control, all&quot;)
+     optparser.add_option(      &quot;--acl-revoke&quot;, dest=&quot;acl_revokes&quot;, type=&quot;s3acl&quot;, action=&quot;append&quot;, metavar=&quot;PERMISSION:USER_CANONICAL_ID&quot;, help=&quot;Revoke stated permission for a given amazon user. Permission is one of: read, write, read_acp, wr     ite_acp, full_control, all&quot;)
+ 
+@@ -2098,6 +2116,7 @@ def main():
+     ## Special handling for tri-state options (True, False, None)
+     cfg.update_option(&quot;enable&quot;, options.enable)
+     cfg.update_option(&quot;acl_public&quot;, options.acl_public)
++    cfg.update_option(&quot;acl_public_read_write&quot;, options.acl_public_read_write)
+ 
+     ## Check multipart chunk constraints
+     if cfg.multipart_chunk_size_mb &lt; MultiPartUpload.MIN_CHUNK_SIZE_MB:
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13146.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#13151">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#13151">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13147.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13146.html">Make bucket really &quot;Public&quot;</a></span> <span class="sender italic">Gavin Huang</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Make bucket really &quot;Public&quot;</span> <span class="sender italic">Neil Soman</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Make bucket really &quot;Public&quot;">
+<input type="hidden" name="msgid" value="CAL+gVMnG9Kuxq25H_LnE0qoSyOo2czGG=hHHQCsRumcg53MhRA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13151.html">
+<input type="submit" value=" Neil Soman ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Make+bucket+really+%5C%22Public%5C%22%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13146.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13147.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAL+gVMnG9Kuxq25H_LnE0qoSyOo2czGG=hHHQCsRumcg53MhRA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

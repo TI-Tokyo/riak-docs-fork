@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: mapreduce with non-existent keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#07967" id="c">
+<link rel="index" href="mail2.html#07967" id="i">
+<link rel="prev" href="msg07952.html" id="p">
+<link rel="next" href="msg07968.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07967.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+mapreduce+with+non%5C-existent+keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: mapreduce with non-existent keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mark+Boyd+%E3%82%BD%E3%83%95%E3%83%88%E3%82%A6%E3%82%A7%E3%82%A2+%E5%BB%BA%E7%AF%89%E5%AE%B6%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mark Boyd ソフトウェア 建築家</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120716" rel="nofollow">Mon, 16 Jul 2012 13:38:31 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>For those wishing to know how I solved this and to shed light on debugging 
+map/reduce here is what I did.</pre><pre>
+
+Background:
+
+I’m dealing with a set of keys that are mirrored in two buckets, an 
+authorization expression bucket and a protected objects bucket. My goal is to 
+use map/reduce to evaluate the authz expressions for the passed-in keys and 
+return only those protected objects for which a user is authorized. But authz 
+expressions and protected objects themselves may not exist since they could be 
+deleted while references to them may not have been cleaned up as yet.
+
+For my input I have this bucket/key pairs array from other processing. I have 
+authz expressions for v1 to v4 but not v5 to v8 and protected objects for v1 to 
+v3 but v4 to v8.
+
+[[“authz”, “v1”], [“authz”, “v2”], [“authz”, “v3”], [“authz”, “v4”], … 
+[“authz”, “v8”]]
+
+I’m using riak-js in node.js. My map reduce looked like this to begin with:
+
+db.add(pairs)
+    .map(evaluation.toMapReduceForm, { 'obj-bucket' : 'v2.tv', 'user-atts' : 
+userAtts })
+                .map('Riak.mapValuesJson') // converts the buckets and keys 
+array into array of json objects
+                .run(function(err, listOfViews) {
+                    if (err) {
+                        console.log(&quot;ERROR: Unable to obtain tvs for id '&quot; + id 
++ &quot;'. Detail: &quot; + JSON.stringify(err));
+                                send500ToClient(response);
+                        return;
+                    }
+                    callback(listOfViews);
+                });
+
+This results in the err object being the unhelpful {&quot;statusCode&quot;:500}. 
+Fortunately, I have an http proxy that I wrote, “google wamulator”, that I’ve 
+configured allowing all riak-js http traffic passing to riak to pass through 
+the proxy exposing what passes across the wire. And here is what I saw:
+
+{
+*         &quot;phase&quot;:0,
+*         &quot;error&quot;:&quot;function_clause&quot;,
+*         
+&quot;input&quot;:&quot;{{error,notfound},{&lt;&lt;&quot;v2.tv.authz&quot;&gt;&gt;,&lt;&lt;&quot;v5&quot;&gt;&gt;},{struct,[{&lt;&lt;&quot;type&quot;&gt;&gt;,&lt;&lt;&quot;FALSE&quot;&gt;&gt;}]}}&quot;,
+*         &quot;type&quot;:&quot;error&quot;,
+*         
+&quot;stack&quot;:&quot;[{riak_kv_pipe_get,bkey,[{not_found,{&lt;&lt;&quot;v2.tv.authz&quot;&gt;&gt;,&lt;&lt;&quot;v5&quot;&gt;&gt;},{struct,[{&lt;&lt;&quot;type&quot;&gt;&gt;,&lt;&lt;&quot;FALSE&quot;&gt;&gt;}]}}]},{riak_kv_pipe_get,bkey_chash,1},{riak_pipe_vnode,queue_work,4},{riak_kv_mrc_map,send_results,2},{riak_pipe_vnode_worker,process_input,3},{riak_pipe_vnode_worker,wait_for_input,2},{gen_fsm,handle_msg,7},{proc_lib,init_p_do_apply,3}]&quot;
+}
+
+This is where it got interesting. It appears that it wasn’t finding the authz 
+object for the v5 key. So I assumed it was failing before even hitting my first 
+map function. On the contrary, _it wasn’t_. On a whim I commented out the 
+second map and the reduce portions. And ran the query again. And the following 
+array was returned.
+
+[
+  [
+    &quot;v2.tv&quot;,
+    &quot;v1&quot;
+  ],
+  {
+    &quot;not_found&quot;: {
+      &quot;bucket&quot;: &quot;v2.tv.authz&quot;,
+      &quot;key&quot;: &quot;v5&quot;,
+      &quot;keydata&quot;: &quot;undefined&quot;
+    }
+  },
+… more not_found objects, one for each missing key,
+  [
+    &quot;v2.tv&quot;,
+    &quot;v3&quot;
+  ],
+]
+
+This gave me some great information:
+
+
+1)      If I don’t have a reduce phase my objects returned from a map phase 
+make it back to the client as-is. We can use that for debugging!
+
+2)      I was getting these weird not_found objects included with my two 
+objects (of three) for which the user was authorized.
+
+Now where did those not_found objects come from? After _much_ trial and error I 
+came to the conclusion that to each phase is passed an array. A map phase 
+interprets that as an array of bucket/key pair arrays. For each of those the 
+map phase looks for the corresponding item. If not found, the map phase puts 
+one of these not_found objects in its output array. If an item _is_ found it 
+passes the item to the map function and sticks any returned object into the 
+output array.
+
+Note that I said “returned object” not “bucket/key pairs”. As noted in item 1 
+above, it appears to be crafting another input array without interpretation. It 
+appears that intepretation belongs to the next phase. And if there is no next 
+phase, then that array propagates back to the client as-is including any 
+not_founds for missing bucket/key objects in the input array to the map. In 
+contrast, it appears that a reduce phase takes the incoming array as-is without 
+treating them as bucket/key pairs.
+
+Now back to my original error. The not_found error for the v5 key was coming 
+from the second map phase, the mapValuesJson part. As noted, it tries to 
+interpret the incoming array as bucket/key pair array objects and sees those 
+not_found items and throws the error.
+
+So how did I solve this problem?
+
+Riak has some pre-defined javascript functions that can be used in map/reduce 
+defined at 
+<a  rel="nofollow" href="https://github.com/basho/riak_kv/blob/master/priv/mapred_builtins.js">https://github.com/basho/riak_kv/blob/master/priv/mapred_builtins.js</a>. I noted 
+that one of these, filterNotDefined, had a single argument having a plural 
+name, values. That led me to believe that it was solely for use in the reduce 
+phase. So here is what I did. Notice that after each map phase to which keys 
+will be passed that might not exist I have a reduce phase that leverages the 
+filterNotDefined function to pull those not_found objects from the array. That 
+last one is there so that I don’t get those not_found objects in the array 
+returned from riak.
+
+db.add(pairs)
+    .map(evaluation.toMapReduceForm, { 'obj-bucket' : 'v2.tv', 'user-atts' : 
+userAtts })
+        .reduce('Riak.filterNotFound')
+        .map('Riak.mapValuesJson') // converts the buckets and keys array into 
+array of json objects
+        .reduce('Riak.filterNotFound')
+        .run(function(err, listOfViews) { // process on client the list of 
+returned array objects
+            if (err) {
+               console.log(&quot;ERROR: Unable to obtain tvs for id '&quot; + id + &quot;'. 
+Detail: &quot; + JSON.stringify(err));
+                   send500ToClient(response);
+               return;
+            }
+            callback(listOfViews);
+        });
+
+Yes, you can have multiple reduce steps and that solves the “not found” issue. 
+Hope this helps.
+
+Mark
+
+From: Mark Boyd ソフトウェア 建築家
+Sent: Sunday, July 15, 2012 10:18 PM
+To: riak-users@lists.basho.com
+Subject: RE: mapreduce with non-existent keys
+
+Never mind. I found the archive search page and this same question posted 
+earlier here:
+
+<a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Map-Reduce-behavior-when-key-not-found-td3641739.html">http://riak-users.197444.n3.nabble.com/Map-Reduce-behavior-when-key-not-found-td3641739.html</a>
+
+Mark
+
+From: 
+riak-users-boun...@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>&gt; 
+[<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>]&lt;<a  rel="nofollow" href="mailto:[mailto:riak-users-boun...@lists.basho.com">mailto:[mailto:riak-users-boun...@lists.basho.com</a>]&gt;
+ On Behalf Of Mark Boyd ?????? ???
+Sent: Sunday, July 15, 2012 7:55 AM
+To: riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+Subject: mapreduce with non-existent keys
+
+I’ve got a set of bucket/key pairs that may contain items that no longer exist 
+in riak. Is it possible to pass that to map/reduce and explicitly tell riak to 
+ignore any pairs which aren’t current, ie: which aren’t found? For example, if 
+I have compiled a list of pairs but before passing the list, one or more of 
+those items was removed from the database, then my map/reduce appears to fail 
+since it doesn’t find the referenced item. Can riak be told to ignore such 
+missing items if they are incurred?
+
+Thanks.
+
+Mark
+
+
+NOTICE: This email message is for the sole use of the intended recipient(s) and 
+may contain confidential and privileged information. Any unauthorized review, 
+use, disclosure or distribution is prohibited. If you are not the intended 
+recipient, please contact the sender by reply email and destroy all copies of 
+the original message.
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07952.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#07967">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#07967">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07968.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07949.html">mapreduce with non-existent keys</a></span> <span class="sender italic">Mark Boyd ソフトウェア 建築家</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07951.html">RE: mapreduce with non-existen...</a></span> <span class="sender italic">Mark Boyd ソフトウェア 建築家</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07952.html">Re: mapreduce with non-exi...</a></span> <span class="sender italic">Mark Phillips</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">RE: mapreduce with non-existen...</span> <span class="sender italic">Mark Boyd ソフトウェア 建築家</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07968.html">RE: mapreduce with non-exi...</a></span> <span class="sender italic">Mark Boyd ソフトウェア 建築家</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08352.html">Re: mapreduce with non...</a></span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: mapreduce with non-existent keys">
+<input type="hidden" name="msgid" value="B32D0BB3A0D5E044AF5AFABE287764F72FF7CD11@W12112.ldschurch.org">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07967.html">
+<input type="submit" value=" Mark Boyd ソフトウェア 建築家 ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+mapreduce+with+non%5C-existent+keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07952.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07968.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">B32D0BB3A0D5E044AF5AFABE287764F72FF7CD11@W12112.ldschurch.org</li>
+</ul>
+</div>
+</body>
+</html>

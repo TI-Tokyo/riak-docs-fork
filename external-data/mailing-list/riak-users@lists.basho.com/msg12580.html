@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Deleting data in a map-reduce job</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd8.html#12580" id="c">
+<link rel="index" href="mail9.html#12580" id="i">
+<link rel="prev" href="msg12576.html" id="p">
+<link rel="next" href="msg12688.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12580.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Deleting+data+in+a+map%5C-reduce+job%22&amp;o=newest" rel="nofollow"><span itemprop="name">Deleting data in a map-reduce job</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Daniel+Abrahamsson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Daniel Abrahamsson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131010" rel="nofollow">Thu, 10 Oct 2013 02:16:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi, I've some questions regarding map-reduce jobs. The main one regards
+deleting data in a map-reduce job.</pre><pre>
+
+I have a map-reduce job that traverses an entire bucket to clean up
+old/unusable data once a day. The deletion of objects is done in the
+map-reduce job itself. Here is an example map-reduce job expressed as a
+qfun explaining what I am doing:
+
+fun({error, notfound}, _, _)   -&gt; [];
+   (O, _, Condition) -&gt;
+  Obj = case hd(riak_object:get_values(O)) of
+    &lt;&lt;&gt;&gt; -&gt; % Ignore tombstones
+      default_object_not_to_be_deleted()
+    Bin -&gt; binary_to_term(Bin)
+  end,
+  case should_be_deleted(Obj, Condition) of
+    false -&gt; [{total, 1}, {removed, 0}];
+    true -&gt;
+       Key = riak_object:key(O),
+       Bucket = riak_object:bucket(O),
+       {ok, Client} = riak:local_client(),
+       Client:delete(Bucket,Key),
+       [{total, 1}, {removed, 1}]
+  end
+end.
+
+And now to the questions:
+1. I have noted that deleting data this way leaves the keys around if I do
+a subsequent
+   list_keys() operation. They are pruned when I try to get the objects and
+get {error, notfound}.
+   With this approach, will the keys ever be removed unless someone tries
+to get them first?
+
+2. Are there any other drawbacks with deleting data in the map-reduce job
+itself, rather than
+   reading up the keys with the job, and the using the regular riak client
+to delete the objects?
+
+3. Handling of tombstones in map-reduce jobs is very poorly documented. The
+approach above has worked for us. However, the approach feels very akward
+with both an {error, notfound} clase and checking for an empty binary as
+value. I know you can also check for the &quot;X-Riak-Deleted&quot; flag in the
+metadata. Under what circumstances do the different values appear, and most
+importantly, which is the recommended way of dealing with tombstones in
+map-reduce jobs?
+
+Considering that we will have quite much data in our bucket, we run the job
+during off-hours not to
+disturb regular traffic. However, when we run the job we often get an
+&quot;error, disconnected&quot; error after approximately 15 minutes, even if our
+timeout is even greater than that. Running the job manually afterwards
+usually takes just ~30 seconds.
+
+4. Have anyone else experienced this with a &quot;cold&quot; database? We have not
+yet configured all the tuning parameters reported by &quot;riak diag&quot;, but will
+do so soon. Might this have an effect in this case?
+
+5. What does the &quot;disconnected&quot; message mean, considering that the timeout
+value has not yet been reached?
+
+Regards,
+Daniel Abrahamsson
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12576.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd8.html#12580">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail9.html#12580">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12688.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Deleting data in a map-reduce job</span> <span class="sender italic">Daniel Abrahamsson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12688.html">Re: Deleting data in a map-reduce job</a></span> <span class="sender italic">Daniel Abrahamsson</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Deleting data in a map-reduce job">
+<input type="hidden" name="msgid" value="CAJL2zxUHXSJkh1MDdZ_n9OMJMVYQJjgLRRRWtUqFkkVgLGsT3w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12580.html">
+<input type="submit" value=" Daniel Abrahamsson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Deleting+data+in+a+map%5C-reduce+job%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12576.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12688.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAJL2zxUHXSJkh1MDdZ_n9OMJMVYQJjgLRRRWtUqFkkVgLGsT3w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

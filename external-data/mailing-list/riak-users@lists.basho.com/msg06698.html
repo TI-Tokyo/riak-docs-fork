@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak for Messaging Project Question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06698" id="c">
+<link rel="index" href="maillist.html#06698" id="i">
+<link rel="prev" href="msg06700.html" id="p">
+<link rel="next" href="msg06712.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06698.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+for+Messaging+Project+Question%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak for Messaging Project Question</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Aphyr%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Aphyr</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120222" rel="nofollow">Wed, 22 Feb 2012 18:57:31 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+On 02/22/2012 02:10 PM, char...@contentomni.com wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+1. Is Riak a good fit for this solution going up to and beyond 20
+million users (i.e. terabytes upon terabytes added per year)?
+</pre></blockquote><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>The better question might be: what do you actually plan to do with that 
+</tt><tt>much data?
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+2. I plan to use 2i, which means I would be using the LevelDB backend.
+Will this be reasonably performant for billions of keys added each year?
+
+3. I'm using what I have here
+(<a  rel="nofollow" href="http://wiki.basho.com/Cluster-Capacity-Planning.html">http://wiki.basho.com/Cluster-Capacity-Planning.html</a>) as my guide for
+capacity planning. I plan on using Rackspace Cloud Servers for this
+specific project. Can I just keep adding servers as the size of my data
+grows?!
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>Riak clusters have a functional upper limit of around a hundred nodes; 
+</tt><tt>inter-node traffic dominates at that level. That said, at that scale 
+</tt><tt>it's gonna be WAY cheaper to run your own HW. If I were speccing a 
+</tt><tt>cluster for 16tb of data/year:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Data warehouse (huge dark pool, variable latency tolerable): six, say, 
+</tt><tt>Sun Thumpers running ZFS on BSD, 48 TB maximum capacity per box, ~60 TB 
+</tt><tt>of usable storage in Riak at N=4, assuming ZFS parity as well. Start 
+</tt><tt>small, add drives progressively. 24 rack units total.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Hot cluster (small dark pool, IO latencies critical): Six nodes with 1x 
+</tt><tt>10.24 TB FusionIO Octals apiece, 15TB usable immediately, add additional 
+</tt><tt>FIO cards to each node as you grow.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The answer isn't scale out or scale up. You can scale *diagonally* and 
+</tt><tt>get the benefits of both.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>As you grow, rotate in new nodes with bigger hard drives, more memory, 
+</tt><tt>more processors, more bandwidth. Drive upgrades are cheap: just shut 
+</tt><tt>down the box, install the new HW, and bring it back again. Riak is 
+</tt><tt>*good* at this; the other nodes will bring the original box up to speed 
+</tt><tt>when it's back. We've rotated in new drives on our six node cluster 3 
+</tt><tt>times now, and are about to do it again.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>When virtualized HW becomes the bottleneck (and I guarantee that is much 
+</tt><tt>sooner than you think), spread out onto physical nodes. When commodity 
+</tt><tt>spinning disks are too slow (will also happen sooner than you think), 
+</tt><tt>rotate in SSDs. Then exotic solid-state HW. At every stage you can add 
+</tt><tt>more nodes with the same class of HW, but there will come an equilibrium 
+</tt><tt>point when bigger is cheaper than more.
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+4. From the guide mentioned in 3 above, it appears I will need about 400
+[4GbRAM 160GbHDD] servers for 20 million users (assuming an n_val of 4).
+This means I would need to add 20 servers annually for each million
+active users I add. Is it plausible to have an n_val of 4 for this many
+servers?! Wouldn't going higher just mean I'd have to add many more
+servers needlessly?!
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>You can choose whatever n_val you like, up to the number of servers you 
+</tt><tt>have. Data volume scales linearly with n_val, so it takes 33% more space 
+</tt><tt>for n_val 4 over n_val 3.
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+5. Should I put all my keys in one bucket (considering I'm using 2i,
+does it matter)?!
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><tt>It doesn't really matter. Buckets are just a part of the key: riak keys 
+</tt><tt>are actually [bucket, key]. Use them for namespacing.
+</tt><pre style="margin: 0em;">
+
+--Kyle
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06700.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06698">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06698">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06712.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06687.html">Riak for Messaging Project Question</a></span> <span class="sender italic">charles</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06692.html">Re: Riak for Messaging Project Question</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06695.html">Re: Riak for Messaging Project Question</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06699.html">Re: Riak for Messaging Project Question</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06700.html">Re: Riak for Messaging Project Question</a></span> <span class="sender italic">charles</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak for Messaging Project Question</span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06712.html">Re: Riak for Messaging Project Question</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06714.html">Re: Riak for Messaging Project Question</a></span> <span class="sender italic">charles</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg06688.html">Riak for Messaging Project Question</a></span> <span class="sender italic">charles</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak for Messaging Project Question">
+<input type="hidden" name="msgid" value="4F45AB31.7090604@aphyr.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06698.html">
+<input type="submit" value=" Aphyr ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+for+Messaging+Project+Question%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06700.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06712.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4F45AB31.7090604@aphyr.com</li>
+</ul>
+</div>
+</body>
+</html>

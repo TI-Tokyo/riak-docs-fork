@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>multiple rings (or riak instance) in a same VM?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08448" id="c">
+<link rel="index" href="maillist.html#08448" id="i">
+<link rel="prev" href="msg08437.html" id="p">
+<link rel="next" href="msg08449.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08448.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22multiple+rings+%5C%28or+riak+instance%5C%29+in+a+same+VM%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">multiple rings (or riak instance) in a same VM?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bernard+Fouch%C3%A9%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bernard Fouché</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120904" rel="nofollow">Tue, 04 Sep 2012 04:56:36 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi List,
+
+this is my first post here...</pre><pre>
+
+</pre><tt>I'm a Riak (and Erlang) newbie. I'm currently trying to design an 
+</tt><tt>architecture that can handle the following needs:
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- 95% of the work is to log data from sensors: once a data reading is 
+</tt><tt>sent to a server, it is written into the database, it is never updated 
+</tt><tt>afterwards. For instance if I read a sensor located in a particular 
+</tt><tt>place at a particular time, the sensor's value is to be stored with a 
+</tt><tt>timestamp and this value will never change: a new reading from the same 
+</tt><tt>sensor will have a different timestamp (and also a different key).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- I need to keep the details of each data reading for each sensor for a 
+</tt><tt>few months (sometimes some process performs statistic analysis on many 
+</tt><tt>different data reading for a single sensor or a group of sensor).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- there are many sensors, sending many readings each day, the system 
+</tt><tt>must be able to sustain millions of put() per day. But after a reading 
+</tt><tt>is considered obsolete, there is no use to keep it forever in the database.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I need to solve the problem of data obsolescence hence I'm considering 
+</tt><tt>using a ring for each period of time (for instance a new ring at the 
+</tt><tt>beginning of each month, or even a new ring per week), while keeping a 
+</tt><tt>set of 'old' rings available only to read data from them. The 
+</tt><tt>application would handle the problem of accessing different rings if it 
+</tt><tt>is queried to process data than is spanned in multiple rings (I think I 
+</tt><tt>have a correct key layout/organization).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>My goal is to be able to completely delete a ring when the data in the 
+</tt><tt>ring is not needed anymore, instead of performing zillions of delete() 
+</tt><tt>queries in a single ring that would hold all the readings. So at the end 
+</tt><tt>of each period of time I make a new ring (it becomes the 'current' ring) 
+</tt><tt>and I delete an old one. I don't have a need to fine grain deletion, I 
+</tt><tt>don't need per-sensor data deletion, but I need to get rid of all 
+</tt><tt>recording older than X months otherwise the database will become 
+</tt><tt>impossible to manage/backup at some point.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>I would like also to avoid to delete() old readings when new readings 
+</tt><tt>come in, since I have also have a problem of peak hour to manage.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Multiple rings would also ease backups since any ring which is not the 
+</tt><tt>'current' ring could be saved somewhere with usual copy tools since no 
+</tt><tt>update would occur in an 'old' ring. And most of the data in the 
+</tt><tt>'current' ring is still kept in sensors, so if I lose the current ring I 
+</tt><tt>can rebuild it by having sensors to resend data. (last solution is case 
+</tt><tt>of a catastrophic event).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>It seems that LevelDB keeps the data of different buckets in the same 
+</tt><tt>set of files (another solution would have been to keep a single ring but 
+</tt><tt>to obsolete buckets instead).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Maybe this proposal is already an error by itself (comments welcome!) It 
+</tt><tt>triggers the following questions (from what I've understood from Erlang 
+</tt><tt>and Riak at this point):
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- When multiple rings are needed, it seems that each ring needs a new 
+</tt><tt>Riak instance on each node. But all examples I found are about running 
+</tt><tt>an Erlang VM per Riak instance, instead of having more than one Riak 
+</tt><tt>instance in a single VM. I'd like to know if there is a solution to run 
+</tt><tt>many Riak instance in a single VM since Erlang seems to be designed to 
+</tt><tt>sustain large quantities of processes in a single VM instead of having 
+</tt><tt>many VM on a single host (for better resource management/monitoring). 
+</tt><tt>I'd like to know what is really possible with Riak regarding multiple 
+</tt><tt>instances ?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- For the same reason, I'd like to have the server that process the 
+</tt><tt>traffic coming from the sensors in the same VM, to have just one VM per 
+</tt><tt>physical machine. Is there some doc about bundling an Erlang user made 
+</tt><tt>app with riak in the same .beam (a 'release'?)?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>- Or if a user can tell if having many different Erlang VM running Riak 
+</tt><tt>on a single node works efficiently?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If this  approach is correct then my main problem is to handle different 
+</tt><tt>rings/riak instance/VM in the most efficient way and I've solved one 
+</tt><tt>difficult problem regarding the life cycle of the database.
+</tt><pre style="margin: 0em;">
+
+Thanks for any hint/comment!
+
+  Bernard
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08437.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08448">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08448">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08449.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">multiple rings (or riak instance) in a same VM?</span> <span class="sender italic">Bernard Fouché</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08449.html">Re: multiple rings (or riak instance) in a same V...</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08450.html">Re: multiple rings (or riak instance) in a same V...</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08451.html">Re: multiple rings (or riak instance) in a sa...</a></span> <span class="sender italic">Bernard Fouché</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="multiple rings (or riak instance) in a same VM?">
+<input type="hidden" name="msgid" value="5045EC6B.7000706@kuantic.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08448.html">
+<input type="submit" value=" Bernard Fouché ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22multiple+rings+%5C%28or+riak+instance%5C%29+in+a+same+VM%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08437.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08449.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5045EC6B.7000706@kuantic.com</li>
+</ul>
+</div>
+</body>
+</html>

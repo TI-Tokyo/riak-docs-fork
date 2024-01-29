@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Erlang Client: get_update_metadata vs get_metadata</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07676" id="c">
+<link rel="index" href="maillist.html#07676" id="i">
+<link rel="prev" href="msg07673.html" id="p">
+<link rel="next" href="msg07670.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07676.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Erlang+Client%5C%3A+get_update_metadata+vs+get_metadata%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Erlang Client: get_update_metadata vs get_metadata</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Andrew+Berman%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Andrew Berman</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120613" rel="nofollow">Wed, 13 Jun 2012 00:25:26 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks guys,
+
+I'm more inclined to have an API like get_original_metadata and
+get_metadata.  The get_metadata in this case always returns whatever
+metadata is set on the object, new or original.  In the current API, if
+calling get_update_metadata will return the original metadata if there are
+no changes, then I kinda fail to see a use case for the get_metadata call.
+ Anyone?</pre><pre>
+
+Thanks again!
+
+Andrew
+
+On Tue, Jun 12, 2012 at 2:37 PM, Michael Radford &lt;m...@blorf.com&gt; wrote:
+
+&gt; Reid,
+&gt;
+&gt; I do understand why update_metadata exists. I guess what I'm
+&gt; suggesting is a better default behavior, especially for users who
+&gt; don't explicitly set any metadata values. (Or even if they do, for
+&gt; when all the metadatas are equivalent.)
+&gt;
+&gt; I.e., something like this for riakc_obj:get_update_metadata:
+&gt;
+&gt; get_update_metadata(#riakc_obj{updatemetadata=UM}=Object) -&gt;
+&gt;    case UM of
+&gt;        undefined -&gt;
+&gt;            try
+&gt;                get_metadata(Object)
+&gt;            catch
+&gt;                throw:no_metadata -&gt;
+&gt;                    dict:new();
+&gt;                throw:siblings -&gt;
+&gt;                    default_resolve_metadatas(get_metadatas(Object))
+&gt;            end;
+&gt;        UM -&gt;
+&gt;            UM
+&gt;    end.
+&gt;
+&gt; default_resolve_metadatas(Ms = [M | _]) -&gt;
+&gt;    UniqueWritten = lists:usort([ [KV || KV = {K, _V} &lt;- dict:to_list(M),
+&gt;                                         K =/= ?MD_LASTMOD,
+&gt;                                         K =/= ?MD_INDEX
+&gt;                                  || M &lt;- Ms ]),
+&gt;    case UniqueWritten of
+&gt;      [_]        -&gt; M;
+&gt;      [_, _ | _] -&gt; throw(siblings)
+&gt;    end.
+&gt;
+&gt; Mike
+&gt;
+&gt; On Tue, Jun 12, 2012 at 1:18 PM, Reid Draper &lt;reiddra...@gmail.com&gt; wrote:
+&gt; &gt;
+&gt; &gt; On Jun 12, 2012, at 2:56 PM, Michael Radford wrote:
+&gt; &gt;
+&gt; &gt;&gt; get_metadata returns the metadata that was read from riak. But if
+&gt; &gt;&gt; allow_mult is true, and there is more than one sibling, then
+&gt; &gt;&gt; get_metadata throws the exception 'siblings'. You have to call
+&gt; &gt;&gt; get_metadatas to get a list with metadata for each sibling in that
+&gt; &gt;&gt; case.
+&gt; &gt;&gt;
+&gt; &gt;&gt; get_update_metadata returns the metadata that is to be written for the
+&gt; &gt;&gt; object (if you were to call riakc_pb_socket:put at that point). The
+&gt; &gt;&gt; update metadata is either a single value set explicitly with
+&gt; &gt;&gt; riakc_obj:update_metadata, or if none was set, and there is only one
+&gt; &gt;&gt; sibling, then the default is the value of get_metadata.
+&gt; &gt;&gt;
+&gt; &gt;&gt; A related question: if I'm not using any user-specified metadata at
+&gt; &gt;&gt; all, but I do have allow_mult turned on, then how do I choose which
+&gt; &gt;&gt; metadata to write back to riak after resolving the conflict? Or could
+&gt; &gt;&gt; I just call update_metadata with an empty dict in that case?
+&gt; &gt; I'd recommend calling update_metadata with an empty dict. Be sure
+&gt; &gt; to set the content_type as well.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Right now, I have some conflict resolution code that uses the same
+&gt; &gt;&gt; default strategy as mochimedia's statebox_riak library, which
+&gt; &gt;&gt; arbitrarily chooses the first metadata. But this seems less than
+&gt; &gt;&gt; ideal: everything in the metadata is coming from riak, and some of it
+&gt; &gt;&gt; (e.g., last-modified timestamps) must be ignored when doing the
+&gt; &gt;&gt; update. So it seems like riak should be able to resolve the &quot;metadata
+&gt; &gt;&gt; conflict&quot; on its own: just prune all the metadata keys that aren't
+&gt; &gt;&gt; actually written, and then if the resulting pruned metadatas are
+&gt; &gt;&gt; identical, then there's no conflict. Or, if there is some reason why
+&gt; &gt;&gt; the user should prefer one metadata over another, then the client
+&gt; &gt;&gt; library should give the user some way to decide.
+&gt; &gt; There are definitely cases where the user wants to choose one metadata
+&gt; &gt; over another, or perhaps more commonly, &quot;merge&quot; them together, according
+&gt; &gt; to some conflict resolution semantics. The client provides
+&gt; `update_metadata`
+&gt; &gt; for this reason. `select_sibling/2` can be used to choose a particular
+&gt; {Metadata, Value}
+&gt; &gt; pair as well.
+&gt; &gt;&gt;
+&gt; &gt;&gt; Mike
+&gt; &gt;&gt;
+&gt; &gt;&gt; On Tue, Jun 12, 2012 at 11:25 AM, Andrew Berman &lt;rexx...@gmail.com&gt;
+&gt; wrote:
+&gt; &gt;&gt;&gt; Can someone explain the difference between the get_update_metadata and
+&gt; &gt;&gt;&gt; get_metadata functions in the Erlang PB Client for Riak?  It's very
+&gt; &gt;&gt;&gt; confusing...
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Thanks,
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Andrew
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; _______________________________________________
+&gt; &gt;&gt;&gt; riak-users mailing list
+&gt; &gt;&gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;
+&gt; &gt;&gt; _______________________________________________
+&gt; &gt;&gt; riak-users mailing list
+&gt; &gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07673.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07676">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07676">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07670.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07667.html">Erlang Client: get_update_metadata vs get_metadata</a></span> <span class="sender italic">Andrew Berman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07668.html">Re: Erlang Client: get_update_metadata vs get_metadat...</a></span> <span class="sender italic">Michael Radford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07672.html">Re: Erlang Client: get_update_metadata vs get_met...</a></span> <span class="sender italic">Reid Draper</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07673.html">Re: Erlang Client: get_update_metadata vs get...</a></span> <span class="sender italic">Michael Radford</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Erlang Client: get_update_metadata vs...</span> <span class="sender italic">Andrew Berman</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Erlang Client: get_update_metadata vs get_metadata">
+<input type="hidden" name="msgid" value="CAEVpa76oo5wa8vyP0DZGGacVTrfg9XKguNt=ROagu1EgcZQWuA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07676.html">
+<input type="submit" value=" Andrew Berman ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Erlang+Client%5C%3A+get_update_metadata+vs+get_metadata%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07673.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07670.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEVpa76oo5wa8vyP0DZGGacVTrfg9XKguNt=ROagu1EgcZQWuA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

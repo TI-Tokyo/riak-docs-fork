@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>riak-search corruption causing multiple nodes to crash</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08392" id="c">
+<link rel="index" href="maillist.html#08392" id="i">
+<link rel="prev" href="msg08388.html" id="p">
+<link rel="next" href="msg08393.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08392.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak%5C-search+corruption+causing+multiple+nodes+to+crash%22&amp;o=newest" rel="nofollow"><span itemprop="name">riak-search corruption causing multiple nodes to crash</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Robby+Grossman%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Robby Grossman</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120829" rel="nofollow">Wed, 29 Aug 2012 08:03:17 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We have a riak cluster on EC2 (large instances, ephemeral storage, ~5 nodes 
+though currently 7 after some shuffling) that's seen multiple nodes go down 
+over the last week due to corrupted merge_indexes. Certain boxes go down more 
+frequently than others, but it's not predictable and it seems like any 
+arbitrary box can be affected. The errors look similar to what I read about in 
+this thread:</pre><pre>
+
+<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2012-July/008933.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2012-July/008933.html</a>
+
+except that it's occurring on multiple nodes, which prevents us from doing 
+repairs from adjacent nodes.
+
+I've tried a few things:
+
+- Stop riak on single box, clear out merge_index/, restart riak. This works for 
+several hours to about a day, but it eventually becomes corrupt again.
+- Stopping all nodes, clearing out all merge_index folders, restarting all 
+nodes. Like above, this works for several hours but eventually we see corrupted 
+merge indexes again. And obviously, this loses all past index data, so even if 
+it worked it wouldn't be a suitable solution. I just needed to stop the nodes 
+from going down.
+- Using Ryan Zezeski's script to detect bad MI files - there are too many for 
+this to be a sustainable ongoing effort, though. <a  rel="nofollow" href="https://gist.github.com/3250870">https://gist.github.com/3250870</a>
+
+I spoke to Tom Santero who hypothesized that there could be something 
+underlying in the EC2 infrastructure that's causing some corruption problems. 
+We don't have a ticket off of EC2 right now, but what I am doing (as I write 
+this) is widening the cluster to span three availability zones (all in 
+US-East). My thinking is that if we continue to see problems but they' re all 
+in a specific zone, that would confirm Tom's hypothesis (though the alternative 
+would not disprove it).
+
+Below is some sample error.log/crash.log output. I'd be appreciative if anybody 
+has thoughts as to what is causing these problems, or further tests I can run 
+to diagnose/troubleshoot.
+
+Thanks in advance,
+Robby
+
+error.log:
+2012-08-29 04:50:01.829 [error] &lt;0.1909.0&gt; CRASH REPORT Process &lt;0.1909.0&gt; with 
+0 neighbours exited with reason: bad argument in call to 
+erlang:binary_to_term(&lt;&lt;131,108,0,0,0,4,104,4,
+104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,...&gt;&gt;) in 
+mi_buffer:read_value/2 line 162 in gen_server:init_it/6 line 328
+2012-08-29 04:50:01.833 [error] &lt;0.1908.0&gt; CRASH REPORT Process &lt;0.1908.0&gt; with 
+0 neighbours exited with reason: no match of right hand value 
+{error,{badarg,[{erlang,binary_to_term,[&lt;
+&lt;131,108,0,0,0,4,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,2,115,111,109,0,0,0,32,55,100,51,97,55,48,50,54,56,101,56,98
+,52,100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,4,108,0,0,0,1,104,2,100,0,1,112,107,0,1,39,106,104,4,104,3,109,0,0,0,5,108,105,110,107,
+115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,16,83,116,97,121,45,...&gt;&gt;],...},...]}}
+ in merge_index_backend:start/2 line 47 in gen_fsm:init_it/6 line 379
+2012-08-29 04:50:01.836 [error] &lt;0.154.0&gt; Supervisor riak_core_vnode_sup had 
+child undefined started with {riak_core_vnode,start_link,undefined} at 
+&lt;0.1908.0&gt; exit with reason no matc
+h of right hand value 
+{error,{badarg,[{erlang,binary_to_term,[&lt;&lt;131,108,0,0,0,4,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0
+,0,2,115,111,109,0,0,0,32,55,100,51,97,55,48,50,54,56,101,56,98,52,100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,4,108,0,0,0,1,104,2,100,
+0,1,112,107,0,1,39,106,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,16,83,116,97,121,45,...&gt;&gt;],...},...]}}
+ in merge_index_
+backend:start/2 line 47 in context child_terminated
+2012-08-29 04:50:01.839 [error] &lt;0.1906.0&gt; gen_server riak_core_vnode_manager 
+terminated with reason: no match of right hand value 
+{error,{{badmatch,{error,{badarg,[{erlang,binary_to_
+term,[&lt;&lt;131,108,0,0,0,4,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,2,115,111,109,0,0,0,32,55,100,51,97,55,48,50,54,56,10
+1,56,98,52,100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,4,108,0,0,0,1,104,2,100,0,1,112,107,0,1,39,106,104,4,104,3,109,0,0,0,5,108,105,1
+10,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,...&gt;&gt;],...},...]}}},...}}
+ in riak_core_vnode_manager:get_vnode/3 line 489
+2012-08-29 04:50:01.858 [error] &lt;0.1906.0&gt; CRASH REPORT Process 
+riak_core_vnode_manager with 0 neighbours exited with reason: no match of right 
+hand value {error,{{badmatch,{error,{ba
+darg,[{erlang,binary_to_term,[&lt;&lt;131,108,0,0,0,4,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,2,115,111,109,0,0,0,32,55,100
+,51,97,55,48,50,54,56,101,56,98,52,100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,4,108,0,0,0,1,104,2,100,0,1,112,107,0,1,39,106,104,4,104
+,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,...&gt;&gt;],...},...]}}},...}}
+ in riak_core_vnode_manager:get_vnode/3 line 489 in gen_serve
+r:terminate/6 line 747
+2012-08-29 04:50:01.881 [error] &lt;0.152.0&gt; Supervisor riak_core_sup had child 
+riak_core_vnode_manager started with riak_core_vnode_manager:start_link() at 
+&lt;0.1906.0&gt; exit with reason n
+o match of right hand value 
+{error,{{badmatch,{error,{badarg,[{erlang,binary_to_term,[&lt;&lt;131,108,0,0,0,4,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110
+,111,116,101,115,109,0,0,0,2,115,111,109,0,0,0,32,55,100,51,97,55,48,50,54,56,101,56,98,52,100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,
+4,108,0,0,0,1,104,2,100,0,1,112,107,0,1,39,106,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,...&gt;&gt;],...},...]}}},...}}
+ in r
+iak_core_vnode_manager:get_vnode/3 line 489 in context child_terminated
+
+
+crash.log:
+2012-08-29 04:48:19 =CRASH REPORT====
+  crasher:
+    initial call: riak_core_vnode_manager:init/1
+    pid: &lt;0.3501.0&gt;
+    registered_name: riak_core_vnode_manager
+    exception exit: 
+{{{badmatch,{error,{{badmatch,{error,{badarg,[{erlang,binary_to_term,[&lt;&lt;131,108,0,0,0,4,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95
+,110,111,116,101,115,109,0,0,0,2,115,111,109,0,0,0,32,55,100,51,97,55,48,50,54,56,101,56,98,52,100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,
+200,4,108,0,0,0,1,104,2,100,0,1,112,107,0,1,39,106,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,10,108,105,110,107,95,110,111,116,101,115,109,0,0,0,16,83,116,97,121,45,97,116
+,45,72,111,109,101,45,77,111,109,109,0,0,0,32,55,100,51,97,55,48,50,54,56,101,56,98,52,100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,4,10
+8,0,0,0,1,104,2,100,0,1,112,107,0,1,31,106,104,4,104,3,109,0,0,0,5,108,105,110,107,115,109,0,0,0,2,104,49,109,0,0,0,3,99,111,109,109,0,0,0,32,55,100,51,97,55,48,50,54,56,101,56,98,52,
+100,99,98,101,55,102,100,102,52,54,51,54,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,4,108,0,0,0,1,104,2,100,0,1,112,107,0,1,0,106,104,4,104,3,109,0,0,0,5,108,105,110,107,115,1
+09,0,0,0,9,116,105,109,101,115,116,97,109,112,109,0,0,0,10,49,51,52,54,50,48,52,51,53,52,109,0,0,0,32,55,100,51,97,55,48,50,54,56,101,56,98,52,100,99,98,101,55,102,100,102,52,54,51,54
+,98,50,50,102,49,56,97,110,7,1,238,11,38,162,93,200,4,108,0,0,0,1,104,2,100,0,1,112,107,0,0,0,1,43&gt;&gt;],[]},{mi_buffer,read_value,2,[{file,&quot;src/mi_buffer.erl&quot;},{line,162}]},{mi_buffer,o
+pen_inner,3,[{file,&quot;src/mi_buffer.erl&quot;},{line,70}]},{mi_buffer,new,1,[{file,&quot;src/mi_buffer.erl&quot;},{line,62}]},{mi_server,read_buffers,4,[{file,&quot;src/mi_server.erl&quot;},{line,613}]},{mi_ser
+ver,read_buf_and_seg,1,[{file,&quot;src/mi_server.erl&quot;},{line,585}]},{mi_server,init,1,[{file,&quot;src/mi_server.erl&quot;},{line,143}]},{gen_server,init_it,6,[{file,&quot;gen_server.erl&quot;},{line,304}]}]
+}}},[{merge_index_backend,start,2,[{file,&quot;src/merge_index_backend.erl&quot;},{line,47}]},{riak_search_vnode,init,1,[{file,&quot;src/riak_search_vnode.erl&quot;},{line,135}]},{riak_core_vnode,init,1,
+[{file,&quot;src/riak_core_vnode.erl&quot;},{line,123}]},{gen_fsm,init_it,6,[{file,&quot;gen_fsm.erl&quot;},{line,361}]},{proc_lib,init_p_do_apply,3,[{file,&quot;proc_lib.erl&quot;},{line,227}]}]}}},[{riak_core_vn
+ode_manager,get_vnode,3,[{file,&quot;src/riak_core_vnode_manager.erl&quot;},{line,489}]},{riak_core_vnode_manager,maybe_trigger_handoff,3,[{file,&quot;src/riak_core_vnode_manager.erl&quot;},{line,613}]},
+{riak_core_vnode_manager,'-trigger_ownership_handoff/3-lc$^2/1-2-',2,[{file,&quot;src/riak_core_vnode_manager.erl&quot;},{line,448}]},{riak_core_vnode_manager,trigger_ownership_handoff,3,[{file
+,&quot;src/riak_core_vnode_manager.erl&quot;},{line,448}]},{riak_core_vnode_manager,handle_cast,2,[{file,&quot;src/riak_core_vnode_manager.erl&quot;},{line,378}]},{gen_server,handle_msg,5,[{file,&quot;gen_ser
+ver.erl&quot;},{line,607}]},{proc_lib,init_p_do_apply,3,[{file,&quot;proc_lib.erl&quot;},{line,227}]}]},[{gen_server,terminate,6,[{file,&quot;gen_server.erl&quot;},{line,747}]},{proc_lib,init_p_do_apply,3,[{f
+ile,&quot;proc_lib.erl&quot;},{line,227}]}]}
+    ancestors: [riak_core_sup,&lt;0.150.0&gt;]
+    messages: []
+    links: [&lt;0.151.0&gt;]
+    dictionary: []
+    trap_exit: false
+
+
+
+-- 
+Robby Grossman
+@freerobby (<a  rel="nofollow" href="http://twitter.com/freerobby">http://twitter.com/freerobby</a>)
+<a  rel="nofollow" href="http://rob.by">http://rob.by</a> (<a  rel="nofollow" href="http://rob.by/">http://rob.by/</a>)
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08388.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08392">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08392">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08393.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="riak-search corruption causing multiple nodes to crash">
+<input type="hidden" name="msgid" value="5FBB1C19EA1341B9AE847F1E2C08A2F4@freerobby.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08392.html">
+<input type="submit" value=" Robby Grossman ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak%5C-search+corruption+causing+multiple+nodes+to+crash%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08388.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08393.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5FBB1C19EA1341B9AE847F1E2C08A2F4@freerobby.com</li>
+</ul>
+</div>
+</body>
+</html>

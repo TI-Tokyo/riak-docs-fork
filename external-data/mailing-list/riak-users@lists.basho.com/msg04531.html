@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Bitcask with sync_strategy o_sync seem to have no effect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04531" id="c">
+<link rel="index" href="maillist.html#04531" id="i">
+<link rel="prev" href="msg04508.html" id="p">
+<link rel="next" href="msg04532.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04531.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Bitcask+with+sync_strategy+o_sync+seem+to+have+no+effect%22&amp;o=newest" rel="nofollow"><span itemprop="name">Bitcask with sync_strategy o_sync seem to have no effect</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Tatsuya+Kawano%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Tatsuya Kawano</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110830" rel="nofollow">Tue, 30 Aug 2011 19:57:36 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+Hi,
+
+We're currently evaluating Riak and we have noticed that Bitcask with 
+{sync_strategy, o_sync} option seems to have no effect. Instead of forcing 
+syncs on every writes to the disk, it does the exactly same to the default 
+behavior {sync_strategy, none}, which doesn't force kernel to sync the writes. 
+As you can see in the attached vmstat result, &quot;bo&quot; (blocks sent to a block 
+device [blocks/s]) column has many 0s even though basho_bench with 200 max 
+workers was constantly adding 100KB key-values to Riak.</pre><pre>
+
+The current behavior could be dangerous if someone rely on {sync_strategy, 
+o_sync} for durability.
+
+My colleague checked Bitcask implementation and found that it uses &quot;fcntl (2)&quot; 
+system call to set O_SYNC flag to the file descriptor. Unfortunately, O_SYNC 
+being set by this way will be ignored by kernel and has no effect. To make it 
+work, Betcask should call &quot;open&quot; system call with O_SYNC option.
+
+<a  rel="nofollow" href="https://patchwork.kernel.org/patch/591481/">https://patchwork.kernel.org/patch/591481/</a>
+
+Thanks,
+Tatsuya
+
+
+vmstat result. See &quot;bo&quot; column with many 0s (bo: blocks sent to a block device 
+[blocks/s])
+
+procs -----------memory---------- ---swap-- -----io---- --system-- 
+-----cpu------
+r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+1  0    152 31796516   4508 933452    0    0     0     0 9797 17377  4  7 89  0 
+ 0
+1  0    152 31735260   4556 992524    0    0     0     0 9550 16871  4  7 89  0 
+ 0
+0  5    152 31676856   4608 1045328    0    0     0 58632 9196 15189  4  7 89  
+1  0
+0  0    152 31673880   4636 1056056    0    0     0 188868 2807 2549  1  3 79 
+18  0
+1  0    152 31611752   4704 1111920    0    0     0     0 9332 16648  4  7 89  
+0  0
+0  0    152 31553852   4760 1170592    0    0     0     0 9369 16949  5  7 89  
+0  0
+0  0    152 31494068   4840 1228580    0    0     0     0 9317 16863  4  7 89  
+0  0
+0  4    152 31432936   4908 1283836    0    0     0 47548 8794 15442  4  7 88  
+1  0
+0  0    152 31428348   4940 1293996    0    0     0 191140 3513 2998  1  3 80 
+17  0
+0  0    152 31367708   4988 1351964    0    0     0     0 9745 16114  4  7 89  
+0  0
+2  0    152 31302104   5048 1412876    0    0     0     0 9637 17205  5  7 89  
+0  0
+0  0    152 31244072   5100 1468180    0    0     0     0 9405 16214  4  7 89  
+0  0
+0  5    152 31184428   5168 1522604    0    0     0 47856 8983 16001  4  7 88  
+1  0
+0  0    152 31179256   5192 1533648    0    0     0 191968 3030 3099  1  3 87 
+10  0
+2  0    152 31123316   5256 1588244    0    0     0    52 9548 16022  4  7 89  
+0  0
+1  0    152 31061068   5308 1648228    0    0     0     0 9319 17110  5  7 88  
+0  0
+2  0    152 30997704   5368 1708092    0    0     0     0 9423 17373  5  7 88  
+0  0
+0  3    152 30941664   5420 1760988    0    0     0 42728 8871 15132  4  7 89  
+1  0
+0  0    152 30934964   5440 1774016    0    0     0 196216 3282 3489  1  3 80 
+17  0
+0  0    152 30886472   5496 1820728    0    0     0    52 7654 13882  4  6 91  
+0  0
+0  0    152 30886472   5496 1820612    0    0     0     0 1006  107  0  0 100  
+0  0
+0  0    152 30886208   5496 1821156    0    0     0     0 1050  150  0  0 100  
+0  0
+
+--
+Tatsuya Kawano (Mr.)
+Tokyo, Japan
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04508.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04531">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04531">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04532.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Bitcask with sync_strategy o_sync seem to have no effect</span> <span class="sender italic">Tatsuya Kawano</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04532.html">Re: Bitcask with sync_strategy o_sync seem to have no ...</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04533.html">Re: Bitcask with sync_strategy o_sync seem to have...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04575.html">Re: Bitcask with sync_strategy o_sync seem to have no ...</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04591.html">Re: Bitcask with sync_strategy o_sync seem to have...</a></span> <span class="sender italic">Tatsuya Kawano</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04619.html">Re: Bitcask with sync_strategy o_sync seem to ...</a></span> <span class="sender italic">David Smith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Bitcask with sync_strategy o_sync seem to have no effect">
+<input type="hidden" name="msgid" value="86CE365A-9A9D-46B2-A30D-74826DE7EB4F@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04531.html">
+<input type="submit" value=" Tatsuya Kawano ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Bitcask+with+sync_strategy+o_sync+seem+to+have+no+effect%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04508.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04532.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">86CE365A-9A9D-46B2-A30D-74826DE7EB4F@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

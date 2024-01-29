@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Use of fallback nodes for get requests?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00826" id="c">
+<link rel="index" href="maillist.html#00826" id="i">
+<link rel="prev" href="msg00824.html" id="p">
+<link rel="next" href="msg00840.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00826.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Use+of+fallback+nodes+for+get+requests%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Use of fallback nodes for get requests?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Justin+Sheehy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Justin Sheehy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100802" rel="nofollow">Mon, 02 Aug 2010 19:29:29 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi, Nico.
+
+On Mon, Aug 2, 2010 at 1:19 PM, Nico Meyer &lt;nico.me...@adition.com&gt; wrote:</pre><pre>
+
+&gt; What I mean is, if I do a get request for a key with R=N, and one of the
+&gt; first N nodes in the preflist is down the request will still succeed.
+&gt; Why is that? Doesn't that undermine the purpose of seting R to a high
+&gt; number (specifically setting it to N)? That way a request might succeed
+&gt; even if all primary nodes responsible for the key are unavailable.
+
+You are correct, and this is intentional.  There is nothing in the R
+or W settings that is intended to indicate anything at all about
+&quot;primary&quot; nodes.  It is rather simply the number of successful
+responses that the client wishes to wait for, and thus the degree of
+quorum sought before a client reply is sent.  Using fallback nodes to
+satisfy reads is a natural result of using fallback nodes to satisfy
+writes.
+
+If all primary nodes responsible for a key are unavailable, but enough
+of the fallback nodes for that key have received a value for that key
+since they went unavailable (through a fallback write) then a request
+to get that key might succeed.  I am not sure why you see this as a
+bad thing.
+
+(It will only succeed if R nodes actually provide a successful result,
+not just if they are available.)
+
+&gt; On a similar note, why is the riak_kv_get_fsm waiting for at least
+&gt; (N/2)+1 responses, if there are only not_found responses, effectively
+&gt; ignoring a smaller R value of the request if the key does not exists?
+
+This is a compromise to deal with real situations that can occur where
+a single node might be taking a very long time to reply, and a value
+has never been stored for a given key.  Without either this basic
+quorum default for notfounds or alternately considering a notfound as
+success and thus only waiting for R of them, that situation would mean
+that an R=1 request would take much longer to complete than an R=2
+request (due to waiting for the slow node) which is confusing to most
+users.  Note that since it applies to notfounds, this tends to only
+come into play for items that have never been successfully stored with
+at least a basic quorum -- things that really are not present, that
+is.
+
+&gt; My guess was, that this also has to do with the use of fallback nodes:
+&gt; Since the partition will usually be very small on the fallback/handoff
+&gt; node, it is likely to be the first to answer. So to avoid returning
+&gt; false not_found responses, a basic quorum is required.
+&gt; Am I on the right track here?
+
+It doesn't have anything to do with fallback nodes explicitly.  It is
+for situations where a node is under any condition that will slow it
+down significantly.  In such situations, there is little to be gained
+in waiting for all N replies if (N/2)+1 have already declared
+notfound.
+
+&gt; The problem is, this is imposed even for the case that all nodes are up.
+&gt; If one requires very low latency or very high availability (that's why
+&gt; one uses a small R value in the first place) and does a lot of gets for
+&gt; non existent keys, riak silently screws you over by raising R for those
+&gt; keys.
+
+It seems that there is something here worth clarifying.  If you are
+issuing requests with W+R&lt;=N, and some reads following writes return
+notfound during an interval immediately following initial storage
+time... well, that's what you asked for by not requesting a quorum.
+If you store the object with a sufficiently high W value first, then
+you will not get this sort of notfound response even if your R value
+is only 1.
+
+I suppose that providing the freedom to do this might be considered
+&quot;screwing you over,&quot; but we see it more as allowing you to make
+different choices while still providing safe and unsurprising default
+behavior.  If you try hard enough to screw yourself over, though, Riak
+won't stop you.  If you issue write requests (to any dynamo-model
+system) with some W, followed immediately by a read request with some
+R, and W+R is not greater than N, you should not be expecting the
+write to necessarily be reflected yet.
+
+&gt; I most likely missed something here, but some ad hoc test I did seem to
+&gt; be consistent with my understanding of the code.
+
+You have certainly put some real effort into understanding some
+choices made in the Riak code, which I appreciate.  I hope that I have
+helped to extend your understanding of the real operational scenarios
+that have motivated those choices, and how the code will behave in
+those scenarios.
+
+Best,
+
+-Justin
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00824.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00826">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00826">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00840.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00824.html">Use of fallback nodes for get requests?</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Use of fallback nodes for get requests?</span> <span class="sender italic">Justin Sheehy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00840.html">Re: Use of fallback nodes for get requests?</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00841.html">Re: Use of fallback nodes for get requests?</a></span> <span class="sender italic">Nico Meyer</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Use of fallback nodes for get requests?">
+<input type="hidden" name="msgid" value="AANLkTi=HgULu4M8Rv1LM5iP5QwZBq6ZdzxGbtHKvA7E-@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00826.html">
+<input type="submit" value=" Justin Sheehy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Use+of+fallback+nodes+for+get+requests%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00824.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00840.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTi=HgULu4M8Rv1LM5iP5QwZBq6ZdzxGbtHKvA7E-@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

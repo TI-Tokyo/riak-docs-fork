@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Secondary Indexes - Feedback?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#05839" id="c">
+<link rel="index" href="maillist.html#05839" id="i">
+<link rel="prev" href="msg05824.html" id="p">
+<link rel="next" href="msg05841.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05839.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Secondary+Indexes+%5C-+Feedback%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Secondary Indexes - Feedback?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Greg+Pascale%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Greg Pascale</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111201" rel="nofollow">Thu, 01 Dec 2011 10:50:30 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>&gt; That's a concern, but you gain parallelism, compared to Search's single term 
+&gt; index.
+&gt; 
+&gt; 
+&gt; </pre><pre>
+
+&gt; While they are more expensive in the sense that they require more nodes to 
+&gt; participate, they split the load between the nodes, thus overall, the work 
+&gt; should be about the same, and unless the nodes are busy with some other work, 
+&gt; it should complete sooner, as each node has less work to do.
+&gt; 
+&gt; 
+&gt; 
+
+
+I think your logic is flawed. Each node has fewer keys to return, but that 
+doesn't mean it has that much less work. Whether you're returning 1 key or 100, 
+you still have to go to disk to read from the index, and I have to imagine 
+that's much more expensive than reading the keys (if there isn't a huge number 
+of them). In other words, I believe the latency dominates the cost here. It's 
+the same idea as how downloading 100 1MB files is slower than 1 100MB file. For 
+a simple query - the only kind 2I supports - I'd rather read the whole index 
+with only one disk read.
+
+
+And what if I don't have a lot of keys? In many cases, my 2I lookup may only 
+ever return one result. For example, imagine a Person record with secondary 
+indices over email address and username. Presumably, each email address and 
+username is unique, so any 2I queries I do on those fields should return one 
+result. I really hate the idea that I have to talk to 1/3 of the machines in my 
+ring (and they probably all have to go to disk too) just so that one of them 
+can ultimately return my one result.
+&gt; Not sure why this would be a concern.  Search's presort option must have the 
+&gt; full result set before it can fully sort it, no?  There is no reason why 
+&gt; sorting the results of a a 2i query should be any slower.  In addition, 2i is 
+&gt; stored in leveldb, and leveldb, like merge_index if I recall correctly, 
+&gt; stores keys and values sorted. Thus, the result set is already partially 
+&gt; ordered.
+&gt; 
+&gt; 
+&gt; 
+
+No - presort is applied to keys before any index documents are retrieved, so 
+it's quite fast. Yes, the results are ordered in the index, but that doesn't 
+matter to the user. The API states result ordering is undefined.
+
+
+-- 
+Greg
+Clipboard
+
+On Wednesday, November 30, 2011 at 3:05 PM, Elias Levy wrote:
+
+&gt; On Wed, Nov 30, 2011 at 1:32 PM, &lt;riak-users-requ...@lists.basho.com 
+&gt; (<a  rel="nofollow" href="mailto:riak-users-requ...@lists.basho.com">mailto:riak-users-requ...@lists.basho.com</a>)&gt; wrote:
+&gt; &gt; Here at Clipboard, we make very heavy use of Riak Search and a couple of 
+&gt; &gt; manual indices here and there. I've wanted to use 2i a few times but have 
+&gt; &gt; decided against it for a few reasons:
+&gt; &gt; 
+&gt; &gt;  1) Apprehension about the coverage set query, as Matt articulated.
+&gt; 
+&gt; That's a concern, but you gain parallelism, compared to Search's single term 
+&gt; index.
+&gt;  
+&gt; &gt;  2) Lack of ordering of returned results. Generally I just want the top 10 
+&gt; &gt; or so, and the ordering information is in the primary key. I can accomplish 
+&gt; &gt; this with search via the presort parameter.
+&gt; 
+&gt; Not sure why this would be a concern.  Search's presort option must have the 
+&gt; full result set before it can fully sort it, no?  There is no reason why 
+&gt; sorting the results of a a 2i query should be any slower.  In addition, 2i is 
+&gt; stored in leveldb, and leveldb, like merge_index if I recall correctly, 
+&gt; stores keys and values sorted. Thus, the result set is already partially 
+&gt; ordered. 
+&gt; 
+&gt; &gt; To me, the implementations of search and 2I are backwards. Search has 
+&gt; &gt; scalability issues because term-based partitioning optimizes for 
+&gt; &gt; single-term queries, but creates huge hotspots making many AND queries 
+&gt; &gt; prohibitively expensive. 2I's document-based partitioning makes single-term 
+&gt; &gt; queries more expensive (coverage set) but should allow AND queries to 
+&gt; &gt; scale. But 2i only supports single-term queries!
+&gt; 
+&gt; While they are more expensive in the sense that they require more nodes to 
+&gt; participate, they split the load between the nodes, thus overall, the work 
+&gt; should be about the same, and unless the nodes are busy with some other work, 
+&gt; it should complete sooner, as each node has less work to do. 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com (<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>)
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05824.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#05839">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05839">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05841.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05630.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05702.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Matt Ranney</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05703.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Fyodor Yarochkin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05813.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Greg Pascale</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05611.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Paul Gross</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05612.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05613.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Paul Gross</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05615.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Elias Levy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05627.html">Fwd: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05824.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Secondary Indexes - Feedback?</span> <span class="sender italic">Greg Pascale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05841.html">Re: Secondary Indexes - Feedback?</a></span> <span class="sender italic">Elias Levy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Secondary Indexes - Feedback?">
+<input type="hidden" name="msgid" value="F2A80035255B4F73A54E362D8C40E03D@clipboard.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05839.html">
+<input type="submit" value=" Greg Pascale ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Secondary+Indexes+%5C-+Feedback%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05824.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05841.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">F2A80035255B4F73A54E362D8C40E03D@clipboard.com</li>
+</ul>
+</div>
+</body>
+</html>

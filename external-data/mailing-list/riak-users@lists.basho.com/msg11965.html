@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Java client - conflict resolver on both fetch() and store()?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd12.html#11965" id="c">
+<link rel="index" href="mail12.html#11965" id="i">
+<link rel="prev" href="msg11964.html" id="p">
+<link rel="next" href="msg11975.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11965.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+client+%5C-+conflict+resolver+on+both+fetch%5C%28%5C%29+and+store%5C%28%5C%29%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Java client - conflict resolver on both fetch() and store()?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130811" rel="nofollow">Sun, 11 Aug 2013 11:08:47 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Brian,
+
+In StoreObject's execute() method, this condition, is it a bug or intended?</pre><pre>
+
+        ...
+        ...
+        if (!doNotFetch) {
+            resolved = fetchObject.execute();
+            vclock = fetchObject.getVClock();
+        }
+        ...
+        ...
+
+</pre><tt>My reasoning is: if do not fetch then shouldn't the resolved object be 
+</tt><tt>the one passed? I'm doing some tests and if I do store a mutation 
+</tt><tt>returning the body without fetching, I get a new mutated object and not 
+</tt><tt>the one I passed + mutation. So I'm wondering if that was the original 
+</tt><tt>intention.
+</tt><pre style="margin: 0em;">
+
+Thanks,
+
+Guido.
+
+On 11/08/13 18:49, Guido Medina wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Brian,
+
+</pre><tt>I probably asked a similar question before, let's say you have an 
+</tt><tt>in-memory cache and a single writer (I know, not the best distributed 
+</tt><tt>design), if you do the following, take into account that we use 
+</tt><tt>mutations but we have no siblings enabled:
+</tt><pre style="margin: 0em;">
+
+/bucket.store(record).returnBody(true).withoutFetch().withMutation(myMutation);/
+
+Will it do the following?
+
+ 1. Not fetch the object from Riak?
+ 2. Mutate the passed object?
+ 3. Return the mutated object?
+
+</pre><tt>I know I can probably go and see the source code, so to save sometime 
+</tt><tt>don't worry about the specifics, a yes no with a very short reason of 
+</tt><tt>why not will suffice.
+</tt><pre style="margin: 0em;">
+
+Thanks,
+
+Guido.
+
+
+On 11/08/13 18:11, Brian Roach wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Matt,
+
+The original design of StoreObject (which is what Bucket.store()
+returns) was that it would encapsulate the entire read/modify/write
+cycle in a very Java-y / enterprise-y way. This is why it takes a
+Resolver and a Mutator; it does a fetch, resolves conflicts, passes
+the resolved object to the Mutator, then stores the result of the
+mutation to Riak.
+
+Several users put in requests to make the fetch/resolve portion of
+that optional as they had a workflow where that wasn't ideal and
+didn't wanted to store a previously fetched value without fetching it
+again. This is why the 'withoutFetch()' method was introduced along
+with the @RiakVClock annotation.
+
+When using withoutFetch() no fetch is performed, and no conflict
+resolution occurs. Any ConflictResolver you pass in is simply not used
+/ ignored ... except possibly if you're using returnBody()
+
+Your code here:
+
+bucket.store(record).returnBody(true).withoutFetch().withResolver(myConflictResolver);
+
+is not doing a fetch or conflict resolution before storing your data.
+It's just storing `record` in Riak. If that POJO has a vclock from a
+previous fetch available via a @RiakVClock annotated field it will be
+used. Otherwise, you're doing a store without a vclock.
+
+I suspect where your confusion is stemming from is that you've also
+specified 'returnBody()' and you're creating a sibling in that store
+operation. When that's the case the &quot;body&quot; is going to be multiple
+objects (all the siblings) which require resolution as
+StoreObject.execute() only returns a single object back to the caller.
+The same Resolver used if you had done the pre-fetch is employed. If
+you haven't passed in a Resolver then the DefaultResolver is used
+which ... isn't really a &quot;resolver&quot; - it simply passes through an
+object if there's only one, or throws an exception if there's multiple
+(siblings) present.
+
+Thanks,
+- Roach
+
+
+
+
+On Sun, Aug 11, 2013 at 5:41 AM, Guido Medina&lt;guido.med...@temetra.com&gt;  wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Matt,
+
+Like Sean said, you should have a mutator if you are dealing with conflict
+resolution in domain objects; a good side effect of using a mutator is that
+Riak Java client will fetch-modify-write so your conflict resolver will be
+called once(?), if you don't use mutators, you get the effect you are
+describing(?) or in other words, you have to treat the operations as
+non-atomic and do things twice.
+
+There are two interfaces for mutations: Mutation and
+ConditionalStoreMutation, the 2nd interface will write only if the object
+was actually mutated, you must return true or false to state if it was
+mutated or not, which can be helpful if you are &quot;mutating&quot; an object and you
+discover the change you are requesting to make was already in place, then to
+save I/O, siblings creation and all implied on a write operation you decide
+not to write back.
+
+Mutation and conflict resolution are two separate concerns, but if you
+specify a mutator and a conflict resolver, conflict resolution will happen
+after the object is fetched and it is ready to be modified, which will
+emulate an atomic operation if you use a domain object.
+
+If you use a raw RiakObject, you must fetch, resolve the conflicts and on
+the write operation pass the VClock which is not a trivial nor easy to
+understand in code.
+
+HTH,
+
+Guido.
+
+
+
+On 11/08/13 03:32, Sean Cribbs wrote:
+
+I'm sure Roach will correct me if I'm off-base, but I believe the store
+operation does a fetch and resolve before writing. I think the ideal way to
+do that is to create a Mutation&lt;T&gt; (T being your POJO) as well, in which
+case it's less of a &quot;store&quot; and more of a &quot;fetch-modify-write&quot;. The way to
+skip the fetch/modify is to use the withoutFetch() option on the operation
+builder.
+
+
+On Sat, Aug 10, 2013 at 6:50 PM, Matt Painter&lt;m...@deity.co.nz&gt;  wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+I've just rolled up my sleeves and have started to make my application
+more robust with conflict resolution.
+
+I am currently using a @RiakVClock in my POJO (I need to think more about
+whether the read/modify/write approach is preferable or whether I'd have to
+rearchitect things).
+
+I read in the Riak Handbook the recommendation that conflicts are best
+resolved on read -  not write - however the example App.java snipping on the
+Storing data in Riak page in the Java client's doco uses a resolver on both
+the store() and fetch() operations.
+
+Indeed, if I don't specify my conflict resolver in my store(), things blow
+up (in my unit test, mind - I'm still getting my head around the whole area
+so my test may be a bit contrived).
+
+However when I use it in both places, my conflicts are being resolved
+twice. Is this anticipated?
+
+My store is:
+
+
+bucket.store(record).returnBody(true).withoutFetch().withResolver(myConflictResolver);
+
+and my fetch is:
+
+bucket.fetch(id, Record.class).withResolver(myConflictResolver).execute();
+
+The order of operations in my test is:
+
+Store new record
+Fetch the record as firstRecord
+Fetch the record as secondRecord
+Modify a field on firstRecord and secondRecord
+Save firstRecord
+Save secondRecord - this invokes my resolver with two siblings
+Read record - this also invokes my resolver with the two siblings
+
+Am I missing something? Or is this what's supposed to happen? I'm not too
+worried - the double-handling is hardly that intensive - but I'm keen to get
+it right.
+
+Thanks in advance,
+Matt
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre></blockquote><pre style="margin: 0em;">
+
+--
+Sean Cribbs&lt;s...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre></blockquote><pre style="margin: 0em;">
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11964.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd12.html#11965">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail12.html#11965">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11975.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11955.html">Java client - conflict resolver on both fetch() and store()?</a></span> <span class="sender italic">Matt Painter</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11956.html">Re: Java client - conflict resolver on both fetch() and ...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11957.html">Re: Java client - conflict resolver on both fetch() ...</a></span> <span class="sender italic">Matt Painter</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11960.html">Re: Java client - conflict resolver on both fetc...</a></span> <span class="sender italic">Matt Painter</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11961.html">Re: Java client - conflict resolver on both ...</a></span> <span class="sender italic">Matt Painter</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg11962.html">Re: Java client - conflict resolver on both fetch() ...</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11963.html">Re: Java client - conflict resolver on both fetc...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11964.html">Re: Java client - conflict resolver on both ...</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Java client - conflict resolver on ...</span> <span class="sender italic">Guido Medina</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg11975.html">Re: Java client - conflict resolver on both ...</a></span> <span class="sender italic">Matt Painter</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg11967.html">Re: Java client - conflict resolver on both fetch() and ...</a></span> <span class="sender italic">YN</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11968.html">Re: Java client - conflict resolver on both fetch() ...</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11970.html">Re: Java client - conflict resolver on both fetc...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11972.html">Java client - without fetch and mutation?</a></span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Java client - conflict resolver on both fetch() and store()?">
+<input type="hidden" name="msgid" value="5207D291.5020904@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11965.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+client+%5C-+conflict+resolver+on+both+fetch%5C%28%5C%29+and+store%5C%28%5C%29%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11964.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11975.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5207D291.5020904@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

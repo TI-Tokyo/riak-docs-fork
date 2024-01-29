@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak_core application design questions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08792" id="c">
+<link rel="index" href="maillist.html#08792" id="i">
+<link rel="prev" href="msg08714.html" id="p">
+<link rel="next" href="msg08718.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08792.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_core+application+design+questions%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak_core application design questions</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Fink%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Fink</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121002" rel="nofollow">Tue, 02 Oct 2012 09:51:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Wed, Sep 26, 2012 at 4:38 PM, Chris Hicks
+&lt;silent_vende...@hotmail.com&gt; wrote:
+&gt; However, sending
+&gt; the command off to, say, 3 nodes to process means that each of my nodes will
+&gt; then ping Riak (if I need 2 responses per query suddenly that means I hit
+&gt; Riak nodes a total of 6 times), process, and then all try to save the data
+&gt; back to Riak (again possibly hitting 6+ nodes to save the data). Is that
+&gt; wasteful?</pre><pre>
+
+Hi, Chris. Yes, there is waste here. But, as many implementers in this
+space have pointed out[1], redundant work can make distributed queries
+faster (as long as you have the excess processing power available).
+
+[1] 
+<a  rel="nofollow" href="http://www.bailis.org/blog/doing-redundant-work-to-speed-up-distributed-queries/">http://www.bailis.org/blog/doing-redundant-work-to-speed-up-distributed-queries/</a>
+
+In fact, this is part of the reason that Riak hits N nodes for each
+read/write: it's a bet that R of them will reply faster than the rest,
+and thus you don't have to wait on the slowest.
+
+&gt; Would it better, if it is even possible, to have one node doing the
+&gt; computation with another node holding a copy of the command as a fail-over?
+&gt; Once the 'primary' computational node finishes it's work and the data is
+&gt; saved the secondary one could be informed and just drop the command since it
+&gt; isn't necessary anymore. I'm still trying to grok all the implications of
+&gt; the way riak_core does things so any advice would be greatly appreciated.
+
+This is still &quot;wasteful&quot; in the sense that you have to tell a node
+some information that, in the happy-path case, it's never going to
+care about. The hard part here will be deciding at what point the
+&quot;first&quot; node failed to complete the computation, and failover to the
+next. Waiting to little time means you may have the same waste as your
+earlier setup, but waiting too much time means your latency will
+skyrocket.
+
+However, this is still a common setup. Some dynamo implementations
+even do a similar thing where they first ask the node they expect to
+reply the fastest, and then only ask other nodes if that first one
+does not reply fast enough. It's all in the accuracy of the modeling
+and prediction at that point, as to whether this makes things faster
+or slower.
+
+Riak Pipe, Riak's internal distributed processing system for it's
+scatter-gather query system, takes this approach as well. It sends an
+input to the first node of a preflist, and then falls back to others
+if needed. (Though its current use case also gets to assume that the
+node that started the query stays up for the entire duration of the
+query, so there is a point that can tell when an input has been lost.)
+
+HTH,
+Bryan
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08714.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08792">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08792">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08718.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08714.html">riak_core application design questions</a></span> <span class="sender italic">Chris Hicks</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak_core application design questions</span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak_core application design questions">
+<input type="hidden" name="msgid" value="CAOLR_obTyMj9XSWTQxBgS9+hWrc-s2EKVuvM1wLb59ZvRMykaQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08792.html">
+<input type="submit" value=" Bryan Fink ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_core+application+design+questions%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08714.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08718.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOLR_obTyMj9XSWTQxBgS9+hWrc-s2EKVuvM1wLb59ZvRMykaQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

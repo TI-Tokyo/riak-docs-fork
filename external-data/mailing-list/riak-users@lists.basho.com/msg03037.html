@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riaksearch performance, row limit, sorting not necessary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03037" id="c">
+<link rel="index" href="maillist.html#03037" id="i">
+<link rel="prev" href="msg03029.html" id="p">
+<link rel="next" href="msg03047.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03037.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+performance%2C+row+limit%2C+sorting+not+necessary%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riaksearch performance, row limit, sorting not necessary</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Daniel+Rathbone%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Daniel Rathbone</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110414" rel="nofollow">Thu, 14 Apr 2011 10:18:37 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>To be clear, I'm only talking about the solr interface.  I'm wondering if my
+query time will remain fixed (since it's capped at rows=1000) as I add
+several million docs to the index.</pre><pre>
+
+If I use my search as an input into Map/Reduce, won't my response time grow
+with my index? My search query would queue up a very large result set - and
+I expect performance to suffer if I trim this down in a reduce phase.
+
+It would seem that I can prevent that slowdown by limiting the rows in the
+search (with rows=1000).  Despite that limit, though, I hit the
+too_many_results error which indicates that the search queues up a very
+large result set before it applies the row limit.  Is there something I'm
+missing here?
+
+thanks,
+Daniel
+
+
+Basically, I'm wondering if my query time will remain
+
+On Thu, Apr 14, 2011 at 7:53 AM, Gordon Tillman &lt;gtill...@mezeo.com&gt; wrote:
+
+&gt; Daniel the max_search_results only applies to searches done via the solr
+&gt; interface.  From
+&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-January/002974.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-January/002974.html</a>
+&gt; :
+&gt;
+&gt; - System now aborts queries that would queue up too many documents in
+&gt;   a result set. This is controlled by a 'max_search_results' setting
+&gt;   in riak_search. Note that this only affects the Solr
+&gt;   interface. Searches through the Riak Client API that feed into a
+&gt;   Map/Reduce job are still allowed to execute because the system
+&gt;   streams those results.
+&gt;
+&gt;
+&gt; So you can use a map-reduce operation (with the search phase providing the
+&gt; inputs) and you should be OK.
+&gt;
+&gt; --gordon
+&gt;
+&gt;
+&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-January/002974.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-January/002974.html</a>&gt;
+&gt; On Apr 14, 2011, at 04:49 , Daniel Rathbone wrote:
+&gt;
+&gt; Hi list,
+&gt;
+&gt; I'm wondering how riaksearch performance will degrade as I add documents.
+&gt;
+&gt; For my purpose I limit rows at 1k and sorting is not necessary.  I have a
+&gt; single node cluster for development.  I know I can increase performance if I
+&gt; add nodes but I'd like to understand this before I do.
+&gt;
+&gt; My documents are small ~200 bytes.  With an index of 30k and rows limited
+&gt; to 1k, no problems.  I added 100k documents, and then I hit
+&gt; the too_many_results error.  Since I still have my row limit set at 1k, this
+&gt; indicates that the query does not return as soon as it finds the first 1k
+&gt; hits.  Is there a way to short circuit my queries so that they don't have to
+&gt; scan the whole index?
+&gt;
+&gt; I got around too_many_results by increasing my max_search_results (I read
+&gt; <a  rel="nofollow" href="https://help.basho.com/entries/480664-i-get-the-error-too-many-results">https://help.basho.com/entries/480664-i-get-the-error-too-many-results</a>).
+&gt;  I wonder, though, if I'll keep bumping memory boundaries as I add a few
+&gt; million docs to my index.
+&gt;
+&gt; Thanks,
+&gt; Daniel
+&gt; &lt;ATT00001..txt&gt;
+&gt;
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03029.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03037">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03037">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03047.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03022.html">riaksearch performance, row limit, sorting not necessary</a></span> <span class="sender italic">Daniel Rathbone</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03029.html">Re: riaksearch performance, row limit, sorting not ne...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riaksearch performance, row limit, sorting no...</span> <span class="sender italic">Daniel Rathbone</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03047.html">Re: riaksearch performance, row limit, sortin...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riaksearch performance, row limit, sorting not necessary">
+<input type="hidden" name="msgid" value="BANLkTi=4ko6r5GgjmnHvac8w2RUrVCN3pw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03037.html">
+<input type="submit" value=" Daniel Rathbone ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riaksearch+performance%2C+row+limit%2C+sorting+not+necessary%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03029.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03047.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTi=4ko6r5GgjmnHvac8w2RUrVCN3pw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

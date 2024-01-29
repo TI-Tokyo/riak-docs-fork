@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: 'not found' after join</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03237" id="c">
+<link rel="index" href="maillist.html#03237" id="i">
+<link rel="prev" href="msg03236.html" id="p">
+<link rel="next" href="msg03239.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03237.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%27not+found%27+after+join%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: 'not found' after join</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Andy+Gross%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Andy Gross</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110505" rel="nofollow">Thu, 05 May 2011 13:07:00 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Alex's description roughly matches up with some of our plans to address this
+issue.</pre><pre>
+
+As with almost anything, this comes down to a tradeoff between consistency
+and availability.   In the case of joining nodes, making the
+join/handoff/ownership claim process more &quot;atomic&quot; requires a higher degree
+of consensus from the machines in the cluster.  The current process (which
+is clearly non-optimal) allows nodes to join the ring as long as they can
+contact one current ring member.  A more atomic process would introduce
+consensus issues that might prevent nodes from joining in partitioned
+scenarios.
+
+A good solution would probably involve some consistency knobs around the
+join process to deal with a spectrum of failure/partition scenarios.
+
+This is something of which we are acutely aware and are actively pursuing
+solutions for a near-term release.
+
+- Andy
+
+
+On Thu, May 5, 2011 at 12:22 PM, Alexander Sicular &lt;sicul...@gmail.com&gt;wrote:
+
+&gt; I'm really loving this thread. Generating great ideas for the way
+&gt; things should be... in the future. It seems to me that &quot;the ring
+&gt; changes immediately&quot; is actually the problem as Ryan astutely
+&gt; mentions. One way the future could look is :
+&gt;
+&gt; - a new node comes online
+&gt; - introductions are made
+&gt; - candidate vnodes are selected for migration (&lt;- insert pixie dust magic
+&gt; here)
+&gt; - the number of simultaneous migrations are configurable, fewer for
+&gt; limited interruption or more for quicker completion
+&gt; - vnodes are migrated
+&gt; - once migration is completed, ownership is claimed
+&gt;
+&gt; Selecting vnodes for migration is where the unicorn cavalry attack the
+&gt; dragons den. If done right(er) the algorithm could be swappable to
+&gt; optimize for different strategies. Don't ask me how to implement it,
+&gt; I'm only a yellow belt in erlang-fu.
+&gt;
+&gt; Cheers,
+&gt; Alexander
+&gt;
+&gt; On Thu, May 5, 2011 at 13:33, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+&gt; &gt; John,
+&gt; &gt; All great points.  The problem is that the ring changes immediately when
+&gt; a
+&gt; &gt; node is added.  So now, all the sudden, the preflist is potentially
+&gt; pointing
+&gt; &gt; to nodes that don't have the data and they won't have that data until
+&gt; &gt; handoff occurs.  The faster that data gets transferred, the less time
+&gt; your
+&gt; &gt; clients have to hit 'notfound'.
+&gt; &gt; However, I agree completely with what you're saying.  This is just a side
+&gt; &gt; effect of how the system currently works.  In a perfect world we wouldn't
+&gt; &gt; care how long handoff takes and we would also do some sort of automatic
+&gt; &gt; congestion control akin to TCP Reno or something.  The preflist would
+&gt; still
+&gt; &gt; point to the &quot;old&quot; partitions until all data has been successfully handed
+&gt; &gt; off, and then and only then would we flip the switch for that vnode.  I'm
+&gt; &gt; pretty sure that's where we are heading (I say &quot;pretty sure&quot; b/c I just
+&gt; &gt; joined the team and haven't been heavily involved in these specific talks
+&gt; &gt; yet).
+&gt; &gt; It's all coming down the pipe...
+&gt; &gt; As for your specific I/O question re handoff_concurrecy, you might be
+&gt; right.
+&gt; &gt;  I would think it depends on hardware/platform/etc.  I was offering it as
+&gt; a
+&gt; &gt; possible stopgap to minimize Greg's pain.  It's certainly a cure to a
+&gt; &gt; symptom, not the problem itself.
+&gt; &gt; -Ryan
+&gt; &gt;
+&gt; &gt; On Thu, May 5, 2011 at 1:10 PM, John D. Rowell &lt;m...@jdrowell.com&gt; wrote:
+&gt; &gt;&gt;
+&gt; &gt;&gt; Hi Ryan, Greg,
+&gt; &gt;&gt;
+&gt; &gt;&gt; 2011/5/5 Ryan Zezeski &lt;rzeze...@basho.com&gt;
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; 1. For example, riak_core has a `handoff_concurrency` setting that
+&gt; &gt;&gt;&gt; determines how many vnodes can concurrently handoff on a given node.
+&gt;  By
+&gt; &gt;&gt;&gt; default this is set to 4.  That's going to take a while with your 2048
+&gt; &gt;&gt;&gt; vnodes and all :)
+&gt; &gt;&gt;
+&gt; &gt;&gt; Won't that make the handoff situation potentially worse? From the thread
+&gt; I
+&gt; &gt;&gt; understood that the main problem was that the cluster was shuffling too
+&gt; much
+&gt; &gt;&gt; data around and thus becoming unresponsive and/or returning unexpected
+&gt; &gt;&gt; results (like &quot;not founds&quot;). I'm attributing the concerns more to an
+&gt; &gt;&gt; excessive I/O situation than to how long the handoff takes. If the
+&gt; handoff
+&gt; &gt;&gt; can be made transparent (no or little side effects) I don't think most
+&gt; &gt;&gt; people will really care (e.g. the &quot;fix the cluster tomorrow&quot; anecdote).
+&gt; &gt;&gt;
+&gt; &gt;&gt; How about using a percentage of available I/O to throttle the vnode
+&gt; &gt;&gt; handoff concurrency? Start with 1, and monitor the node's I/O (kinda
+&gt; like
+&gt; &gt;&gt; 'atop' does, collection CPU, disk and network metrics), if it is below
+&gt; the
+&gt; &gt;&gt; expected usage, then increase the vnode handoff concurrency, and
+&gt; vice-versa.
+&gt; &gt;&gt;
+&gt; &gt;&gt; I for one would be perfectly happy if the handoff took several hours
+&gt; (even
+&gt; &gt;&gt; days) if we could maintain the core riak_kv characteristics intact
+&gt; during
+&gt; &gt;&gt; those events. We've all seen looooong RAID rebuild times, and it's
+&gt; usually
+&gt; &gt;&gt; better to just sit tight and keep the rebuild speed low (slower I/O)
+&gt; while
+&gt; &gt;&gt; keeping all of the dependent systems running smoothly.
+&gt; &gt;&gt;
+&gt; &gt;&gt; cheers
+&gt; &gt;&gt; -jd
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt; &gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03236.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03237">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03237">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03239.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03197.html">Re: 'not found' after join</a></span> <span class="sender italic">Greg Nelson</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03198.html">Re: 'not found' after join</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03228.html">Re: 'not found' after join</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03229.html">Re: 'not found' after join</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03231.html">Re: 'not found' after join</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03232.html">Re: 'not found' after join</a></span> <span class="sender italic">John D. Rowell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03233.html">Re: 'not found' after join</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03234.html">Re: 'not found' after join</a></span> <span class="sender italic">Ben Tilly</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03235.html">Re: 'not found' after join</a></span> <span class="sender italic">Ben Tilly</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03236.html">Re: 'not found' after join</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: 'not found' after join</span> <span class="sender italic">Andy Gross</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03239.html">Re: 'not found' after join</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03244.html">Re: 'not found' after join</a></span> <span class="sender italic">John D. Rowell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03240.html">Re: 'not found' after join</a></span> <span class="sender italic">Ben Tilly</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03238.html">Re: 'not found' after join</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03241.html">Re: 'not found' after join</a></span> <span class="sender italic">Ben Tilly</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03243.html">Re: 'not found' after join</a></span> <span class="sender italic">Bob Ippolito</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03245.html">Re: 'not found' after join</a></span> <span class="sender italic">Greg Nelson</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: 'not found' after join">
+<input type="hidden" name="msgid" value="BANLkTingLR2fr1i_rcvJfGOVgOuP0kXO0Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03237.html">
+<input type="submit" value=" Andy Gross ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%27not+found%27+after+join%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03236.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03239.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTingLR2fr1i_rcvJfGOVgOuP0kXO0Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

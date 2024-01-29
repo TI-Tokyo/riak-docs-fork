@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Emulating composite index queries with secondary indexes and key	filters</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08380" id="c">
+<link rel="index" href="maillist.html#08380" id="i">
+<link rel="prev" href="msg08379.html" id="p">
+<link rel="next" href="msg08388.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08380.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Emulating+composite+index+queries+with+secondary+indexes+and+key%09filters%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Emulating composite index queries with secondary indexes and key	filters</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Olav+Frengstad%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Olav Frengstad</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120828" rel="nofollow">Tue, 28 Aug 2012 06:27:48 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Looking at riak_kv_mapred_json it seems to be the case that you
+can only do key filter on entire buckets.</pre><pre>
+
+On the other hand one can still use the riak_kv_mapred_filters, even
+though it's ugly constructing all the filter manually instead of matching
+binary patterns:
+
+{ok, Pid} = riakc_pb_socket:start_link(&quot;127.0.0.1&quot;, 8087),
+{ok, Filter} = riak_kv_mapred_filters:build_filter([[&lt;&lt;&quot;ends_with&quot;&gt;&gt;,&quot;1&quot;]]),
+MapReduce = [
+  { reduce
+  , {qfun, fun(X, F) -&gt; lists:filter(fun({A, B}) -&gt; F(B) end, X) end},
+  , riak_kv_mapred_filters:compose(Filter),
+  , true}],
+Index = {index, &lt;&lt;&quot;test1&quot;&gt;&gt;, &lt;&lt;&quot;field_int&quot;&gt;&gt;, &lt;&lt;&quot;123&quot;&gt;&gt;},
+riakc_pb_socket:mapred(Pid, Index, MapReduce).
+
+Question 2 &amp; 3 still remains though:
+&gt;&gt;   2) Would this be a efficient solution, considering the 2i query
+&gt;&gt;      will return 10k+ results? the reduce should cut that in half.
+&gt;&gt;   3) What other options to i have for querying this? Obviously i can
+&gt;&gt;      use Riak search, but the term based indexing puts me off. Other
+&gt;&gt;      option is building this manually with empty object just linking.
+
+
+2012/8/28 Jeremiah Peschka &lt;jeremiah.pesc...@gmail.com&gt;:
+&gt; As best as I can recall, you can't key filter on 2i. You can, however,
+&gt; perform range filtering. You could query where the 2i key is between
+&gt; 20110101T00:00:00Z|a|a and 20110201T00:00:00Z|zzz|zzz
+&gt;
+&gt; Please forgive any typos. I'm using a phone.
+&gt;
+&gt;
+&gt; On Tuesday, August 28, 2012, Olav Frengstad wrote:
+&gt;&gt;
+&gt;&gt; Hey,
+&gt;&gt;
+&gt;&gt; I'm looking to use riak to store time series. So naturaly i'm in the
+&gt;&gt; processes of validating all possible methods this query. A object
+&gt;&gt; has a id, origin, timestamp and type. The query in question is to
+&gt;&gt; select all object within a time range that originated from &quot;origin&quot;
+&gt;&gt; and has a certain &quot;type&quot;.
+&gt;&gt;
+&gt;&gt; The current plan is to store the timestamp as a secondary index and
+&gt;&gt; then have composite keys responsible for matching origin/type predicate.
+&gt;&gt;
+&gt;&gt; A key would look like this: &quot;&lt;id&gt;:&lt;origin&gt;:&lt;type&gt;&quot;.
+&gt;&gt;
+&gt;&gt; To query one would just pipe the 2i query to key filter map reduce:
+&gt;&gt;
+&gt;&gt; curl -X POST -H &quot;Content-Type: application/json&quot; -d '{&quot;inputs&quot;:{
+&gt;&gt; &quot;bucket&quot; : &quot;seriesx&quot;, &quot;index&quot; : &quot;timestamp_int&quot;, &quot;start&quot; : 123,
+&gt;&gt; &quot;end&quot; : 456, &quot;key_filters&quot; : [[&quot;ends_with&quot;, &quot;&lt;origin&gt;:&lt;type&gt;&quot;]]}}'
+&gt;&gt;
+&gt;&gt; In regards to this &quot;imaginary&quot; solution i have a few questions:
+&gt;&gt;   1) is this possible, or does key filter only work on a bucket?
+&gt;&gt;   2) Would this be a efficient solution, considering the 2i query
+&gt;&gt;      will return 10k+ results? the reduce should cut that in half.
+&gt;&gt;   3) What other options to i have for querying this? Obviously i can
+&gt;&gt;      use Riak search, but the term based indexing puts me off. Other
+&gt;&gt;      option is building this manually with empty object just linking.
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; Med Vennlig Hilsen
+&gt;&gt; Olav Frengstad
+&gt;&gt;
+&gt;&gt; Systemutvikler // FWT
+&gt;&gt; +47 920 42 090
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; ---
+&gt; Jeremiah Peschka
+&gt; Managing Director, Brent Ozar PLF, LLC
+
+
+
+-- 
+Med Vennlig Hilsen
+Olav Frengstad
+
+Systemutvikler // FWT
++47 920 42 090
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08379.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08380">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08380">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08388.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08378.html">Emulating composite index queries with secondary indexes ...</a></span> <span class="sender italic">Olav Frengstad</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08379.html">Re: Emulating composite index queries with secondary...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Emulating composite index queries with secon...</span> <span class="sender italic">Olav Frengstad</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Emulating composite index queries with secondary indexes and key	filters">
+<input type="hidden" name="msgid" value="CAAC-2912JiaOBiu7b5TepcTdgHXp1x7U8_D_bNPUkT=+jpiJ-Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08380.html">
+<input type="submit" value=" Olav Frengstad ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Emulating+composite+index+queries+with+secondary+indexes+and+key%09filters%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08379.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08388.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAC-2912JiaOBiu7b5TepcTdgHXp1x7U8_D_bNPUkT=+jpiJ-Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

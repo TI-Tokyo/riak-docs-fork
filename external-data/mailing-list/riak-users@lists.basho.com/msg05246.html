@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak 1.0</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#05246" id="c">
+<link rel="index" href="maillist.html#05246" id="i">
+<link rel="prev" href="msg05245.html" id="p">
+<link rel="next" href="msg05247.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05246.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.0%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak 1.0</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jim+Adler%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jim Adler</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111022" rel="nofollow">Sat, 22 Oct 2011 11:05:20 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>So, for the benefit of the list, here was my bonehead move: 
+
+My installation script automatically 'riak starts' which, of course, uses the 
+default app.config ring_creation_size of 64 before I get a chance to change it. 
+Hello tarpit.</pre><pre>
+
+Lesson: don't 'riak start' on a fresh node until you modify app.config 
+ring_creation_size.
+
+Jim
+
+On Oct 22, 2011, at 3:12 AM, Nico Meyer &lt;nico.me...@adition.com&gt; wrote:
+
+&gt; Hello Jim,
+&gt; 
+&gt; it sounds like the ring_creation_size in your app.conf file is inconsistent 
+&gt; with the actual ring size on your existing nodes. This would happen, if the 
+&gt; ring_creation_size in the config was changed after the ring as been created. 
+&gt; As the name implies, the setting is only used when starting a fresh/empty 
+&gt; node for the first time, so changing it afterwards has no real effect, other 
+&gt; than showing up in the riak-admin output and severly confusing people ;-).
+&gt; 
+&gt; So to fix your problem, first of all, since the real ring size is 64, your 
+&gt; new node must also have a ring size of 64. So do as Dan suggested, but set 
+&gt; the ring_creation_size to 64 instead of 256.
+&gt; At that point joining might already work. I checked the code, and if the new 
+&gt; gossip protocol is used, riak checks for equality the actual     ring sizes 
+&gt; of the two nodes to join. But if the legacy gossip protocol is still used, 
+&gt; riak compares the ring_creation_size config settings of both nodes.
+&gt; 
+&gt; In any case, you should change the ring_creation_size on all your     nodes 
+&gt; to 64 and restart them, if only to make thing consistent again.
+&gt; 
+&gt; Cheers,
+&gt; Nico
+&gt; 
+&gt; Am 22.10.2011 09:46, schrieb Jim Adler:
+&gt;&gt; 
+&gt;&gt; For the bitcask backend, ring_num_partitions=64 and ring_creation_size=256. 
+&gt;&gt; I haven't seen where to set ring_num_partitions in app.config.  I have about 
+&gt;&gt; 8 million keys stored in this cluster.
+&gt;&gt; 
+&gt;&gt; So, how do I bring up a LevelDB node and join to the existing cluster given 
+&gt;&gt; this 64/256 partitions/creation_size config?
+&gt;&gt; 
+&gt;&gt; Thanks for the help!
+&gt;&gt; 
+&gt;&gt; Jim
+&gt;&gt; 
+&gt;&gt; From: Dan Reverri &lt;d...@basho.com&gt;
+&gt;&gt; Date: Fri, 21 Oct 2011 09:41:02 -0700
+&gt;&gt; To: Jim Adler &lt;jim.ad...@comcast.net&gt;
+&gt;&gt; Cc: Ian Plosker &lt;i...@basho.com&gt;, &quot;riak-users@lists.basho.com&quot; 
+&gt;&gt; &lt;riak-users@lists.basho.com&gt;
+&gt;&gt; Subject: Re: Riak 1.0
+&gt;&gt; 
+&gt;&gt; The &quot;ring_creation_size&quot; parameter in app.config must be set before the node 
+&gt;&gt; has been started and written a ring file. Assuming the LevelDB node is 
+&gt;&gt; empty, you can do the following:        
+&gt;&gt; 
+&gt;&gt; 1. Stop the node
+&gt;&gt; 2. Clear out the data directories (data/ring, data/leveldb, data/bitcask, 
+&gt;&gt; data/mr_queue, data/kv_vnode)
+&gt;&gt; 3. Verify &quot;ring_creation_size&quot; is set to 256 in the app.config file
+&gt;&gt; 4. Start the node
+&gt;&gt; 5. Verify &quot;ring_num_partitions&quot; in &quot;riak-admin status&quot; is 256
+&gt;&gt; 6. Join the node to the cluster
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; Dan
+&gt;&gt;  
+&gt;&gt; Daniel Reverri
+&gt;&gt; Developer Advocate
+&gt;&gt; Basho Technologies, Inc.
+&gt;&gt; d...@basho.com
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Fri, Oct 21, 2011 at 9:30 AM, &lt;jim.ad...@comcast.net&gt; wrote:
+&gt;&gt; 64 on the LevelDB vs 256 on the Bitcask.  I guess that’s it.   Workaround?
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; 
+&gt;&gt; Jim
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; From: Dan Reverri [<a  rel="nofollow" href="mailto:d...@basho.com">mailto:d...@basho.com</a>] 
+&gt;&gt; Sent: Friday, October 21, 2011 9:27 AM
+&gt;&gt; To: Jim Adler
+&gt;&gt; Cc: Ian Plosker; riak-users
+&gt;&gt; Subject: Re: Riak 1.0
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Hi Jim,
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Can you check &quot;ring_num_partitions&quot; on each node from &quot;riak-admin status&quot;?
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; Dan
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; Daniel Reverri
+&gt;&gt; Developer Advocate
+&gt;&gt; Basho Technologies, Inc.
+&gt;&gt; d...@basho.com
+&gt;&gt; 
+&gt;&gt; 2011/10/20 Jim Adler &lt;jad...@intelius.com&gt;
+&gt;&gt; 
+&gt;&gt; I tried the Bitcask-to-LevelDB procedure on 1.0.1 to switch my backend from 
+&gt;&gt; Bitcask to LevelDB. I have one node on Bitcask with my data and the other 
+&gt;&gt; node with a fresh LevelDB backend. When I join the fresh LevelDB node, I get 
+&gt;&gt; the following error:  Failed: r...@xx.xx.xx.xx has a different 
+&gt;&gt; ring_creation_size
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; riak-admin status | grep creation gives:  ring_creation_size : 256
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Any ideas?
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Jim
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; From: riak-users-boun...@lists.basho.com 
+&gt;&gt; [<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>] On Behalf Of Ian Plosker
+&gt;&gt; Sent: Saturday, October 01, 2011 8:15 AM
+&gt;&gt; To: 54chen
+&gt;&gt; ! Cc: riak-users
+&gt;&gt; Subject: Re: Riak 1.0
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; There are instructions on the wiki: 
+&gt;&gt; <a  rel="nofollow" href="http://wiki.basho.com/Secondary-Indexes.html#Migrating-an-Existing-Cluster-">http://wiki.basho.com/Secondary-Indexes.html#Migrating-an-Existing-Cluster-</a>(Method-One)
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Basically, you will have each node leave the cluster, switch the backend, 
+&gt;&gt; and then rejoin. The process is something like this:
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; 1) Issue `riak-admin leave` and wait for all transfers to complete
+&gt;&gt; 
+&gt;&gt; 2) `riak stop`
+&gt;&gt; 
+&gt;&gt; 3) Change the backend to the `riak_kv_eleveldb_backend`
+&gt;&gt; 
+&gt;&gt; 4) `riak start` and `riak-admin join &lt;a_node&gt;`
+&gt;&gt; 
+&gt;&gt; 5) Repeat for each node in the                                       cluster
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Ian Plosker
+&gt;&gt; 
+&gt;&gt; Developer Advocate
+&gt;&gt; 
+&gt;&gt; Basho Technologies
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; On Sep 30, 2011, at 10:41 PM, 54chen wrote:
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; Congratulations!
+&gt;&gt; 
+&gt;&gt; Can you give me an example of how the 0.14.2（bitcas! k）                      
+&gt;&gt;                upgrade to 1.0（ levelDB）?
+&gt;&gt; 
+&gt;&gt; 2011/10/1 Alexander Sicular &lt;sicul...@gmail.com&gt;
+&gt;&gt; 
+&gt;&gt; Awesome!
+&gt;&gt; 
+&gt;&gt; Already got it in place on my mac and ubuntu dev boxes. Smooth.
+&gt;&gt; 
+&gt;&gt; -Alexander Sicular
+&gt;&gt; 
+&gt;&gt; @siculars
+&gt;&gt; <a  rel="nofollow" href="http://siculars.posterous.com">http://siculars.posterous.com</a>
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On Sep 30, 2011, at 4:31 PM, David Smith wrote:
+&gt;&gt; 
+&gt;&gt; &gt; Hi All,
+&gt;&gt; &gt;
+&gt;&gt; &gt; I am very pleased to announce that Riak 1.0 is tagged and officially
+&gt;&gt; &gt; ready for downloading.
+&gt;&gt; &gt;
+&gt;&gt; &gt; Pre-built installations and source tarballs are available at:
+&gt;&gt; &gt;
+&gt;&gt; &gt; <a  rel="nofollow" href="http://downloads.basho.com/riak/CURRENT">http://downloads.basho.com/riak/CURRENT</a>
+&gt;&gt; &gt;
+&gt;&gt; &gt; Release notes are here:
+&gt;&gt; &gt;
+&gt;&gt; &gt; <a  rel="nofollow" href="https://github.com/basho/riak/blob/1.0/RELEASE-NOTES.org">https://github.com/basho/riak/blob/1.0/RELEASE-NOTES.org</a>
+&gt;&gt; &gt;
+&gt;&gt; &gt; There is also a blog post about the release here:
+&gt;&gt; &gt;
+&gt;&gt; &gt; <a  rel="nofollow" href="http://blog.basho.com/2011/09/30/Riak-1-dot-0-is-Official/">http://blog.basho.com/2011/09/30/Riak-1-dot-0-is-Official/</a>
+&gt;&gt; &gt;
+&gt;&gt; &gt; 1.0 has been two years and 15 releases in the making. Thank you all
+&gt;&gt; &gt; for being a part of this project and wonderful community. We couldn't
+&gt;&gt; &gt; have done it without you.
+&gt;&gt; &gt;
+&gt;&gt; &gt; Sincerely,
+&gt;&gt; &gt;
+&gt;&gt; &gt; D.
+&gt;&gt; &gt;
+&gt;&gt; &gt; --
+&gt;&gt; &gt; Dave Smith
+&gt;&gt; &gt; Director, Engineering
+&gt;&gt; &gt; Basho Technologies, Inc.
+&gt;&gt; &gt; diz...@basho.com
+&gt;&gt; &gt;
+&gt;&gt; &gt; _______________________________________________
+&gt;&gt; &gt; riak-users mailing list
+&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users">http://lists.basho.com/mailman/listinfo/riak-users</a> _lists.basho.com
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; -- 
+&gt;&gt; -
+&gt;&gt; <a  rel="nofollow" href="http://www.54chen.com">http://www.54chen.com</a> 
+&gt;&gt; <a  rel="nofollow" href="http://twitter.com/54chen">http://twitter.com/54chen</a>
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt;  
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05245.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#05246">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05246">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05247.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04969.html">Re: Riak 1.0</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04979.html">Re: Riak 1.0</a></span> <span class="sender italic">54chen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05223.html">RE: Riak 1.0</a></span> <span class="sender italic">Jim Adler</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05230.html">Re: Riak 1.0</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05231.html">RE: Riak 1.0</a></span> <span class="sender italic">jim.adler</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05232.html">Re: Riak 1.0</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05233.html">RE: Riak 1.0</a></span> <span class="sender italic">jim.adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05243.html">Re: Riak 1.0</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05244.html">Re: Riak 1.0</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05245.html">Re: Riak 1.0</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak 1.0</span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05247.html">Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05248.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Ryan Caught</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05249.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05250.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Aphyr</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05267.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Mark Steele</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05268.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05269.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Mark Steele</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05278.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05251.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05253.html">Re: Key Filter Timeout</a></span> <span class="sender italic">Jim Adler</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak 1.0">
+<input type="hidden" name="msgid" value="DE43F153-82EC-4F7C-A118-95E143B87060@comcast.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05246.html">
+<input type="submit" value=" Jim Adler ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.0%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05245.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05247.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">DE43F153-82EC-4F7C-A118-95E143B87060@comcast.net</li>
+</ul>
+</div>
+</body>
+</html>

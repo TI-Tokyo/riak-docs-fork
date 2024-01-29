@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Pros/Cons to not storing JSON</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03628" id="c">
+<link rel="index" href="maillist.html#03628" id="i">
+<link rel="prev" href="msg03625.html" id="p">
+<link rel="next" href="msg03631.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03628.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Pros%5C%2FCons+to+not+storing+JSON%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Pros/Cons to not storing JSON</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Evans%2C+Matthew%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Evans, Matthew</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110609" rel="nofollow">Thu, 09 Jun 2011 14:42:00 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+Why not convert your term to a string, and then you can do map reduce can't you?</pre><pre>
+
+Term to a string...
+
+1&gt; Term = [{one,1},{two,2},{three,3}].
+[{one,1},{two,2},{three,3}]
+2&gt; String = lists:flatten(io_lib:format(&quot;~p.&quot;, [Term])).
+&quot;[{one,1},{two,2},{three,3}].&quot;
+
+Save &quot;String&quot; in riak...
+
+Then back to a term...
+
+3&gt; String = &quot;[{one,1},{two,2},{three,3}].&quot;.
+&quot;[{one,1},{two,2},{three,3}].&quot;
+4&gt; {ok,Tok,_} = erl_scan:string(String).
+5&gt; {ok,Term} = erl_parse:parse_term(Tok).
+{ok,[{one,1},{two,2},{three,3}]}
+
+/Matt
+
+________________________________
+From: riak-users-boun...@lists.basho.com 
+[<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>] On Behalf Of Will Moss
+Sent: Thursday, June 09, 2011 5:27 PM
+To: Sean Cribbs
+Cc: riak-users
+Subject: Re: Pros/Cons to not storing JSON
+
+Hey Andrew,
+
+We're using BSON (bsonspec.org&lt;<a  rel="nofollow" href="http://bsonspec.org">http://bsonspec.org</a>&gt;), because it stores binary 
+(and other) data types better than JSON and is also faster and more wire 
+efficient (sounds like about the same reasons you're considering leaving JSON). 
+There are also libraries to parse BSON it in just about every language.
+
+I haven't tried using it in a Erlang map-reduce yet (we don't do map-reduces 
+for any of our production work), but there is a library out there so it 
+shouldn't be too hard.
+
+Will
+
+On Thu, Jun 9, 2011 at 2:24 PM, Sean Cribbs 
+&lt;s...@basho.com&lt;<a  rel="nofollow" href="mailto:s...@basho.com">mailto:s...@basho.com</a>&gt;&gt; wrote:
+Andrew,
+
+I think you're on the right track here, but I might add that you'll want to 
+have upgrade paths available if you're using records -- that is, version them 
+-- so that you can evolve their structure over time.  That could be a little 
+hairy unless done carefully.
+
+That said, you could use BERT as the serialization format, making implementing 
+JavaScript M/R functions a little easier, and interop with other languages.
+
+Sean Cribbs &lt;s...@basho.com&lt;<a  rel="nofollow" href="mailto:s...@basho.com">mailto:s...@basho.com</a>&gt;&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On Jun 9, 2011, at 5:14 PM, Andrew Berman wrote:
+
+&gt; I am using Riak using the Erlang Client API (PB) and I was storing my 
+&gt; documents as JSON and then converting them to records when I pull them out of 
+&gt; Riak, but I got to thinking that maybe this isn't the greatest approach.  I'm 
+&gt; thinking that maybe it's better to store documents just as the record itself 
+&gt; (Erlang binary) and then just converting the binary back to the record when I 
+&gt; pull them from Riak.  I was wondering what the pros/cons are to this 
+&gt; approach.  Here's my list so far:
+&gt;
+&gt; Pros:
+&gt;
+&gt; Native Erlang is stored, so less time to convert to the record
+&gt; Better support for nested records
+&gt; Smaller storage requirements and hence faster on the wire (?)
+&gt;
+&gt; Cons:
+&gt;
+&gt; Not readable through Rekon (or other utils) without modification
+&gt; Can't use standard M/R functions which analyze the document (have to write 
+&gt; all custom functions using Erlang)
+&gt; Not portable across languages
+&gt;
+&gt; Thanks,
+&gt;
+&gt; Andrew
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03625.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03628">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03628">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03631.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03623.html">Pros/Cons to not storing JSON</a></span> <span class="sender italic">Andrew Berman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03624.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03625.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Will Moss</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Pros/Cons to not storing JSON</span> <span class="sender italic">Evans, Matthew</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03631.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Andrew Berman</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03630.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Andrew Berman</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03692.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03693.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Will Moss</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03694.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03695.html">Re: Pros/Cons to not storing J...</a></span> <span class="sender italic">Will Moss</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03696.html">Re: Pros/Cons to not stori...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03629.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Andrew Berman</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03689.html">Re: Pros/Cons to not storing JSON</a></span> <span class="sender italic">Runar Jordahl</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Pros/Cons to not storing JSON">
+<input type="hidden" name="msgid" value="B293D35E9E20694A8D9DFFE1BC655C556AAB97AA83@vvexch.verivue.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03628.html">
+<input type="submit" value=" Evans, Matthew ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Pros%5C%2FCons+to+not+storing+JSON%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03625.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03631.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">B293D35E9E20694A8D9DFFE1BC655C556AAB97AA83@vvexch.verivue.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Ruby client - problem listing bucket keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01353" id="c">
+<link rel="index" href="maillist.html#01353" id="i">
+<link rel="prev" href="msg01351.html" id="p">
+<link rel="next" href="msg01354.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01353.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Ruby+client+%5C-+problem+listing+bucket+keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Ruby client - problem listing bucket keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ted+Behling%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ted Behling</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101023" rel="nofollow">Sat, 23 Oct 2010 15:51:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+I am new to Riak but am starting to get familiar with it.  I've been going 
+through the &quot;Riak Fast Track&quot; tutorial, and am using the riak-client Ruby gem.  
+Sadly, I think I have found some broken behavior in the Ruby client.  I'm 
+hoping maybe the maintainer of the riak-client gem can help?</pre><pre>
+
+The issue is that if my Riak keys look like &quot;dates&quot;, such as &quot;2010-01-01&quot;, then 
+if I invoke the &quot;keys&quot; method on a Riak::Bucket object, I get an error.  
+Non-date-looking keys work fine.
+
+Here are some commands that reproduce the problem, from an OS X command line:
+
+---------
+# This successfully creates a new bucket called &quot;broken&quot; and assigns a value to 
+the key &quot;2010-01-01&quot;
+$ curl -X PUT -d '{&quot;bar&quot;:&quot;baz&quot;}' -H &quot;Content-Type: application/json&quot; 
+<a  rel="nofollow" href="http://127.0.0.1:8098/riak/broken/2010-01-01">http://127.0.0.1:8098/riak/broken/2010-01-01</a>
+
+# I can successfully retrieve the specific key using a Ruby one-liner
+$ ruby -e &quot;require 'rubygems'; require 'riak'; puts 
+Riak::Client.new.bucket('broken')['2010-01-01'].data.inspect&quot;
+curb library not found! Please `gem install curb` for better performance.
+{&quot;bar&quot;=&gt;&quot;baz&quot;}
+
+# A Ruby exception results when I list the keys.  Note where it's trying to 
+invoke &quot;tr&quot; on a Date object, shown here formatted as a different string than 
+the Riak key
+$ ruby -e &quot;require 'rubygems'; require 'riak'; puts 
+Riak::Client.new.bucket('broken').keys&quot;
+curb library not found! Please `gem install curb` for better performance.
+/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/lib/ruby/1.8/cgi.rb:352:in
+ `unescape': undefined method `tr' for Fri, 01 Jan 2010:Date (NoMethodError)
+        from 
+/Library/Ruby/Gems/1.8/gems/riak-client-0.8.2/lib/riak/bucket.rb:48:in `load'
+        from 
+/Library/Ruby/Gems/1.8/gems/riak-client-0.8.2/lib/riak/bucket.rb:48:in `map'
+        from 
+/Library/Ruby/Gems/1.8/gems/riak-client-0.8.2/lib/riak/bucket.rb:48:in `load'
+        from 
+/Library/Ruby/Gems/1.8/gems/riak-client-0.8.2/lib/riak/bucket.rb:69:in `keys'
+        from -e:1
+---------
+
+Clearly, something here is trying to be &quot;helpful&quot; by translating the string 
+&quot;2010-01-01&quot; to a Date object.  This is the wrong behavior, because Riak keys 
+are strings and should always be strings.  Correct behavior would be to not 
+interpret &quot;date-looking&quot; or other &quot;special appearance&quot; strings, and just treat 
+all key strings literally.
+
+Here are the relevant software versions I am running:
+Mac OS X 10.6
+riak-0.13.0-osx-i386 (downloaded from Basho)
+ruby 1.8.7 (2009-06-12 patchlevel 174) [universal-darwin10.0]
+Rubygems version 1.3.7
+riak-client gem, 0.8.2, installed with &quot;gem install riak-client&quot;
+activesupport gem, 2.3.8
+
+I hope someone can fix this issue.  If I can contribute a patch, or you would 
+like me to help test a patch, please let me know what's needed.
+
+Best regards,
+
+Ted Behling
+RHCE, Network+
+t...@tedb.us
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01351.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01353">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01353">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01354.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Ruby client - problem listing bucket keys</span> <span class="sender italic">Ted Behling</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01354.html">Re: Ruby client - problem listing bucket keys</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01355.html">Re: Ruby client - problem listing bucket keys</a></span> <span class="sender italic">Ted Behling</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Ruby client - problem listing bucket keys">
+<input type="hidden" name="msgid" value="241A1BD6-FEA9-4CB5-AFBB-7F526B1ABD9C@tedb.us">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01353.html">
+<input type="submit" value=" Ted Behling ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Ruby+client+%5C-+problem+listing+bucket+keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01351.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01354.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">241A1BD6-FEA9-4CB5-AFBB-7F526B1ABD9C@tedb.us</li>
+</ul>
+</div>
+</body>
+</html>

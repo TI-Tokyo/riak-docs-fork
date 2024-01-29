@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Mysterious JavaScript MapReduce crashes and timeouts with 0.14.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03816" id="c">
+<link rel="index" href="maillist.html#03816" id="i">
+<link rel="prev" href="msg03813.html" id="p">
+<link rel="next" href="msg03818.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03816.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Mysterious+JavaScript+MapReduce+crashes+and+timeouts+with+0.14.2%22&amp;o=newest" rel="nofollow"><span itemprop="name">Mysterious JavaScript MapReduce crashes and timeouts with 0.14.2</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22David+Mitchell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">David Mitchell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110624" rel="nofollow">Fri, 24 Jun 2011 11:43:45 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I am doing 208 MapReduce jobs in rapid-fire succession using anonymous 
+JavaScript functions.  I am sending the MapReduce jobs to a single node, 
+riak01.  There are about 75,000 keys in the bucket.
+Erlang: R13B04
+Riak: 0.14.2</pre><pre>
+
+When I had my MapReduce timeout set to 120,000 (&quot;timeout&quot;:120000), I was getting
+mapexec_error, {error,timeout}
+This first timeout wrote to the error log after seven seconds.  The second and 
+third wrote to the error log after five seconds.  The four timeout wrote the 
+error log after eight seconds.  The beam process never crashed.
+
+So, I increased the value to 30,000,000 (&quot;timeout&quot;:30000000).  In the first 
+run, all MapReduce jobs completed without error, each one taking about 1 to 3 
+seconds to complete.
+The CPU usage on riak01 was about 50 percent for all 208 jobs.
+Below is a sample output from iostat -x
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+          51.00    0.00    5.01    0.10    0.00   43.89
+
+Device:         rrqm/s   wrqm/s     r/s     w/s   rsec/s   wsec/s avgrq-sz 
+avgqu-sz   await  svctm  %util
+hda               0.00     8.22    0.00    3.21     0.00    91.38    28.50     
+0.01    2.62   2.12   0.68
+
+In the second run, on the 53rd MapReduce job, the job was still waiting to 
+complete after 10 minutes.  So, there was never a timeout, and nothing was 
+written to the error logs.  However, the beam process obviously crashed.  On 
+raik01, I executed the following commands:
+./riak-admin status
+Node is not running!
+./riak ping
+Node 'riak@10.0.60.208' not responding to pings.
+./riak attach
+Node is not running!
+
+However, ps and top showed the process running.
+ps output:
+1003     31807  1.0  8.7 172080 132584 pts/1   Rsl+ Jun22  28:53     
+/home/DMitchell/riak2/riak/rel/riak/erts-5.7.5/bin/beam -K true -A 64 -- -root 
+/home/DMitchell/riak2/riak/rel/riak -progname riak -- -home /home/DMitchell -- 
+-boot /home/DMitchell/riak2/riak/rel/riak/releases/0.14.2/riak -embedded 
+-config /home/DMitchell/riak2/riak/rel/riak/etc/app.config -name 
+riak@10.0.60.208 -setcookie riak -- console
+
+top output:
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+31807 DMitchel  25   0  168m 129m 4360 R 99.3  8.7  30:46.08 beam
+
+Below is a sample output from iostat -x when beam was in the crashed state:
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+         100.00    0.00    0.00    0.00    0.00    0.00
+
+Device:         rrqm/s   wrqm/s     r/s     w/s   rsec/s   wsec/s avgrq-sz 
+avgqu-sz   await  svctm  %util
+hda               0.00     1.82    0.00    0.61     0.00    19.45    32.00     
+0.00    2.00   2.00   0.12
+
+Note the 100 percent CPU usage for the beam process.  I terminated the beam 
+process with: kill -s TERM 31807.  Then, I restarted riak.
+
+There were no errors on the other two nodes, except for:
+=ERROR REPORT==== 24-Jun-2011::12:29:36 ===
+** Node 'riak@10.0.60.208' not responding **
+** Removing (timedout) connection **
+
+The MapReduce job is not that complex.  I am using a key filter.  The map phase 
+looks for an &quot;LoadRange&quot;, and creates a new variable (e.g., &quot;Load1&quot;, if there 
+is a match.  The reduce phase counts the matches.
+{
+                &quot;inputs&quot; : {
+                                &quot;bucket&quot; : &quot;names-51013&quot;,
+                                &quot;key_filters&quot; : [[&quot;starts_with&quot;, &quot;22204-1-3&quot;]]
+                },
+                &quot;query&quot; : [{
+                                                &quot;map&quot; : {
+                                                                &quot;keep&quot; : false,
+                                                                &quot;language&quot; : 
+&quot;javascript&quot;,
+                                                                &quot;arg&quot; : null,
+                                                                &quot;source&quot; : 
+&quot;function(value,keyData,arg){var 
+data=Riak.mapValuesJson(value)[0];if(data.LoadRange&amp;&amp;data.LoadRange==1) 
+return[{\&quot;data.Load1\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==2) 
+return[{\&quot;data.Load2\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==3) 
+return[{\&quot;data.Load3\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==4) 
+return[{\&quot;data.Load4\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==5) 
+return[{\&quot;data.Load5\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==6) 
+return[{\&quot;data.Load6\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==7) 
+return[{\&quot;data.Load7\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==8) 
+return[{\&quot;data.Load8\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==9) 
+return[{\&quot;data.Load9\&quot;:1}];else if(data.LoadRange&amp;&amp;data.LoadRange==10) 
+return[{\&quot;data.Load10\&quot;:1}];else return[];}&quot;
+                                                }
+                                }, {
+                                                &quot;reduce&quot; : {
+                                                                &quot;keep&quot; : true,
+                                                                &quot;language&quot; : 
+&quot;javascript&quot;,
+                                                                &quot;arg&quot; : null,
+                                                                &quot;source&quot; : 
+&quot;function(v){var s={};for(var i in v){for(var n in v[i]){if(n in s) 
+s[n]+=v[i][n];else s[n]=v[i][n];}} return[s];}&quot;
+                                                }
+                                }
+                ],
+                &quot;timeout&quot; : 30000000
+}
+
+
+The MapReduce timeout seem to be happening at different places, e.g., during 
+the map phase, during the reduce phase and during the key filtering phase 
+(#Fun&lt;riak_kv_mapred_json.jsonify_not_found.1&gt;,[],[]}).
+
+See the URL below for the complete sasl-error.log right before a recent beam 
+crash.
+<a  rel="nofollow" href="https://gist.github.com/1045386">https://gist.github.com/1045386</a>
+
+Can anyone shed any light on why I am getting timeouts and crashes?
+
+David
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03813.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03816">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03816">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03818.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Mysterious JavaScript MapReduce crashes and timeouts with 0...</span> <span class="sender italic">David Mitchell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03818.html">Re: Mysterious JavaScript MapReduce crashes and timeou...</a></span> <span class="sender italic">Mathias Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03821.html">RE: Mysterious JavaScript MapReduce crashes and ti...</a></span> <span class="sender italic">David Mitchell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03860.html">Re: Mysterious JavaScript MapReduce crashes an...</a></span> <span class="sender italic">Mathias Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03867.html">RE: Mysterious JavaScript MapReduce crashe...</a></span> <span class="sender italic">David Mitchell</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03817.html">Re: Mysterious JavaScript MapReduce crashes and timeou...</a></span> <span class="sender italic">David Mitchell</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Mysterious JavaScript MapReduce crashes and timeouts with 0.14.2">
+<input type="hidden" name="msgid" value="66F8E97DB33472418E78DD25BB4E281D0FA1534C51@MBX.IXIHQ.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03816.html">
+<input type="submit" value=" David Mitchell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Mysterious+JavaScript+MapReduce+crashes+and+timeouts+with+0.14.2%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03813.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03818.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">66F8E97DB33472418E78DD25BB4E281D0FA1534C51@MBX.IXIHQ.com</li>
+</ul>
+</div>
+</body>
+</html>

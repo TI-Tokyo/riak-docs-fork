@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Social network data / Graph properties of Riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05683" id="c">
+<link rel="index" href="maillist.html#05683" id="i">
+<link rel="prev" href="msg05671.html" id="p">
+<link rel="next" href="msg05658.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05683.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Social+network+data+%5C%2F+Graph+properties+of+Riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Social network data / Graph properties of Riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeroen+van+Dijk%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeroen van Dijk</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111119" rel="nofollow">Sat, 19 Nov 2011 12:30:00 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Fri, Nov 18, 2011 at 9:28 PM, Aphyr &lt;ap...@aphyr.com&gt; wrote:
+
+&gt; On 11/18/2011 11:50 AM, Jeroen van Dijk wrote:
+&gt;
+&gt;&gt; And I also didn't include the riak user list for this reply:
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Fri, Nov 18, 2011 at 7:04 PM, Aphyr &lt;ap...@aphyr.com
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:ap...@aphyr.com">mailto:ap...@aphyr.com</a>&gt;&gt; wrote:
+&gt;&gt;
+&gt;&gt;    Depending on whether you think it will be more efficient to store
+&gt;&gt;    the graph or its dual, consider each node a vertex and write the
+&gt;&gt;    adjacency list as a part of its data. You can store whatever
+&gt;&gt;    weights, etc. you need on the edges there.
+&gt;&gt;
+&gt;&gt;    Don't use links; they're just a thin layer on top of mapreduce, so
+&gt;&gt;    there's really not much advantage to using them. Links are subject
+&gt;&gt;    to the HTTP header lengths too, so storing more than a thousand on
+&gt;&gt;    any node is likely to break down.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Thank you for this suggestion. Also thanks for the warning on not using
+&gt;&gt; links for what I want. So you are saying each vertex will have a list of
+&gt;&gt; the other vertices that it is connected to? And save each edge as
+&gt;&gt; key/value pair? Or are you saying each vertex should embed the adjacent
+&gt;&gt; edges, meaning duplicated edges?
+&gt;&gt;
+&gt;
+&gt; Depends on whether you want to store the graph or its dual. If you're
+&gt; dealing with a sparse DAG where the input keys are likely to be vertex
+&gt; names, the natural choice is to store each vertex as an object in riak and
+&gt; each outbound edge from it as a property of that vertex.
+&gt;
+&gt; /users/user1:
+&gt;  owns: [item1, ...]
+&gt;  follows: [user2, ...]
+&gt;
+&gt; Of course, this method doesn't work well when you need to follow edges in
+&gt; reverse, so you may need to store the reciprocal relationship on target
+&gt; nodes:
+&gt;
+&gt; /items/item1:
+&gt;  owner: user1,
+&gt;
+&gt; /users/user2:
+&gt;  followed-by: [user1, ...]
+&gt;
+&gt; and so forth. That requires two writes and potentially lossy conflict
+&gt; resolution strategies, e.g. a follows b but b is not followed by a. We use
+&gt; processes which walk the graph continuously and enforce relationship
+&gt; integrity as they go. We have a social graph of several hundred million
+&gt; objects stored this way in Riak, and it works reasonably well.
+&gt;
+&gt; Naturally, you'll want to choose an encoding which is fast and
+&gt; space-efficient for a large dataset. Depending on your needs, JSON,
+&gt; protocol buffers, or fixed-length record entries might be work well.
+&gt;
+&gt; Also consider the depth of traversals you'll need to perform. It may be
+&gt; best to use a graph database like neo4j for deep traversals. You could
+&gt; store your primary dataset in Riak and replicate only the important graph
+&gt; information to a graph DB via post-commit hooks. That would solve the
+&gt; reciprocal consistency problem (at the cost of replication lag), and could
+&gt; reduce the amount of data you need to put into the graph DB.
+&gt;
+&gt; Given that Linkedin has this problem, you might look into their tools as
+&gt; well.
+&gt;
+&gt;
+Thanks for your detailed reply. I'm very happy to hear that you are using
+Riak for a similar use case. My dataset will be of a similar magnitude. It
+will be a graph where edges have properties (e.g. user 1 rates item x with
+2 stars), but I think saving these edges as separate objects will work.
+I'll use post-commit hooks to get all this data in a graph database
+(probably Neo4j) and use this for graph traversing.</pre><pre>
+
+A side question Kyle, how do you make sure the graph database is always
+(eventually) consistent with Riak? E.g. how do you correct potential errors
+during the post-commit hooks for instance? And say this database gets
+corrupt how do you recover this graph database and get it in sync again
+with Riak?
+
+Cheers,
+Jeroen
+
+
+
+
+
+
+
+
+
+&gt; --Kyle
+&gt;
+&gt;  I'm guessing you mean the former, because that makes sense to me. So you
+&gt;&gt; would save a graph assuming users and items like the following key/value
+&gt;&gt; pairs:
+&gt;&gt;
+&gt;&gt; //Vertices
+&gt;&gt; user1: properties
+&gt;&gt; user2: properties
+&gt;&gt; item1: properties
+&gt;&gt;
+&gt;&gt; //Edges
+&gt;&gt; user1-owns-item1: properties
+&gt;&gt; user1-follows-user2: properties
+&gt;&gt; user2-follows-user1: properties
+&gt;&gt;
+&gt;&gt; To be able to find the available edges, each vertices would need to
+&gt;&gt; reference the keys of the edges. Is this what you mean?
+&gt;&gt;
+&gt;&gt; If so, one more question about a possible problem. Say I have an item
+&gt;&gt; with many many outgoing edges, so it needs to embed these references.
+&gt;&gt; This would make it really costly to fetch this item from Riak I assume,
+&gt;&gt; even if you are only interested in normal properties. Wouldn't that mean
+&gt;&gt; you will have to save the properties seperately from the edges
+&gt;&gt; references to it feasible?
+&gt;&gt;
+&gt;&gt; Did I grasp what you were proposing Kyle?
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; Jeroen
+&gt;&gt;
+&gt;&gt;    --Kyle
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;    On 11/18/2011 07:38 AM, Jeroen van Dijk wrote:
+&gt;&gt;
+&gt;&gt;        Hi all,
+&gt;&gt;
+&gt;&gt;        I'm currently evaluating whether Riak would fit as the main
+&gt;&gt;        storage of
+&gt;&gt;        my current project, a social network. The reason I am attracted
+&gt;&gt;        to Riak
+&gt;&gt;        and less to a Graph database as main storage is that I want the
+&gt;&gt; easy
+&gt;&gt;        horizontal scalability and multi-site replication that Riak
+&gt;&gt;        provides.
+&gt;&gt;        The only thing I doubt is whether the key-value/link model of
+&gt;&gt;        Riak is
+&gt;&gt;        flexible enough to be able to store a property graph
+&gt;&gt;        (<a  rel="nofollow" href="http://arxiv.org/abs/1006.__**2361">http://arxiv.org/abs/1006.__**2361</a>&lt;<a  rel="nofollow" href="http://arxiv.org/abs/1006.__2361">http://arxiv.org/abs/1006.__2361</a>&gt;
+&gt;&gt;        &lt;<a  rel="nofollow" href="http://arxiv.org/abs/1006.**2361">http://arxiv.org/abs/1006.**2361</a> &lt;<a  rel="nofollow" href="http://arxiv.org/abs/1006.2361">http://arxiv.org/abs/1006.2361</a>&gt;&gt;).
+&gt;&gt; I am not asking whether the
+&gt;&gt;
+&gt;&gt;        querying/graph traversing will be easy; I'm probably going to use a
+&gt;&gt;        graph database or a Pregel like platform (e.g.
+&gt;&gt;        <a  rel="nofollow" href="http://www.goldenorbos.org/">http://www.goldenorbos.org/</a>) for that problem. I guess my main
+&gt;&gt;        question
+&gt;&gt;        is whether it would be easy/feasible to import and export a
+&gt;&gt; property
+&gt;&gt;        graph in and from Riak? Has someone done this before?
+&gt;&gt;
+&gt;&gt;        I realize the above might be too specific, so here are two more
+&gt;&gt;        questions that I think are relevant:
+&gt;&gt;
+&gt;&gt;        - Is there a known upper limit of links that can be stored (I
+&gt;&gt;        don't want
+&gt;&gt;        to add them all at once so 1000 per request is fine,
+&gt;&gt;        <a  rel="nofollow" href="http://lists.basho.com/__**pipermail/riak-users_lists.__**">http://lists.basho.com/__**pipermail/riak-users_lists.__**</a>
+&gt;&gt; basho.com/2010-March/000786.__**html&lt;<a  rel="nofollow" href="http://lists.basho.com/__pipermail/riak-users_lists.__basho.com/2010-March/000786.__html">http://lists.basho.com/__pipermail/riak-users_lists.__basho.com/2010-March/000786.__html</a>&gt;
+&gt;&gt;        &lt;<a  rel="nofollow" href="http://lists.basho.com/**pipermail/riak-users_lists.**">http://lists.basho.com/**pipermail/riak-users_lists.**</a>
+&gt;&gt; basho.com/2010-March/000786.**html&lt;<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2010-March/000786.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2010-March/000786.html</a>&gt;
+&gt;&gt; &gt;)
+&gt;&gt;
+&gt;&gt;        - Is there a way to add meta data to links (edges)? E.g. weigths
+&gt;&gt; and
+&gt;&gt;        other attributes.
+&gt;&gt;
+&gt;&gt;        Any other ideas or advise are also highly appreciated.
+&gt;&gt;
+&gt;&gt;        Cheers,
+&gt;&gt;
+&gt;&gt;        Jeroen
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;        ______________________________**___________________
+&gt;&gt;        riak-users mailing list
+&gt;&gt;        riak-users@lists.basho.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:riak-users@lists.**basho.com">mailto:riak-users@lists.**basho.com</a>&lt;riak-users@lists.basho.com&gt;
+&gt;&gt; &gt;
+&gt;&gt;        <a  rel="nofollow" href="http://lists.basho.com/__**mailman/listinfo/riak-users___**">http://lists.basho.com/__**mailman/listinfo/riak-users___**</a>
+&gt;&gt; lists.basho.com&lt;<a  rel="nofollow" href="http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com">http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com</a>&gt;
+&gt;&gt;        &lt;<a  rel="nofollow" href="http://lists.basho.com/**mailman/listinfo/riak-users_**">http://lists.basho.com/**mailman/listinfo/riak-users_**</a>
+&gt;&gt; lists.basho.com&lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt;&gt; &gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; ______________________________**_________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/**mailman/listinfo/riak-users_**lists.basho.com">http://lists.basho.com/**mailman/listinfo/riak-users_**lists.basho.com</a>&lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05671.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05683">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05683">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05658.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05657.html">Social network data / Graph properties of Riak</a></span> <span class="sender italic">Jeroen van Dijk</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05659.html">Re: Social network data / Graph properties of Riak</a></span> <span class="sender italic">Eric Moritz</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05669.html">RE: Social network data / Graph properties of Ria...</a></span> <span class="sender italic">Jeroen van Dijk</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05667.html">Re: Social network data / Graph properties of Riak</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05670.html">RE: Social network data / Graph properties of Ria...</a></span> <span class="sender italic">Jeroen van Dijk</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05671.html">Re: Social network data / Graph properties of...</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Social network data / Graph propertie...</span> <span class="sender italic">Jeroen van Dijk</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Social network data / Graph properties of Riak">
+<input type="hidden" name="msgid" value="CAL_ASHpRh4j_1xZ_Tqc5fcivt3Un+LDxuA4GWGGRbm=5xURJbA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05683.html">
+<input type="submit" value=" Jeroen van Dijk ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Social+network+data+%5C%2F+Graph+properties+of+Riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05671.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05658.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAL_ASHpRh4j_1xZ_Tqc5fcivt3Un+LDxuA4GWGGRbm=5xURJbA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

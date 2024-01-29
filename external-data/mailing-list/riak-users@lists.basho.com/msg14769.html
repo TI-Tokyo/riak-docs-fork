@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Search VS other query systems</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14769" id="c">
+<link rel="index" href="maillist.html#14769" id="i">
+<link rel="prev" href="msg14763.html" id="p">
+<link rel="next" href="msg14774.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14769.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Search+VS+other+query+systems%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Search VS other query systems</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sargun+Dhillon%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sargun Dhillon</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140820" rel="nofollow">Wed, 20 Aug 2014 19:29:49 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I second John's opinions. Generally, I would have have one key which
+is the secondary index, being an observe-remove OR-Set (or a relevant
+type for your application, be a register, g-set, or a plain old
+OR-set) pointing to back to the keys. Unfortunately, this mechanism
+can become quite unwieldy in when you have a term with a high
+cardinality.</pre><pre>
+
+Now, moving onto the Twitter use case, you care a lot about the speed.
+With this strategy, if you're doing this from a client where you (1)
+read the 2i OR-set, and then (2) read the keys, that can be expensive
+as you have to read the entire 2i value back to the Riak client before
+reading any of the keys. An example, the hashtag #beiber, would have
+high cardinality would result in a super large value, and reading that
+back over the network would be less than awesome. Also, having to pass
+this value around disterl would be poor. Fortunately, the folks at
+Basho have invented riak_pipe. Riak_pipe is a method to allow running
+the read locally on the node the 2i lives on, and then streaming reads
+for all of those keys to the nodes that they live on, and then all
+back to the reader. It's actually the framework that Riak MR uses
+under the hood.
+Talk: <a  rel="nofollow" href="https://vimeo.com/53910999">https://vimeo.com/53910999</a> (there might be newer ones as well)
+Docs: <a  rel="nofollow" href="https://github.com/basho/riak_pipe">https://github.com/basho/riak_pipe</a>
+
+Also, to deal with high-cardinality values, there are a variety of
+work arounds, such as sharding the secondary index to some known set
+of keys, and doing a read across these list of keys. Also, you can
+postfix a nonce to the 2i-key, and ensure that they all end up on one
+node (custom hashing function), or a subset of nodes, and utilize
+leveldb's key iteration over a range to handle this.
+
+The general patterns I like for 2i atop Riak is to specialize Peter
+Bailis, from UC Berkeley's work for RAMPs. If you build the framework
+for this, it'll be all sorts of useful in the future. One warning is
+that there is no easy way to garbage collect in Riak today.
+Paper: <a  rel="nofollow" href="http://www.bailis.org/papers/ramp-sigmod2014.pdf">http://www.bailis.org/papers/ramp-sigmod2014.pdf</a>
+Talk: <a  rel="nofollow" href="https://www.youtube.com/watch?v=_rAdJkAbGls">https://www.youtube.com/watch?v=_rAdJkAbGls</a>
+
+None of these methods gracefully handle range queries. You can do
+clever things with your 2i to handle this, but it the Twitter use case
+wouldn't need ranges.
+
+On Wed, Aug 20, 2014 at 12:28 PM, John Daily &lt;jda...@basho.com&gt; wrote:
+&gt; I don't have benchmarks to discuss query performance for different tools at
+&gt; different sizes, but I'd like to point out that the ultimate search tool for
+&gt; Riak is to not search at all.
+&gt;
+&gt; Riak Search, 2i, MapReduce are all capable tools, but they don't scale
+&gt; nearly as well as straight key/value requests, and it is often possible to
+&gt; model your data around the latter.
+&gt;
+&gt; I covered this in <a  rel="nofollow" href="https://basho.com/riak-development-anti-patterns/">https://basho.com/riak-development-anti-patterns/</a> and the
+&gt; next edition of Eric Redmond's Little Riak Book (<a  rel="nofollow" href="http://littleriakbook.com">http://littleriakbook.com</a>)
+&gt; will have more discussion on the topic, but if at all possible, create your
+&gt; query results as reports as the data is ingested, instead of attempting to
+&gt; find it all later.
+&gt;
+&gt; -John
+&gt;
+&gt;
+&gt;
+&gt; On Wed, Aug 20, 2014 at 3:21 PM, Alex De la rosa &lt;alex.rosa....@gmail.com&gt;
+&gt; wrote:
+&gt;&gt;
+&gt;&gt; Any thoughts about this?
+&gt;&gt;
+&gt;&gt; One thing it worries me about Riak Search is that if one index has several
+&gt;&gt; millions of object to search for maybe it becomes slow? 2i might be faster
+&gt;&gt; then?
+&gt;&gt;
+&gt;&gt; Thanks!
+&gt;&gt; Alex
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Tue, Aug 19, 2014 at 8:47 AM, Alex De la rosa &lt;alex.rosa....@gmail.com&gt;
+&gt;&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Hi there,
+&gt;&gt;&gt;
+&gt;&gt;&gt; I had been seeing lately Riak Search as an ultimate way to query Riak...
+&gt;&gt;&gt; and it seems recommended to use over MapReduce and even 2i... said so...
+&gt;&gt;&gt; should we try to always use Riak Search over the other systems?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Is there any situation in which MapReduce could be a better approach than
+&gt;&gt;&gt; Riak Search?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Same goes for 2i... I believe 2i is an optimal approach if you just want
+&gt;&gt;&gt; keys and know very well what are you looking for, but out of that, should
+&gt;&gt;&gt; Riak Search try to replace all 2i uses?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Practical example: If you are twitter and want to get twits for the
+&gt;&gt;&gt; hashtag #Riak, what would be the best approach? 2i? Riak Search? MapReduce?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thanks!
+&gt;&gt;&gt; Alex
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14763.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14769">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14769">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14774.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14730.html">Riak Search VS other query systems</a></span> <span class="sender italic">Alex De la rosa</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14762.html">Re: Riak Search VS other query systems</a></span> <span class="sender italic">Alex De la rosa</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14763.html">Re: Riak Search VS other query systems</a></span> <span class="sender italic">John Daily</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Search VS other query systems</span> <span class="sender italic">Sargun Dhillon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14774.html">Re: Riak Search VS other query systems</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14775.html">Re: Riak Search VS other query sys...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Search VS other query systems">
+<input type="hidden" name="msgid" value="CAMp4zn_+XfOhpW0vc=H0XSy9oJ+zP-R9X+XkOPY7jYBxpVXOBg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14769.html">
+<input type="submit" value=" Sargun Dhillon ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Search+VS+other+query+systems%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14763.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14774.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMp4zn_+XfOhpW0vc=H0XSy9oJ+zP-R9X+XkOPY7jYBxpVXOBg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

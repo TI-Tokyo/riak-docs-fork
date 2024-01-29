@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Advice for storing records in Riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10868" id="c">
+<link rel="index" href="maillist.html#10868" id="i">
+<link rel="prev" href="msg10865.html" id="p">
+<link rel="next" href="msg10880.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10868.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Advice+for+storing+records+in+Riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Advice for storing records in Riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christian+Dahlqvist%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christian Dahlqvist</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130412" rel="nofollow">Fri, 12 Apr 2013 02:50:53 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Toby,
+
+Inserting lots of small records in Riak and querying the full data set via 
+MapReduce is definitely not the best way to go around things. As Alexander 
+points out, easy object is stored with metadata, which adds some overhead and 
+Riak MapReduce tends to work best when run over smaller data sets.</pre><pre>
+
+In order to help and come up with suggestions on how to model your data 
+efficiently I would need to better understand the nature of the data you want 
+to store in Riak, the access patterns and how you need to be able to query it.
+
+- What does the data represent? Are there any natural way to group records? 
+- How frequently are records inserted? How often are they updated? Do you 
+delete records or keep them forever?
+- How do you need to be able to query this data? What is the logical task of 
+the MapReduce job you described? 
+- In what different ways is the data aggregated?
+
+Best regards,
+
+Christian
+
+
+
+On 12 Apr 2013, at 09:11, Alexander Sicular &lt;sicul...@gmail.com&gt; wrote:
+
+&gt; Inline -Alexander.
+&gt; 
+&gt; On Apr 12, 2013 3:11 AM, &quot;Toby Corkindale&quot; 
+&gt; &lt;toby.corkind...@strategicdata.com.au&gt; wrote:
+&gt; &gt;
+&gt; &gt; Hi,
+&gt; &gt; I wondered if I could get a little advice on good practices for storing my 
+&gt; &gt; records in Riak, such that they perform reasonably well in map-reduce 
+&gt; &gt; queries?
+&gt; &gt;
+&gt; &gt; I have a little over 200 million records, currently stored in a regular SQL 
+&gt; &gt; database. I'm expecting this dataset to continue to grow, of course.
+&gt; &gt; Each record is reasonably small - some get up to couple of hundred bytes, 
+&gt; &gt; but most are smaller, and consist of around a dozen numeric fields and some 
+&gt; &gt; small alphanumeric identifier fields.
+&gt; &gt;
+&gt; &gt; My initial trial of importing these into Riak were to take each database 
+&gt; &gt; row and convert it into a small JSON of key=&gt;value pairs.
+&gt; &gt;
+&gt; &gt; I'm find two issues with this though.
+&gt; &gt; 1) It takes a really long time to import everything into Riak, at least 
+&gt; &gt; compared to ingesting into PostgreSQL. (I'm using Riak's HTTP API)
+&gt; 
+&gt; Proto buff interface is faster,  less overhead. ..
+&gt; 
+&gt; &gt; 2) An initial trial of some map-reduce queries was significantly slower 
+&gt; &gt; than I was hoping; I suspect this is because of my data structure though.
+&gt; &gt; My initial map phase was iterating over a high percentage of the keys, 
+&gt; &gt; decoding the JSON, and then returning just one or two of the fields from 
+&gt; &gt; the JSON structure, which is maybe an inefficient way to go about things?
+&gt; Not the most efficient.  Everything is translated from erlang to JavaScript 
+&gt; and shipped over to the coordinating node.  MR over smaller sets,  accumulate 
+&gt; over some range like time or something native to your app.
+&gt; 
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; So I was wondering if there's a better way to be approaching the problem.. 
+&gt; &gt; I wondered about breaking up the records further, and storing individual 
+&gt; &gt; fields against keys, rather than the whole record as a JSON object.
+&gt; &gt;
+&gt; &gt; Eg. This was my initial method:
+&gt; &gt; Key: {id}:{recordtype}:{recordid}
+&gt; &gt; Value: { field1: &quot;foo&quot;, field2: &quot;bar&quot;, field3: &quot;baz&quot; }
+&gt; &gt;
+&gt; &gt; I wondered about this, creating one key for each field:
+&gt; &gt; {id}:{recordtype}:{recordid}:field1 ==&gt; &quot;foo&quot;
+&gt; &gt; {id}:{recordtype}:{recordid}:field2 ==&gt; &quot;bar&quot;
+&gt; &gt; {id}:{recordtype}:{recordid}:field3 ==&gt; &quot;baz&quot;
+&gt; &gt;
+&gt; 
+&gt; Don't do that.  There is a ~400b per key overhead in riak.
+&gt; 
+&gt; &gt; That would avoid the need for one of the map phases; but on the other hand, 
+&gt; &gt; now I'd be creating an order of magnitude more overall keys in the db.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; On the other hand, I wondered about going the other way, and grouping 
+&gt; &gt; records under one key. So instead of having keys 100, 101, 102 .. 109, I 
+&gt; &gt; would have one key 10x that contained a JSON structure with an array of 
+&gt; &gt; records.. (I don't know whether I store 10, 50 or 100 records per key)
+&gt; &gt;
+&gt; 
+&gt; I might batch depending on your access pattern and update pattern. If you 
+&gt; update values with any frequency it may not be worth it.  Riak has no in 
+&gt; place updates. 
+&gt; 
+&gt; &gt; This would speed up the time taken to ingest data to Riak, and reduce the 
+&gt; &gt; number of total queries made by the map phase.. but would increase the work 
+&gt; &gt; DONE in the map phase and add inefficiencies as sometimes only a few rows 
+&gt; &gt; of the set would actually be required for a given query.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; And the third consideration is that maybe I just need to scale up the 
+&gt; &gt; cluster size to have more machines. Currently it's running on a small 
+&gt; &gt; cluster of four nodes while trialling Riak. (And I'm comparing performance 
+&gt; &gt; with a single, but significantly more powerful, PostgreSQL node)
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; There's nothing to stop me trying out all these methods, but I thought I'd 
+&gt; &gt; poll the community for advice since no doubt implemented similar things 
+&gt; &gt; before and know what rough things may or may not work well.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Thanks,
+&gt; &gt; Toby
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10865.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10868">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10868">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10880.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10863.html">Advice for storing records in Riak</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10865.html">Re: Advice for storing records in Riak</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Advice for storing records in Riak</span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10880.html">Re: Advice for storing records in Riak</a></span> <span class="sender italic">Toby Corkindale</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Advice for storing records in Riak">
+<input type="hidden" name="msgid" value="75089F13-19C2-4955-A7F7-8A51B5F545AE@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10868.html">
+<input type="submit" value=" Christian Dahlqvist ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Advice+for+storing+records+in+Riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10865.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10880.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">75089F13-19C2-4955-A7F7-8A51B5F545AE@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

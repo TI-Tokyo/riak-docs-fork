@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Bug on riak-client 1.0.6 - Riak index property not serialized</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#08700" id="c">
+<link rel="index" href="mail4.html#08700" id="i">
+<link rel="prev" href="msg08698.html" id="p">
+<link rel="next" href="msg08723.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08700.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Bug+on+riak%5C-client+1.0.6+%5C-+Riak+index+property+not+serialized%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Bug on riak-client 1.0.6 - Riak index property not serialized</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120926" rel="nofollow">Wed, 26 Sep 2012 01:21:42 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Deepak,
+
+</pre><tt>  That's why in our company we have index annotations at method level, 
+</tt><tt>for us we agreed that an index is not really a POJO property but a 
+</tt><tt>pseudo/computed property, it was a waste for us to add a field just 
+</tt><tt>because an index, so we have our own branch of the Riak java client 
+</tt><tt>where the methods can be annotated as index, I requested this change 
+</tt><tt>before but something stopped it, I do believe indexes are kind of 
+</tt><tt>special and could go on method without need to wait for other 
+</tt><tt>annotations to behave the same:
+</tt><pre style="margin: 0em;"></pre><pre>
+
+Then you would just need:
+
+*@RiakIndex(name=&quot;something&quot;)**
+</pre><tt>**@JsonIgnore *// Optional if you want this index to behave like a 
+</tt><tt>pseudo property and not be serialized at all*
+</tt><pre style="margin: 0em;">
+*public int getSomething(){
+  return someCalculatedInteger;
+}
+
+Here is a link to our branch:
+
+*git clone <a  rel="nofollow" href="https://github.com/guidomedina/riak-java-client.git**">https://github.com/guidomedina/riak-java-client.git**</a>
+**git checkout temetra-riak-java-client*
+*mvn clean install*
+
+Then on target you will see riak-java-client-1.0.6t.jar
+
+Best regards,
+
+Guido
+
+On 26/09/12 07:10, Deepak Balasubramanyam wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>I see. All index annotations will need the @JsonProperty annotation to 
+</tt><tt>survive serialization then. I guess another side effect which will 
+</tt><tt>break backward compatibility will be experienced by map-reduce queries 
+</tt><tt>on any entity that contains these indexes. They will not return the 
+</tt><tt>indexed value either since the json value will no longer contain them. 
+</tt><tt>Unless of course you use @JsonProperty.
+</tt><pre style="margin: 0em;">
+
+Thanks for letting me know about the change.
+
+Deepak Bala
+
+</pre><tt>On Tue, Sep 25, 2012 at 9:04 PM, Brian Roach &lt;ro...@basho.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:ro...@basho.com">mailto:ro...@basho.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    This is not a bug, it's a feature ;) The fact that the index values
+    were were being serialized was actually not consistant with our other
+    annotated fields, so I made the decision to bring it in line and not
+    do so.
+
+    I actually highlighted the change in the CHANGELOG:
+
+    af12b6c - The default JSONConverter now supports multiple values via a
+    @RiakIndex annotated Set&lt;&gt; (Integer or String). Note this also brings
+    serialization/deserialization in line with our other annotaded fields
+    in that these values will not be present in the resulting JSON. To
+    override this behavior the Jackson @JsonProperty annotation can be
+    supplied
+
+    Thanks,
+    Brian Roach
+
+    On Tue, Sep 25, 2012 at 1:01 AM, Deepak Balasubramanyam
+    &lt;deepak.b...@gmail.com &lt;<a  rel="nofollow" href="mailto:deepak.b...@gmail.com">mailto:deepak.b...@gmail.com</a>&gt;&gt; wrote:
+    &gt; I switched to the java riak-client 1.0.6 to take it for a spin,
+    and several
+    &gt; test cases of mine failed. Upon further investigation I found
+    that any
+    &gt; member variable that contains the @RiakIndex annotation does not
+    serialize
+    &gt; into Riak anymore. You can reproduce the problem with the
+    following type
+    &gt;
+    &gt; @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+    &gt; public class MyType
+    &gt; {
+    &gt;     public static final String SOME_NAME_STR_REFERENCE = &quot;blah&quot;;
+    &gt;     @RiakKey
+    &gt;     private String myKey;
+    &gt;     @RiakIndex(name=SOME_NAME_STR_REFERENCE)
+    &gt;     private String indexedProp;
+    &gt; // Getters and setters go here
+    &gt; }
+    &gt;
+    &gt; Make a call to bucket.store(typeRef).execute() followed by a GET to
+    &gt; /riak/myBucket/myKey. The indexedProp element will be missing in
+    the json
+    &gt; for calls made on riak-client version 1.0.6 but will be
+    available when the
+    &gt; call is made from riak-client version 1.0.5.
+    &gt;
+    &gt; Thanks
+    &gt; Deepak Bala
+    &gt;
+    &gt; _______________________________________________
+    &gt; riak-users mailing list
+    &gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+    &gt;
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08698.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#08700">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#08700">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08723.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08688.html">Bug on riak-client 1.0.6 - Riak index property not ...</a></span> <span class="sender italic">Deepak Balasubramanyam</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08692.html">Re: Bug on riak-client 1.0.6 - Riak index prop...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08698.html">Re: Bug on riak-client 1.0.6 - Riak index ...</a></span> <span class="sender italic">Deepak Balasubramanyam</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Bug on riak-client 1.0.6 - Riak in...</span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08723.html">Re: Bug on riak-client 1.0.6 - Ria...</a></span> <span class="sender italic">Deepak Balasubramanyam</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Bug on riak-client 1.0.6 - Riak index property not serialized">
+<input type="hidden" name="msgid" value="5062BB0B.9070602@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08700.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Bug+on+riak%5C-client+1.0.6+%5C-+Riak+index+property+not+serialized%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08698.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08723.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5062BB0B.9070602@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

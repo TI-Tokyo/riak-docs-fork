@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak performance problems when LevelDB database grows beyond 16GB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08887" id="c">
+<link rel="index" href="maillist.html#08887" id="i">
+<link rel="prev" href="msg08881.html" id="p">
+<link rel="next" href="msg08893.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08887.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+performance+problems+when+LevelDB+database+grows+beyond+16GB%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak performance problems when LevelDB database grows beyond 16GB</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Evan+Vigil%5C-McClanahan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Evan Vigil-McClanahan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121011" rel="nofollow">Thu, 11 Oct 2012 13:37:10 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Can you attach the eleveldb portion of your app.config file?
+Configuration problems, especially max_open_files being too low, can
+often cause issues like this.</pre><pre>
+
+If it isn't sensitive, the whole app.config and vm.args files are also
+often helpful.
+
+On Thu, Oct 11, 2012 at 9:12 AM,  &lt;jan.evangeli...@seznam.cz&gt; wrote:
+&gt; Hello,
+&gt;
+&gt; I am writing a new application and I am testing it on a cluster with 4 Riak
+&gt; nodes (16 GM RAM, 2 x i3 3.4GHz - 2 cores).
+&gt;
+&gt; The application is tested with the expected load of 1000 requests/second,
+&gt; 90% of the requests cause a Riak read and  write of a new key. The problem
+&gt; is that the performance starts falling after 18-20 hours and one of the Riak
+&gt; nodes stops responding after 23-25 hours.
+&gt;
+&gt; (Key is cca 61 bytes long, data is just 3 timestamps converted to binary,
+&gt; and there is a secondary key containing an expiration time. There should be
+&gt; a mapred job to delete keys older than 24 hours, but it is turned off while
+&gt; researching the performance problem.)
+&gt;
+&gt; Logs on the other nodes show that the problematic node cannot be contacted:
+&gt;
+&gt; 2012-10-11 11:33:57.473 [error] &lt;0.908.0&gt; ** Node 'riak@172.16.0.2' not
+&gt; responding **
+&gt; ** Removing (timedout) connection **
+&gt;
+&gt; The problematic node itself does not respond to &quot;/usr/sbin/riak ping&quot;, but
+&gt; beam.smp is running and ALIVE messages are written regularly to the erlang
+&gt; log. There is nothing suspicious in logs on the node,  its error log is
+&gt; empty.
+&gt;
+&gt; The beam.smp consumes 20% memory and 50-100% of 1 CPU (the other 3 CPUs sit
+&gt; idle),  and the process has 267 open LevelDB files.
+&gt;
+&gt; The database sizes are:
+&gt;
+&gt; node1: 16249M, 281 files in 21 dirs (with 4 additional files like
+&gt; /home/riak/leveldb/0/lost/BLOCKS.bad); this is the problematic node
+&gt; node2: 16183M, 264 files in 16 dirs
+&gt; node3: 16664M, 264 files in 16 dirs
+&gt; node4: 16205M, 265 files in 16 dirs
+&gt;
+&gt; I tried to attach to the beam.smp process with Erlang, but it does not
+&gt; respond to net_adm:ping/1.
+&gt;
+&gt; I attached gdb to the process, and gdb shows that most of its 93 threads are
+&gt; idle (in ethr_event_wait), but 2 threads are in LevelDB code:
+&gt;
+&gt; Thread 24 (Thread 0x7f1a8ecc0700 (LWP 3912)):
+&gt; #0  0x00007f1a91f74d84 in pthread_cond_wait@@GLIBC_2.3.2 () from
+&gt; /lib/x86_64-linux-gnu/libpthread.so.0
+&gt; #1  0x00007f1a0ee0ae9d in leveldb::port::CondVar::Wait() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #2  0x00007f1a0ede3841 in leveldb::DBImpl::MakeRoomForWrite(bool) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #3  0x00007f1a0ede91ad in leveldb::DBImpl::Write(leveldb::WriteOptions
+&gt; const&amp;, leveldb::WriteBatch*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #4  0x00007f1a0eddeca4 in eleveldb_write () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #5  0x0000000000534c16 in process_main ()
+&gt; #6  0x00000000004987e3 in ?? ()
+&gt; #7  0x0000000000595320 in ?? ()
+&gt; #8  0x00007f1a91f70e9a in start_thread () from
+&gt; /lib/x86_64-linux-gnu/libpthread.so.0
+&gt; #9  0x00007f1a91a964bd in clone () from /lib/x86_64-linux-gnu/libc.so.6
+&gt; #10 0x0000000000000000 in ?? ()
+&gt;
+&gt; Thread 20 (Thread 0x7f19fc727700 (LWP 3967)):
+&gt; #0  0x00007f1a0ee05a67 in leveldb::crc32c::Extend(unsigned int, char const*,
+&gt; unsigned long) () from /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #1  0x00007f1a0ee012b9 in
+&gt; leveldb::TableBuilder::WriteRawBlock(leveldb::Slice const&amp;,
+&gt; leveldb::CompressionType, leveldb::BlockHandle*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #2  0x00007f1a0ee01444 in
+&gt; leveldb::TableBuilder::WriteBlock(leveldb::BlockBuilder*,
+&gt; leveldb::BlockHandle*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #3  0x00007f1a0ee015e4 in leveldb::TableBuilder::Flush() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #4  0x00007f1a0ee0178b in leveldb::TableBuilder::Add(leveldb::Slice const&amp;,
+&gt; leveldb::Slice const&amp;) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #5  0x00007f1a0ede7cad in
+&gt; leveldb::DBImpl::DoCompactionWork(leveldb::DBImpl::CompactionState*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #6  0x00007f1a0ede8456 in leveldb::DBImpl::BackgroundCompaction() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #7  0x00007f1a0ede9038 in leveldb::DBImpl::BackgroundCall() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #8  0x00007f1a0ee06c1e in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #9  0x00007f1a91f70e9a in start_thread () from
+&gt; /lib/x86_64-linux-gnu/libpthread.so.0
+&gt; #10 0x00007f1a91a964bd in clone () from /lib/x86_64-linux-gnu/libc.so.6
+&gt; #11 0x0000000000000000 in ?? ()
+&gt;
+&gt; When I looked at thread 20 in the process again, the stack has shown some
+&gt; Snappy compressions, and many later inspections have shown call to
+&gt; fdatasync(2),
+&gt; which was replaced by some more compaction work. Thread 24 still sits in
+&gt; leveldb::DBImpl::MakeRoomForWrite.
+&gt;
+&gt; Thread 20 samples:
+&gt; #0  0x00007f1a0ee0ed6d in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #1  0x00007f1a0ee0edb3 in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #2  0x00007f1a0ee0f9dc in snappy::internal::CompressFragment(char const*,
+&gt; unsigned long, char*, unsigned short*, int) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #3  0x00007f1a0ee10dc1 in snappy::Compress(snappy::Source*, snappy::Sink*)
+&gt; () from /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #4  0x00007f1a0ee1115a in snappy::RawCompress(char const*, unsigned long,
+&gt; char*, unsigned long*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #5  0x00007f1a0ee014eb in
+&gt; leveldb::TableBuilder::WriteBlock(leveldb::BlockBuilder*,
+&gt; leveldb::BlockHandle*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #6  0x00007f1a0ee015e4 in leveldb::TableBuilder::Flush() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #7  0x00007f1a0ee0178b in leveldb::TableBuilder::Add(leveldb::Slice const&amp;,
+&gt; leveldb::Slice const&amp;) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #8  0x00007f1a0ede7cad in
+&gt; leveldb::DBImpl::DoCompactionWork(leveldb::DBImpl::CompactionState*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #9  0x00007f1a0ede8456 in leveldb::DBImpl::BackgroundCompaction() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #10 0x00007f1a0ede9038 in leveldb::DBImpl::BackgroundCall() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #11 0x00007f1a0ee06c1e in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #12 0x00007f1a91f70e9a in start_thread () from
+&gt; /lib/x86_64-linux-gnu/libpthread.so.0
+&gt; #13 0x00007f1a91a964bd in clone () from /lib/x86_64-linux-gnu/libc.so.6
+&gt; #14 0x0000000000000000 in ?? ()
+&gt;
+&gt; #0  0x00007f1a91a8fa5d in fdatasync () from /lib/x86_64-linux-gnu/libc.so.6
+&gt; #1  0x00007f1a0ee08d64 in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #2  0x00007f1a0ede3357 in
+&gt; leveldb::DBImpl::FinishCompactionOutputFile(leveldb::DBImpl::CompactionState*,
+&gt; leveldb::Iterator*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #3  0x00007f1a0ede7e6e in
+&gt; leveldb::DBImpl::DoCompactionWork(leveldb::DBImpl::CompactionState*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #4  0x00007f1a0ede8456 in leveldb::DBImpl::BackgroundCompaction() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #5  0x00007f1a0ede9038 in leveldb::DBImpl::BackgroundCall() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #6  0x00007f1a0ee06c1e in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #7  0x00007f1a91f70e9a in start_thread () from
+&gt; /lib/x86_64-linux-gnu/libpthread.so.0
+&gt; #8  0x00007f1a91a964bd in clone () from /lib/x86_64-linux-gnu/libc.so.6
+&gt; #9  0x0000000000000000 in ?? ()
+&gt;
+&gt; #0  0x00007f1a0ee05765 in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #1  0x00007f1a0ee0b6da in
+&gt; leveldb::InternalKeyComparator::Compare(leveldb::Slice const&amp;,
+&gt; leveldb::Slice const&amp;) const () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #2  0x00007f1a0ee00218 in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #3  0x00007f1a0ee006aa in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #4  0x00007f1a0ede7ccd in
+&gt; leveldb::DBImpl::DoCompactionWork(leveldb::DBImpl::CompactionState*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #5  0x00007f1a0ede8456 in leveldb::DBImpl::BackgroundCompaction() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #6  0x00007f1a0ede9038 in leveldb::DBImpl::BackgroundCall() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #7  0x00007f1a0ee06c1e in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #8  0x00007f1a91f70e9a in start_thread () from
+&gt; /lib/x86_64-linux-gnu/libpthread.so.0
+&gt; #9  0x00007f1a91a964bd in clone () from /lib/x86_64-linux-gnu/libc.so.6
+&gt; #10 0x0000000000000000 in ?? ()
+&gt;
+&gt; #0  0x00007f1a0eb61dcb in std::string::_M_mutate(unsigned long, unsigned
+&gt; long, unsigned long) () from /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+&gt; #1  0x00007f1a0eb61e1c in std::string::_M_replace_safe(unsigned long,
+&gt; unsigned long, char const*, unsigned long) () from
+&gt; /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+&gt; #2  0x00007f1a0ee03559 in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #3  0x00007f1a0ee037bd in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #4  0x00007f1a0ee00680 in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #5  0x00007f1a0ede7ccd in
+&gt; leveldb::DBImpl::DoCompactionWork(leveldb::DBImpl::CompactionState*) () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #6  0x00007f1a0ede8456 in leveldb::DBImpl::BackgroundCompaction() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #7  0x00007f1a0ede9038 in leveldb::DBImpl::BackgroundCall() () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #8  0x00007f1a0ee06c1e in ?? () from
+&gt; /usr/lib/riak/lib/eleveldb-1.2.2p5/priv/eleveldb.so
+&gt; #9  0x00007f1a91f70e9a in start_thread () from
+&gt; /lib/x86_64-linux-gnu/libpthread.so.0
+&gt; #10 0x00007f1a91a964bd in clone () from /lib/x86_64-linux-gnu/libc.so.6
+&gt; #11 0x0000000000000000 in ?? ()
+&gt;
+&gt; Software used:
+&gt;
+&gt; OS: Ubuntu 12.04 LTS, amd64
+&gt; Riak: riak_1.2.1rc2, installed from the Basho-provided deb package
+&gt; client accesses Riak via riak-erlang-client 1.2.1
+&gt;
+&gt; Any hints?
+&gt;
+&gt; Thanks, Jan
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08881.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08887">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08887">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08893.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08881.html">Riak performance problems when LevelDB database grow...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak performance problems when LevelDB data...</span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08893.html">Re: Re: Riak performance problems when Leve...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08894.html">Re: Re: Riak performance problems when ...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08924.html">Re: Re: Re: Riak performance proble...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08927.html">Re: Riak performance problems ...</a></span> <span class="sender italic">Eli Janssen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08930.html">Re: Re: Riak performance p...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08948.html">Re: Riak performance problems when ...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08969.html">Re: Riak performance problems ...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08959.html">Re: Riak performance problems when LevelDB data...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08970.html">Re: Riak performance problems when LevelDB ...</a></span> <span class="sender italic">István</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg09003.html">Re: Riak performance problems when LevelDB data...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak performance problems when LevelDB database grows beyond 16GB">
+<input type="hidden" name="msgid" value="CAN9Z=zgTm34U9o1mDFaAoPcHTYKfiHhpG+5uvyUX_ivHBexw8w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08887.html">
+<input type="submit" value=" Evan Vigil-McClanahan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+performance+problems+when+LevelDB+database+grows+beyond+16GB%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08881.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08893.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAN9Z=zgTm34U9o1mDFaAoPcHTYKfiHhpG+5uvyUX_ivHBexw8w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

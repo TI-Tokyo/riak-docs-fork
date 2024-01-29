@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Help on bucket quorums</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14407" id="c">
+<link rel="index" href="maillist.html#14407" id="i">
+<link rel="prev" href="msg14406.html" id="p">
+<link rel="next" href="msg14409.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14407.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Help+on+bucket+quorums%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Help on bucket quorums</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alex+De+la+rosa%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alex De la rosa</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140628" rel="nofollow">Sat, 28 Jun 2014 13:35:27 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Sean,
+
+Thank you very much for your explanation :) looks much clearer now.</pre><pre>
+
+So... is not viable to set anything to 0 as it would make no sense and
+fail, and also is not appropriate to set anything to the same value as
+&quot;n_value&quot; (in this case 3) as there would be false negatives... so the
+adjustments should be between 1 and 2 (the default)... meaning that we can
+only increase its speed a bit setting some value to 1 (r = 1 if we want to
+read fast, w = 1 if we want to write fast)
+
+For what I see, makes no much sense to change PR and PW... and DW only if
+we really really really want strong consistency. Leaving again just the
+real need to set &quot;r&quot; and &quot;w&quot; if we want to speed up any of the processes.
+
+Am I right?
+
+Cheers,
+Alex
+
+
+On Sat, Jun 28, 2014 at 8:41 PM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+
+&gt;
+&gt; On Sat, Jun 28, 2014 at 4:55 AM, Alex De la rosa &lt;alex.rosa....@gmail.com&gt;
+&gt; wrote:
+&gt;
+&gt;&gt; Hi there,
+&gt;&gt;
+&gt;&gt; Can somebody help me understand a bit better the bucket quorums? I will
+&gt;&gt; use the Python API to write code examples:
+&gt;&gt;
+&gt;&gt; Imagine we are building a web app like twitter, and we want fast read
+&gt;&gt; (although not need to be consistent) and safe writings, this R/W
+&gt;&gt; combination is appropriate?
+&gt;&gt;
+&gt;&gt; bucket = client.bucket('twits')
+&gt;&gt;
+&gt;&gt; bucket.r = 1
+&gt;&gt; bucket.w = 3
+&gt;&gt;
+&gt;&gt; # OR
+&gt;&gt;
+&gt;&gt; bucket.set_property('r', 1)
+&gt;&gt; bucket.set_property('w', 3)
+&gt;&gt;
+&gt;&gt; Which method is better to use? or are just exactly the same?
+&gt;&gt;
+&gt;&gt;
+&gt; The pseudo-properties in the first example are exactly the same as the
+&gt; set_property() calls in the second, just a convenience. Generally I
+&gt; wouldn't recommend W=3 because it will tend to create false negatives under
+&gt; heavy load, W=2 (the default) should be sufficient. Keep in mind that R=1
+&gt; with notfound_ok = true (the default) can tend to result in false negative
+&gt; responses as well.
+&gt;
+&gt;
+&gt;&gt; Imagine that in this new case, we want to focus on writing fast (normally
+&gt;&gt; we will write more &quot;twits&quot; than read them)... which would be the most
+&gt;&gt; appropriate/suggested quorums?
+&gt;&gt;
+&gt;&gt; Also, what's really the difference between &quot;r&quot; and &quot;pr&quot;? what is a
+&gt;&gt; &quot;primary replica&quot;?
+&gt;&gt;
+&gt;&gt;
+&gt; Primaries are the replicas (nodes) that are the canonical owners the data,
+&gt; but Riak will let you read and write even if they are not available. If
+&gt; they are not available, fallback replicas (non-owner nodes) will take over
+&gt; in their place. Setting PR or PW &gt; 0 will result in failures if that many
+&gt; primaries are not available (the node is down or partitioned from the node
+&gt; that receives the request).
+&gt;
+&gt;
+&gt;&gt; If i set up bucket.w = 1, it will still do the 3 copies (n_val) in the
+&gt;&gt; background but will reply &quot;true&quot; once 1 copy is saved, right?
+&gt;&gt;
+&gt;&gt;
+&gt; Yes. Keep in mind W is a fast-path response, i.e. &quot;I received the request
+&gt; to write&quot;, whereas DW is a &quot;I saved the key to the storage engine&quot;. There
+&gt; is no practical reason for DW ever to be 0, in fact I think it is
+&gt; disallowed (or silently upgraded to 1).
+&gt;
+&gt;
+&gt;&gt; Thanks,
+&gt;&gt; Alex
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Software Engineer
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14406.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14407">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14407">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14409.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14400.html">Help on bucket quorums</a></span> <span class="sender italic">Alex De la rosa</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14403.html">Re: Help on bucket quorums</a></span> <span class="sender italic">Brett Hazen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg14404.html">Re: Help on bucket quorums</a></span> <span class="sender italic">John Daily</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14405.html">Re: Help on bucket quorums</a></span> <span class="sender italic">Alex De la rosa</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg14406.html">Re: Help on bucket quorums</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Help on bucket quorums</span> <span class="sender italic">Alex De la rosa</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14409.html">Re: Help on bucket quorums</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Help on bucket quorums">
+<input type="hidden" name="msgid" value="CAPphDGqwOND8Tpg=jVPdp9NSu2u3o+bTznoSiEiD42T2dR836w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14407.html">
+<input type="submit" value=" Alex De la rosa ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Help+on+bucket+quorums%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14406.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14409.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAPphDGqwOND8Tpg=jVPdp9NSu2u3o+bTznoSiEiD42T2dR836w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

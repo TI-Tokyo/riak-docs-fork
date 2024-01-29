@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak performance problems when LevelDB database grows beyond 16GB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd3.html#09003" id="c">
+<link rel="index" href="mail2.html#09003" id="i">
+<link rel="prev" href="msg08970.html" id="p">
+<link rel="next" href="msg09017.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09003.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+performance+problems+when+LevelDB+database+grows+beyond+16GB%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak performance problems when LevelDB database grows beyond 16GB</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121022" rel="nofollow">Mon, 22 Oct 2012 09:20:31 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Jan,
+
+I apologize for the delayed response.</pre><pre>
+
+1.  Did you realize that the &quot;log_jan.txt&quot; file from #1 below documented a hard 
+disk failure?  You mentioned a failed drive once.  I am not sure if this is the 
+same drive.
+
+
+2.  The &quot;sse4_2&quot; tells me that your Intel cpu supports hardware CRC32c 
+calculation.  This feature is not useful to you at this moment (unless you want 
+to pull the mv-hardware-crc branch from basho/leveldb).  It will bring some 
+performance improvements to you in the next release IF we do not decide that 
+your problems are hard disk performance limited.
+
+
+3.  This just confirmed for me that the app.config is not accidentally blowing 
+your physical memory.  The app.config file you posted suggested this was not 
+the case, but I wanted to verify.
+
+You also discuss a basho_bench failure.  Is this the same test run as the 
+log_jan.txt file?  The hard drives had their first failure at:
+
+2012/10/18-02:08:44.136238 7f8297fff700 Compaction error: Corruption: corrupted 
+compressed block contents
+
+And things go really bad at:
+
+2012/10/18-06:10:37.657072 7f829effd700 Moving corrupted block to 
+lost/BLOCKS.bad (size 1647)
+
+
+4.  I was looking to see if your data was compressing well.  The answer it that 
+it is.  You are achieving 2 to 2.6x compression ratio.  Since you are concerned 
+about throughput, I was verifying that the time leveldb spends on block 
+compression is worthwhile for you (it is).
+
+
+The next question from me is whether the drive / disk array problems are your 
+only problem at this point.  The data in log_jan.txt looks ok until the 
+failures start.  I am willing to work more, but I need to better understand 
+your next level of problems.
+
+Matthew
+
+
+On Oct 19, 2012, at 7:49 AM, &lt;jan.evangeli...@seznam.cz&gt; 
+&lt;jan.evangeli...@seznam.cz&gt; wrote:
+
+&gt; Hi Matthew,
+&gt; 
+&gt; big thanks for responding. I see that you are the main committer to Basho's 
+&gt; leveldb code. :-)
+&gt; 
+&gt;&gt; 1.  Execute the following on one of the servers:
+&gt;&gt; sort /home/riak/leveldb/*/LOG* &gt;log_jan.txt
+&gt; 
+&gt; See the attached file log_jan.txt.gz. It is from the stalled Riak node.
+&gt; 
+&gt;&gt; 2.  Execute the following on one of the servers:
+&gt;&gt;  grep -i flags /proc/cpuinfo
+&gt; 
+&gt; flags         : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov 
+&gt; pat 
+&gt; pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm 
+&gt; constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc 
+&gt; aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr 
+&gt; pdcm pcid sse4_1 sse4_2 popcnt tsc_deadline_timer xsave avx lahf_lm arat epb 
+&gt; xsaveopt pln pts dtherm tpr_shadow vnmi flexpriority ept vpid
+&gt; 
+&gt;&gt; 3.  On a running server that is processing data, execute:
+&gt;&gt; grep -i swap /proc/meminfo
+&gt; 
+&gt; I will restart the test and report back when it stalls again. In the meantime,
+&gt;  am sending you yesterday's zabbix graph showing memory usage on the node 
+&gt; (attached file ZabbixMemory.png). The time when the node stopped responding is
+&gt; logged as:
+&gt; 
+&gt; 2012-10-18 08:28:47.537 [error]  ** Node 'riak@172.16.0.6' not responding **
+&gt; 
+&gt; I am also attaching the corresponding Basho bench output of the test. The test
+&gt; was started on Oct 17 16:38 with an empty database, and it was run on a plain
+&gt; ext4 partition (no RAID).
+&gt; 
+&gt;&gt; 4.  Pick a server, then one directory in /home/riak/leveldb.  Select 3 of 
+&gt; the largest *.sst files.  Tar/gzip those and email back.
+&gt; 
+&gt; I will send them in the next mail. I can also put the entire database 
+&gt; somewhere for you for download, if you need it.
+&gt; 
+&gt; Thanks, Jan&lt;log_jan.txt.gz&gt;&lt;ZabbixMemory.png&gt;&lt;4Riak_2K_2.1RC2_noraid.png&gt;
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08970.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd3.html#09003">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#09003">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09017.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08887.html">Re: Riak performance problems when LevelDB database ...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08893.html">Re: Re: Riak performance problems when LevelDB ...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08894.html">Re: Re: Riak performance problems when Leve...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08924.html">Re: Re: Re: Riak performance problems w...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08927.html">Re: Riak performance problems when ...</a></span> <span class="sender italic">Eli Janssen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08930.html">Re: Re: Riak performance probl...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08948.html">Re: Riak performance problems when Leve...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08969.html">Re: Riak performance problems when ...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08959.html">Re: Riak performance problems when LevelDB database ...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08970.html">Re: Riak performance problems when LevelDB data...</a></span> <span class="sender italic">István</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak performance problems when LevelDB database ...</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09017.html">Re: Riak performance problems when LevelDB data...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li class="icons-email"><span class="subject"><a href="msg09361.html">Re: Re: Riak performance problems when LevelDB ...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09362.html">Re: Riak performance problems when LevelDB ...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09369.html">Re: Re: Riak performance problems when ...</a></span> <span class="sender italic">Jan.Evangelista</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak performance problems when LevelDB database grows beyond 16GB">
+<input type="hidden" name="msgid" value="F20DD0FA-8D86-49C9-AA8C-18C92B600E45@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09003.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+performance+problems+when+LevelDB+database+grows+beyond+16GB%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08970.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09017.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">F20DD0FA-8D86-49C9-AA8C-18C92B600E45@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

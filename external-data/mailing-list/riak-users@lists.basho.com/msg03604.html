@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Correct way to use pbc/mapreduce to do multiget where keys and	bucket names are binary values?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#03604" id="c">
+<link rel="index" href="maillist.html#03604" id="i">
+<link rel="prev" href="msg03594.html" id="p">
+<link rel="next" href="msg03697.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03604.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Correct+way+to+use+pbc%5C%2Fmapreduce+to+do+multiget+where+keys+and%09bucket+names+are+binary+values%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Correct way to use pbc/mapreduce to do multiget where keys and	bucket names are binary values?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jacques%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jacques</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110607" rel="nofollow">Tue, 07 Jun 2011 18:13:17 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I've been working on this.  I have it working with an anonymous javascript
+function.  I was hoping to move it to using the &quot;map_object_value&quot; built-in
+erlang function.  However, when I attempt to use this function, I get
+failures if any of my keys don't exist.  Is there a way to construct my map
+phase so that it gracefully handles not founds and just returns what it
+finds?</pre><pre>
+
+Also, using this function, is there a way to return the bucket and key
+names?  Or can one assume the response order is identical to the order of
+inputs?
+
+I have my current constructions below.
+
+Thanks for any help.
+
+Jacques
+
+
+
+*Working Function Definition (including not founds)*
+  private static final OtpErlangAtom FUNCTION_TYPE = new
+OtpErlangAtom(&quot;jsanon&quot;);
+  private static final OtpErlangBinary FUNCTION_VALUE = new
+OtpErlangBinary(&quot;function(v){ return [v]; }&quot;.getBytes());
+  private static final OtpErlangTuple MAP_REDUCE_FUNCTION = new
+OtpErlangTuple(new OtpErlangObject[] { FUNCTION_TYPE, FUNCTION_VALUE });
+
+*Non-working Function Definition (works fine if all input list exists.
+ Fails on not founds.)*
+  private static final OtpErlangAtom FUNCTION_TYPE = new
+OtpErlangAtom(&quot;modfun&quot;);
+  private static final OtpErlangAtom FUNCTION_MODULE = new
+OtpErlangAtom(&quot;riak_kv_mapreduce&quot;);
+  private static final OtpErlangAtom FUNCTION_NAME = new
+OtpErlangAtom(&quot;map_object_value&quot;);
+  private static final OtpErlangTuple MAP_REDUCE_FUNCTION = new
+OtpErlangTuple(new OtpErlangObject[] { FUNCTION_TYPE, FUNCTION_MODULE,
+FUNCTION_NAME });
+
+
+*Final construction of Query object for submission (using either of above).*
+  private static final OtpErlangTuple MAP_REDUCE_PHASE = new
+OtpErlangTuple(new OtpErlangObject[]{ATOM_MAP, MAP_REDUCE_FUNCTION,
+ATOM_NONE, KEEP_TRUE});
+  private static final OtpErlangList MAP_REDUCE_PHASES = new
+OtpErlangList(new OtpErlangTuple[]{MAP_REDUCE_PHASE});
+  private static final OtpErlangTuple FULL_QUERY = new OtpErlangTuple(new
+OtpErlangObject[] { ATOM_QUERY, MAP_REDUCE_PHASES });
+
+
+
+On Tue, Jun 7, 2011 at 7:57 AM, Russell Brown &lt;russell.br...@me.com&gt; wrote:
+
+&gt;
+&gt; On 7 Jun 2011, at 15:29, Jacques wrote:
+&gt;
+&gt; Have you had any success with reading the server response?
+&gt;
+&gt;
+&gt; Yes. Sorry I didn't post a reply.
+&gt;
+&gt; It was trivial (but fraught, see below), I just used the OtpInputStream to
+&gt; deserialize the byte array returned from pbc.MapReduceResponse.
+&gt;
+&gt; Like:
+&gt;
+&gt;  ByteString bs = resp.getContent();
+&gt;     OtpInputStream is = new OtpInputStream(bs.toByteArray());
+&gt;     OtpErlangObject result = is.read_any();
+&gt;     // and then all sorts of looping, sniffing types, unpacking etc
+&gt;
+&gt;
+&gt; Caveats:
+&gt;
+&gt; You have a pain unpacking any reasonably complex result.
+&gt; The ETF specification drops this doozy about &quot;strings&quot;:
+&gt; <a  rel="nofollow" href="http://www.erlang.org/doc/apps/erts/erl_ext_dist.html#id85596">http://www.erlang.org/doc/apps/erts/erl_ext_dist.html#id85596</a>&lt;<a  rel="nofollow" href="http://www.erlang.org/doc/apps/erts/erl_ext_dist.html">http://www.erlang.org/doc/apps/erts/erl_ext_dist.html</a>&gt;.
+&gt; My first test actually returned a list of [0,1,2,3...200] and Jinterface
+&gt; helpfully turned that into a string for me.
+&gt;
+&gt; That aside it is certainly feasible to use Jinterface to
+&gt; serialize/deserialize Map/Reduce jobs/results.
+&gt;
+&gt; Cheers
+&gt;
+&gt; Russell
+&gt;
+&gt;
+&gt; Thanks,
+&gt; Jacques
+&gt;
+&gt; On Sat, Jun 4, 2011 at 1:19 PM, Russell Brown &lt;russell.br...@me.com&gt;wrote:
+&gt;
+&gt;&gt;
+&gt;&gt; On 4 Jun 2011, at 18:22, Jacques wrote:
+&gt;&gt;
+&gt;&gt;  I like the sound of option 3 also. I'll have a look at it this weekend
+&gt;&gt;&gt; and get back to you.
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; Awesome!  Thanks.  If you can give me a point in the right direction
+&gt;&gt; regarding the correct typing approach and what not, I'm up for giving it a
+&gt;&gt; shot as well.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Ok, I have a half working hack. It isn't pretty 'cos the Jinterface API is
+&gt;&gt; verbose. I've hacked the pbc.MapReduceBuilder to encode the job as
+&gt;&gt; &quot;application/x-erlang-binary&quot; and submit that, but really this code should
+&gt;&gt; be in a separate class, maybe using the output from
+&gt;&gt; MapReduceBuilder.getJSON() as input. That way you can get the feature
+&gt;&gt; without patching the client.
+&gt;&gt;
+&gt;&gt; What I haven't done is decode the response from Riak yet. If you want  a
+&gt;&gt; pointer here is a gist of the (unclean) hack. It could use a lot of work,
+&gt;&gt; but it proves the concept:
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="https://gist.github.com/1008293">https://gist.github.com/1008293</a>
+&gt;&gt;
+&gt;&gt; The gist is just the diff so you can apply it as a patch
+&gt;&gt; to src/main/java/com/basho/riak/pbc/mapreduce/MapReduceBuilder.java if you
+&gt;&gt; want to play with it.
+&gt;&gt;
+&gt;&gt; You'll have to add Jinterface to your pom too.
+&gt;&gt;
+&gt;&gt;     &lt;!-- jinterface --&gt;
+&gt;&gt;     &lt;dependency&gt;
+&gt;&gt;  &lt;groupId&gt;org.erlang.otp&lt;/groupId&gt;
+&gt;&gt;  &lt;artifactId&gt;jinterface&lt;/artifactId&gt;
+&gt;&gt;  &lt;version&gt;1.5.4&lt;/version&gt;
+&gt;&gt;     &lt;/dependency&gt;
+&gt;&gt;
+&gt;&gt; I think it is best to put the result decoding outside the library too. I'm
+&gt;&gt; going to hack up a poc for that now, but I thought I'd post what I have thus
+&gt;&gt; far.
+&gt;&gt;
+&gt;&gt; Cheers
+&gt;&gt;
+&gt;&gt; Russell
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Thanks again,
+&gt;&gt; Jacques
+&gt;&gt;
+&gt;&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03594.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#03604">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03604">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03697.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03524.html">Correct way to use pbc/mapreduce to do multiget where keys a...</a></span> <span class="sender italic">Jacques</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03528.html">Re: Correct way to use pbc/mapreduce to do multiget whe...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03533.html">Re: Correct way to use pbc/mapreduce to do multiget...</a></span> <span class="sender italic">Jacques</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03540.html">Re: Correct way to use pbc/mapreduce to do mult...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03542.html">Re: Correct way to use pbc/mapreduce to do ...</a></span> <span class="sender italic">Jacques</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03550.html">Re: Correct way to use pbc/mapreduce t...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03556.html">Re: Correct way to use pbc/mapredu...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03559.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03593.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03594.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Correct way to use pbc/map...</span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03697.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03706.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03717.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03722.html">Re: Correct way to use pbc/map...</a></span> <span class="sender italic">Jacques</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Correct way to use pbc/mapreduce to do multiget where keys and	bucket names are binary values?">
+<input type="hidden" name="msgid" value="BANLkTikEuPWWGpsFLanuEwZO2Rgw252dcw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03604.html">
+<input type="submit" value=" Jacques ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Correct+way+to+use+pbc%5C%2Fmapreduce+to+do+multiget+where+keys+and%09bucket+names+are+binary+values%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03594.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03697.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTikEuPWWGpsFLanuEwZO2Rgw252dcw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

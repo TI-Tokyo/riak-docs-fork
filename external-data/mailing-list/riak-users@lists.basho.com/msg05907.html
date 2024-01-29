@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>standby cluster experiment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#05907" id="c">
+<link rel="index" href="mail4.html#05907" id="i">
+<link rel="prev" href="msg05903.html" id="p">
+<link rel="next" href="msg05997.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05907.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22standby+cluster+experiment%22&amp;o=newest" rel="nofollow"><span itemprop="name">standby cluster experiment</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+Loehrer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John Loehrer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111209" rel="nofollow">Fri, 09 Dec 2011 11:53:44 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I am currently evaluating riak. I'd like to be able to do periodic snapshots of 
+/var/lib/riak using LVM without stopping the node. According to a response on 
+this ML you should be able to copy the data directory for eleveldb backend. </pre><pre>
+
+<a  rel="nofollow" href="http://comments.gmane.org/gmane.comp.db.riak.user/5202">http://comments.gmane.org/gmane.comp.db.riak.user/5202</a>
+
+
+If I cycle through each node and do `riak stop` before taking a snapshot 
+everything works fine.
+But if I don't shut down the node before copying, I run into problems. Since I 
+access the http interface of the cluster through an haproxy load-balancer, once 
+the node turns off it is taken out of the pool almost immediately. But for a 
+millisecond or two before haproxy detects the node is down there might be some 
+bad responses. I can live with it and build better retries into my client, but 
+would rather avoid it if I can.
+
+More details below.
+
+Thanks for help!
+
+~ John Loehrer
+Gaia Interactive INC 
+
+
+DETAILS
+------------------
+I am playing with the idea of being able to bring up an standby cluster on an 
+alternate port on the same server pointing at an hourly snapshot of my 
+choosing, so that I can go back in time and review the data for recovery and 
+repair purposes.
+
+Here's what I have so far. 
+
+I have a small cluster of 4 nodes on centos 5.4 using the eleveldb backend so I 
+can take advantage of 2i (very cool feature, btw). 
+
+Steps for installation:
+
+
+----
+# install the riak rpm ...
+yum install riak-1.0.2-1.el5.x86_64.rpm 
+
+# get the ip address out of ifconfig
+IPADDR=`ifconfig eth0 | grep &quot;inet addr&quot; | awk '{ print $2 }' | awk 'BEGIN { 
+FS=&quot;:&quot; } { print $2 }'`
+
+# replace the loopback ip address in app.config and vm.args with the machine's 
+ip
+perl -pi -e s/127.0.0.1/$IPADDR/g /etc/riak/*
+
+# change the storage backend to eleveldb
+perl -pi -e 's/riak_kv_bitcask_backend/riak_kv_eleveldb_backend/g' 
+/etc/riak/app.config
+----
+
+We also mount an lvm partition at /var/lib/riak so we can snapshot the data 
+directory and back it up using rsnapshot once per hour. It uses hardlinks on 
+all the files from the initial snapshot of the data making for very efficient 
+storage. The append-only storage approach of the leveldb and bitcask backends 
+mean that once a file is closed it is immutable. rsnapshot only has to rsync 
+over files that have changed since the previous snapshot. Hourly snapshots of 
+take up only a little bit more storage space as the original even if i populate 
+the cluster with hundreds of millions of keys over the course of a 24 hour 
+period. The backup operation takes only a few seconds even for 50GB of data. 
+Now i can copy the data in the hourly snapshot directory to my standby riak 
+node, reip, and start up a standby cluster on the same machines. pointing to an 
+hourly snapshot and starting up the node takes only a second or two as well. 
+
+Steps for creating the standby node on the same machine:
+
+----
+
+# make the root directory of the standby node in the snapshots directory
+# so that we can hard-link to the hourly snapshots dir for a which restore.
+mkdir /.snapshots/riak-standby
+
+# create a handy symlink for the standby node root dir ... 
+# we'll use /riak-standby from now on.
+ln -s /.snapshots/riak-standby /riak-standby
+
+# create the default directory structure
+mkdir -p /riak-standby/bin/
+mkdir -p /riak-standby/etc/
+mkdir -p /riak-standby/data
+
+# we are going to use the same libraries, so symlink that in place.
+ln -s /usr/lib64/riak/* /riak-standby/
+
+# copy the app.config and vm.args files from the live node
+cp ~/etc/riak/app.config /riak-standby/etc/app.config
+cp ~/etc/riak/vm.args /riak-standby/etc/vm.args
+
+# now, we need to make the app.config file work for the standby node.
+# change /var/lib/riak to ./data
+perl -pi -e 's/\/var\/lib\/riak/.\/data/g' /riak-standby/etc/app.config
+
+# change /usr/sbin to ./bin
+perl -pi -e 's/\/usr\/sbin/.\/bin/g' /riak-standby/etc/app.config
+
+# change /usr/lib64/riak to ./lib
+perl -pi -e 's/\/usr\/lib64\/riak/.\/lib/g' /riak-standby/etc/app.config
+
+# change /var/log/riak to ./log
+perl -pi -e 's/\/var\/log\/riak/.\/log/g' /riak-standby/etc/app.config
+
+# change all the ports from 80** to 81**
+perl -pi -e 's/80/81/g' /riak-standby/etc/app.config
+
+# change the cookie and node names in vm.args
+perl -pi -e 's/riak@/stby@/g' /riak-standby/etc/app.config
+perl -pi -e 's/setcookie riak/setcookie stby/g' /riak-standby/etc/app.config
+
+# fix any permission issues.
+chown -R riak:riak /.snapshots/riak-standby
+
+The riak script in /riak-standby/bin/riak is almost the same as the default one 
+installed in /usr/sbin/riak:
+
+diff /usr/sbin/riak /riak-standby/bin/riak 
+3a4
+&gt; ## MANAGED BY PUPPET.
+5c6
+&lt; RUNNER_SCRIPT_DIR=/usr/sbin
+---
+&gt; RUNNER_SCRIPT_DIR=$(cd ${0%/*} &amp;&amp; pwd)
+8,11c9,12
+&lt; RUNNER_BASE_DIR=/usr/lib64/riak
+&lt; RUNNER_ETC_DIR=/etc/riak
+&lt; RUNNER_LOG_DIR=/var/log/riak
+&lt; PIPE_DIR=/var/run/riak/
+---
+&gt; RUNNER_BASE_DIR=${RUNNER_SCRIPT_DIR%/*}
+&gt; RUNNER_ETC_DIR=$RUNNER_BASE_DIR/etc
+&gt; RUNNER_LOG_DIR=$RUNNER_BASE_DIR/log
+&gt; PIPE_DIR=/tmp/$RUNNER_BASE_DIR/
+13c14
+&lt; PLATFORM_DATA_DIR=/var/lib/riak
+---
+&gt; PLATFORM_DATA_DIR=./data
+
+
+Same is true of the riak-admin script for the standby node:
+
+diff /usr/sbin/riak-admin /riak-standby/bin/riak-admin
+1a2
+&gt; ## MANAGED BY PUPPET.
+3c4
+&lt; RUNNER_SCRIPT_DIR=/usr/sbin
+---
+&gt; RUNNER_SCRIPT_DIR=$(cd ${0%/*} &amp;&amp; pwd)
+6,8c7,9
+&lt; RUNNER_BASE_DIR=/usr/lib64/riak
+&lt; RUNNER_ETC_DIR=/etc/riak
+&lt; RUNNER_LOG_DIR=/var/log/riak
+---
+&gt; RUNNER_BASE_DIR=${RUNNER_SCRIPT_DIR%/*}
+&gt; RUNNER_ETC_DIR=$RUNNER_BASE_DIR/etc
+&gt; RUNNER_LOG_DIR=$RUNNER_BASE_DIR/log
+
+
+After that, i expected to be able to just copy the data from snapshots, reip, 
+and start up my standby cluster. 
+
+
+rm -rf /riak-standby/data &amp;&amp; cp -al /.snapshots/hourly.0/riak/ 
+/riak-standby/data
+/riak-standby/bin/riak-admin reip riak@&lt;ip1&gt; stby@&lt;ip1&gt;
+/riak-standby/bin/riak-admin reip riak@&lt;ip2&gt; stby@&lt;ip2&gt;
+/riak-standby/bin/riak-admin reip riak@&lt;ip3&gt; stby@&lt;ip3&gt;
+/riak-standby/bin/riak-admin reip riak@&lt;ip4&gt; stby@&lt;ip4&gt;
+/riak-standby/bin/riak start
+
+
+But when I did, /riak-standby/bin/riak-admin ring_status showed the claimant as 
+riak@&lt;ip1&gt;  not stby@&lt;ip1&gt; as I expected. 
+
+Instead of doing reip, i did a binary safe replacement of riak@  with stby@:
+
+perl -pi -e 's/riak@/stby@/g' /riak-standby/data/ring/riak_core_ring.default.*
+
+When the nodes start up, the claimant looks correct and all the nodes join 
+together just fine. 
+
+But I still have the problem where the data directory fills up even though 
+nothing is being written actively to the standby cluster. I left it alone for 5 
+or 6 hours and it eventually filled up an entire TB of storage. 
+
+I noticed that riak-admin transfers starts off showing waiting to hand off 1 
+partition.
+
+ /riak-standby/bin/riak-admin transfers  
+'stby@&lt;ip1&gt;' waiting to handoff 1 partitions
+
+This usually clears up after a minute or so. Not sure it if is related.
+
+
+No clues in the console log. They all look something like:
+
+2011-12-09 19:10:33.371 [info] &lt;0.7.0&gt; Application bitcask started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.388 [info] &lt;0.7.0&gt; Application riak_kv started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.388 [info] &lt;0.7.0&gt; Application skerl started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.391 [info] &lt;0.7.0&gt; Application luwak started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.402 [info] &lt;0.7.0&gt; Application merge_index started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.405 [info] &lt;0.7.0&gt; Application riak_search started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.405 [info] &lt;0.7.0&gt; Application basho_stats started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.419 [info] &lt;0.7.0&gt; Application runtime_tools started on 
+node 'stby@192.168.3.94'
+2011-12-09 19:10:33.419 [info] &lt;0.7.0&gt; Application public_key started on node 
+'stby@192.168.3.94'
+2011-12-09 19:10:33.447 [info] &lt;0.7.0&gt; Application ssl started on node 
+'stby@192.168.3.94'
+
+
+
+If I turn off the node before taking the snapshot everything works fine.
+
+/etc/init.d/riak stop
+ .... do backup here
+/etc/init.d/riak start
+
+
+But the standby data directory starts filling up at the rate of about 500 MB a 
+second on some of the nodes if I do a copy without first stopping riak. I know 
+this is not a supported approach, but I was curious if someone might be able to 
+shed some light on what might be happening.
+
+
+Ideas?
+
+
+Thanks for any insight.
+
+
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05903.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#05907">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#05907">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05997.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">standby cluster experiment</span> <span class="sender italic">John Loehrer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05997.html">Re: standby cluster experiment</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06590.html">Re: standby cluster experiment</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06619.html">Re: standby cluster experiment</a></span> <span class="sender italic">Jeremy Raymond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06620.html">Re: standby cluster experiment</a></span> <span class="sender italic">David Smith</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05998.html">Re: standby cluster experiment</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06005.html">Re: standby cluster experiment</a></span> <span class="sender italic">John Loehrer</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="standby cluster experiment">
+<input type="hidden" name="msgid" value="6fa136ae-2b79-46fa-b88e-a24b6b820a00@zms-vm01.sv3.gaiaonline.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05907.html">
+<input type="submit" value=" John Loehrer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22standby+cluster+experiment%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05903.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05997.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">6fa136ae-2b79-46fa-b88e-a24b6b820a00@zms-vm01.sv3.gaiaonline.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: pagination over 2i indexes in java</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd3.html#13705" id="c">
+<link rel="index" href="mail3.html#13705" id="i">
+<link rel="prev" href="msg13704.html" id="p">
+<link rel="next" href="msg13640.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13705.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+pagination+over+2i+indexes+in+java%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: pagination over 2i indexes in java</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22joe+dude%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">joe dude</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140224" rel="nofollow">Mon, 24 Feb 2014 15:46:35 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sorry, here's the complete email:
+
+Ok, so the real issue i was running into was calling 
+StreamingOperation.getContinuation() *before* calling 
+StreamingOperation.getAll(). Once i reversed the calls it was fine.</pre><pre>
+
+But the real pain came from the above error. I upgraded to 1.4.8, and instead 
+of getting:
+
+Exception in thread &quot;main&quot; com.basho.riak.pbc.RiakError: 50693238
+
+I was getting:
+
+Exception in thread &quot;main&quot; com.basho.riak.pbc.RiakError: {db_write,&quot;IO error: 
+./data/leveldb/1164634117248063262943561351070788031288321245184/000013.log: 
+Cannot allocate memory&quot;}
+
+So that gave me something to work with. I tried all kinds of config changes 
+(since i'm still uncertain as to what exactly the above means), and eventually 
+i ended up with a corrupt db. Riak would not start with the app.config i was 
+using (even though it looked ok and &quot;riak chkconfig&quot; was fine). There were no 
+error messages in the logs, riak would just die a few seconds after startup.
+
+
+Once i wiped the db physically from disk (the /data/leveldb dir), then riak 
+started up fine with the current app.config AND your gist was working fine. I 
+was able to store elements w/o running into errors.
+
+Now, this is on a VM with 4G of ram and 10G of disk space; it was surprising to 
+get mem errors when i had nothing in the db whatsoever, and all i was trying to 
+do was store 50 small objects.
+
+The differences in my app.config from the stock one: n_val=1 (since i just have 
+one test node), i turned off anti_entropy, and i reduced ring_creation_size 
+from 64 to 16. It's unclear which of these (if not all) did the trick; but 
+things are working fine now.
+
+But this leads to several questions:
+
+- Why did i end up with a corrupt db?
+- Why does the default config not work on a single node with 4G ram and 10G of 
+disk space for just some simple development testing?
+- What happens when n_val=3 (the default) on a single node env?
+- Is it ok to store data when n_val=3, then change it to n_val=1, restart riak, 
+and not end up with corrupt data?
+
+
+
+On Monday, February 24, 2014 3:01 PM, joe dude &lt;mipito0...@yahoo.com&gt; wrote:
+ 
+Ok, so the real issue i was running into was calling 
+StreamingOperation.getContinuation() *before* calling 
+StreamingOperation.getAll(). Once i reversed the calls it was fine.
+
+But the real pain came from the above error. I upgraded to 1.4.8, and instead 
+of getting:
+
+
+
+
+On Sunday, February 16, 2014 12:31 PM, joe dude &lt;mipito0...@yahoo.com&gt; wrote:
+ 
+Ok, so now i'm starting to wonder if i have some sort of mis-install. I'm using 
+the java 1.4.4 client, with a 1.4.7 server. Now, the server is just one 
+instance running inside an ubuntu vmware vm on my windows box.This is what i 
+get when i run your gist above:
+
+STORING: key0
+STORING: key1
+STORING: key2
+STORING: key3
+STORING: key4
+STORING: key5
+Exception in thread &quot;main&quot; com.basho.riak.pbc.RiakError: 50693238
+at com.basho.riak.pbc.RiakConnection.receive(RiakConnection.java:125)
+at com.basho.riak.pbc.RiakClient.store(RiakClient.java:674)
+at com.basho.riak.client.raw.pbc.PBClientAdapter.store(PBClientAdapter.java:185)
+at com.basho.riak.client.raw.pbc.PBClientAdapter.store(PBClientAdapter.java:205)
+at IndexTester.java:27) // This is the store call in that initial for loop.
+
+I'll run this over and over, changing the bucket name, and it blows up at 
+different objects. Sometimes i only get 2 objects in there before it blows up, 
+and sometimes as many as 15, but so far never more than that. I can query riak 
+and see the buckets, see the keys, and see the objects that made it just fine.
+
+So first, what is that error telling me? 
+
+Second, nothing shows up in the riak logs at all. Note that i run the above on 
+both the windows host machine, and on the ubuntu instance, with the same 
+results.
+
+Perhaps there are issues running riak inside an ubuntu vmware vm?
+
+Thanks.
+
+
+
+
+On Wednesday, February 12, 2014 8:48 AM, Brian Roach &lt;ro...@basho.com&gt; wrote:
+ 
+Joe -
+
+The current Java client codebase it built in layers. The top-level
+user API uses an instance of the mid-level RawClient interface which
+passes it to the appropriate protocol-specific layer at the bottom.
+
+We are not able to reproduce what you are
+ describing using the 1.4.4
+version of the client. Doing a 2i query (with a range or a single
+value) and specifying a max number of results
+ returns the results
+requested and a continuation.
+
+Here's a gist using the RawClient:
+
+<a  rel="nofollow" href="https://gist.github.com/broach/99880915e8c71c53e9bb">https://gist.github.com/broach/99880915e8c71c53e9bb</a>
+
+If you have a test case that demonstrates the issue you're having and
+can post it as a gist in github (or a pastie, etc) we'll be happy to
+look at it.
+
+Thanks!
+- Roach
+
+On Tue, Feb 11, 2014 at 10:32 PM, joe dude &lt;mipito0...@yahoo.com&gt; wrote:
+&gt; Yeah, i looked at your code and it looks very similar to what i'm doing. The
+&gt;
+ difference is i'm just talking to the client
+ directly:
+&gt;
+&gt; StreamingOperation&lt;IndexEntry&gt; result = rawClient.fetchIndex(query);
+&gt;
+&gt; And rawClient is a &quot;PBClusterClient&quot;. Might that have something to do with
+&gt; it?
+&gt;
+&gt;
+&gt; On Tuesday, February 11, 2014 5:00 PM, Dave Rusek &lt;dru...@basho.com&gt; wrote:
+&gt; Joe,
+&gt;
+&gt; Sorry, I wanted to get that email out before I stepped out. The specific
+&gt; test I added is here:
+&gt;
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client/blob/1.4.x-develop/src/test/java/com/basho/riak/client/itest/ITestBucket.java#L280">https://github.com/basho/riak-java-client/blob/1.4.x-develop/src/test/java/com/basho/riak/client/itest/ITestBucket.java#L280</a>
+&gt;
+&gt; Does this represent your use case? If not, do you happen to have a failing
+&gt; test I could take a look at?
+&gt;
+&gt; Thanks!
+&gt;
+&gt; --
+&gt; Dave Rusek
+&gt; Software Engineer
+&gt; Basho Technologies
+&gt; @davidjrusek
+&gt;
+&gt; On February 11, 2014 at 5:33:57 PM, Dave Rusek (dru...@basho.com) wrote:
+&gt;
+&gt; Joe,
+&gt;
+&gt; I added an integration test to the 1.4.x-develop and the 1.4.4 branch of the
+&gt; client and tried them
+ against the latest 1.4 branch of Riak but was not able
+&gt; to reproduce your issue.
+&gt;
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client/tree/1.4.x-develop">https://github.com/basho/riak-java-client/tree/1.4.x-develop</a>
+&gt;
+&gt; --
+&gt; Dave Rusek
+&gt; Software Engineer
+&gt; Basho Technologies
+&gt; @davidjrusek
+&gt;
+&gt; On February 11, 2014 at 5:21:11 PM, Brian Roach (ro...@basho.com) wrote:
+&gt;
+&gt; ---------- Forwarded message ----------
+&gt; From: joe dude &lt;mipito0...@yahoo.com&gt;
+&gt; Date: Tue,
+ Feb 11, 2014 at 2:15 PM
+&gt; Subject: Re: pagination over 2i indexes in java
+&gt; To: Brian Roach &lt;ro...@basho.com&gt;
+&gt; Cc: &quot;riak-users@lists.basho.com&quot; &lt;riak-users@lists.basho.com&gt;
+&gt;
+&gt;
+&gt; I'm using 1.4.4, and creating a PBClusterClient.
+&gt;
+&gt; Thanks.
+&gt;
+&gt;
+&gt; On Tuesday, February 11, 2014 11:03 AM, Brian Roach &lt;ro...@basho.com&gt; wrote:
+&gt; Hi Joe -
+&gt;
+&gt; What version of the Riak Java client are you using, and which protocol
+&gt; (PB or HTTP)?
+&gt;
+&gt; Will take a look at it.
+&gt;
+&gt; Thanks!
+&gt; - Roach
+&gt;
+&gt; On Tue, Feb 11, 2014 at 11:50 AM, joe dude &lt;mipito0...@yahoo.com&gt; wrote:
+&gt;&gt; Hi, trying to figure out how to use the java client to do 2i index queries
+&gt;&gt; with pagination.
+&gt;&gt;
+&gt;&gt; I can issue the query with max_results and get back exactly the number
+&gt;&gt;
+ that
+&gt;&gt; i asked for, but the continuation value in the returned StreamingOperation
+&gt;&gt; object is null.
+&gt;&gt;
+&gt;&gt; In contrast, i get pagination to work just fine using the examples from:
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/dev/using/2i/">http://docs.basho.com/riak/latest/dev/using/2i/</a>
+&gt;&gt;
+&gt;&gt; I'm using:
+&gt;&gt;
+&gt;&gt; public StreamingOperation&lt;IndexEntry&gt; fetchIndex(IndexSpec indexSpec)
+&gt;&gt; throws IOException
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; It's as if i'm missing something when building IndexSpec, but not sure
+&gt;&gt; what.
+&gt;&gt;
+&gt;&gt; Thx.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+&gt;&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a></pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13704.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd3.html#13705">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail3.html#13705">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13640.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13636.html">pagination over 2i indexes in java</a></span> <span class="sender italic">joe dude</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13637.html">Re: pagination over 2i indexes in java</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13639.html">Re: pagination over 2i indexes in java</a></span> <span class="sender italic">joe dude</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13644.html">Re: pagination over 2i indexes in java</a></span> <span class="sender italic">Dave Rusek</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13645.html">Re: pagination over 2i indexes in java</a></span> <span class="sender italic">Dave Rusek</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13646.html">Re: pagination over 2i indexes in java</a></span> <span class="sender italic">joe dude</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13648.html">Re: pagination over 2i indexes in ja...</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13657.html">Re: pagination over 2i indexes i...</a></span> <span class="sender italic">joe dude</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13704.html">Re: pagination over 2i indexes i...</a></span> <span class="sender italic">joe dude</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: pagination over 2i indexes i...</span> <span class="sender italic">joe dude</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: pagination over 2i indexes in java">
+<input type="hidden" name="msgid" value="1393285487.14260.YahooMailNeo@web161606.mail.bf1.yahoo.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13705.html">
+<input type="submit" value=" joe dude ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+pagination+over+2i+indexes+in+java%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13704.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13640.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1393285487.14260.YahooMailNeo@web161606.mail.bf1.yahoo.com</li>
+</ul>
+</div>
+</body>
+</html>

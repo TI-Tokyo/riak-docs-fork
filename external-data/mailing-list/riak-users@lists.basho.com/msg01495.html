@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Slow performance using linkwalk, help wanted</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01495" id="c">
+<link rel="index" href="maillist.html#01495" id="i">
+<link rel="prev" href="msg01494.html" id="p">
+<link rel="next" href="msg01496.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01495.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+performance+using+linkwalk%2C+help+wanted%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Slow performance using linkwalk, help wanted</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jan+Buchholdt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jan Buchholdt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101108" rel="nofollow">Mon, 08 Nov 2010 12:44:38 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+ Kevin -
+
+</pre><tt>The allow_mult is set to false. I'm quite sure that we doesn't omit the 
+</tt><tt>old entries vclock in the update. A typical vclock for an Person entry 
+</tt><tt>that have been updated 363 times (adding 363 links) have a length of 581 
+</tt><tt>characters.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>We haven't changed the number of partitions in the cluster. 64 is the 
+</tt><tt>number. What would you recommend considering that we have about 5 
+</tt><tt>million people with 120 million documents?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Another information is that the first time I do a link walk (using curl) 
+</tt><tt>on a total idle cluster it takes 2.71 second for a person with 363 
+</tt><tt>documents. If I repeat the request it takes 319 milliseconds. I would 
+</tt><tt>expect that the performance would be almost the same.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If I run my performance test with 20 treads, that randomly pick a Person 
+</tt><tt>from 5 millions, the minimum time is 2.8s, average 6.7s, 90% 8.9s and 
+</tt><tt>max 12.4s.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Would changing the ring_creation_size changing the read time to values 
+</tt><tt>near your test performance? Is there any way to change the 
+</tt><tt>ring_creation_size whiteout destroying our data? It takes 1-2 days to 
+</tt><tt>bootstrap all our data. Our write is down to about 500 documents/second. 
+</tt><tt>A bit disappointing but good enough for our application.
+</tt><pre style="margin: 0em;">
+
+--
+Jan Buchholdt
+Software Pilot
+Trifork A/S
+Cell +45 50761121
+
+
+
+On 2010-11-08 17:51, Kevin Smith wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Jan -
+
+I've run some tests using a 8 GB, 4-core Linux box I had handy along with my MBP as a 
+client using riak-java-client over HTTP. For the test I configured a user record as you 
+described linked to 250 1KB entries in a separate bucket named &quot;documents&quot;. I 
+spun up 5 Java threads to simulate 5 concurrent users. Each thread performed the link 
+walk from the user to the documents 2500 times. From that I was able to observe the 
+follow performance (all times in milliseconds):
+
+Average runtime: 124
+99th percentile: 220
+99.5th percentile: 263
+99.9th percentile: 949
+
+The large difference between the 99.5th and 99.9th seems to correlate to the 
+beginning of the run so I think those times might reflect the time required for 
+Java's server JIT to fully kick in as well as GC times to stabilize.
+
+I was able to reduce performance by triggering &quot;vector clock explosion&quot;. Setting a 
+bucket's &quot;allow_mult&quot; value to true and then overwriting existing entries with new values 
+while omitting the old entries' vector clock information causes the object's vector clock data to 
+bloat which will impact read times. Is there any chance this is occurring in your application?
+
+Another possibility is the number of partitions in your cluster is not large 
+enough to provide good parallelization for your workload. What's the value of 
+ring_creation_size in your cluster's app.config? Riak will run with a default 
+ring size of 64 partitions if the entry isn't present.
+
+--Kevin
+
+On Nov 8, 2010, at 9:45 AM, Jan Buchholdt wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Kevin
+
+We are using HTTP, (have tried PB without any performance gain) and
+using riak-java-client as client lib.
+
+--
+Jan Buchholdt
+Software Pilot
+Trifork A/S
+Cell +45 50761121
+
+
+
+On 2010-11-08 14:20, Kevin Smith wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Jan -
+
+Which protocol (HTTP or protocol buffers) and client lib are you using?
+
+--Kevin
+On Nov 8, 2010, at 6:36 AM, Jan Buchholdt wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+We are evaluating Riak for a project, but having a hard time making it fast 
+enough for our need.
+
+Our model is very simple and looks like this:
+
+---------------------                         * ---------------------
+|       Person      | ------------------------&gt;    |   Document        |
+---------------------                           ---------------------
+
+We have a set of persons and each person can have many documents.
+
+Our typical queries are:
+
+Get an overview of all the persons documents. This query returns the person 
+along with a subset of data from all the persons documents.
+Get document by id.
+
+Our requirements are that these quires should be performed under in under 
+100millis when we have 10 requests per second or less load.
+
+The size of the data:
+A document is approximately 1 kb
+No data for a persons except the personidentifier
+Around 6 million persons.
+Each person has from from 0 to a couple of thousand documents.
+All in all we have 120 mio documents.
+Most persons don't have more than 1 to 10 documents, but then we have some few 
+&quot;heavy&quot; persons having 500 to 1000 documents.
+
+Riak setup:
+4 Nodes.
+Hardware configuration for each node:
+HP ProLiant DL360 G7
+18 gb ram
+SAS discs
+Intel(R) Xeon(R) CPU E5620 @ 2.40GHz Proc 1
+Solaris 10 update 9
+
+We use the default bitcask storage engine
+We replicate data to 3 machines when it is written.
+Reads are read from just one machine
+
+We tried implementing our datamodel using Riak links as described below:
+
+Persons are stored in a person bucket using their person identifier as key
+/person/
+{personid}
+Documents are saved in another bucket
+/document/
+{documented}
+At each person we store links to the persons documents.
+
+We are having problems with the query fetching all the documents for a person.  
+Reading all the documents for a person is done using a link walk. The linkwalk 
+start reading all the document keys using the personid. It then fetches all 
+documents.
+For persons with 1 - 5 documents the response times are often over 100 mills. And for the 
+&quot;heavy&quot; persons with many documents response times are several seconds. But we 
+are very new to Riak and are probably using a wrong approach.
+
+Below are our thoughts (having almost no experience with Riak):
+
+The chosen datamodel is good for writes. Writing a new document results in 3 
+operations against Riak. Writing the document using its id as key. Reading the 
+Person to get all the persons document links. Append the new document's key to 
+the persons links and write back the person.
+
+Reading, using linkwalk, is slow because it is expensive to fetch many 
+documents even though the linkwalk can read their keys right away by reading 
+the links for the person. Even though we have 4 nodes and linkwalks are 
+parallelized many documents need to be retrieved from one node. Having to fetch 
+for example 100 documents on one node (one disc) is expensive. We do not know 
+how data is stored but are afraid Riak is doing a lot of disk seeks.
+
+We are considering another more denormalized approach where we write all the documents 
+for a person in one &quot;blob&quot;. But then we are afraid our writes become slow, 
+because when adding a new document the blob must be read, the new document inserted and 
+the blob written back.
+
+We could really need some input. Is our assumptions wrong? (we have not yet dug 
+into the problems). Is there a good datamodel for our requirements? etc?.
+We haven't looked at Riak search at all. Maybe it could solve some of our 
+problems.
+
+
+
+--  --
+Jan Buchholdt
+Software Pilot
+Trifork A/S
+Cell +45 50761121
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01494.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01495">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01495">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01496.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01487.html">Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Jan Buchholdt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01489.html">Re: Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01490.html">Re: Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01491.html">Re: Slow performance using linkwalk, help wante...</a></span> <span class="sender italic">Jan Buchholdt</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01492.html">Re: Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Jan Buchholdt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01493.html">Re: Slow performance using linkwalk, help wante...</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01494.html">Re: Slow performance using linkwalk, help w...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Slow performance using linkwalk, help w...</span> <span class="sender italic">Jan Buchholdt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01496.html">Re: Slow performance using linkwalk, he...</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01502.html">Re: Slow performance using linkwal...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01512.html">Re: Slow performance using lin...</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01506.html">Re: Slow performance using...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01509.html">Re: Slow performance using...</a></span> <span class="sender italic">Jan Buchholdt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01513.html">Re: Slow performance using...</a></span> <span class="sender italic">Kevin Smith</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01497.html">Re: Slow performance using linkwalk, he...</a></span> <span class="sender italic">Ryan Tilder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01503.html">Re: Slow performance using linkwal...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01505.html">Re: Slow performance using lin...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01507.html">Re: Slow performance using...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Slow performance using linkwalk, help wanted">
+<input type="hidden" name="msgid" value="4CD86129.7010107@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01495.html">
+<input type="submit" value=" Jan Buchholdt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+performance+using+linkwalk%2C+help+wanted%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01494.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01496.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4CD86129.7010107@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

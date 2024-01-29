@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Avoiding false concurrency in Riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06680" id="c">
+<link rel="index" href="maillist.html#06680" id="i">
+<link rel="prev" href="msg06677.html" id="p">
+<link rel="next" href="msg06654.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06680.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Avoiding+false+concurrency+in+Riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Avoiding false concurrency in Riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Carlos+Baquero%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Carlos Baquero</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120222" rel="nofollow">Wed, 22 Feb 2012 02:50:08 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+Thanks Jon and congratulations for the new release,
+
+We will be available to fill any missing info and iterate on this. I the 
+meantime we will be progressing in the port to the new version, so that we get 
+a more precise idea of the implications.</pre><pre>
+
+Cheers,
+
+Carlos
+
+-----
+Carlos Baquero
+HASLab / INESC TEC,
+Universidade do Minho,
+Portugal
+
+c...@di.uminho.pt
+<a  rel="nofollow" href="http://gsd.di.uminho.pt/cbm">http://gsd.di.uminho.pt/cbm</a>
+
+
+
+
+On 22/02/2012, at 03:36, Jon Meredith wrote:
+
+&gt; Thanks Carlos. We've been busy with the 1.1.0 release. I'll digest all you've 
+&gt; written over the next couple days and get back to you. 
+&gt; 
+&gt; Cheers, Jon
+&gt; 
+&gt; On Mon, Feb 20, 2012 at 9:02 AM, Carlos Baquero &lt;c...@di.uminho.pt&gt; wrote:
+&gt; 
+&gt; Hi,
+&gt; 
+&gt; Me and my colleagues are particularly interested on causality management
+&gt; in optimistic replications settings, and since most other systems use simple
+&gt; Last Writer Wins approaches, Riak is a good testbed as it allows exposing
+&gt; concurrency to the clients, offering more options than a pure LWW interface.
+&gt; With Riak 1.0 there were several changes to the way that causality is
+&gt; tracked in the system. See <a  rel="nofollow" href="http://wiki.basho.com/Vector-Clocks.html">http://wiki.basho.com/Vector-Clocks.html</a>
+&gt; 
+&gt; The use of client ids in Riak's (pre 1.0) vector clocks, was recognized as a
+&gt; scalability problem. However, it had the advantage that any node could
+&gt; coordinate a Put request. Now in Riak (post 1.0), there is at most one entry
+&gt; in vector clocks per server node, as client ids are no longer used, but
+&gt; instead the server node id is used. One change that this required is that
+&gt; now requests must be forwarded to a node hosting the replica.
+&gt; 
+&gt; (Here we use the term vector clock, but version vector would be more
+&gt; appropriate in this data dependency context. More info in
+&gt; <a  rel="nofollow" href="http://haslab.wordpress.com/2011/07/08/version-vectors-are-not-vector-clocks/">http://haslab.wordpress.com/2011/07/08/version-vectors-are-not-vector-clocks/</a>)
+&gt; 
+&gt; Riak (post 1.0) is using an ingenious solution to register updates while
+&gt; having (at most) only one entry per replica node (a server node holding
+&gt; a replica).
+&gt; 
+&gt; From what we could check from the new code, we can construct this example:
+&gt; Suppose that we are in node A (of a two node system) and have a data item
+&gt; with value &quot;Mon&quot; and version (A:4,B:2). We can see this one sibling as
+&gt; (A:4,B:2)&quot;Mon&quot;.
+&gt; 
+&gt; If a client reads this context and value (in a Get) and writes some new
+&gt; value &quot;Tue&quot; to node A, the node can detect that it is evolving the current
+&gt; installed version (as it gets the current vector) and change the state to
+&gt; (again a single sibling) (A:5,B:2)&quot;Tue&quot;, where the local counter was
+&gt; advanced by 1. Now, if another (concurrent) client has also read
+&gt; (A:4,B:2)&quot;Mon&quot; and is now Putting &quot;Sun&quot;, the node detects concurrency (the
+&gt; vector clock from the client is no longer the current one) and now registers
+&gt; a second sibling, becoming (A:6,B:2)&quot;Tue&quot;&quot;Sun&quot;.
+&gt; 
+&gt; Now if we are lucky, some client will eventually read this two-sibling state
+&gt; and write back, say &quot;Sat&quot;, (with no other concurrent client interleaving)
+&gt; and one gets again a single sibling state (A:7,B:2)&quot;Sat&quot;.
+&gt; 
+&gt; Till now everything looks fine.
+&gt; 
+&gt; However other runs are problematic. Again we start with (A:4,B:2)&quot;Mon&quot; and
+&gt; evolve to (A:5,B:2)&quot;Tue&quot; as before. Suppose that a client X reads this
+&gt; state. Next, the system evolves as before and becomes (A:6,B:2)&quot;Tue&quot;&quot;Sun&quot;.
+&gt; Now if client X submits a put with &quot;Wed&quot;, Riak will see that (A:5,B:2) is
+&gt; not the current version (A:6,B:2) and thus registers a third sibling and
+&gt; evolves to (A:7,B:2)&quot;Tue&quot;&quot;Sun&quot;&quot;Wed&quot;.  However in terms of causality &quot;Wed&quot; is
+&gt; not created concurrently with &quot;Tue&quot;. In fact &quot;Wed&quot; succeeds &quot;Tue&quot; and the
+&gt; state should not have the three siblings depicted, but only two: &quot;Sun&quot; and
+&gt; &quot;Wed&quot;.
+&gt; 
+&gt; This effect can be described as the creation of false concurrency, and when
+&gt; frequent, it leads to an artificial growth in the state and more
+&gt; reconciliation work at the client level. It is the same undesired situation
+&gt; that can occur as a consequence of pruning.
+&gt; 
+&gt; One aspect that may be a bit scary is that in the current Riak the number of
+&gt; falsely concurrent siblings is not bounded. This is the case because a Put
+&gt; by client X only simplifies siblings if there was no other Put (for the same
+&gt; key, coordinated by the same server) since the time client X did the Get;
+&gt; otherwise the Put will add the value to the current set of siblings.  This
+&gt; means that for highly contended keys, specially if the get-calculate-put
+&gt; cycle takes some time, it may happen that the set of siblings keeps growing
+&gt; indefinitely (if clients keep looping on that get-calculate-put cycle). As
+&gt; in this case the number of siblings returned is increasing, it will make
+&gt; clients take more time to resolve conflicts and calculate the new value,
+&gt; increasing latency and reducing the chances for an opportunity that some
+&gt; client can perform a get-calculate-put with no interleaving from other
+&gt; client. I.e., we have a positive feedback loop, with undesirable consequences.
+&gt; 
+&gt; In the past year, myself and colleagues have been working in a mechanism
+&gt; that overcomes this. We had some talks with the Riak team and at the time
+&gt; one of the drawbacks was the need to re-direct all puts to a node that had
+&gt; the replica.  Now, Riak is much closer to the required architecture, so we
+&gt; would like to share more broadly our proposal and see if it can be useful to
+&gt; the community.  One of the changes needed is to tag each sibling with an
+&gt; appropriate vector (a &quot;special&quot; version vector with one additional entry)
+&gt; and not use a single vector for the whole set of siblings. Each sibling
+&gt; already has support for storing its own metadata, so the support is possibly
+&gt; already there.
+&gt; 
+&gt; We named the causality tracking mechanism as Dotted Version Vectors, and its
+&gt; most current description
+&gt; (<a  rel="nofollow" href="http://gsd.di.uminho.pt/members/vff/dotted-version-vectors-2012.pdf">http://gsd.di.uminho.pt/members/vff/dotted-version-vectors-2012.pdf</a>) also
+&gt; includes some performance evaluation in Riak 0.13, that this community might
+&gt; find interesting to check. Currently we are in the process of modifying the 
+&gt; current
+&gt; Riak implementation to use it, now a much simpler task.
+&gt; 
+&gt; The mechanism code is available in
+&gt; <a  rel="nofollow" href="https://github.com/ricardobcl/Dotted-Version-Vectors">https://github.com/ricardobcl/Dotted-Version-Vectors</a>
+&gt; 
+&gt; Although these &quot;advanced&quot; techniques add some additional complexity, we hope 
+&gt; that
+&gt; overcoming false concurrency will be a good tradeoff.
+&gt; 
+&gt; Regards,
+&gt; 
+&gt; The DVV team,
+&gt; 
+&gt; Carlos Baquero
+&gt; Nuno Preguiça
+&gt; Paulo Almeida
+&gt; Ricardo Gonçalves
+&gt; Victor Fonte
+&gt; 
+&gt; 
+&gt; -----
+&gt; Carlos Baquero
+&gt; HASLab / INESC TEC,
+&gt; Universidade do Minho,
+&gt; Portugal
+&gt; 
+&gt; c...@di.uminho.pt
+&gt; <a  rel="nofollow" href="http://gsd.di.uminho.pt/cbm">http://gsd.di.uminho.pt/cbm</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Jon Meredith
+&gt; Platform Engineering Manager
+&gt; Basho Technologies, Inc.
+&gt; jmered...@basho.com
+&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06677.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06680">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06680">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06654.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06653.html">Avoiding false concurrency in Riak</a></span> <span class="sender italic">Carlos Baquero</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06677.html">Re: Avoiding false concurrency in Riak</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Avoiding false concurrency in Riak</span> <span class="sender italic">Carlos Baquero</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Avoiding false concurrency in Riak">
+<input type="hidden" name="msgid" value="0AFA00AD-BF42-4EBB-B340-7660ED583D36@di.uminho.pt">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06680.html">
+<input type="submit" value=" Carlos Baquero ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Avoiding+false+concurrency+in+Riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06677.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06654.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">0AFA00AD-BF42-4EBB-B340-7660ED583D36@di.uminho.pt</li>
+</ul>
+</div>
+</body>
+</html>

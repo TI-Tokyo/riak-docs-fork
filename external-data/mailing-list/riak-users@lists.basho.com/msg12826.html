@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: RFC: Let's Make Riak-Core Easier to Use</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd7.html#12826" id="c">
+<link rel="index" href="mail7.html#12826" id="i">
+<link rel="prev" href="msg12819.html" id="p">
+<link rel="next" href="msg12861.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12826.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RFC%5C%3A+Let%27s+Make+Riak%5C-Core+Easier+to+Use%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: RFC: Let's Make Riak-Core Easier to Use</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Gunin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Gunin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131101" rel="nofollow">Fri, 01 Nov 2013 13:12:01 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi. We have two system based on riak-core. Simple distributed database for
+storing time-series data, we don't use riak_kv for this because we need
+batch insert,our data are small(16 byte key and 12 byte value) and we need
+less consistence guarantee but lowest latency. The second is framework
+named Zont for soft real-time data processing, like twitter storm,in which
+vnode play role standart erlang supervisor that allow for us build
+distributed process for process data. Zont used in one our application for
+processing financial data and it's run in production in Sberbank(One of the
+largest Russian Bank) and It's used in another application for processing
+large amount data from sensors that in production too.
+I will tell you about some problems in current riak-core and feature that
+will be usefull for us.
+1. By default when riak_core app started on some node it try start all
+vnode(include those that must be start on another node). It's good
+behaviour for riak_kv or our time-series database but not for our second
+application. In our callback for riak_core_vnode first we check is it good
+place for this node at this time,if it's not we wait hadoff request and
+periodically check maybe it's already right place for this vnode. It will
+be good to have  both behaviour in riak-core.
+2. If some node in cluster fail riak_core don't restart vnode that owned by
+this node, vnodes start only if riak_core receive some request to it. It's
+not good for our second app too:) We write monitoring process that start
+vnodes if some node goes down. It will be good to have option that turn it
+in riak_core
+3. We must have option for use master coordinator(like zoo-keeper) for
+update ring information and have consistence view on cluster for all
+node(states and down node etc.). Yes it's point of failure but wee really
+need it for CA. Currently we use many hack for release this on
+riak_core,it's work but it's not good solution (kill minor island, ...,etc.)
+4. Try don't use riak_core_mochiglobal for save ring info it's don't work
+this standard erlang release upgrade procedure or we must have some option
+for recompile ring module that was built at runtime by
+riak_core_mochiglobal during upgrade procedure.
+5. May be Include API for send multiple requests to VNodes by optimal way.
+6. DOCUMENTATION!!!!!!!!</pre><pre>
+
+That all that remembered.
+
+
+May be remember something else latter.
+
+ Please let me know if you need some additional information about our use
+case.
+
+
+
+On Wed, Oct 30, 2013 at 4:13 AM, Sam Elliott &lt;sam.elli...@basho.com&gt; wrote:
+
+&gt; Hey Riak-Users (and Riak-Core)
+&gt;
+&gt; Some time ago, Basho released riak_core as a framework for building
+&gt; distributed applications [1].
+&gt; One of the key pieces of guidance that was given at the time was that you
+&gt; should use the features
+&gt; of riak_kv if your app needed to do any persistence. With the new features
+&gt; we'll be releasing in
+&gt; 2.0 [2], we want to make riak_core the best toolkit for building complex
+&gt; distributed applications
+&gt; with both CP and AP semantics.
+&gt;
+&gt; As I see it, the main thing that is preventing most people from writing
+&gt; their own riak_core
+&gt; application is that there's not an API that allows people to easily do so.
+&gt; There's a basic internal
+&gt; KV client at the moment, but there are some features that it doesn't cover.
+&gt;
+&gt; Post-RICON (and almost certainly after the 2.0 release), I'm going to
+&gt; focus on making riak_core
+&gt; applications really easy to make, and riak_kv easy to use from a riak_core
+&gt; application.
+&gt;
+&gt; I'd love any feedback that you all have. How can we improve the current
+&gt; APIs? How can we make it
+&gt; really easy for people to create riak_core apps? How can we nicely expose
+&gt; the newest features of
+&gt; riak_kv for people to use in their riak_core applications?
+&gt;
+&gt; Bonus points for feedback from anyone who has built and run a riak_core
+&gt; application in production.
+&gt;
+&gt; Sam
+&gt;
+&gt; PS: I have some swag to give to anyone who's helpful
+&gt;
+&gt; [1]: <a  rel="nofollow" href="http://basho.com/where-to-start-with-riak-core/">http://basho.com/where-to-start-with-riak-core/</a>
+&gt; [2]: <a  rel="nofollow" href="http://basho.com/introducing-riak-2-0/">http://basho.com/introducing-riak-2-0/</a>
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sam Elliott
+&gt; Engineer
+&gt; sam.elli...@basho.com
+&gt; --
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12819.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd7.html#12826">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#12826">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12861.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12796.html">RFC: Let's Make Riak-Core Easier to Use</a></span> <span class="sender italic">Sam Elliott</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12797.html">Re: RFC: Let's Make Riak-Core Easier to Use</a></span> <span class="sender italic">Konstantin Kalin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12819.html">Re: RFC: Let's Make Riak-Core Easier to Use</a></span> <span class="sender italic">Patrick Schless</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: RFC: Let's Make Riak-Core Easier to Use</span> <span class="sender italic">Alexander Gunin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg12861.html">Re: RFC: Let's Make Riak-Core Easier to Use</a></span> <span class="sender italic">Sam Elliott</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12868.html">Re: RFC: Let's Make Riak-Core Easier to Use</a></span> <span class="sender italic">DeadZen</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: RFC: Let's Make Riak-Core Easier to Use">
+<input type="hidden" name="msgid" value="CACo8dO_ueu2x+XjrS-1wh0Fkyiwr7OmKRr0RWLgV3_1HVfTWUQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12826.html">
+<input type="submit" value=" Alexander Gunin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RFC%5C%3A+Let%27s+Make+Riak%5C-Core+Easier+to+Use%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12819.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12861.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACo8dO_ueu2x+XjrS-1wh0Fkyiwr7OmKRr0RWLgV3_1HVfTWUQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

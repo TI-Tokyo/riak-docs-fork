@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak on EC2, security etc</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00989" id="c">
+<link rel="index" href="maillist.html#00989" id="i">
+<link rel="prev" href="msg00982.html" id="p">
+<link rel="next" href="msg00991.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00989.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+on+EC2%2C+security+etc%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak on EC2, security etc</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sean+Cribbs%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sean Cribbs</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100831" rel="nofollow">Tue, 31 Aug 2010 11:00:29 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>&gt; 
+&gt; So, I've been trying out MongoDB for a while and quite liked it, though we've 
+&gt; had some doubts on the security of our
+&gt; data among other things. The ease of replication in Riak made me look at it 
+&gt; closer. I really like how replication is in the
+&gt; core of Riak and how data is just data regardless of what it consists of 
+&gt; (files, json, xml whatever). I'm also looking at Riak
+&gt; since we've discussed saving things to S3 but here Riak could be used instead 
+&gt; I think.
+&gt; </pre><pre>
+
+A number of Basho customers and open-source users alike are using Riak to store 
+files.  You might find the webinar I gave several weeks ago about Riak and 
+Rails helpful -- it includes an example of how to store uploaded files in Riak 
+and do internal redirects in nginx to serve the files directly from Riak.
+
+&gt; One thing that is very important to us is the security of all communication 
+&gt; within our cluster, so I'm wondering how the
+&gt; riak nodes exchange data between each other - is that encrypted or could 
+&gt; someone potentially listen in on it?
+&gt; 
+&gt; Could we easily encrypt it through stunnel (as we've done with some other 
+&gt; protocols) and would that affect the performance
+&gt; of Riak alot?
+&gt; 
+
+For one customer we considered stunnel for WAN communication but in the end 
+decided to set up IPSec, which can be managed by the kernel. If you don't, 
+you'll have to keep those stunnel processes running. Also, Riak uses some 
+dynamic ports to do inter-node communication, so you'd have to take all of 
+those into account.  There are also some hacks to Erlang that enable SSL for 
+inter-node communication, but we don't build that into Riak.
+
+&gt; We're not entirely sure whether we want or need replication between EC2 US 
+&gt; and EC2 Europe (and possibly Asia as
+&gt; well) but if we do - would Riak work well over such distances?
+&gt; 
+
+The EnterpriseDS multi-site replication feature is specifically for this type 
+of setup and is designed to work over connections with greater latencies.
+
+&gt; Is Riak suited to run on XEN VMs like on EC2? What would be a recommended 
+&gt; instance size (i.e does Riak require LOTS
+&gt; of ram and processors?) Anyone have experience with Riak running on EC2?
+&gt; 
+
+Riak doesn't require lots of RAM or CPU, but is mostly I/O bound (RAM usage is 
+dependent on data quantity and chosen backend). Disk I/O is where you'll feel 
+the most pain using Riak on EC2, primarily because of unpredictable latencies.
+
+&gt; So far, most of the files we store are somewhere between 500 k and 50 megs 
+&gt; but might get larger than that as we
+&gt; expand our business to many more clients with different needs. I know there's 
+&gt; supposed to be a limit around 50 megs
+&gt; currently... Is this being actively worked on?
+&gt; 
+
+Last I checked, our per-object limit was 64MB. However, there is a 
+not-quite-releaseable add-on that treats Riak like a block-oriented filesystem 
+for storing larger objects. We'll announce it when it comes closer to release.
+
+&gt; Backups... well, we've done all kinds of 'em. The latest, and in my opinion 
+&gt; most straightforward, is to put all data on an XFS
+&gt; volume and freeze it (incl. &quot;FLUSH TABLES WITH READ LOCK&quot; on mysql) and then 
+&gt; just do an EBS snapshot of the volume,
+&gt; how would something like that apply to Riak (even though the data might be 
+&gt; safer in a Riak cluster). If we run a cluster of say
+&gt; 10 nodes - how would we get back to a point in time? And if a DELETE was done 
+&gt; erroneously, how could we get that data back?
+&gt; Is riak-admin backup really an option (i.e backing up the entire cluster) if 
+&gt; the dataset is very large? If we do restore using such
+&gt; data would the whole cluster get &quot;reset&quot; to that point in time?
+&gt; 
+
+When using the bitcask backend, your backup can be as simple as copying the 
+directory, as its files are immutable. An EBS snapshot would essentially do the 
+same thing. As far as restoring erroneous DELETEs, if not all nodes have reaped 
+the value, it will still exist.  Recovering it after a reap will be much more 
+difficult.
+
+&gt; One of the things I'm quite excited about is how we could get away with nodes 
+&gt; that are exactly alike and load-balancing
+&gt; between them - each having a riak node running so we could have our app and 
+&gt; the riak node on the same machine and
+&gt; just add more such instances if we need to. Today we've separated clients 
+&gt; onto different databases and machines (NOT load-balanced
+&gt; and NOT replicated). This has worked ok but I think having a load-balanced 
+&gt; cluster would make things easier and configuration
+&gt; of machines simpler (we use chef so it's not THAT bad today). Now we add 
+&gt; clients by adding a CNAME entry in DNS for a specific
+&gt; machine/ip - adding configuration and databases using nanite but much of that 
+&gt; could perhaps disappear with a single load-balanced
+&gt; cluster I think...
+&gt; 
+
+One customer described their setup as a &quot;Christmas tree&quot; - that is, the 
+application with a load-balancer in front of it, backed by a Riak cluster with 
+a load-balancer in front of that.  Of course, you can grow your Riak cluster in 
+lock-step with your application, but you might find that your application will 
+need more or fewer servers than your Riak cluster, so coupling them in that way 
+might not be a good idea.
+
+Sean Cribbs &lt;s...@basho.com&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00982.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00989">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00989">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00991.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00979.html">Riak Recap for 8/27 - 8/29</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00981.html">Re: Riak Recap for 8/27 - 8/29</a></span> <span class="sender italic">Doug Tangren</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00982.html">Riak on EC2, security etc</a></span> <span class="sender italic">John Axel Eriksson</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak on EC2, security etc</span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00991.html">Re: Riak on EC2, security etc</a></span> <span class="sender italic">Timothy Perrett</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00993.html">Re: Riak on EC2, security etc</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00994.html">Re: Riak on EC2, security etc</a></span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00995.html">Re: Riak on EC2, security etc</a></span> <span class="sender italic">Timothy Perrett</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak on EC2, security etc">
+<input type="hidden" name="msgid" value="E86BFF8B-0682-4032-88C3-3009D545821C@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00989.html">
+<input type="submit" value=" Sean Cribbs ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+on+EC2%2C+security+etc%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00982.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00991.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">E86BFF8B-0682-4032-88C3-3009D545821C@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

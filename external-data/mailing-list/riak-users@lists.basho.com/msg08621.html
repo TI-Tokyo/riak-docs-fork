@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: data modeling question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08621" id="c">
+<link rel="index" href="maillist.html#08621" id="i">
+<link rel="prev" href="msg08604.html" id="p">
+<link rel="next" href="msg08640.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08621.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+data+modeling+question%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: data modeling question</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rune+Skou+Larsen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rune Skou Larsen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120921" rel="nofollow">Fri, 21 Sep 2012 05:22:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>The best data model always depends on the structure of data and the 
+</tt><tt>access pattern. The natural access pattern for your messages is likely 
+</tt><tt>lookup from two sides: sender and receiver. And you might need to 
+</tt><tt>support message expiry too. This means that you need on-disk indeces if 
+</tt><tt>you want more messages than will fit in memory.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>In Riak you can do it quite simply with any of the ordered backends 
+</tt><tt>(leveldb, hanoidb, lowkeydb):
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>One message = one Riak object. Example: {sender='321', recipient='123', 
+</tt><tt>timestamp = 1234567, text= 'bla bla'}
+</tt><pre style="margin: 0em;">
+Key is timestamp prefixed.
+2i indeces for &lt;sender_id&gt; and &lt;recipient_id&gt;.
+</pre><tt>Consider using a compound index if you often distinguish between 
+</tt><tt>read/unread messages. For instance: &lt;read-status&gt;_&lt;recipient_id&gt;
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Example query returning keys for all unread messages belonging to 
+</tt><tt>recipient with id 123 using compound index:
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://myhost:8098/buckets/messages/index/recipient_bin/unread_123">http://myhost:8098/buckets/messages/index/recipient_bin/unread_123</a>
+
+</pre><tt>Example query returning keys for all messages older than a year, so you 
+</tt><tt>can delete old messages (not necesary using backends with autoexpiry):
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://myhost:8098/buckets/messages/index/$key/0/2011-09-21">http://myhost:8098/buckets/messages/index/$key/0/2011-09-21</a>
+
+
+</pre><tt>Here is an alternative approach: You can choose to optimize for the 
+</tt><tt>recipient side of the access pattern, by bulking all the messages for a 
+</tt><tt>given recipient in one Riak object. This is much faster that retrieving 
+</tt><tt>a large number of messages individually, the price being more difficult 
+</tt><tt>lookup from the sender side:
+</tt><pre style="margin: 0em;">
+Key: recipient_id
+</pre><tt>One Riak Object = all messages for a given recipient. Example: 
+</tt><tt>[{sender='321', timestamp = 1234567, text= 'bla bla'},{sender='456', 
+</tt><tt>timestamp = 1234569, text= 'bla bla2'}]
+</tt><pre style="margin: 0em;">
+2i index for &lt;sender_id&gt;s
+
+</pre><tt>Example query returning an object with all messages belonging to 
+</tt><tt>recipient with id 123:
+</tt><pre style="margin: 0em;">
+<a  rel="nofollow" href="http://myhost:8098/buckets/messages/keys/123">http://myhost:8098/buckets/messages/keys/123</a>
+
+</pre><tt>If you want text search on for instance message content, you should 
+</tt><tt>consider using Riak Search.
+</tt><pre style="margin: 0em;">
+
+- Rune
+
+Trifork
+
+
+Best regards / Venlig hilsen
+
+*Rune Skou Larsen*
+Trifork Public A/S / Team Riak
+Margrethepladsen 4, 8000 Århus C, Denmark
+Phone: +45 3160 2497    Skype: runeskoularsen   twitter: @RuneSkouLarsen
+
+
+
+On 20-09-2012 01:33, Charlie Bowman wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>I'm in the process of designing an in game messaging system that 
+</tt><tt>basically replicates the same functionality of email all within the 
+</tt><tt>context of the application.  I do not have a ton of experience with 
+</tt><tt>true key/value db stores so I'm looking to find a good resource for 
+</tt><tt>ideas on how to best model this.  I have a first version, but I dont 
+</tt><tt>want to reinvent the wheel if can help it.  I've done the requisite 
+</tt><tt>googling, but haven't found anything relevant yet.  Are there any 
+</tt><tt>guides/tutorials/open source projects that anyone knows of.
+</tt><pre style="margin: 0em;">
+
+Thanks!
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08604.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08621">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08621">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08640.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08604.html">data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: data modeling question</span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08640.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08662.html">Re: data modeling question</a></span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08694.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08695.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08696.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08701.html">Re: data modeling question</a></span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08707.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: data modeling question">
+<input type="hidden" name="msgid" value="505C5B26.3020107@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08621.html">
+<input type="submit" value=" Rune Skou Larsen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+data+modeling+question%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08604.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08640.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">505C5B26.3020107@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

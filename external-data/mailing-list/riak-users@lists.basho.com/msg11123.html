@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: First Write Wins</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#11123" id="c">
+<link rel="index" href="maillist.html#11123" id="i">
+<link rel="prev" href="msg11112.html" id="p">
+<link rel="next" href="msg11113.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11123.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+First+Write+Wins%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: First Write Wins</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+Daily%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John Daily</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130520" rel="nofollow">Mon, 20 May 2013 12:01:05 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>After some asking around, I suspect that any activity on the immutability front 
+will have to wait until we've rolled strong consistency capabilities into Riak.</pre><pre>
+
+Scott Fritchie pointed out something I hadn't considered: even with pw/pr 
+values, it's still possible to end up in an inconsistent state after a 
+partition heals, because a pw write that fails will still result in the new 
+value being written to secondary vnodes.
+
+If you write to the &quot;wrong&quot; side of a partition, the write will report to the 
+client as a failure (assuming pw=2) but the values will still be sitting on 
+secondary vnodes waiting for handoff, at which point they would overwrite the 
+primary vnode values, assuming the timestamps dictate that.
+
+So if you want to do this in Riak, you definitely should plan on siblings and 
+client resolution, but I think your best bet is going to be to use a different 
+solution than Riak for this part of your system. It's simply not a good fit 
+when you need something approximating strong consistency.
+
+-John
+
+On May 19, 2013, at 10:44 PM, Jeremy Ong &lt;jer...@quarkgames.com&gt; wrote:
+
+&gt; Thanks and yes, for the case of the user creation example I gave, I am 
+&gt; setting pw=pr=quorum.
+&gt; 
+&gt; Immutable values is a much better way of putting it, although I technically 
+&gt; need deletion as well for this particular example.
+&gt; 
+&gt; Cheers,
+&gt; Jeremy
+&gt; 
+&gt; 
+&gt; On Sun, May 19, 2013 at 7:24 PM, John Daily &lt;jda...@basho.com&gt; wrote:
+&gt; A few quick thoughts...
+&gt; 
+&gt; We're tackling a very similar problem (perhaps even the identical problem) 
+&gt; with user accounts in Riak CS via the Stanchion subsystem. I know that 
+&gt; started out as a component running on a single node to avoid conflicts like 
+&gt; this, but I believe it is evolving into a more sophisticated solution.
+&gt; 
+&gt; This feels like a feature request for allowing keys to be created with 
+&gt; immutable values. I would assume that topic has arisen before, but I'm not 
+&gt; aware of when or whether it's something we've seriously considering 
+&gt; implementing.
+&gt; 
+&gt; Certainly one would have to be careful with sloppy quorums: in the event of a 
+&gt; network partition, with default settings it would be possible to create 
+&gt; identical keys on different parts of the cluster without an immediate 
+&gt; conflict. You should make certain the primary vnodes are always required by 
+&gt; specifying pw=quorum and pr=quorum (which would mean that attempting to write 
+&gt; the same key in a partitioned scenario would fail unless a majority of the 
+&gt; primary vnodes are reachable).
+&gt; 
+&gt; Hopefully someone else who's given this some thought in the past will jump 
+&gt; in; I'll make further inquiries tomorrow.
+&gt; 
+&gt; -John Daily
+&gt; Technical Evangelist
+&gt; 
+&gt; On May 19, 2013, at 7:29 PM, Jeremy Ong &lt;jer...@quarkgames.com&gt; wrote:
+&gt; 
+&gt;&gt; For automatic conflict resolution, often times, the easiest thing to do is 
+&gt;&gt; impose a Last Write Wins policy.
+&gt;&gt; 
+&gt;&gt; However, in certain circumstances, First Write Wins makes more sense. For 
+&gt;&gt; example, suppose you are handling user creation. Creating a single user will 
+&gt;&gt; populate values for two keys:
+&gt;&gt; 
+&gt;&gt; User Id =&gt; User data
+&gt;&gt; Username =&gt; User Id
+&gt;&gt; 
+&gt;&gt; A unique User Id is generated to accommodate future username changes. In the 
+&gt;&gt; event that another user attempts to create an account simultaneously with 
+&gt;&gt; the same username, a conflict will exist. The easiest thing for me to do 
+&gt;&gt; here, is after the account is created, check the username to see if it 
+&gt;&gt; points to the correct User Id. If so, return a success message. Otherwise, 
+&gt;&gt; rollback changes to the first key.
+&gt;&gt; 
+&gt;&gt; I'm OK with last write wins for now, but is there a way of imposing a simple 
+&gt;&gt; first write wins policy without needing siblings and client conflict 
+&gt;&gt; resolution?
+&gt;&gt; 
+&gt;&gt; Cheers,
+&gt;&gt; Jeremy
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11112.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#11123">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#11123">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11113.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11110.html">First Write Wins</a></span> <span class="sender italic">Jeremy Ong</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11111.html">Re: First Write Wins</a></span> <span class="sender italic">John Daily</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11112.html">Re: First Write Wins</a></span> <span class="sender italic">Jeremy Ong</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: First Write Wins</span> <span class="sender italic">John Daily</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: First Write Wins">
+<input type="hidden" name="msgid" value="0A3CFFC0-7A6F-4A9D-86B1-2A6907BA7021@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11123.html">
+<input type="submit" value=" John Daily ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+First+Write+Wins%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11112.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11113.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">0A3CFFC0-7A6F-4A9D-86B1-2A6907BA7021@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

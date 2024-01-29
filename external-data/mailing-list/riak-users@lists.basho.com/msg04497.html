@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Achieving 100% consitency</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04497" id="c">
+<link rel="index" href="maillist.html#04497" id="i">
+<link rel="prev" href="msg04498.html" id="p">
+<link rel="next" href="msg04500.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04497.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Achieving+100%25+consitency%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Achieving 100% consitency</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Lukas+Schulze%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Lukas Schulze</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110829" rel="nofollow">Mon, 29 Aug 2011 01:05:45 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>A friend of mine found out how it could work: I have to delete the entry
+first and after storing it in the database I've to check the result.
+It's not the prettiest code I've written before, but without the while-loop
+it will work for nearly 97% of my tuples. With the while-loop everything
+works fine.</pre><pre>
+
+======================================
+RiakObject riakIndex = new RiakObject(attrName, attrValue,
+indexString.getBytes());
+riakIndex.setContentType(&quot;text/plain; charset=UTF-8&quot;);
+try{
+//have to be deleted because of cache (?)
+ riakPBCClient.delete(attrName, attrValue);
+riakPBCClient.store(riakIndex);
+RiakObject[] fetched = riakPBCClient.fetch(attrName, attrValue);
+ //check whether the entry is correctly stored in the database
+while(fetched.length == 0) {//try it until it works...
+ riakPBCClient.store(riakIndex);
+fetched = riakPBCClient.fetch(attrName, attrValue);
+}
+ //fetched entry doesn't match our stored one
+if(!riakIndex.getValue().equals(fetched[0].getValue())) {
+ System.err.println(&quot;index match: failed -&gt; &quot; + attrName + &quot;.&quot; + attrValue);
+}
+ }
+======================================
+
+Best regards
+Lukas
+
+
+On Mon, Aug 29, 2011 at 9:20 AM, Lukas Schulze &lt;i...@lukas-schulze.de&gt;wrote:
+
+&gt; Hi,
+&gt;
+&gt; thank you for your answers.
+&gt; I know that Riak is designed for running on distributed servers.
+&gt; But what's about adding lots of data and every tuple depends on another
+&gt; one?
+&gt; I thought that having only 1 node and disabling replications could solve my
+&gt; problems of getting always the latest data from Riak.
+&gt;
+&gt; Is there another way to achieve 100% consistency in a riak database after a
+&gt; very short time?
+&gt;
+&gt; Best regards
+&gt; Lukas
+&gt;
+&gt;
+&gt;
+&gt; On Sat, Aug 27, 2011 at 5:43 PM, Ian Plosker &lt;i...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; Jonathan,
+&gt;&gt;
+&gt;&gt; Excuse me, that last message should have been addressed to you.
+&gt;&gt;
+&gt;&gt;  Ian Plosker
+&gt;&gt; Developer Advocate
+&gt;&gt; Basho Technologies
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Aug 27, 2011, at 11:39 AM, Ian Plosker wrote:
+&gt;&gt;
+&gt;&gt; Lukas,
+&gt;&gt;
+&gt;&gt; Yes, even for dev you'd be best advised to develop and test your
+&gt;&gt; application with the same or similar number of nodes and n, r, and w
+&gt;&gt; settings as you would in production. It's good practice to develop
+&gt;&gt; applications in a dev/test environment that mirrors the production
+&gt;&gt; environment as much as is reasonable/feasible. You can run a single node
+&gt;&gt; cluster, but note that this isn't a configuration you'll see in a
+&gt;&gt; production.
+&gt;&gt;
+&gt;&gt;  Ian Plosker
+&gt;&gt; Developer Advocate
+&gt;&gt; Basho Technologies
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Aug 27, 2011, at 5:33 AM, Jonathan Langevin wrote:
+&gt;&gt;
+&gt;&gt; Even for development-purposes only? Otherwise it seems data would be
+&gt;&gt; written n times to the same machine, which is needless in a dev environment
+&gt;&gt; with low storage specs...*
+&gt;&gt;
+&gt;&gt;  &lt;<a  rel="nofollow" href="http://www.loomlearning.com/">http://www.loomlearning.com/</a>&gt;
+&gt;&gt;  Jonathan Langevin
+&gt;&gt; Systems Administrator
+&gt;&gt; Loom Inc.
+&gt;&gt; Wilmington, NC: (910) 241-0433 - jlange...@loomlearning.com -
+&gt;&gt; www.loomlearning.com - Skype: intel352
+&gt;&gt; *
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Fri, Aug 26, 2011 at 5:01 PM, Ian Plosker &lt;i...@basho.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Lukas,
+&gt;&gt;&gt;
+&gt;&gt;&gt; Also, we don't advise that you run single node clusters. Riak is designed
+&gt;&gt;&gt; to be used in clusters of at least 3 nodes. You can run a multi-node cluster
+&gt;&gt;&gt; on a single development machine by downloading the Riak source, and running
+&gt;&gt;&gt; &quot;make devrel&quot;. Take a look at the Riak Fast Track (
+&gt;&gt;&gt; <a  rel="nofollow" href="http://wiki.basho.com/The-Riak-Fast-Track.html">http://wiki.basho.com/The-Riak-Fast-Track.html</a>) for more details.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Ian Plosker
+&gt;&gt;&gt; Developer Advocate
+&gt;&gt;&gt; Basho Technologies
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Aug 26, 2011, at 3:17 PM, Lukas Schulze wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm doing some simple tests with Riak and tried to build something like
+&gt;&gt;&gt; an index.
+&gt;&gt;&gt; Therefore I created new buckets for some attributes like &quot;name&quot;, &quot;street&quot;
+&gt;&gt;&gt; and &quot;city&quot;.
+&gt;&gt;&gt; One entry in the index-bucket &quot;name&quot; is for example &quot;Mueller&quot; and the
+&gt;&gt;&gt; value contains all user ids, formatted as an JSON string:
+&gt;&gt;&gt; &quot;{id:[1,5,8,13,2,7]}&quot;
+&gt;&gt;&gt; The java objects are saved as JSON strings in a separate bucket &quot;users&quot;,
+&gt;&gt;&gt; the keys in this bucket are the user-ids, the values are the JSON strings.
+&gt;&gt;&gt;
+&gt;&gt;&gt; If I add 200 users via Java and the RiakPBC client every loop I fetch the
+&gt;&gt;&gt; index, add the new user id and store it again in Riak.
+&gt;&gt;&gt; But java is too fast, so I receive an old version of the bucket.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Because I've only one node I set the n-value to 1, r = 1, w = 1 and dw =
+&gt;&gt;&gt; 1.
+&gt;&gt;&gt; But I have to wait nearly 2 seconds to be mostly sure to get the correct
+&gt;&gt;&gt; response. (the computer isn't an high-end machine ;-) )
+&gt;&gt;&gt;
+&gt;&gt;&gt; Is it possible to be sure that the data will be saved permanently and I
+&gt;&gt;&gt; can continue adding users?
+&gt;&gt;&gt; Are there any caching methods I can configure?
+&gt;&gt;&gt; Can I set the default n-value to 1 so that every newly created bucket
+&gt;&gt;&gt; will have this value?
+&gt;&gt;&gt; Does Riak have any kind of indexes or is it possible to implement it a
+&gt;&gt;&gt; better way?
+&gt;&gt;&gt;
+&gt;&gt;&gt; In my first version I saved all users in one bucket and iterated over all
+&gt;&gt;&gt; of them to find the correct one. But for every single request from the Java
+&gt;&gt;&gt; Service to Riak it took nearly 200ms. For a huge amount of entries (10,000)
+&gt;&gt;&gt; this isn't practible. Therefore I tried to implement my own indexes.
+&gt;&gt;&gt;
+&gt;&gt;&gt; The main focus of my question is getting rid of the inconsistent reads.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thank you.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Best Regards
+&gt;&gt;&gt; Lukas
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04498.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04497">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04497">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04500.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04479.html">Achieving 100% consitency</a></span> <span class="sender italic">Lukas Schulze</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04480.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04482.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04483.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04488.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04490.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04491.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Ian Plosker</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04498.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Lukas Schulze</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Achieving 100% consite...</span> <span class="sender italic">Lukas Schulze</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04500.html">Re: Achieving 100% consite...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04501.html">Re: Achieving 100% consite...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04502.html">Re: Achieving 100% consite...</a></span> <span class="sender italic">Russell Brown</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg04518.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Scott Lystig Fritchie</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04520.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04524.html">Re: Achieving 100% consitency</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04526.html">Re: Achieving 100% consite...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04527.html">Re: Achieving 100% con...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg04528.html">Re: Achieving 100% con...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Achieving 100% consitency">
+<input type="hidden" name="msgid" value="CANOrbGAgQxaoH5wA0vL0o45yNYZp17Ko+L+Op722UTmN1FNPzA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04497.html">
+<input type="submit" value=" Lukas Schulze ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Achieving+100%25+consitency%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04498.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04500.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANOrbGAgQxaoH5wA0vL0o45yNYZp17Ko+L+Op722UTmN1FNPzA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

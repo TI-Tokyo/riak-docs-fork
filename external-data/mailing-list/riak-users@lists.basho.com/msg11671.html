@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Comparing Riak MapReduce and Hadoop MapReduce</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd13.html#11671" id="c">
+<link rel="index" href="mail13.html#11671" id="i">
+<link rel="prev" href="msg11672.html" id="p">
+<link rel="next" href="msg11673.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11671.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Comparing+Riak+MapReduce+and+Hadoop+MapReduce%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Comparing Riak MapReduce and Hadoop MapReduce</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130721" rel="nofollow">Sun, 21 Jul 2013 20:21:26 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Responses inline. Hopefully they shed some light on the subject.
+
+---
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+MCITP: SQL Server 2008, MVP
+Cloudera Certified Developer for Apache Hadoop</pre><pre>
+
+
+On Fri, Jul 19, 2013 at 5:07 PM, Xiaoming Gao &lt;mko...@gmail.com&gt; wrote:
+
+&gt; Hi everyone,
+&gt;
+&gt; I am trying to learn about Riak MapReduce and comparing it with Hadoop
+&gt; MapReduce, and there are some details that I am interested in but not
+&gt; covered in the online documents. So hopefully we can get some help here
+&gt; about the following questions? Thanks in advance!
+&gt;
+
+They're not at all similar. Hadoop MR is optimized for sequential data
+processing in large batches. Riak MR works better when you think of it like
+a multi-processing engine - you can perform work across a matching set of
+items and that work will be distributed across the cluster during map
+phases.
+
+Take a look at this thread for a bit of discussion about when you should
+use Riak MapReduce: <a  rel="nofollow" href="http://markmail.org/message/qpoilvmm635inb5v">http://markmail.org/message/qpoilvmm635inb5v</a>
+
+Or, if you want to, you can run a Riak MR job across an entire bucket,
+which really is like scanning every table in an RDBMS while looking for
+rows from a single table. MR jobs run with an R of 1. So, at least there's
+that.
+
+
+&gt; 1. For a given MapReduce request (or to say, job), how does Riak decide how
+&gt; many mappers to use for the job? For example, if I have 8 nodes and my data
+&gt; are distributed across all nodes with an &quot;N&quot; value of 2, will I have 4
+&gt; mappers running on 4 nodes concurrently? Is it possible to have multiple
+&gt; mappers (e.g., 4 or even 6) for the same MR job running on each node (for
+&gt; better processing speed)?
+&gt;
+
+To the best of my recollection, this will be based on either:
+
+1) If you're using JavaScript MR jobs, the number of mappers and reducers
+is controlled by the the map_js_vm_count and reduce_js_vm_count settings
+from each node's app.config file.
+2) If you're using Erlang: magic. This will be handled by the Erlang VM and
+is based on number of processors and your overall Erlang VM configuration.
+
+
+&gt;
+&gt; 2. If I run a MapReduce job over the results of a Riak Search query, how
+&gt; does Riak schedule the mappers based on the search results?
+&gt;
+
+Riak Search uses document-based indices - search will query every node in
+the cluster. Map phases happen and then results are then streamed to the
+reducer.
+
+
+&gt;
+&gt; 3. How does Riak handle intermediate data generated by mappers?
+&gt; Specifically:
+&gt; (1) In Hadoop MapReduce, the output of mappers are &lt;key, value&gt; pairs, and
+&gt; the output from all mappers are first grouped based on keys, and then
+&gt; handed
+&gt; over to the reducer. Does Riak do similar grouping of intermediate data?
+&gt;
+
+The only reason for the intermediate grouping/scratch work in Hadoop MR
+jobs is to deal with multiple reducers. Although, I'm not entirely sure how
+this works in Riak, my suspicion is that data is streamed across the wire
+after the data is read from disk.
+
+
+&gt;
+&gt; (2) How are mapper outputs transmitted to the reducer? Does Riak use local
+&gt; disks on the mapper nodes or reducer nodes to store the intermediate data
+&gt; temporarily?
+
+
+Since large MR jobs can cause out of memory errors, you can bet good money
+that the answer is &quot;no&quot;.
+
+
+&gt;
+&gt; 4. According to the document
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/dev/advanced/mapreduce/#How-Phases-Work">http://docs.basho.com/riak/latest/dev/advanced/mapreduce/#How-Phases-Work</a>,
+&gt; each MR job only schedules one reducer, which runs on the coordinate node.
+&gt; Is there any way to configure a MR job to use multiple reducers?
+&gt;
+
+Using Riak MR, there's no way to create a job that runs reducers on
+multiple nodes. You can have multiple reducer processes on a single node,
+but not reducers on multiple nodes.
+
+
+&gt;
+&gt; Best regards,
+&gt; Xiaoming
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; View this message in context:
+&gt; <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Comparing-Riak-MapReduce-and-Hadoop-MapReduce-tp4028454.html">http://riak-users.197444.n3.nabble.com/Comparing-Riak-MapReduce-and-Hadoop-MapReduce-tp4028454.html</a>
+&gt; Sent from the Riak Users mailing list archive at Nabble.com.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11672.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd13.html#11671">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail13.html#11671">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11673.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11652.html">Comparing Riak MapReduce and Hadoop MapReduce</a></span> <span class="sender italic">Xiaoming Gao</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11670.html">Re: Comparing Riak MapReduce and Hadoop MapReduce</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11672.html">Re: Comparing Riak MapReduce and Hadoop MapReduc...</a></span> <span class="sender italic">Xiaoming Gao</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Comparing Riak MapReduce and Hadoop MapReduce</span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11673.html">Re: Comparing Riak MapReduce and Hadoop MapReduc...</a></span> <span class="sender italic">Xiaoming Gao</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11674.html">Re: Comparing Riak MapReduce and Hadoop MapR...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11688.html">Re: Comparing Riak MapReduce and Hadoop ...</a></span> <span class="sender italic">Xiaoming Gao</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11693.html">Re: Comparing Riak MapReduce and Ha...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11694.html">Re: Comparing Riak MapReduce an...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11697.html">Re: Comparing Riak MapReduc...</a></span> <span class="sender italic">Xiaoming Gao</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Comparing Riak MapReduce and Hadoop MapReduce">
+<input type="hidden" name="msgid" value="CACJEN2pZj4Jd+gm8h2UeH03=E_Gt2TJcZVw6Cb=XdJ0ZH25ohg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11671.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Comparing+Riak+MapReduce+and+Hadoop+MapReduce%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11672.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11673.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACJEN2pZj4Jd+gm8h2UeH03=E_Gt2TJcZVw6Cb=XdJ0ZH25ohg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

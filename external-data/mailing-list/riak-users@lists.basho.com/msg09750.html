@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>riak java client causing OOMs on high latency</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09750" id="c">
+<link rel="index" href="maillist.html#09750" id="i">
+<link rel="prev" href="msg09746.html" id="p">
+<link rel="next" href="msg09762.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09750.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak+java+client+causing+OOMs+on+high+latency%22&amp;o=newest" rel="nofollow"><span itemprop="name">riak java client causing OOMs on high latency</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dietrich+Featherston%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dietrich Featherston</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130107" rel="nofollow">Mon, 07 Jan 2013 14:26:38 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We're seeing instances of a JVM app which talks to riak run out of
+memory when riak operations rise in latency or riak becomes otherwise
+unresponsive. A heap dump of the JVM at the time of the OOM show that
+91% of the 1G (active) heap is consumed by large byte[] instances. In
+our case 3 of those byte[]s are in the 200MB range with size dropping
+off after that. The byte[] instances cannot be traced back to a
+specific variable as their references appear to be stack-allocated
+local method variables. But, based on the name of the thread, we can
+tell that the thread is doing a store operation against
+riak@localhost.</pre><pre>
+
+Inspection of the data in one of these byte[]s shows what looks like
+an r_object response with headers and footer boilerplate around our
+object payload. This 200+MB byte[] is filled with 0s after the 338th
+element which is really confusing and indicates that far too much
+space is being allocated to read the protobuf payload. Here's a dump
+of one of these instances:
+<a  rel="nofollow" href="https://gist.github.com/40ef9b2ff561e973a72c">https://gist.github.com/40ef9b2ff561e973a72c</a>
+
+It's also worth mentioning that, according to /stats,
+get_fsm_objsize_100 is consistently under 1MB so there is no reason to
+think that our objects are actually this large.
+
+At this point I'm suspicious of the following code creating too large
+a byte[] from possibly too large a return from dis.readInt()
+
+<a  rel="nofollow" href="https://github.com/basho/riak-java-client/blob/master/src/main/java/com/basho/riak/pbc/RiakConnection.java#L110">https://github.com/basho/riak-java-client/blob/master/src/main/java/com/basho/riak/pbc/RiakConnection.java#L110</a>
+
+Unsure if that indicates a problem in the driver or the server-side
+erlang protobuf server.
+
+Suspicious that requests pile up and many of these byte[]s are hanging
+out--enough to cause an OOM. It's possible that they are always very
+large, but are short-lived enough as to not cause a problem until
+latencies rise increasing their numbers briefly.
+
+Thoughts?
+
+Thanks,
+D
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09746.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09750">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09750">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09762.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">riak java client causing OOMs on high latency</span> <span class="sender italic">Dietrich Featherston</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09762.html">Re: riak java client causing OOMs on high latenc...</a></span> <span class="sender italic">Brian Roach</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="riak java client causing OOMs on high latency">
+<input type="hidden" name="msgid" value="CAHQXTbGiwqkrMt1MMQH-zTPz+KXnx8z9A5tKpemSvYKqankCqw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09750.html">
+<input type="submit" value=" Dietrich Featherston ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak+java+client+causing+OOMs+on+high+latency%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09746.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09762.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAHQXTbGiwqkrMt1MMQH-zTPz+KXnx8z9A5tKpemSvYKqankCqw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

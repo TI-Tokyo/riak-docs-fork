@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riakc_pb_socket client & poolboy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08699" id="c">
+<link rel="index" href="maillist.html#08699" id="i">
+<link rel="prev" href="msg08660.html" id="p">
+<link rel="next" href="msg08657.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08699.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riakc_pb_socket+client+%5C%26+poolboy%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riakc_pb_socket client & poolboy</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anthony+Molinaro%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anthony Molinaro</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120925" rel="nofollow">Tue, 25 Sep 2012 23:52:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We've also got our own pool implementation at OpenX
+
+<a  rel="nofollow" href="https://github.com/openx/gen_server_pool">https://github.com/openx/gen_server_pool</a></pre><pre>
+
+The nice thing is it wraps gen_server such that you don't actually
+have to know there is a pool there at all.  Its not well documented
+and currently uses mondemand to send stats (but I'll be trying to
+remove that as a hard dependency).  We use it to pool riak connections
+and thrift connections and it works great.
+
+An example of it's use for riakc would be
+
+-module (my_riak_client).
+
+start_link () -&gt;
+  gen_server_pool:start_link (
+    {local, my_pool},   % identifier of pool
+    riakc_pb_socket,    % gen_server to start
+    [&quot;localhost&quot;,8087,[{auto_reconnect, true}]],  % options for init/1
+    [],                                           % I don't recall
+    [ { prog_id, my_riak_client},   % mondemand identifier
+      { min_pool_size, 1 },         % minimum 1 connection
+      { max_pool_size, 10 },        % maximum 10 connections
+      { idle_timeout, 60 },        % after 60 seconds of idle kill connections
+      { pool_id, my_pool } ]       % same identifier as first argument
+  ).
+
+% then when you use it
+
+riak_get (Bucket, Key) -&gt;
+  riakc_pb_socket:get (my_pool, % pool identifier
+                       Bucket,
+                       Key).
+
+Behind the scenes its doing checkin/checkout and whatnot.  It does look
+cheat a bit by using calling the embedded gen_server functions directly
+which actually caused us some consternation recently as we did account for
+gen_server:reply/2 which riakc_pb_socket uses.  However, we patched it and
+now it works for those cases as well.
+
+-Anthony
+
+On Mon, Sep 24, 2012 at 01:20:33PM +0400, Dmitry Demeshchuk wrote:
+&gt; My main concern about poolboy is the fact that it wraps another gen_server
+&gt; process around the actual worker process. This makes you send an extra
+&gt; message every time you query the database, which is quite an overhead when
+&gt; you have a lot of concurrent users. Since you guys are fighting for
+&gt; performance, that could be an issue for you.
+&gt; 
+&gt; At Mochi, we have a client of our own, which is somewhat close to gen_pool
+&gt; behaviour I implemented and open-sourced. This client incomplete in many
+&gt; ways, and uses parametrized modules, which a lot of people tend to dislike,
+&gt; but it is very fast, stable and production-proven.
+&gt; 
+&gt; Nevertheless, I would really like to hear about Basho's opinion on poolboy
+&gt; too. Not only they included it into Riak distribution, but they also spent
+&gt; a handful of effort to test it through and fix a number of quite serious
+&gt; errors.
+&gt; 
+&gt; On Mon, Sep 24, 2012 at 12:56 PM, Yuri Lukyanov &lt;y.sn...@gmail.com&gt; wrote:
+&gt; 
+&gt; &gt; Hi Dmitry, ;)
+&gt; &gt;
+&gt; &gt; Yes, thank you. I'm also thinking about this approach. I just wanted
+&gt; &gt; to know how people use poolboy for that (It seems they do).
+&gt; &gt; But even considering your case, imagine that you have quite a big
+&gt; &gt; cluster and quite a big amount of rps.
+&gt; &gt; In this case you may want to have more than one load balancer to
+&gt; &gt; spread the load and be more tolerant to LB failures.
+&gt; &gt; Exactly the same situation arises.
+&gt; &gt; It's not a problem to implement a pooler in this case on my own. I'm
+&gt; &gt; just asking about using poolboy for that.
+&gt; &gt;
+&gt; &gt; On Mon, Sep 24, 2012 at 12:08 PM, Dmitry Demeshchuk
+&gt; &gt; &lt;demeshc...@gmail.com&gt; wrote:
+&gt; &gt; &gt; Why not use load balancer on top of Riak cluster, independently from
+&gt; &gt; &gt; clients? If load balancing is sophisticated enough, it can even do a
+&gt; &gt; greater
+&gt; &gt; &gt; job than just uniformly spreading requests between machines.
+&gt; &gt; &gt;
+&gt; &gt; &gt; Consider the following situation. You happen to send several requests
+&gt; &gt; for a
+&gt; &gt; &gt; huge piece of data (each can be just a simple get, or even a complicated
+&gt; &gt; &gt; map-reduce query), but the rest of the nodes, or just some of them,
+&gt; &gt; receive
+&gt; &gt; &gt; much smaller queries.
+&gt; &gt; &gt;
+&gt; &gt; &gt; What an external load balancer can do is gathering some basic stats from
+&gt; &gt; &gt; each machine (like load average, memory and IO consumption, number of
+&gt; &gt; rps to
+&gt; &gt; &gt; Riak and so on) and balancing the requests according to this data.
+&gt; &gt; Another
+&gt; &gt; &gt; benefit from this approach is that you can easily add any other Riak
+&gt; &gt; client
+&gt; &gt; &gt; (Python, Ruby, whatever else) on top of it, and load will be still nicely
+&gt; &gt; &gt; distributed between the machines.
+&gt; &gt; &gt;
+&gt; &gt; &gt; On Mon, Sep 24, 2012 at 11:38 AM, Yuri Lukyanov &lt;y.sn...@gmail.com&gt;
+&gt; &gt; wrote:
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; Hi,
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; I'm trying to use poolboy to organize a pool of connections to riak
+&gt; &gt; &gt;&gt; nodes with protobuf client.
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; This has come from the suggestion here:
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt;
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2012-September/009346.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2012-September/009346.html</a>
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; The quote:
+&gt; &gt; &gt;&gt; &quot;Using Poolboy is convenient because it comes as a dependency of
+&gt; &gt; &gt;&gt; riak_core.
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; If you use Poolboy, you'll have to modify riakc_pb_socket slightly to
+&gt; &gt; &gt;&gt; account for the way poolboy initializes connections (add a
+&gt; &gt; start_link/1),
+&gt; &gt; &gt;&gt; or create a simple module to pass the initialization from poolboy to
+&gt; &gt; &gt;&gt; riakc_pb_socket.&quot;
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; What I'm pondering about is what would be a convenient way to start
+&gt; &gt; &gt;&gt; riakc_pb_socket clients in a pool.
+&gt; &gt; &gt;&gt; For example, if I have 10 riak nodes in a cluster and want to open a
+&gt; &gt; &gt;&gt; single connection to each of them (using riakc_pb_socket), I need one
+&gt; &gt; &gt;&gt; poolboy worker per one riakc_pb_socket instance. In this case, I need
+&gt; &gt; &gt;&gt; a host/port of a single riak node for each
+&gt; &gt; &gt;&gt; riakc_pb_socket:start_link(). So I use WorkerArgs in
+&gt; &gt; &gt;&gt; poolboy:start_link/3 to pass a list of riak nodes. And here comes a
+&gt; &gt; &gt;&gt; confusion. poolboy passes WorkerArgs to each of its workers, so each
+&gt; &gt; &gt;&gt; worker gets the list of riak nodes. Now I need to somehow choose a
+&gt; &gt; &gt;&gt; node, maybe like proposed here:
+&gt; &gt; &gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak-erlang-client/pull/45/files">https://github.com/basho/riak-erlang-client/pull/45/files</a>
+&gt; &gt; &gt;&gt; But I don't think it's a good solution.
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; Maybe my idea of using riakc_pb_socket together with poolboy is not
+&gt; &gt; &gt;&gt; convenient? Maybe I should start a pool per each riak node? Maybe
+&gt; &gt; &gt;&gt; poolboy is not that convenient in this case as it seems?
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; Would you share your experiences and thoughts on the subject?
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; Thank you.
+&gt; &gt; &gt;&gt;
+&gt; &gt; &gt;&gt; _______________________________________________
+&gt; &gt; &gt;&gt; riak-users mailing list
+&gt; &gt; &gt;&gt; riak-users@lists.basho.com
+&gt; &gt; &gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; &gt; &gt;
+&gt; &gt; &gt; --
+&gt; &gt; &gt; Best regards,
+&gt; &gt; &gt; Dmitry Demeshchuk
+&gt; &gt;
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Best regards,
+&gt; Dmitry Demeshchuk
+
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+-- 
+------------------------------------------------------------------------
+Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08660.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08699">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08699">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08657.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08656.html">riakc_pb_socket client &amp; poolboy</a></span> <span class="sender italic">Yuri Lukyanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08658.html">Re: riakc_pb_socket client &amp; poolboy</a></span> <span class="sender italic">Dmitry Demeshchuk</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08659.html">Re: riakc_pb_socket client &amp; poolboy</a></span> <span class="sender italic">Yuri Lukyanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08660.html">Re: riakc_pb_socket client &amp; poolboy</a></span> <span class="sender italic">Dmitry Demeshchuk</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riakc_pb_socket client &amp; poolbo...</span> <span class="sender italic">Anthony Molinaro</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riakc_pb_socket client &amp; poolboy">
+<input type="hidden" name="msgid" value="20120926065108.GA38204@alumni.caltech.edu">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08699.html">
+<input type="submit" value=" Anthony Molinaro ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riakc_pb_socket+client+%5C%26+poolboy%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08660.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08657.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20120926065108.GA38204@alumni.caltech.edu</li>
+</ul>
+</div>
+</body>
+</html>

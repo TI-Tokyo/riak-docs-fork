@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Getting all the Keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02080" id="c">
+<link rel="index" href="maillist.html#02080" id="i">
+<link rel="prev" href="msg02068.html" id="p">
+<link rel="next" href="msg02086.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02080.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Getting+all+the+Keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Getting all the Keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Eric+Moritz%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Eric Moritz</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110123" rel="nofollow">Sun, 23 Jan 2011 10:38:10 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I always see problems with getting lists of data.  I hardly every see
+solutions.</pre><pre>
+
+What are some of solutions people have  come up with to do lists of data?
+
+One solution is Riak Search for sorted lists and filtering.
+
+Another solution is a mega-doc of presorted keys that can be sliced in a map
+phase.
+
+Has anyone done something as crazy as a bucket for a b-tree nodes with links
+for doing inexact range searches?
+
+Eric.
+---------- Forwarded message ----------
+From: &quot;Alexander Sicular&quot; &lt;sicul...@gmail.com&gt;
+Date: Jan 22, 2011 11:31 AM
+Subject: Re: Getting all the Keys
+To: &quot;Thomas Burdick&quot; &lt;tburd...@wrightwoodtech.com&gt;
+Cc: &lt;riak-users@lists.basho.com&gt;
+
+Hi Thomas,
+
+This is a topic that has come up many times. Lemme just hit a couple of high
+notes in no particular order:
+
+- If you must do a list keys op on a bucket, you must must must use
+&quot;?keys=stream&quot;. True will block on the coordinating node until all nodes
+return their keys. Stream will start sending keys as soon as the first node
+returns.
+
+- &quot;list keys&quot; is one of the most expensive native operations you can perform
+in Riak. Not only does it do a full key scan of all the keys in your bucket,
+but all the keys in your cluster. It is obnoxiously expensive and only more
+so as the number of keys in your cluster grows. There has been discussions
+about changing this but everything comes with a cost (more open file
+descriptors) and I do not believe a decision has been made yet.
+
+-Riak is in no way a relational system. It is, in fact, about as opposite as
+you can get. Incidentally, &quot;select *&quot; is generally not recommended in the
+Kingdom of Relations and regarded as wasteful. You need a bit of a mind
+shift from relational world to have success with nosql in general and Riak
+in particular.
+
+-There are no native indices in Riak. By default Riak uses the bitcask
+backend. Bitcask has many advantages but one disadvantage is that all keys
+(key length + a bit of overhead) must fit in ram.
+
+-Do not use &quot;?keys=true&quot;. Your computer will melt. And then your face.
+
+-As of Riak 0.14 your m/r can filter on key name. I would highly recommend
+that your data architecture take this into account by using keys that have
+meaningful names. This will allow you to not scan every key in your cluster.
+
+-Buckets are analogous to relational tables but only just. In Riak, you can
+think of a bucket as a namespace holder (it is used as part of the default
+circular hash function) but primarily as a mechanism to differentiate system
+settings from one group of keys to the next.
+
+-There is no penalty for unlimited buckets except for when their settings
+deviate from the system defaults. By settings I mean things like hooks,
+replication values and backends among others.
+
+-One should list keys by truth if one enjoys sitting in parking lots on the
+freeway on a scorching summers day or perhaps waiting in a TSA line at your
+nearest international point of embarkation surrounded by octomom families
+all the while juggling between the grope or the pr0n slideshow. If that is
+for you, use &quot;?keys=true&quot;.
+
+-Virtually everything in Riak is transient. Meaning, for the most part (not
+including the 60 seconds or so of m/r cache), there is no caching going on
+in Riak outside of the operating system. Ie. your subsequent queries will do
+more or less the same work as their predecessors. You need to cache your own
+results if you want to reuse them... quickly.
+
+
+
+Oh, there's more but I'm pretty jelloed from last night. Welcome to the
+fold, Thomas. Can I call you Tom?
+
+Cheers,
+-Alexander Sicular
+
+@siculars
+
+On Jan 22, 2011, at 10:19 AM, Thomas Burdick wrote:
+
+&gt; I've been playing around with riak lately as really my first usage of a
+distributed key/value store. I quite like many of the concepts and
+possibilities of Riak and what it may deliver, however I'm really stuck on
+an issue.
+&gt;
+&gt; Doing the equivalent of a select * from sometable in riak is seemingly
+slow. As a quick test I tried...
+&gt;
+&gt; <a  rel="nofollow" href="http://localhost:8098/riak/mytable?keys=true">http://localhost:8098/riak/mytable?keys=true</a>
+&gt;
+&gt; Before even iterating over the keys this was unbearably slow already. This
+took almost half a second on my machine where mytable is completely empty!
+&gt;
+&gt; I'm a little baffled, I would assume that getting all the keys of a table
+is an incredibly common task?  How do I get all the keys of a table quickly?
+By quickly I mean a few milliseconds or less as I would expect of even a
+&quot;slow&quot; rdbms with an empty table, even some tables with 1000's of items can
+get all the primary keys of a sql table in a few milliseconds.
+&gt;
+&gt; Tom Burdick
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02068.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02080">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02080">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02086.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02076.html">Re: Getting all the Keys</a></span> <span class="sender italic">Eric Moritz</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02078.html">Re: Getting all the Keys</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02081.html">Re: Getting all the Keys</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02082.html">Re: Getting all the Keys</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02079.html">Best relational DB to use with ...</a></span> <span class="sender italic">Mojito Sorbet</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02083.html">Re: Best relational DB to use w...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02077.html">Re: Getting all the Keys</a></span> <span class="sender italic">Eric Moritz</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02084.html">Re: Getting all the Keys</a></span> <span class="sender italic">Eric Moritz</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02067.html">Re: Getting all the Keys</a></span> <span class="sender italic">Neville Burnell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02068.html">Re: Getting all the Keys</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Getting all the Keys</span> <span class="sender italic">Eric Moritz</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02086.html">Re: Getting all the Keys</a></span> <span class="sender italic">Eric Moritz</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Getting all the Keys">
+<input type="hidden" name="msgid" value="AANLkTi=KZDf+rXV=+1MYEUA5=6pqbFN=z-=NySOO1jvm@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02080.html">
+<input type="submit" value=" Eric Moritz ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Getting+all+the+Keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02068.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02086.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTi=KZDf+rXV=+1MYEUA5=6pqbFN=z-=NySOO1jvm@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>SV: How to store data</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08076" id="c">
+<link rel="index" href="maillist.html#08076" id="i">
+<link rel="prev" href="msg08089.html" id="p">
+<link rel="next" href="msg08062.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08076.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22SV%5C%3A+How+to+store+data%22&amp;o=newest" rel="nofollow"><span itemprop="name">SV: How to store data</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Erik+S%C3%B8e+S%C3%B8rensen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Erik Søe Sørensen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120726" rel="nofollow">Thu, 26 Jul 2012 00:49:26 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Never mind the number of requests (well, almost) - what you certainly want to 
+keep down is the number of disk seeks.</pre><pre>
+
+To that end...:
+1) those 500 identifiers present in a request - are they totally unrelated, or 
+do they occur in some pattern - e.g. the same together always?
+2) the cut-off time - may it be anything, or is it something like a fixed 
+amount back in time?
+
+
+----- Reply message -----
+Fra: &quot;Andrew Kondratovich&quot; &lt;andrew.kondratov...@gmail.com&gt;
+Dato: ons., jul. 25, 2012 18:23
+Emne: How to store data
+Til: &quot;Andres Jaan Tack&quot; &lt;andres.jaan.t...@eesti.ee&gt;
+Cc: &quot;riak-users@lists.basho.com&quot; &lt;riak-users@lists.basho.com&gt;
+
+
+Yeap.. half a thousand requests to riak isn't cool =( I'm looking some strategy 
+of storing data so that i could fetch all items by 1 request.
+
+I could use index MR at time and filter results at map phase. I could use 
+special keys with from data and use key filters (with time filtering at map 
+phase)... I wish I could use several 2i at MR or combine 2i with keyfilters, or 
+perform MR on buckets... I wish... =)
+
+On Wed, Jul 25, 2012 at 5:35 PM, Andres Jaan Tack 
+&lt;andres.jaan.t...@eesti.ee&lt;<a  rel="nofollow" href="mailto:andres.jaan.t...@eesti.ee">mailto:andres.jaan.t...@eesti.ee</a>&gt;&gt; wrote:
+Is that a realistic strategy for low latency requirements? Imagine this were 
+some web service, and people generate this query at some reasonable frequency.
+
+(not that I know what Andrew is looking for, exactly)
+
+
+2012/7/25 Yousuf Fauzan &lt;yousuffau...@gmail.com&lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>&gt;&gt;
+Since 500 is not that big a number, I think you can run that many M/Rs with 
+each emitting only records having &quot;time&quot; greater than specified. Input would be 
+{index, &lt;&lt;&quot;bucket&quot;&gt;&gt;, &lt;&lt;&quot;from_bin&quot;&gt;&gt;, &lt;&lt;&quot;from_field_value&quot;&gt;&gt;}
+
+If you decide to split the data into separate buckets based on &quot;from&quot; field, 
+input would be {index, &lt;&lt;&quot;from_field_value&quot;&gt;&gt;, &lt;&lt;&quot;time_bin&quot;&gt;&gt;, &lt;&lt;&quot;time_low&quot;&gt;&gt;, 
+&lt;&lt;&quot;time_high&quot;&gt;&gt;}
+
+
+--
+Yousuf
+
+On Wed, Jul 25, 2012 at 6:35 PM, Andrew Kondratovich 
+&lt;andrew.kondratov...@gmail.com&lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>&gt;&gt; wrote:
+Hello,  Yousuf.
+
+Thanks for your reply.
+
+We have several millions of items. It's about 10 000 of unique 'from' fields 
+(about 1000 items for each). Usually, we need to get items for about 500 'from' 
+identifiers with 'time' limit (about 5% of items is corresponding).
+
+On Wed, Jul 25, 2012 at 1:02 PM, Yousuf Fauzan 
+&lt;yousuffau...@gmail.com&lt;<a  rel="nofollow" href="mailto:yousuffau...@gmail.com">mailto:yousuffau...@gmail.com</a>&gt;&gt; wrote:
+Hi Andrew,
+
+First of all, the correct answer to your question is the proverbial &quot;it 
+depends&quot;. Having said that, here is what I could do in your case
+
+1. If there are enough data points with the same &quot;from&quot; field, I will make it a 
+bucket and then index on time.
+2. If the above is not true, I will index on &quot;from&quot; and &quot;time&quot; field.
+    a. If number of records where &quot;time&quot; is greater than the one your require 
+is small, I will run a map/reduce with the initial input as those records.
+    b. If number of records having a particular &quot;from&quot; is small, I will do the 
+above with the initial input as records having that &quot;from&quot; field. This could be 
+a problem as Riak only supports range and exact queries so if you want to query 
+multiple identifiers, you will have to run multiple queries.
+    In both the above cases, I will use secondary indexes to get the initial 
+records.
+    Note that we are using M/R as Riak does not support querying by multiple 
+indexes.
+
+What I would also suggest is to partition your data into different buckets. You 
+will need to understand the queries that you will be supporting and partition 
+it accordingly.
+
+--
+Yousuf
+
+On Wed, Jul 25, 2012 at 2:50 PM, Andrew Kondratovich 
+&lt;andrew.kondratov...@gmail.com&lt;<a  rel="nofollow" href="mailto:andrew.kondratov...@gmail.com">mailto:andrew.kondratov...@gmail.com</a>&gt;&gt; wrote:
+Good afternoon.
+
+I am considering several storage solutions for my project, and now I look at 
+Riak.
+We work with the following pattern of data:
+{
+  time: unixtime
+  from: int
+  data: binary
+  ...
+}
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08089.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08076">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08076">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08062.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08054.html">How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08055.html">Re: How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08056.html">Re: How to store data</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08058.html">Re: How to store data</a></span> <span class="sender italic">Andres Jaan Tack</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08061.html">Re: How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08064.html">Re: How to store data</a></span> <span class="sender italic">Yousuf Fauzan</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08075.html">SV: How to store data</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08078.html">Re: How to store data</a></span> <span class="sender italic">Andrew Kondratovich</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08089.html">Re: How to store data</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">SV: How to store data</span> <span class="sender italic">Erik Søe Sørensen</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="SV: How to store data">
+<input type="hidden" name="msgid" value="5E8FDD6F-DD82-41F4-8DAE-E75E804E24F5@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08076.html">
+<input type="submit" value=" Erik Søe Sørensen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22SV%5C%3A+How+to+store+data%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08089.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08062.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5E8FDD6F-DD82-41F4-8DAE-E75E804E24F5@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

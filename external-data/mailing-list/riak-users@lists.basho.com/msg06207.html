@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Question regarding recent riak_core_vnode_master changes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06207" id="c">
+<link rel="index" href="maillist.html#06207" id="i">
+<link rel="prev" href="msg06079.html" id="p">
+<link rel="next" href="msg06001.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06207.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Question+regarding+recent+riak_core_vnode_master+changes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Question regarding recent riak_core_vnode_master changes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeff+Thompson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeff Thompson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120110" rel="nofollow">Tue, 10 Jan 2012 08:29:41 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Joseph,
+
+Thanks for getting back with me, and my apologies that it's taken me so
+long to respond. Thank you for the explanation! You also came up with the
+right diagnosis of my problem. I fixed it sometime just before Christmas
+and everything has been working fine with riak_core since.</pre><pre>
+
+Once I get things together in a way that I like I'll be posting a public
+repo as another example of using riak_core for an application, and would
+certainly welcome any and all feedback.
+
+Cheers!
+
+Jeff
+
+
+
+On Tue, Dec 27, 2011 at 3:15 PM, Joseph Blomstedt &lt;j...@basho.com&gt; wrote:
+
+&gt; Jeff,
+&gt;
+&gt; There have been several changes to how vnodes are managed leading up
+&gt; to the next release of Riak. One of those changes is the addition of
+&gt; vnode proxy processes.
+&gt;
+&gt; As before, vnodes are still started on demand. However, there are now
+&gt; a set of vnode proxy processes that are always running. Unlike vnodes,
+&gt; the proxy processes for all partition indices are started when a node
+&gt; comes online, and the proxy processes are supervised and automatically
+&gt; restarted if they crash. Each proxy process has a unique locally
+&gt; registered name. To send an event to a vnode, you send it directly to
+&gt; the proxy process for that vnode. If the proxy already has a pid for
+&gt; the vnode, it forwards the message to the vnode. If it doesn't have a
+&gt; cached pid, it will contact the 'riak_core_vnode_manager' to get a
+&gt; vnode pid. If the vnode is currently running, the manager returns the
+&gt; pid; otherwise it starts up the vnode and returns the newly spawned
+&gt; pid. The same lazy / on-demand process as before.
+&gt;
+&gt; The 'badarg' issue you are seeing is related to the relevant proxy
+&gt; processes not being spawned for your vnodes before you try to send the
+&gt; event, and therefore the constructed atom doesn't refer to a known
+&gt; registered name. I am not sure how that is occurring, as vnode proxy
+&gt; processes are automatically started the moment you register your vnode
+&gt; module with riak_core. Of course, there has also been some changes to
+&gt; have vnode are registered with riak_core as well. Make sure you are
+&gt; registering your vnode with Riak using 'riak_core:register'. As an
+&gt; example, here's how 'riak_kv' registers with riak_core (see in
+&gt; riak_kv_app.erl):
+&gt; =====
+&gt; riak_core:register(riak_kv, [
+&gt;    {vnode_module, riak_kv_vnode},
+&gt;    {bucket_validator, riak_kv_bucket}
+&gt; ]),
+&gt; =====
+&gt;
+&gt; You don't need a bucket_validator if your app isn't using one, but you
+&gt; must always register your vnode_module. That call should trigger
+&gt; 'register_mod' in riak_core.erl that should trigger a call to
+&gt; riak_core_vnode_proxy_sup:start_proxies.
+&gt;
+&gt; -Joe
+&gt;
+&gt; On Mon, Dec 19, 2011 at 10:52 AM, Jeff Thompson &lt;mythr...@gmail.com&gt;
+&gt; wrote:
+&gt; &gt; As a project to better learn riak_core and to think more about
+&gt; distributed
+&gt; &gt; problems, I've been writing a little mud app using riak_core.
+&gt; &gt;
+&gt; &gt; I just updated to the latest riak_core version and am running into a
+&gt; problem
+&gt; &gt; when riak_core_vnode_master gets a handle_cast.
+&gt; &gt;
+&gt; &gt; In the previous version handle_cast would:
+&gt; &gt;
+&gt; &gt; handle_cast(Req=?VNODE_REQ{index=Idx}, State) -&gt;
+&gt; &gt;     Pid = get_vnode(Idx, State),
+&gt; &gt;     gen_fsm:send_event(Pid, Req),
+&gt; &gt;     {noreply, State};
+&gt; &gt;
+&gt; &gt; get_vnode:
+&gt; &gt;
+&gt; &gt; get_vnode(Idx, State=#state{vnode_mod=Mod}) -&gt;
+&gt; &gt;     case idx2vnode(Idx, State) of
+&gt; &gt;         no_match -&gt;
+&gt; &gt;             {ok, Pid} = riak_core_vnode_sup:start_vnode(Mod, Idx),
+&gt; &gt;             MonRef = erlang:monitor(process, Pid),
+&gt; &gt;             add_vnode_rec(#idxrec{idx=Idx,pid=Pid,monref=MonRef}, State),
+&gt; &gt;             Pid;
+&gt; &gt;         X -&gt; X
+&gt; &gt;     end.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; I would see the get_vnode code successfully start my vnode and the
+&gt; &gt; subsequent gen_fsm:send_event/2 call would succeed.
+&gt; &gt;
+&gt; &gt; However, the new version of get_vnode looks like:
+&gt; &gt;
+&gt; &gt; handle_cast(Req=?VNODE_REQ{index=Idx}, State=#state{vnode_mod=Mod}) -&gt;
+&gt; &gt;     Proxy = riak_core_vnode_proxy:reg_name(Mod, Idx),
+&gt; &gt;     gen_fsm:send_event(Proxy, Req),
+&gt; &gt;     {noreply, State};
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; and riak_core_vnode_proxy:reg_name/2 just returns an atom:
+&gt; &gt;
+&gt; &gt; reg_name(Mod, Index) -&gt;
+&gt; &gt;     ModBin = atom_to_binary(Mod, latin1),
+&gt; &gt;     IdxBin = list_to_binary(integer_to_list(Index)),
+&gt; &gt;     AllBin = &lt;&lt;$p,$r,$o,$x,$y,$_, ModBin/binary, $_, IdxBin/binary&gt;&gt;,
+&gt; &gt;     binary_to_atom(AllBin, latin1).
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; This is resulting in a:
+&gt; &gt;
+&gt; &gt; {badarg,[{gen_fsm,send_event,2},
+&gt; &gt;             {riak_core_vnode_master,handle_cast,2},
+&gt; &gt;             {gen_server,handle_msg,5},
+&gt; &gt;             {proc_lib,init_p_do_apply,3}]}
+&gt; &gt;
+&gt; &gt; Based on the above, there doesn't seem to be an 'on demand' starting of
+&gt; &gt; vnodes anymore?
+&gt; &gt;
+&gt; &gt; I'm happy to dig into this more (which I will anyway to learn whats going
+&gt; &gt; on), but if there are any quick pointers that can be given as to how the
+&gt; &gt; recent changes impact the writing of riak_core vnodes and what I'm seeing
+&gt; &gt; above, I would certainly appreciate it.
+&gt; &gt;
+&gt; &gt; Thanks!
+&gt; &gt;
+&gt; &gt; Jeff
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06079.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06207">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06207">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06001.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05996.html">Question regarding recent riak_core_vnode_master changes</a></span> <span class="sender italic">Jeff Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06079.html">Re: Question regarding recent riak_core_vnode_master...</a></span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Question regarding recent riak_core_vnode_ma...</span> <span class="sender italic">Jeff Thompson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Question regarding recent riak_core_vnode_master changes">
+<input type="hidden" name="msgid" value="CAEK7Pk+g2ngD-pE6JQQocYs5jun4vj+MmtV_s0_Ve6qmYv_O2g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06207.html">
+<input type="submit" value=" Jeff Thompson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Question+regarding+recent+riak_core_vnode_master+changes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06079.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06001.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEK7Pk+g2ngD-pE6JQQocYs5jun4vj+MmtV_s0_Ve6qmYv_O2g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

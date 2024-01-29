@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Number of nodes and links</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00380" id="c">
+<link rel="index" href="maillist.html#00380" id="i">
+<link rel="prev" href="msg00379.html" id="p">
+<link rel="next" href="msg00381.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00380.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Number+of+nodes+and+links%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Number of nodes and links</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Chris+Hicks%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Chris Hicks</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100515" rel="nofollow">Sat, 15 May 2010 18:36:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+I'll take a look at that. Thank you for the advice.</pre><pre>
+
+&gt; Subject: Re: Number of nodes and links
+&gt; From: sicul...@gmail.com
+&gt; Date: Sat, 15 May 2010 20:12:26 -0400
+&gt; CC: riak-users@lists.basho.com; pres...@synergyeoc.com
+&gt; To: silent_vende...@hotmail.com
+&gt; 
+&gt; Hi Chris, 
+&gt; 
+&gt; Chests in the presumably &quot;Chest&quot; bucket sounds like the container where all 
+&gt; the contention will take place.  What you describe would almost certainly 
+&gt; require a bucket with allow_mult=true and entail an enormous amount of 
+&gt; transactional detection within your application and each of your players 
+&gt; (clients) be uniquely named (X-Riak-ClientId).
+&gt; 
+&gt; What I would do in this scenario is pre-compute all those chest objects (it 
+&gt; sounds like your'e already doing that) but put them in redis. In fairness, I 
+&gt; do not know if Riak is where you want to do all that stuff. I would make each 
+&gt; chest a key in redis as a set containing keys to all the individual items 
+&gt; within that chest. Just pop the items off the set as requests come in. Redis 
+&gt; guarantees atomic set operations. Once the client has it's loot key, just 
+&gt; fetch it out of riak. If you absolutely insisted on using riak here, you 
+&gt; would probably have to touch the loot item in the loot bucket by locking it 
+&gt; somehow or flagging it as taken if you weren't confident in your 
+&gt; transactional/chest locking solution.
+&gt; 
+&gt; I would continue to use riak as your long-term persistent data-store but in 
+&gt; this specific use case I believe Riak is not the appropriate solution. Also, 
+&gt; redis would be at least an order of magnitude faster. 
+&gt; 
+&gt; -Alexander
+&gt; 
+&gt; 
+&gt; On May 15, 2010, at 7:33 PM, Chris Hicks wrote:
+&gt; 
+&gt; &gt; First of thank you for the responses.
+&gt; &gt; 
+&gt; &gt; As far as the HTTP interface I don't plan on using that but will be 
+&gt; &gt; connecting directly through Erlang, so that 8kb limit for that specific 
+&gt; &gt; case, as far as I understand, won't affect me as much. I would like to get 
+&gt; &gt; to understand the conflict handling a bit better as in my case I know that 
+&gt; &gt; this is going to be something I will need to pay particular attention to.
+&gt; &gt; 
+&gt; &gt; I'd like to spell out a scenario that shows how I understand the process to 
+&gt; &gt; work so that you guys can tell me I have it or I'm totally off base. To 
+&gt; &gt; start let me say that the project I'm working on is a game, so imagine a 
+&gt; &gt; chest with a number of items in it which is little more than a chest object 
+&gt; &gt; with links to the specific items contained in the chest.
+&gt; &gt; 
+&gt; &gt; Player 1, Player 2 and Player 3 all decide to take something from the chest 
+&gt; &gt; at the exact same time. They all retrieve version 0 (using version for 
+&gt; &gt; simplicity) of the chest object from the DB. Player 1's 
+&gt; &gt; connection/processing is lightning fast and they finish, updating the chest 
+&gt; &gt; document to version 1. Player 2 &amp; 3 finish at the same time and both try to 
+&gt; &gt; update the chest document in the database, except that it has now changed 
+&gt; &gt; and so there is a conflict. Now as far as I understand it you can tell the 
+&gt; &gt; DB to return both versions and let the program handle it. Does that mean 
+&gt; &gt; that both Player 2 and Player 3 will get version 1 of the document back 
+&gt; &gt; along with their proposed modified version?
+&gt; &gt; 
+&gt; &gt; If that is the case it seems like I could, if I plan for it from the 
+&gt; &gt; beginning, simply restart the processing for Player 2 and Player 3 with 
+&gt; &gt; version 1 acting like the original document. In this way I could make sure 
+&gt; &gt; that actions taken from a player are done, more-or-less, in a first come 
+&gt; &gt; first serve basis. If the above is true does it matter how many revisions 
+&gt; &gt; the document has undergone, as far as what is returned after a conflict?
+&gt; &gt; 
+&gt; &gt; By that I mean what happens if Player 4 tries to get something out of the 
+&gt; &gt; chest at the same time as the other 3, only for some reason their 
+&gt; &gt; processing is very very slow and Players 1, 2 and 3 all finish up 
+&gt; &gt; completely and the chest document is at version 3 when player 4 tries to 
+&gt; &gt; submit their document back to the D. Does Player 4 get version 3 of the 
+&gt; &gt; document back along with their own proposed modified document?
+&gt; &gt; 
+&gt; &gt; How close am I as far as how the DB handles this?
+&gt; &gt; 
+&gt; &gt; Hotmail has tools for the New Busy. Search, chat and e-mail from your 
+&gt; &gt; inbox. Learn more.
+&gt; 
+                                          
+_________________________________________________________________
+Hotmail is redefining busy with tools for the New Busy. Get more from your 
+inbox.
+<a  rel="nofollow" href="http://www.windowslive.com/campaign/thenewbusy?ocid=PID28326::T:WLMTAGL:ON:WL:en-US:WM_HMP:042010_2">http://www.windowslive.com/campaign/thenewbusy?ocid=PID28326::T:WLMTAGL:ON:WL:en-US:WM_HMP:042010_2</a></pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00379.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00380">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00380">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00381.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00375.html">Number of nodes and links</a></span> <span class="sender italic">Chris Hicks</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00376.html">Re: Number of nodes and links</a></span> <span class="sender italic">Preston Marshall</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00377.html">Re: Number of nodes and links</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg00378.html">RE: Number of nodes and links</a></span> <span class="sender italic">Chris Hicks</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00379.html">Re: Number of nodes and links</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Number of nodes and links</span> <span class="sender italic">Chris Hicks</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Number of nodes and links">
+<input type="hidden" name="msgid" value="SNT123-W5B49AA37076034D3B9FED84FF0@phx.gbl">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00380.html">
+<input type="submit" value=" Chris Hicks ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Number+of+nodes+and+links%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00379.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00381.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">SNT123-W5B49AA37076034D3B9FED84FF0@phx.gbl</li>
+</ul>
+</div>
+</body>
+</html>

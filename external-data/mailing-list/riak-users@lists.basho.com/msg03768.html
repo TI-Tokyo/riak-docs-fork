@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: speeding up riaksearch precommit indexing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03768" id="c">
+<link rel="index" href="maillist.html#03768" id="i">
+<link rel="prev" href="msg03767.html" id="p">
+<link rel="next" href="msg03770.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03768.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+speeding+up+riaksearch+precommit+indexing%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: speeding up riaksearch precommit indexing</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sylvain+Niles%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sylvain Niles</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110621" rel="nofollow">Tue, 21 Jun 2011 14:43:40 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Why not write to a queue bucket with a timestamp and have a queue
+processor move writes to the &quot;final&quot; bucket once they're over a
+certain age? It can dedup/validate at that point too.</pre><pre>
+
+
+On Tue, Jun 21, 2011 at 2:26 PM, Les Mikesell &lt;lesmikes...@gmail.com&gt; wrote:
+&gt; Where can I find the redis hacks that get close to clustering?  Would
+&gt; membase work with syncronous replication on a pair of nodes for a reliable
+&gt; atomic 'check and set' operation to dedup redundant data before writing to
+&gt; riak?   Conceptually I like the 'smart client' fault tolerance of
+&gt; memcache/membase and restricting it to a pair of machines would keep the
+&gt; client configuration reasonable.
+&gt;
+&gt;  -Les
+&gt;
+&gt;
+&gt; On 6/18/2011 6:54 PM, John D. Rowell wrote:
+&gt;&gt;
+&gt;&gt; The &quot;real&quot; queues like HornetQ and others can take care of this without
+&gt;&gt; a single point of failure but it's a pain (in my opinion) to set them up
+&gt;&gt; that way, and usually with all the cluster and failover features active
+&gt;&gt; they get quite slow for writes.We use Redis for this because it's
+&gt;&gt; simpler and lightweight. The problem is that there is no real clustering
+&gt;&gt; option for Redis today, even thought there are some hacks that get
+&gt;&gt; close. When we cannot afford a single point of failure or any downtime,
+&gt;&gt; we tend to use MongoDB for simple queues. It has full cluster support
+&gt;&gt; and the performance is pretty close to what you get with Redis in this
+&gt;&gt; use case.
+&gt;&gt;
+&gt;&gt; OTOH you could keep it all Riak and setup a separate small cluster with
+&gt;&gt; a RAM backend and use that as a queue, probably with similar
+&gt;&gt; performance. The idea here is that you can scale these clusters (the
+&gt;&gt; &quot;queue&quot; and the indexed production data) independently in response to
+&gt;&gt; your load patterns, and have optimum hardware and I/O specs for the
+&gt;&gt; different cluster nodes.
+&gt;&gt;
+&gt;&gt; -jd
+&gt;&gt;
+&gt;&gt; 2011/6/18 Les Mikesell &lt;lesmikes...@gmail.com
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:lesmikes...@gmail.com">mailto:lesmikes...@gmail.com</a>&gt;&gt;
+&gt;&gt;
+&gt;&gt;    Is there a good way to handle something like this with redundancy
+&gt;&gt;    all the way through?  On simple key/value items you could have two
+&gt;&gt;    readers write the same things to riak and let bitcask cleanup
+&gt;&gt;    eventually discard one, but with indexing you probably need to use
+&gt;&gt;    some sort of failover approach up front.  Do any of those queue
+&gt;&gt;    managers handle that without adding their own single point of
+&gt;&gt;    failure?  Assuming there are unique identifiers in the items being
+&gt;&gt;    written, you might use the CAS feature of redis to arbitrate writes
+&gt;&gt;    into its queue, but what happens when the redis node fails?
+&gt;&gt;
+&gt;&gt;      -Les
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;    On 6/17/11 11:48 PM, John D. Rowell wrote:
+&gt;&gt;
+&gt;&gt;        Why not decouple the twitter stream processing from the
+&gt;&gt;        indexing? More than
+&gt;&gt;        likely you have a single process consuming the spritzer stream,
+&gt;&gt;        so you can put
+&gt;&gt;        the fetched results in a queue (hornetq, beanstalk, or even a
+&gt;&gt;        simple Redis
+&gt;&gt;        queue) and then have workers pull from the queue and insert into
+&gt;&gt;        Riak. You could
+&gt;&gt;        run one worker per node and thus insert in parallel into all
+&gt;&gt;        nodes. If you need
+&gt;&gt;        free CPU (e.g. for searches), just throttle the workers to some
+&gt;&gt;        sane level. If
+&gt;&gt;        you see the queue getting bigger, add another Riak node (and
+&gt;&gt;        thus another local
+&gt;&gt;        worker).
+&gt;&gt;
+&gt;&gt;        -jd
+&gt;&gt;
+&gt;&gt;        2011/6/13 Steve Webb &lt;sw...@gnip.com &lt;<a  rel="nofollow" href="mailto:sw...@gnip.com">mailto:sw...@gnip.com</a>&gt;
+&gt;&gt;        &lt;<a  rel="nofollow" href="mailto:sw...@gnip.com">mailto:sw...@gnip.com</a> &lt;<a  rel="nofollow" href="mailto:sw...@gnip.com">mailto:sw...@gnip.com</a>&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;            Ok, I've changed my two VMs to each have:
+&gt;&gt;
+&gt;&gt;            3 CPUs, 1GB ram, 120GB disk
+&gt;&gt;
+&gt;&gt;            I'm ingesting the twitter spritzer stream (about 10-20
+&gt;&gt;        tweets per second,
+&gt;&gt;            approx 2k of data per tweet).  One bucket is storing the
+&gt;&gt;        non-indexed tweets
+&gt;&gt;            in full.  Another bucket is storing the indexed tweet
+&gt;&gt;        string, id, date and
+&gt;&gt;            username.  A maximum of 20 clients can be hitting the
+&gt;&gt;        'cluster' at any one time.
+&gt;&gt;
+&gt;&gt;            I'm using n_val=2 so there is replication going on behind
+&gt;&gt;        the scenes.
+&gt;&gt;
+&gt;&gt;            I'm using a hardware load-balancer to distribute the work
+&gt;&gt;        amongst the two
+&gt;&gt;            nodes and now I'm seeing about 75% CPU usage as opposed to
+&gt;&gt;        100% on one node
+&gt;&gt;            and 50% on the replicating-only node.
+&gt;&gt;
+&gt;&gt;            I've monitored the VM over the last few days and it seems to
+&gt;&gt;        be mostly
+&gt;&gt;            CPU-bound.  The disk I/O is low.  The Network I/O is low.
+&gt;&gt;
+&gt;&gt;            Q: Can I change the pre-commit to a post-commit trigger or
+&gt;&gt;        something perhaps
+&gt;&gt;            or will that make any difference at all?  I'm ok if the
+&gt;&gt;        tweet stuff doesn't
+&gt;&gt;            get indexed immediately and there's a slight lag in indexing
+&gt;&gt;        if it saves on CPU.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;        _________________________________________________
+&gt;&gt;        riak-users mailing list
+&gt;&gt;        riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;
+&gt;&gt;  <a  rel="nofollow" href="http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com">http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;  &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;    _________________________________________________
+&gt;&gt;    riak-users mailing list
+&gt;&gt;    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;    <a  rel="nofollow" href="http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com">http://lists.basho.com/__mailman/listinfo/riak-users___lists.basho.com</a>
+&gt;&gt;    &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03767.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03768">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03768">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03770.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03600.html">speeding up riaksearch precommit indexing</a></span> <span class="sender italic">Steve Webb</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03618.html">Re: speeding up riaksearch precommit indexing</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03662.html">Re: speeding up riaksearch precommit indexing</a></span> <span class="sender italic">Steve Webb</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03699.html">Re: speeding up riaksearch precommit indexing</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03743.html">Re: speeding up riaksearch precommit indexing</a></span> <span class="sender italic">John D. Rowell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03745.html">Re: speeding up riaksearch precommit index...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03746.html">Re: speeding up riaksearch precommit ...</a></span> <span class="sender italic">John D. Rowell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03767.html">Re: speeding up riaksearch precom...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: speeding up riaksearch pr...</span> <span class="sender italic">Sylvain Niles</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03770.html">Re: speeding up riaksearch pr...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03772.html">Re: speeding up riaksearch pr...</a></span> <span class="sender italic">Mathias Meyer</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: speeding up riaksearch precommit indexing">
+<input type="hidden" name="msgid" value="BANLkTik2unKCy4-_H5D9WosvPugefcux=Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03768.html">
+<input type="submit" value=" Sylvain Niles ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+speeding+up+riaksearch+precommit+indexing%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03767.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03770.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTik2unKCy4-_H5D9WosvPugefcux=Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

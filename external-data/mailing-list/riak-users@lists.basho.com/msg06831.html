@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riakkit, a python riak object mapper, has hit beta!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06831" id="c">
+<link rel="index" href="maillist.html#06831" id="i">
+<link rel="prev" href="msg06829.html" id="p">
+<link rel="next" href="msg06832.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06831.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riakkit%2C+a+python+riak+object+mapper%2C+has+hit+beta%5C%21%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riakkit, a python riak object mapper, has hit beta!</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Andrey+V.+Martyanov%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Andrey V. Martyanov</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120301" rel="nofollow">Thu, 01 Mar 2012 18:35:16 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi!
+
+Two things force me to avoid using Riakkit: the code is GPL licensed and
+non pep8 compliant. So, I cannot fork it and make changes. The code needs
+clean up, for example, json module is imported in document.py, but not
+used. Riakkit has no conflict resolution logic, it's basically delegate the
+work to underlying python client. If I'd like to implement my save method I
+need to copy and rewrite more than 150 lines of code mess. What I think the
+mapper should do:
+1. Serialize the objects to valid json;
+2. Deserialize the data back to class instances;
+3. Validate the fields data;
+4. Track dependencies between models;</pre><pre>
+
+Simple example using Riakkit-like syntax;
+
+class Post(Document):
+
+    bucket_name  = 'posts'
+
+    title = types.StringProperty(required=True)
+    content = types.StringProperty(required=True)
+
+
+class Comment(Document):
+
+    bucket_name = 'comments'
+
+    text = types.StringProperty(required=True)
+    post = types.IndexReferenceProperty(reference_class=Post,
+collection_name='comments')
+
+&gt;&gt;&gt; post = Post('title', 'content')
+&gt;&gt;&gt; comment1 = ('comment1', post=post)
+&gt;&gt;&gt; comment2 = ('comment2', post=post)
+&gt;&gt;&gt; post.is_valid()
+True
+&gt;&gt; post.serialize()
+{
+    &quot;key&quot;: &quot;post_key&quot;,
+    &quot;title&quot;: &quot;title&quot;,
+    &quot;content&quot;: &quot;content&quot;,
+    &quot;comments&quot;: [
+        {
+            &quot;key&quot;: &quot;comment1_key&quot;,
+            &quot;text&quot;: &quot;comment1&quot;
+        },
+        {
+            &quot;key&quot;: &quot;comment2_key&quot;,
+            &quot;text&quot;: &quot;comment2&quot;
+        },
+    ]
+}
+&gt;&gt;&gt; post.store()
+True
+&gt;&gt;&gt; post = Post.get_with_key('post_key')
+&gt;&gt;&gt; post.comments
+['Post comment1', 'Post comment2']
+&gt;&gt;&gt; post_json_data = get_json_data_from_request()
+&gt;&gt;&gt; post = Post.deserialize(post_json_data)
+&gt;&gt;&gt; post.title
+'title'
+&gt;&gt;&gt; post.comments
+['Post comment1', 'Post comment2']
+
+Something like that.
+
+
+Best regards,
+Andrey Martyanov
+
+On Fri, Mar 2, 2012 at 5:39 AM, Sean Carey &lt;ca...@basho.com&gt; wrote:
+
+&gt; Keep up the great work Shuhao!
+&gt;
+&gt;
+&gt; On Mar 1, 2012, at 7:36 PM, Shuhao Wu &lt;ad...@thekks.net&gt; wrote:
+&gt;
+&gt; Hey guys,
+&gt;
+&gt; I started writing riakkit approximately 3 months ago and announced it
+&gt; here. In case you missed that, Riakkit is basically an object mapper for
+&gt; python and riak, which seemed to be lacking in at the time. Now that 3
+&gt; months has passed and I have developed this project into much more than
+&gt; what I had envisioned to begin with. It's currently also being used and
+&gt; tested in a project of mine (web application) as well and functioning quite
+&gt; nicely. I would say that currently this is the only object mapper that can
+&gt; compete with their counterparts in other languages for Riak in Python,
+&gt; although a lot of work still needs to be done before it could fully compete.
+&gt;
+&gt; So today I felt that riakkit is &quot;stable&quot; and &quot;clean&quot; enough to deserve the
+&gt; first beta release. So I whipped up a website and it's released to pypi.
+&gt; Here's (again), a demo (the full tutorial can be found on the links below)
+&gt;
+&gt; class User(Document):
+&gt;     client = riak.RiakClient()
+&gt;     bucket_name = &quot;users&quot;
+&gt;
+&gt;     name = StringProperty(required=True)
+&gt;
+&gt; &gt;&gt;&gt; user = User(name=&quot;foo&quot;)
+&gt; &gt;&gt;&gt; user.save()
+&gt; &gt;&gt;&gt; print user.name
+&gt; foo
+&gt;
+&gt; If anyone is interested, you can find the website here:
+&gt; <a  rel="nofollow" href="http://ultimatebuster.github.com/riakkit">http://ultimatebuster.github.com/riakkit</a> and the code at
+&gt; <a  rel="nofollow" href="http://github.com/ultimatebuster/riakkit">http://github.com/ultimatebuster/riakkit</a>
+&gt;
+&gt; Cheers!
+&gt;
+&gt; Shuhao
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06829.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06831">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06831">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06832.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06828.html">riakkit, a python riak object mapper, has hit beta!</a></span> <span class="sender italic">Shuhao Wu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06829.html">Re: riakkit, a python riak object mapper, has hit...</a></span> <span class="sender italic">Sean Carey</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riakkit, a python riak object mapper, has...</span> <span class="sender italic">Andrey V. Martyanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06832.html">Re: riakkit, a python riak object mapper,...</a></span> <span class="sender italic">Shuhao Wu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06833.html">Re: riakkit, a python riak object map...</a></span> <span class="sender italic">Shuhao Wu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06836.html">Re: riakkit, a python riak objec...</a></span> <span class="sender italic">Andrey V. Martyanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06837.html">Re: riakkit, a python riak o...</a></span> <span class="sender italic">Andrey V. Martyanov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06841.html">Re: riakkit, a python ri...</a></span> <span class="sender italic">Andrey V. Martyanov</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06842.html">Re: riakkit, a python ri...</a></span> <span class="sender italic">Andrey V. Martyanov</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06843.html">Re: riakkit, a python ri...</a></span> <span class="sender italic">Andrey V. Martyanov</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06844.html">Re: riakkit, a python ri...</a></span> <span class="sender italic">Andrey V. Martyanov</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06845.html">Re: riakkit, a python ri...</a></span> <span class="sender italic">Jared Morrow</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06846.html">Re: riakkit, a python ri...</a></span> <span class="sender italic">Shuhao Wu</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riakkit, a python riak object mapper, has hit beta!">
+<input type="hidden" name="msgid" value="CAKcMF-v6qO8endBT-NMnhact1ERdwB4Qzfw7Uy33khYeTBkeEA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06831.html">
+<input type="submit" value=" Andrey V. Martyanov ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riakkit%2C+a+python+riak+object+mapper%2C+has+hit+beta%5C%21%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06829.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06832.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAKcMF-v6qO8endBT-NMnhact1ERdwB4Qzfw7Uy33khYeTBkeEA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

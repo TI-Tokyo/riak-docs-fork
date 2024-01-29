@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>riak_kv_multi_backend + custom backend</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#02075" id="c">
+<link rel="index" href="mail7.html#02075" id="i">
+<link rel="prev" href="msg02073.html" id="p">
+<link rel="next" href="msg02085.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02075.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak_kv_multi_backend+%5C%2B+custom+backend%22&amp;o=newest" rel="nofollow"><span itemprop="name">riak_kv_multi_backend + custom backend</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anthony+Molinaro%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anthony Molinaro</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110123" rel="nofollow">Sun, 23 Jan 2011 09:38:01 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+Hi,
+
+  So I wanted to play around with creating a custom backend, and using
+the multi backend, but I am having problems getting anything to work.</pre><pre>
+
+Here's what I tried so far
+
+in app.config
+
+  {storage_backend, riak_kv_multi_backend},
+  {multi_backend_default, bitcask},
+  {multi_backend,
+     [ {bitcask, riak_kv_bitcask_backend,
+         [{data_root, &quot;/var/lib/riak/bitcask&quot;}]},
+       {dets, riak_kv_dets_backend,
+         [{riak_kv_dets_backend_root, &quot;/var/lib/riak/dets&quot;}]},
+       {ets, riak_kv_ets_backend, []},
+       {fs, riak_kv_fs_backend,
+         [{riak_kv_fs_backend_root, &quot;/var/lib/riak/fs&quot;}]},
+       {cache, riak_kv_cache_backend,
+         [ {riak_kv_cache_backend_memory, 100},
+           {riak_kv_cache_backend_ttl, 600},
+           {riak_kv_cache_backend_max_ttl, 3600}
+         ]},
+       {my_backend, my_backend, []}
+     ]},
+
+Then I restart, open a shell and do the following
+
+1&gt; {ok, Pid} = riakc_pb_socket:start_link(&quot;127.0.0.1&quot;, 8087).
+{ok,&lt;0.68.0&gt;}
+2&gt; riakc_pb_socket:set_bucket(Pid, &lt;&lt;&quot;b&quot;&gt;&gt;, [{backend, my_backend}]).
+ok
+3&gt; riakc_pb_socket:get_bucket(Pid,&lt;&lt;&quot;b&quot;&gt;&gt;).
+{ok,[{n_val,3},{allow_mult,false}]}
+
+So I didn't see my backend there, thus tried the REST API
+
+&gt; curl '<a  rel="nofollow" href="http://127.0.0.1:8098/riak/b">http://127.0.0.1:8098/riak/b</a>' ; echo 
+{&quot;props&quot;:{&quot;name&quot;:&quot;b&quot;,&quot;n_val&quot;:3,&quot;allow_mult&quot;:false,&quot;last_write_wins&quot;:false,&quot;precommit&quot;:[],&quot;postcommit&quot;:[],&quot;chash_keyfun&quot;:{&quot;mod&quot;:&quot;riak_core_util&quot;,&quot;fun&quot;:&quot;chash_std_keyfun&quot;},&quot;linkfun&quot;:{&quot;mod&quot;:&quot;riak_kv_wm_link_walker&quot;,&quot;fun&quot;:&quot;mapreduce_linkfun&quot;},&quot;old_vclock&quot;:86400,&quot;young_vclock&quot;:20,&quot;big_vclock&quot;:50,&quot;small_vclock&quot;:10,&quot;r&quot;:&quot;quorum&quot;,&quot;w&quot;:&quot;quorum&quot;,&quot;dw&quot;:&quot;quorum&quot;,&quot;rw&quot;:&quot;quorum&quot;}}
+
+It's not there either.  So I try to set it with REST
+
+&gt; curl -X PUT -H &quot;Content-Type: application/json&quot; -d 
+&gt; '{&quot;props&quot;:{&quot;backend&quot;:&quot;my_backend&quot;}}' <a  rel="nofollow" href="http://127.0.0.1:8098/riak/b">http://127.0.0.1:8098/riak/b</a>
+
+Which works, in that now I have
+
+&gt; curl '<a  rel="nofollow" href="http://127.0.0.1:8098/riak/b">http://127.0.0.1:8098/riak/b</a>' ; 
+&gt; echo{&quot;props&quot;:{&quot;backend&quot;:&quot;my_backend&quot;,&quot;name&quot;:&quot;b&quot;,&quot;n_val&quot;:3,&quot;allow_mult&quot;:false,&quot;last_write_wins&quot;:false,&quot;precommit&quot;:[],&quot;postcommit&quot;:[],&quot;chash_keyfun&quot;:{&quot;mod&quot;:&quot;riak_core_util&quot;,&quot;fun&quot;:&quot;chash_std_keyfun&quot;},&quot;linkfun&quot;:{&quot;mod&quot;:&quot;riak_kv_wm_link_walker&quot;,&quot;fun&quot;:&quot;mapreduce_linkfun&quot;},&quot;old_vclock&quot;:86400,&quot;young_vclock&quot;:20,&quot;big_vclock&quot;:50,&quot;small_vclock&quot;:10,&quot;r&quot;:&quot;quorum&quot;,&quot;w&quot;:&quot;quorum&quot;,&quot;dw&quot;:&quot;quorum&quot;,&quot;rw&quot;:&quot;quorum&quot;}}
+
+However, in the shell I still get
+
+4&gt; riakc_pb_socket:get_bucket(Pid,&lt;&lt;&quot;b&quot;&gt;&gt;).
+{ok,[{n_val,3},{allow_mult,false}]}
+
+Also, if I attempt to put something I get
+
+5&gt;  riakc_pb_socket:put(Pid, riakc_obj:new (&lt;&lt;&quot;b&quot;&gt;&gt;, &lt;&lt;&quot;c&quot;&gt;&gt;, &lt;&lt;&quot;d&quot;&gt;&gt;)).
+
+=ERROR REPORT==== 19-Jan-2011::02:21:04 ===
+** Generic server &lt;0.68.0&gt; terminating 
+** Last message in was {req_timeout,#Ref&lt;0.0.0.186&gt;}
+** When Server state == {state,&quot;127.0.0.1&quot;,8087,false,false,undefined,
+                               undefined,
+                               {[],[]},
+                               1,[],infinity,100}
+** Reason for termination == 
+** disconnected
+** exception exit: disconnected
+
+=CRASH REPORT==== 19-Jan-2011::02:21:04 ===
+  crasher:
+    initial call: riakc_pb_socket:init/1
+    pid: &lt;0.68.0&gt;
+    registered_name: []
+    exception exit: disconnected
+      in function  gen_server:terminate/6
+    ancestors: [&lt;0.65.0&gt;]
+    messages: [{tcp,#Port&lt;0.816&gt;,
+                       [0|&lt;&lt;10,7,116,105,109,101,111,117,116,16,1&gt;&gt;]}]
+    links: [&lt;0.65.0&gt;]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 24
+    reductions: 1541
+  neighbours:
+    neighbour: [{pid,&lt;0.65.0&gt;},
+                  {registered_name,[]},
+                  {initial_call,{erlang,apply,2}},
+                  {current_function,{gen,do_call,4}},
+                  {ancestors,[]},
+                  {messages,[{#Ref&lt;0.0.0.185&gt;,{error,timeout}}]},
+                  {links,[&lt;0.25.0&gt;,&lt;0.68.0&gt;]},
+                  {dictionary,[]},
+                  {trap_exit,false},
+                  {status,runnable},
+                  {heap_size,1597},
+                  {stack_size,38},
+                  {reductions,17388}]
+
+And the attached sasl log which has many errors.  So I'm trying to figure out
+whether the problem is configuration, or a bug or what, and wondering if any
+one else has gotten a custom backend, or multi backend to work?
+
+I'm using 0.14 on Centos 5, using the basho RPM.
+
+Thanks,
+
+-Anthony
+
+-- 
+------------------------------------------------------------------------
+Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+</pre><pre>
+=ERROR REPORT==== 19-Jan-2011::02:20:04 ===
+** State machine &lt;0.232.0&gt; terminating 
+** Last event in was {riak_vnode_req_v1,
+                      296867520082839655260123481645494988367611297792,
+                      {fsm,undefined,&lt;0.6356.0&gt;},
+                      {riak_kv_put_req_v1,
+                       {&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;c&quot;&gt;&gt;},
+                       {r_object,&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;c&quot;&gt;&gt;,
+                        [{r_content,
+                          {dict,2,16,16,8,80,48,
+                           {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                           {{[],[],[],[],[],[],[],[],[],[],
+                             [[&lt;&lt;&quot;X-Riak-VTag&quot;&gt;&gt;,52,116,101,83,99,116,51,84,
+                               86,105,48,76,50,118,49,90,88,86,82,55,53,78]],
+                             [],[],
+                             [[&lt;&lt;&quot;X-Riak-Last-Modified&quot;&gt;&gt;|
+                               {1295,432404,650963}]],
+                             [],[]}}},
+                          &lt;&lt;&quot;d&quot;&gt;&gt;}],
+                        [{&lt;&lt;4,137,66,204&gt;&gt;,{1,63462651604}}],
+                        {dict,1,16,16,8,80,48,
+                         {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                         {{[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                           [[clean|true]],
+                           []}}},
+                        undefined},
+                       38769885,63462651604,[]}}
+** When State == active
+**      Data  == {state,296867520082839655260123481645494988367611297792,
+                     riak_kv_vnode,
+                     {state,296867520082839655260123481645494988367611297792,
+                         riak_kv_multi_backend,
+                         {state,
+                             [{bitcask,riak_kv_bitcask_backend,
+                                  {#Ref&lt;0.0.0.700&gt;,
+                                   
+&quot;/var/lib/riak/bitcask/296867520082839655260123481645494988367611297792&quot;}},
+                              {dets,riak_kv_dets_backend,
+                                  {state,
+                                      
+'296867520082839655260123481645494988367611297792',
+                                      
+&quot;/var/lib/riak/dets/296867520082839655260123481645494988367611297792&quot;}},
+                              {ets,riak_kv_ets_backend,&lt;0.235.0&gt;},
+                              {fs,riak_kv_fs_backend,
+                                  {state,
+                                      
+&quot;/var/lib/riak/fs/296867520082839655260123481645494988367611297792&quot;}},
+                              {cache,riak_kv_cache_backend,&lt;0.236.0&gt;},
+                              {my_backend,my_backend,{}}],
+                             bitcask},
+                         {dict,0,16,16,8,80,48,
+                             {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                             {{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                               []}}},
+                         false},
+                     undefined,none,60000}
+** Reason for termination = 
+** {bad_return_value,
+       {riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+
+=CRASH REPORT==== 19-Jan-2011::02:20:04 ===
+  crasher:
+    initial call: riak_core_vnode:init/1
+    pid: &lt;0.232.0&gt;
+    registered_name: []
+    exception exit: 
+{bad_return_value,{riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+      in function  gen_fsm:terminate/7
+      in call from proc_lib:init_p_do_apply/3
+    ancestors: [riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]
+    messages: []
+    links: [&lt;0.235.0&gt;,&lt;0.236.0&gt;,&lt;0.103.0&gt;]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 233
+    stack_size: 24
+    reductions: 29591
+  neighbours:
+    neighbour: 
+[{pid,&lt;0.236.0&gt;},{registered_name,[]},{initial_call,{riak_kv_cache_backend,init,[Argument__1]}},{current_function,{gen_server,loop,6}},{ancestors,[&lt;0.232.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]},{messages,[]},{links,[&lt;0.232.0&gt;]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,9},{reductions,40}]
+    neighbour: 
+[{pid,&lt;0.235.0&gt;},{registered_name,[]},{initial_call,{riak_kv_ets_backend,init,[Argument__1]}},{current_function,{gen_server,loop,6}},{ancestors,[&lt;0.232.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]},{messages,[]},{links,[&lt;0.232.0&gt;]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,9},{reductions,135}]
+
+=SUPERVISOR REPORT==== 19-Jan-2011::02:20:04 ===
+     Supervisor: {local,riak_core_vnode_sup}
+     Context:    child_terminated
+     Reason:     
+{bad_return_value,{riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+     Offender:   
+[{pid,&lt;0.232.0&gt;},{name,undefined},{mfa,{riak_core_vnode,start_link,[riak_kv_vnode,296867520082839655260123481645494988367611297792]}},{restart_type,temporary},{shutdown,brutal_kill},{child_type,worker}]
+
+
+=ERROR REPORT==== 19-Jan-2011::02:20:04 ===
+** State machine &lt;0.242.0&gt; terminating 
+** Last event in was {riak_vnode_req_v1,
+                      342539446249430371453988632667878832731859189760,
+                      {fsm,undefined,&lt;0.6356.0&gt;},
+                      {riak_kv_put_req_v1,
+                       {&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;c&quot;&gt;&gt;},
+                       {r_object,&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;c&quot;&gt;&gt;,
+                        [{r_content,
+                          {dict,2,16,16,8,80,48,
+                           {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                           {{[],[],[],[],[],[],[],[],[],[],
+                             [[&lt;&lt;&quot;X-Riak-VTag&quot;&gt;&gt;,52,116,101,83,99,116,51,84,
+                               86,105,48,76,50,118,49,90,88,86,82,55,53,78]],
+                             [],[],
+                             [[&lt;&lt;&quot;X-Riak-Last-Modified&quot;&gt;&gt;|
+                               {1295,432404,650963}]],
+                             [],[]}}},
+                          &lt;&lt;&quot;d&quot;&gt;&gt;}],
+                        [{&lt;&lt;4,137,66,204&gt;&gt;,{1,63462651604}}],
+                        {dict,1,16,16,8,80,48,
+                         {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                         {{[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                           [[clean|true]],
+                           []}}},
+                        undefined},
+                       38769885,63462651604,[]}}
+** When State == active
+**      Data  == {state,342539446249430371453988632667878832731859189760,
+                     riak_kv_vnode,
+                     {state,342539446249430371453988632667878832731859189760,
+                         riak_kv_multi_backend,
+                         {state,
+                             [{bitcask,riak_kv_bitcask_backend,
+                                  {#Ref&lt;0.0.0.750&gt;,
+                                   
+&quot;/var/lib/riak/bitcask/342539446249430371453988632667878832731859189760&quot;}},
+                              {dets,riak_kv_dets_backend,
+                                  {state,
+                                      
+'342539446249430371453988632667878832731859189760',
+                                      
+&quot;/var/lib/riak/dets/342539446249430371453988632667878832731859189760&quot;}},
+                              {ets,riak_kv_ets_backend,&lt;0.245.0&gt;},
+                              {fs,riak_kv_fs_backend,
+                                  {state,
+                                      
+&quot;/var/lib/riak/fs/342539446249430371453988632667878832731859189760&quot;}},
+                              {cache,riak_kv_cache_backend,&lt;0.246.0&gt;},
+                              {my_backend,my_backend,{}}],
+                             bitcask},
+                         {dict,0,16,16,8,80,48,
+                             {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                             {{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                               []}}},
+                         false},
+                     undefined,none,60000}
+** Reason for termination = 
+** {bad_return_value,
+       {riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+
+=CRASH REPORT==== 19-Jan-2011::02:20:04 ===
+  crasher:
+    initial call: riak_core_vnode:init/1
+    pid: &lt;0.242.0&gt;
+    registered_name: []
+    exception exit: 
+{bad_return_value,{riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+      in function  gen_fsm:terminate/7
+      in call from proc_lib:init_p_do_apply/3
+    ancestors: [riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]
+    messages: []
+    links: [&lt;0.245.0&gt;,&lt;0.246.0&gt;,&lt;0.103.0&gt;]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 233
+    stack_size: 24
+    reductions: 29365
+  neighbours:
+    neighbour: 
+[{pid,&lt;0.246.0&gt;},{registered_name,[]},{initial_call,{riak_kv_cache_backend,init,[Argument__1]}},{current_function,{gen_server,loop,6}},{ancestors,[&lt;0.242.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]},{messages,[]},{links,[&lt;0.242.0&gt;]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,9},{reductions,40}]
+    neighbour: 
+[{pid,&lt;0.245.0&gt;},{registered_name,[]},{initial_call,{riak_kv_ets_backend,init,[Argument__1]}},{current_function,{gen_server,loop,6}},{ancestors,[&lt;0.242.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]},{messages,[]},{links,[&lt;0.242.0&gt;]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,9},{reductions,135}]
+
+=SUPERVISOR REPORT==== 19-Jan-2011::02:20:04 ===
+     Supervisor: {local,riak_core_vnode_sup}
+     Context:    child_terminated
+     Reason:     
+{bad_return_value,{riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+     Offender:   
+[{pid,&lt;0.242.0&gt;},{name,undefined},{mfa,{riak_core_vnode,start_link,[riak_kv_vnode,342539446249430371453988632667878832731859189760]}},{restart_type,temporary},{shutdown,brutal_kill},{child_type,worker}]
+
+
+=ERROR REPORT==== 19-Jan-2011::02:20:04 ===
+** State machine &lt;0.237.0&gt; terminating 
+** Last event in was {riak_vnode_req_v1,
+                      319703483166135013357056057156686910549735243776,
+                      {fsm,undefined,&lt;0.6356.0&gt;},
+                      {riak_kv_put_req_v1,
+                       {&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;c&quot;&gt;&gt;},
+                       {r_object,&lt;&lt;&quot;b&quot;&gt;&gt;,&lt;&lt;&quot;c&quot;&gt;&gt;,
+                        [{r_content,
+                          {dict,2,16,16,8,80,48,
+                           {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                           {{[],[],[],[],[],[],[],[],[],[],
+                             [[&lt;&lt;&quot;X-Riak-VTag&quot;&gt;&gt;,52,116,101,83,99,116,51,84,
+                               86,105,48,76,50,118,49,90,88,86,82,55,53,78]],
+                             [],[],
+                             [[&lt;&lt;&quot;X-Riak-Last-Modified&quot;&gt;&gt;|
+                               {1295,432404,650963}]],
+                             [],[]}}},
+                          &lt;&lt;&quot;d&quot;&gt;&gt;}],
+                        [{&lt;&lt;4,137,66,204&gt;&gt;,{1,63462651604}}],
+                        {dict,1,16,16,8,80,48,
+                         {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                         {{[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                           [[clean|true]],
+                           []}}},
+                        undefined},
+                       38769885,63462651604,[]}}
+** When State == active
+**      Data  == {state,319703483166135013357056057156686910549735243776,
+                     riak_kv_vnode,
+                     {state,319703483166135013357056057156686910549735243776,
+                         riak_kv_multi_backend,
+                         {state,
+                             [{bitcask,riak_kv_bitcask_backend,
+                                  {#Ref&lt;0.0.0.725&gt;,
+                                   
+&quot;/var/lib/riak/bitcask/319703483166135013357056057156686910549735243776&quot;}},
+                              {dets,riak_kv_dets_backend,
+                                  {state,
+                                      
+'319703483166135013357056057156686910549735243776',
+                                      
+&quot;/var/lib/riak/dets/319703483166135013357056057156686910549735243776&quot;}},
+                              {ets,riak_kv_ets_backend,&lt;0.240.0&gt;},
+                              {fs,riak_kv_fs_backend,
+                                  {state,
+                                      
+&quot;/var/lib/riak/fs/319703483166135013357056057156686910549735243776&quot;}},
+                              {cache,riak_kv_cache_backend,&lt;0.241.0&gt;},
+                              {my_backend,my_backend,{}}],
+                             bitcask},
+                         {dict,0,16,16,8,80,48,
+                             {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                             {{[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],
+                               []}}},
+                         false},
+                     undefined,none,60000}
+** Reason for termination = 
+** {bad_return_value,
+       {riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+
+=CRASH REPORT==== 19-Jan-2011::02:20:04 ===
+  crasher:
+    initial call: riak_core_vnode:init/1
+    pid: &lt;0.237.0&gt;
+    registered_name: []
+    exception exit: 
+{bad_return_value,{riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+      in function  gen_fsm:terminate/7
+      in call from proc_lib:init_p_do_apply/3
+    ancestors: [riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]
+    messages: []
+    links: [&lt;0.240.0&gt;,&lt;0.241.0&gt;,&lt;0.103.0&gt;]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 233
+    stack_size: 24
+    reductions: 29611
+  neighbours:
+    neighbour: 
+[{pid,&lt;0.241.0&gt;},{registered_name,[]},{initial_call,{riak_kv_cache_backend,init,[Argument__1]}},{current_function,{gen_server,loop,6}},{ancestors,[&lt;0.237.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]},{messages,[]},{links,[&lt;0.237.0&gt;]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,9},{reductions,40}]
+    neighbour: 
+[{pid,&lt;0.240.0&gt;},{registered_name,[]},{initial_call,{riak_kv_ets_backend,init,[Argument__1]}},{current_function,{gen_server,loop,6}},{ancestors,[&lt;0.237.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.101.0&gt;]},{messages,[]},{links,[&lt;0.237.0&gt;]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,9},{reductions,135}]
+
+=SUPERVISOR REPORT==== 19-Jan-2011::02:20:04 ===
+     Supervisor: {local,riak_core_vnode_sup}
+     Context:    child_terminated
+     Reason:     
+{bad_return_value,{riak_kv_multi_backend,undefined_backend,&lt;&lt;&quot;my_backend&quot;&gt;&gt;}}
+     Offender:   
+[{pid,&lt;0.237.0&gt;},{name,undefined},{mfa,{riak_core_vnode,start_link,[riak_kv_vnode,319703483166135013357056057156686910549735243776]}},{restart_type,temporary},{shutdown,brutal_kill},{child_type,worker}]
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02073.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#02075">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#02075">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02085.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">riak_kv_multi_backend + custom backend</span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02085.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02087.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02088.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Joseph Lambert</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02091.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02094.html">Re: riak_kv_multi_backend + custom backe...</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02096.html">Re: riak_kv_multi_backend + custom ...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02106.html">Re: riak_kv_multi_backend + cus...</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02110.html">Re: riak_kv_multi_backend +...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02115.html">Re: riak_kv_multi_backend +...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03285.html">riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Todd</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="riak_kv_multi_backend + custom backend">
+<input type="hidden" name="msgid" value="20110123173732.GA5000@alumni.caltech.edu">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02075.html">
+<input type="submit" value=" Anthony Molinaro ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22riak_kv_multi_backend+%5C%2B+custom+backend%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02073.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02085.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20110123173732.GA5000@alumni.caltech.edu</li>
+</ul>
+</div>
+</body>
+</html>

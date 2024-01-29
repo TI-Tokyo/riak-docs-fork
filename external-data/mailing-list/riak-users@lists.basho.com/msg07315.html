@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: preflist_exhausted error</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07315" id="c">
+<link rel="index" href="maillist.html#07315" id="i">
+<link rel="prev" href="msg07310.html" id="p">
+<link rel="next" href="msg07327.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07315.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+preflist_exhausted+error%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: preflist_exhausted error</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Tovbin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Tovbin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120424" rel="nofollow">Tue, 24 Apr 2012 17:12:11 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sati,
+
+Check, if you see the following error in your log file:
+crasher:
+    initial call: riak_kv_js_vm:init/1
+    pid: &lt;0.404.0&gt;
+    registered_name: []
+    exception exit: {{badmatch,{error
+,enoent}},[{riak_kv_js_vm,load_mapred_builtins,1},{js_driver,new,3},{riak_kv_js_vm,init,1},{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}
+      in function  gen_server:init_it/6
+      in call from proc_lib:init_p_do_apply/3
+    ancestors: [riak_kv_js_sup,riak_kv_sup,&lt;0.286.0&gt;]
+    messages: []
+    links: [&lt;0.353.0&gt;,#Port&lt;0.4849&gt;]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 610
+    stack_size: 24
+    reductions: 678
+  neighbours:
+2012-04-04 09:09:42 =SUPERVISOR REPORT====
+     Supervisor: {local,riak_kv_js_sup}
+     Context:    child_terminated
+     Reason:     {{badmatch,{error
+,enoent}},[{riak_kv_js_vm,load_mapred_builtins,1},{js_driver,new,3},{riak_kv_js_vm,init,1},{gen_server,init_it,6},{proc_lib,init_p_do_apply,3}]}
+     Offender:   [{pid,&lt;0.404.0&gt;},{name,undefined},{mfargs,{riak_kv_
+js_vm,start_link,undefined}},{restart_type,temporary},{
+shutdown,2000},{child_type,worker}]</pre><pre>
+
+
+It means that all js_vm crash on start. I had similar problem with 1.1.1,
+it is because
+'mapred_builtins.js' is missing in '&lt;your riak path&gt;/lib/riak_kv-1.1.1/priv/'
+folder.
+Copy it there from &quot;
+<a  rel="nofollow" href="https://raw.github.com/basho/riak_kv/master/priv/mapred_builtins.js&quot">https://raw.github.com/basho/riak_kv/master/priv/mapred_builtins.js&quot</a>;.
+
+Alternatively you can update to 1.1.2 (
+<a  rel="nofollow" href="https://github.com/basho/riak/zipball/riak-1.1.2">https://github.com/basho/riak/zipball/riak-1.1.2</a>).
+It's solved there.
+
+
+-Matthew
+
+
+
+On Tue, Apr 24, 2012 at 11:58, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+
+&gt; Mohit,
+&gt;
+&gt; Be aware that key filters are just a thin layer on top of full-bucket key
+&gt; listings. You'd be better off storing the field you want to filter in a
+&gt; secondary index, which more efficiently supports range queries (note that
+&gt; only the LevelDB storage engine currently supports secondary indexes).
+&gt; Barring that, you could use the special &quot;$key&quot; index for a range query on
+&gt; the key.
+&gt;
+&gt; On Tue, Apr 24, 2012 at 1:07 PM, Sati, Mohit &lt;mohit.s...@ask.com&gt; wrote:
+&gt;
+&gt;&gt;   Hello All,
+&gt;&gt;
+&gt;&gt; I'm getting the below error in my queries. I'm using riak 1.1.1
+&gt;&gt;
+&gt;&gt; Riak Version:
+&gt;&gt; ============
+&gt;&gt; $rpm -qa | grep riak
+&gt;&gt; riak-1.1.1-1.el6.x86_64
+&gt;&gt;
+&gt;&gt; Riak Error:
+&gt;&gt; ========
+&gt;&gt; HTTP/1.1 100 Continue
+&gt;&gt; HTTP/1.1 500 Internal Server Error
+&gt;&gt; Server: MochiWeb/1.1 WebMachine/1.9.0 (someone had painted it blue)
+&gt;&gt; Date: Tue, 24 Apr 2012 16:58:53 GMT
+&gt;&gt; Content-Type: application/json
+&gt;&gt; Content-Length: 625
+&gt;&gt; {&quot;phase&quot;:0,&quot;error&quot;:&quot;[preflist_exhausted]&quot;
+&gt;&gt;
+&gt;&gt; Query:
+&gt;&gt; ==========
+&gt;&gt; My query is doing a range scan. I can only get data for 1 day. For 2 or
+&gt;&gt; more days it is throwing the error posted above.
+&gt;&gt;
+&gt;&gt; {&quot;inputs&quot;:{ &quot;bucket&quot;:&quot;tagg_dsquery&quot;,
+&gt;&gt;             &quot;key_filters&quot;:[[&quot;and&quot;,
+&gt;&gt;                   [[&quot;starts_with&quot;, &quot;dsquery-us_prm&quot;]],
+&gt;&gt;                   [[&quot;and&quot;,
+&gt;&gt;                     [[&quot;tokenize&quot;, &quot;-&quot;, 5], [&quot;greater_than_eq&quot;,
+&gt;&gt; &quot;20120312&quot;]],
+&gt;&gt;                     [[&quot;tokenize&quot;, &quot;-&quot;, 5], [&quot;less_than_eq&quot;, &quot;20120314&quot;]]
+&gt;&gt;                   ]]
+&gt;&gt;                 ]]},
+&gt;&gt; ...
+&gt;&gt; ...
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; app.config changes:
+&gt;&gt; =============
+&gt;&gt; map_js_vm_count - increased to 32,64,128 and 256 but not helping
+&gt;&gt; js_max_vm_mem - increased to 32,64,128,256,512 and 1024.
+&gt;&gt; js_thread_stack - increased to 64,128,256,512,1024 and 2048 (cannot go
+&gt;&gt; beyond) - riak would not start
+&gt;&gt;
+&gt;&gt; Can anyone help me to debug this issue. My queries cannot go beyond 1 day
+&gt;&gt;
+&gt;&gt; Thanks
+&gt;&gt; Mohit
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Software Engineer
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07310.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07315">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07315">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07327.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07307.html">preflist_exhausted error</a></span> <span class="sender italic">Sati, Mohit</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07310.html">Re: preflist_exhausted error</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: preflist_exhausted error</span> <span class="sender italic">Matthew Tovbin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07327.html">RE: preflist_exhausted error</a></span> <span class="sender italic">Sati, Mohit</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07337.html">RE: preflist_exhausted error</a></span> <span class="sender italic">Sati, Mohit</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: preflist_exhausted error">
+<input type="hidden" name="msgid" value="CADSCZ4RQX+N5CSOCTj3w8gPNae0=EKDzSS3uULPVu0Ozt7k0dQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07315.html">
+<input type="submit" value=" Matthew Tovbin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+preflist_exhausted+error%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07310.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07327.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CADSCZ4RQX+N5CSOCTj3w8gPNae0=EKDzSS3uULPVu0Ozt7k0dQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>abstracted vs. opinionated,	object mapping (was: Re: Riak Recap for March 14 - 15)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02679" id="c">
+<link rel="index" href="maillist.html#02679" id="i">
+<link rel="prev" href="msg02678.html" id="p">
+<link rel="next" href="msg02680.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02679.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22abstracted+vs.+opinionated%2C%09object+mapping+%5C%28was%5C%3A+Re%5C%3A+Riak+Recap+for+March+14+%5C-+15%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">abstracted vs. opinionated,	object mapping (was: Re: Riak Recap for March 14 - 15)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Brisbin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Brisbin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110318" rel="nofollow">Fri, 18 Mar 2011 06:14:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>As an aside: I'm wrapping up support for Grails GORM-style object mapping in 
+the MongoDB Spring Data Document support. We haven't decided how to apply that 
+mapping strategy to other NoSQL stores yet, but I suspect it'll only be a 
+matter of a month or two before I can get full mapping support in the Riak 
+Spring Data stuff.</pre><pre>
+
+It allows you to map entities al la JPA:
+
+@Persistent
+class Person {
+  @Id
+  private Integer ssn;
+  @Reference // &lt;- Externally-managed by using links, dbrefs, whatever
+  private List&lt;Child&gt; children;
+}
+
+There's a metadata model that's responsible for reading annotations and 
+configuring the mapper to know how to marshall/unmarshall entities and what to 
+do with externally-stored relationships (in the case of MongoDB, we use 
+DBRefs). It also supports autowiring and bean post processors, so you can 
+inject resources into your entities:
+
+@Persistent
+class Person {
+  ...
+  @Autowired
+  private DatastoreTemplate template;
+}
+
+
+It will be an interesting addition to the Riak support to have this same level 
+of rich mapping, IMHO.
+
+But on to the previous discussion...
+
+
+On Mar 17, 2011, at 4:51 PM, Mark Wolfe wrote:
+
+&gt; ...[snip] The other was the rather convincing pitch Justin Sheehy gave a few 
+&gt; people while at a pub in Melbourne.
+
+He has a tendency to do that. ;)
+
+&gt; As a frequent user of the spring framework I really appreciate the work your 
+&gt; doing around this framework, and indeed spring-data is something I will use 
+&gt; in the future, however being required to use the spring stack just get a 
+&gt; project connecting to riak probably wouldn't be the best idea in my view.
+
+The idea behind Spring Data isn't to get a new, non-Spring project using a 
+NoSQL store by forcing them to pull in all of Spring just to connect to the 
+database. The focus has always been on extending Spring applications into the 
+NoSQL world in a very &quot;Springy&quot; way; to have first-class support of the 
+datastore within the Spring framework, which we assume you're already using. :)
+
+When debugging the Spring Data Riak support, I delved through the innards of 
+RestTemplate (the core REST helper in Spring 3.0). It doesn't use any other 
+HTTP library, but is actually a thin wrapper around the built-in Java IO. This 
+means a library developer could go to the Spring Framework project, download 
+the source code for RestTemplate, shamelessly copy it (removing references to 
+Spring classes, of course, and replacing them with your own, pure Java version) 
+and create a thin abstraction over Java synchronous (or asynchronous) IO 
+instead of relying on HTTPClient, which I personally don't like at all.
+
+You'd obviously be duplicating what's already been done, of course. Things like 
+the HttpMessageConverter in the RestTemplate are fantastic tools that a REST 
+developer can use. Just the Jackson-based automatic conversion to/from 
+application/json data is worth it in my mind. But it would be pure Java, with 
+no external dependencies.
+
+
+&gt; I also think it is a good idea for the community as a whole to avoid an 
+&gt; overly normalized driver approach while there is so much awesome stuff going 
+&gt; on in the NoSQL and indeed riak space. A client which showcases this stuff is 
+&gt; a much better approach, albeit a duplicate in many ways of other efforts. 
+
+One of the discussions we have frequently is how to balance abstraction (to 
+make a library easy to adapt to other NoSQL stores, given they all have roughly 
+equivalent high-level functionality--by that I mean they all do CRUD, at the 
+very least) versus exposing the benefits of that particular datastore. We're 
+not interested in &quot;hiding&quot; the functionality that makes that datastore unique 
+or valuable. The only question is how to expose it in a way that doesn't force 
+you to duplicate your efforts when you go to do the same thing for The Other 
+Guy's Database. :) 
+
+If you write a driver for a specific database and don't have any plans to do 
+the same thing for anyone else, you have the advantage of being fully 
+opinionated and can be as low-level as you want. Unfortunately, we don't have 
+that option so we have to find a balance somewhere. I know I sometimes 
+personally get over-zealous in wanting to apply techniques I like to as broad a 
+swath of the space as possible. That does mean you take a little &quot;Riak-ness&quot; or 
+&quot;MongoDB-ness&quot; out of it as a side-effect of the process. I don't think that's 
+inherently a bad thing, as long as you're careful about what you smooth over 
+and that you don't take away a value proposition of the underlying datastore 
+because The Other Guy's Database doesn't support it.
+
+
+&gt; This is of course just my two cents on the subject.
+
+Appreciated and valuable! :)
+
+
+Thanks!
+
+Jon Brisbin
+
+<a  rel="nofollow" href="http://jbrisbin.com">http://jbrisbin.com</a>
+Twitter: @j_brisbin
+
+
+
+&gt; 
+&gt; And lastly Abhishek I was writing an addendum to my ideas last night that 
+&gt; included just that idea, like other projects why would you install a load 
+&gt; balancer in front of a development cluster when you can make a simple load 
+&gt; balancer in the client. This is quite common in a lot of messaging clients 
+&gt; like apache activemq and hornetq ect.
+&gt; 
+&gt; Caveats to this is:
+&gt; a) You would probably stick to simple algorithms as this can get complex fast.
+&gt; b) Probably best only for a single or small pool of clients as your would be 
+&gt; replicating the work of load balancing on every node.
+&gt; 
+&gt; This said I do agree it would be handy.
+&gt; 
+&gt; So something like:
+&gt; 
+&gt; riakClient.addHost(&quot;1.1.1.1&quot;, 8089)
+&gt; riakClient.addHost(&quot;1.1.1.2&quot;, 8089)
+&gt; riakClient.addHost(&quot;1.1.1.3&quot;, 8089)
+&gt; 
+&gt; Start making calls.
+&gt;  
+&gt; Time permitting I will hopefully add some of these to my own experimental 
+&gt; client to try out some of these ideas  And after some consideration I agree 
+&gt; it would be unwise to wholesale change the riak client at this stage. The 
+&gt; work Russel has started is awesome and will make it easier in the future to 
+&gt; recognize the impact if and when some underlying changes are made.
+&gt; 
+&gt; Anyway I have gone and written another war and peace on the subject and 
+&gt; hopefully not the last one.
+&gt; 
+&gt; On Fri, Mar 18, 2011 at 12:57 AM, Abhishek Kona &lt;abhishek.k...@gmail.com&gt; 
+&gt; wrote:
+&gt; Yes.
+&gt; Earlier query : 
+&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-March/003461.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-March/003461.html</a>
+&gt; 
+&gt; -Abhishek Kona
+&gt; 
+&gt; 
+&gt; On 17/03/11 7:17 PM, Russell Brown wrote:
+&gt; I'm sorry but I don't understand, do you want the client to load balance 
+&gt; across a Riak cluster rather than just speak to one node?
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Regards,
+&gt; 
+&gt; Mark Wolfe
+&gt; 
+&gt; --
+&gt; I am not young enough to know everything.
+&gt; --
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02678.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02679">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02679">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02680.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02667.html">Riak Recap for March 14 - 15</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02672.html">Re: Riak Recap for March 14 - 15</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02673.html">Re: Riak Recap for March 14 - 15</a></span> <span class="sender italic">Abhishek Kona</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02675.html">Re: Riak Recap for March 14 - 15</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02676.html">Re: Riak Recap for March 14 - 15</a></span> <span class="sender italic">Abhishek Kona</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02677.html">Re: riak java client review (was Re:...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02678.html">Re: Riak Recap for March 14 - 15</a></span> <span class="sender italic">Mark Wolfe</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">abstracted vs. opinionated,	obje...</span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02680.html">Re: abstracted vs. opinionat...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02683.html">Re: abstracted vs. opinionat...</a></span> <span class="sender italic">Mark Wolfe</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02690.html">Re: abstracted vs. opinionat...</a></span> <span class="sender italic">Jon Brisbin</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02674.html">Re: riak java client review (was Re: Riak Recap f...</a></span> <span class="sender italic">Russell Brown</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02681.html">Re: Riak Recap for March 14 - 15</a></span> <span class="sender italic">Wilson MacGyver</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="abstracted vs. opinionated,	object mapping (was: Re: Riak Recap for March 14 - 15)">
+<input type="hidden" name="msgid" value="62B19B1D-68E8-43CD-8B2F-C44443D5BEFD@jbrisbin.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02679.html">
+<input type="submit" value=" Jon Brisbin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22abstracted+vs.+opinionated%2C%09object+mapping+%5C%28was%5C%3A+Re%5C%3A+Riak+Recap+for+March+14+%5C-+15%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02678.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02680.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">62B19B1D-68E8-43CD-8B2F-C44443D5BEFD@jbrisbin.com</li>
+</ul>
+</div>
+</body>
+</html>

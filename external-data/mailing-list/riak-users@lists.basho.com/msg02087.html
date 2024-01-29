@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak_kv_multi_backend + custom backend</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd7.html#02087" id="c">
+<link rel="index" href="mail7.html#02087" id="i">
+<link rel="prev" href="msg02085.html" id="p">
+<link rel="next" href="msg02088.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02087.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_kv_multi_backend+%5C%2B+custom+backend%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak_kv_multi_backend + custom backend</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anthony+Molinaro%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anthony Molinaro</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110123" rel="nofollow">Sun, 23 Jan 2011 23:44:22 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Sean,
+
+   Thanks, that seems to work.  Should the wiki be changed?  Currently
+this page</pre><pre>
+
+<a  rel="nofollow" href="http://wiki.basho.com/Configuration-Files.html">http://wiki.basho.com/Configuration-Files.html</a>
+
+has
+
+multi_backend: list of backends to provide
+Format of each backend specification is {BackendName, BackendModule,
+BackendConfig}, where BackendName is any atom, BackendModule is the name of
+the Erlang module implementing the backend (the same values you would
+provide as &quot;storage_backend&quot; settings), and BackendConfig is
+a parameter that will be passed to the &quot;start/2&quot; function of the backend
+module.
+
+and it sounds like BackendName has to be a binary.
+
+Also, it has
+
+Specify the backend to use for a bucket with
+riak_client:set_bucket(BucketName,[{backend, BackendName}] in Erlang 
+
+but I'm a little unclear how you would invoke this call, do you attach
+with riak attach, then run the command there?  Because when I try that
+I get
+
+** exception error: undefined function riak_client:set_bucket/2
+
+Seems there might be a riak_client:set_bucket/3, so that documentation may
+be out of date as well.
+
+Thanks,
+
+-Anthony
+
+On Sun, Jan 23, 2011 at 02:50:32PM -0500, Sean Cribbs wrote:
+&gt; Anthony,
+&gt; 
+&gt; This is something I discovered a while back - define your backend names as 
+&gt; binaries and you'll be able to set them properly from the REST interface. 
+&gt; Example:
+&gt; 
+&gt; {storage_backend, riak_kv_multi_backend},
+&gt;  {multi_backend_default, &lt;&lt;&quot;bitcask&quot;&gt;&gt;},
+&gt;  {multi_backend,
+&gt;     [ {&lt;&lt;&quot;bitcask&quot;&gt;&gt;, riak_kv_bitcask_backend,
+&gt;         [{data_root, &quot;/var/lib/riak/bitcask&quot;}]},
+&gt;       {&lt;&lt;&quot;dets&quot;&gt;&gt;, riak_kv_dets_backend,
+&gt;         [{riak_kv_dets_backend_root, &quot;/var/lib/riak/dets&quot;}]},
+&gt;       {&lt;&lt;&quot;ets&quot;&gt;&gt;, riak_kv_ets_backend, []},
+&gt;       {&lt;&lt;&quot;fs&quot;&gt;&gt;, riak_kv_fs_backend,
+&gt;         [{riak_kv_fs_backend_root, &quot;/var/lib/riak/fs&quot;}]},
+&gt;       {&lt;&lt;&quot;cache&quot;&gt;&gt;, riak_kv_cache_backend,
+&gt;         [ {riak_kv_cache_backend_memory, 100},
+&gt;           {riak_kv_cache_backend_ttl, 600},
+&gt;           {riak_kv_cache_backend_max_ttl, 3600}
+&gt;         ]},
+&gt;       {&lt;&lt;&quot;my_backend&quot;&gt;&gt;, my_backend, []}
+&gt;     ]},
+&gt; 
+&gt; Then you can set it like so
+&gt; 
+&gt; curl -X PUT -H &quot;content-type: application/json&quot; -d 
+&gt; '{&quot;props&quot;:{&quot;backend&quot;:&quot;my_backend&quot;}}' <a  rel="nofollow" href="http://127.0.0.1:8098/riak/mybucket">http://127.0.0.1:8098/riak/mybucket</a>
+&gt; 
+&gt; Also note that only allow_mult and n_val are supported bucket properties from 
+&gt; the PB interface (something we'll be fixing soon).
+&gt; 
+&gt; Sean Cribbs &lt;s...@basho.com&gt;
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt; 
+&gt; On Jan 23, 2011, at 12:37 PM, Anthony Molinaro wrote:
+&gt; 
+&gt; &gt; 
+&gt; &gt; Hi,
+&gt; &gt; 
+&gt; &gt;  So I wanted to play around with creating a custom backend, and using
+&gt; &gt; the multi backend, but I am having problems getting anything to work.
+&gt; &gt; 
+&gt; &gt; Here's what I tried so far
+&gt; &gt; 
+&gt; &gt; in app.config
+&gt; &gt; 
+&gt; &gt;  {storage_backend, riak_kv_multi_backend},
+&gt; &gt;  {multi_backend_default, bitcask},
+&gt; &gt;  {multi_backend,
+&gt; &gt;     [ {bitcask, riak_kv_bitcask_backend,
+&gt; &gt;         [{data_root, &quot;/var/lib/riak/bitcask&quot;}]},
+&gt; &gt;       {dets, riak_kv_dets_backend,
+&gt; &gt;         [{riak_kv_dets_backend_root, &quot;/var/lib/riak/dets&quot;}]},
+&gt; &gt;       {ets, riak_kv_ets_backend, []},
+&gt; &gt;       {fs, riak_kv_fs_backend,
+&gt; &gt;         [{riak_kv_fs_backend_root, &quot;/var/lib/riak/fs&quot;}]},
+&gt; &gt;       {cache, riak_kv_cache_backend,
+&gt; &gt;         [ {riak_kv_cache_backend_memory, 100},
+&gt; &gt;           {riak_kv_cache_backend_ttl, 600},
+&gt; &gt;           {riak_kv_cache_backend_max_ttl, 3600}
+&gt; &gt;         ]},
+&gt; &gt;       {my_backend, my_backend, []}
+&gt; &gt;     ]},
+&gt; &gt; 
+&gt; &gt; Then I restart, open a shell and do the following
+&gt; &gt; 
+&gt; &gt; 1&gt; {ok, Pid} = riakc_pb_socket:start_link(&quot;127.0.0.1&quot;, 8087).
+&gt; &gt; {ok,&lt;0.68.0&gt;}
+&gt; &gt; 2&gt; riakc_pb_socket:set_bucket(Pid, &lt;&lt;&quot;b&quot;&gt;&gt;, [{backend, my_backend}]).
+&gt; &gt; ok
+&gt; &gt; 3&gt; riakc_pb_socket:get_bucket(Pid,&lt;&lt;&quot;b&quot;&gt;&gt;).
+&gt; &gt; {ok,[{n_val,3},{allow_mult,false}]}
+&gt; &gt; 
+&gt; &gt; So I didn't see my backend there, thus tried the REST API
+&gt; &gt; 
+&gt; &gt;&gt; curl '<a  rel="nofollow" href="http://127.0.0.1:8098/riak/b">http://127.0.0.1:8098/riak/b</a>' ; echo 
+&gt; &gt; {&quot;props&quot;:{&quot;name&quot;:&quot;b&quot;,&quot;n_val&quot;:3,&quot;allow_mult&quot;:false,&quot;last_write_wins&quot;:false,&quot;precommit&quot;:[],&quot;postcommit&quot;:[],&quot;chash_keyfun&quot;:{&quot;mod&quot;:&quot;riak_core_util&quot;,&quot;fun&quot;:&quot;chash_std_keyfun&quot;},&quot;linkfun&quot;:{&quot;mod&quot;:&quot;riak_kv_wm_link_walker&quot;,&quot;fun&quot;:&quot;mapreduce_linkfun&quot;},&quot;old_vclock&quot;:86400,&quot;young_vclock&quot;:20,&quot;big_vclock&quot;:50,&quot;small_vclock&quot;:10,&quot;r&quot;:&quot;quorum&quot;,&quot;w&quot;:&quot;quorum&quot;,&quot;dw&quot;:&quot;quorum&quot;,&quot;rw&quot;:&quot;quorum&quot;}}
+&gt; &gt; 
+&gt; &gt; It's not there either.  So I try to set it with REST
+&gt; &gt; 
+&gt; &gt;&gt; curl -X PUT -H &quot;Content-Type: application/json&quot; -d 
+&gt; &gt;&gt; '{&quot;props&quot;:{&quot;backend&quot;:&quot;my_backend&quot;}}' <a  rel="nofollow" href="http://127.0.0.1:8098/riak/b">http://127.0.0.1:8098/riak/b</a>
+&gt; &gt; 
+&gt; &gt; Which works, in that now I have
+&gt; &gt; 
+&gt; &gt;&gt; curl '<a  rel="nofollow" href="http://127.0.0.1:8098/riak/b">http://127.0.0.1:8098/riak/b</a>' ; 
+&gt; &gt;&gt; echo{&quot;props&quot;:{&quot;backend&quot;:&quot;my_backend&quot;,&quot;name&quot;:&quot;b&quot;,&quot;n_val&quot;:3,&quot;allow_mult&quot;:false,&quot;last_write_wins&quot;:false,&quot;precommit&quot;:[],&quot;postcommit&quot;:[],&quot;chash_keyfun&quot;:{&quot;mod&quot;:&quot;riak_core_util&quot;,&quot;fun&quot;:&quot;chash_std_keyfun&quot;},&quot;linkfun&quot;:{&quot;mod&quot;:&quot;riak_kv_wm_link_walker&quot;,&quot;fun&quot;:&quot;mapreduce_linkfun&quot;},&quot;old_vclock&quot;:86400,&quot;young_vclock&quot;:20,&quot;big_vclock&quot;:50,&quot;small_vclock&quot;:10,&quot;r&quot;:&quot;quorum&quot;,&quot;w&quot;:&quot;quorum&quot;,&quot;dw&quot;:&quot;quorum&quot;,&quot;rw&quot;:&quot;quorum&quot;}}
+&gt; &gt; 
+&gt; &gt; However, in the shell I still get
+&gt; &gt; 
+&gt; &gt; 4&gt; riakc_pb_socket:get_bucket(Pid,&lt;&lt;&quot;b&quot;&gt;&gt;).
+&gt; &gt; {ok,[{n_val,3},{allow_mult,false}]}
+&gt; &gt; 
+&gt; &gt; Also, if I attempt to put something I get
+&gt; &gt; 
+&gt; &gt; 5&gt;  riakc_pb_socket:put(Pid, riakc_obj:new (&lt;&lt;&quot;b&quot;&gt;&gt;, &lt;&lt;&quot;c&quot;&gt;&gt;, &lt;&lt;&quot;d&quot;&gt;&gt;)).
+&gt; &gt; 
+&gt; &gt; =ERROR REPORT==== 19-Jan-2011::02:21:04 ===
+&gt; &gt; ** Generic server &lt;0.68.0&gt; terminating 
+&gt; &gt; ** Last message in was {req_timeout,#Ref&lt;0.0.0.186&gt;}
+&gt; &gt; ** When Server state == {state,&quot;127.0.0.1&quot;,8087,false,false,undefined,
+&gt; &gt;                               undefined,
+&gt; &gt;                               {[],[]},
+&gt; &gt;                               1,[],infinity,100}
+&gt; &gt; ** Reason for termination == 
+&gt; &gt; ** disconnected
+&gt; &gt; ** exception exit: disconnected
+&gt; &gt; 
+&gt; &gt; =CRASH REPORT==== 19-Jan-2011::02:21:04 ===
+&gt; &gt;  crasher:
+&gt; &gt;    initial call: riakc_pb_socket:init/1
+&gt; &gt;    pid: &lt;0.68.0&gt;
+&gt; &gt;    registered_name: []
+&gt; &gt;    exception exit: disconnected
+&gt; &gt;      in function  gen_server:terminate/6
+&gt; &gt;    ancestors: [&lt;0.65.0&gt;]
+&gt; &gt;    messages: [{tcp,#Port&lt;0.816&gt;,
+&gt; &gt;                       [0|&lt;&lt;10,7,116,105,109,101,111,117,116,16,1&gt;&gt;]}]
+&gt; &gt;    links: [&lt;0.65.0&gt;]
+&gt; &gt;    dictionary: []
+&gt; &gt;    trap_exit: false
+&gt; &gt;    status: running
+&gt; &gt;    heap_size: 987
+&gt; &gt;    stack_size: 24
+&gt; &gt;    reductions: 1541
+&gt; &gt;  neighbours:
+&gt; &gt;    neighbour: [{pid,&lt;0.65.0&gt;},
+&gt; &gt;                  {registered_name,[]},
+&gt; &gt;                  {initial_call,{erlang,apply,2}},
+&gt; &gt;                  {current_function,{gen,do_call,4}},
+&gt; &gt;                  {ancestors,[]},
+&gt; &gt;                  {messages,[{#Ref&lt;0.0.0.185&gt;,{error,timeout}}]},
+&gt; &gt;                  {links,[&lt;0.25.0&gt;,&lt;0.68.0&gt;]},
+&gt; &gt;                  {dictionary,[]},
+&gt; &gt;                  {trap_exit,false},
+&gt; &gt;                  {status,runnable},
+&gt; &gt;                  {heap_size,1597},
+&gt; &gt;                  {stack_size,38},
+&gt; &gt;                  {reductions,17388}]
+&gt; &gt; 
+&gt; &gt; And the attached sasl log which has many errors.  So I'm trying to figure 
+&gt; &gt; out
+&gt; &gt; whether the problem is configuration, or a bug or what, and wondering if any
+&gt; &gt; one else has gotten a custom backend, or multi backend to work?
+&gt; &gt; 
+&gt; &gt; I'm using 0.14 on Centos 5, using the basho RPM.
+&gt; &gt; 
+&gt; &gt; Thanks,
+&gt; &gt; 
+&gt; &gt; -Anthony
+&gt; &gt; 
+&gt; &gt; -- 
+&gt; &gt; ------------------------------------------------------------------------
+&gt; &gt; Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+&gt; &gt; &lt;sasl-error.log&gt;_______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+
+-- 
+------------------------------------------------------------------------
+Anthony Molinaro                           &lt;antho...@alumni.caltech.edu&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02085.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd7.html#02087">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#02087">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02088.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02075.html">riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02085.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak_kv_multi_backend + custom backend</span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02088.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Joseph Lambert</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02091.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02094.html">Re: riak_kv_multi_backend + custom backe...</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02096.html">Re: riak_kv_multi_backend + custom ...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02106.html">Re: riak_kv_multi_backend + cus...</a></span> <span class="sender italic">Anthony Molinaro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02110.html">Re: riak_kv_multi_backend +...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02115.html">Re: riak_kv_multi_backend +...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03285.html">riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Todd</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03342.html">Re: riak_kv_multi_backend + custom backend</a></span> <span class="sender italic">Mark Phillips</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak_kv_multi_backend + custom backend">
+<input type="hidden" name="msgid" value="20110124074359.GA446@alumni.caltech.edu">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02087.html">
+<input type="submit" value=" Anthony Molinaro ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_kv_multi_backend+%5C%2B+custom+backend%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02085.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02088.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20110124074359.GA446@alumni.caltech.edu</li>
+</ul>
+</div>
+</body>
+</html>

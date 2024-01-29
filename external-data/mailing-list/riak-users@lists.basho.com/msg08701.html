@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: data modeling question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08701" id="c">
+<link rel="index" href="maillist.html#08701" id="i">
+<link rel="prev" href="msg08696.html" id="p">
+<link rel="next" href="msg08707.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08701.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+data+modeling+question%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: data modeling question</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rune+Skou+Larsen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rune Skou Larsen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120926" rel="nofollow">Wed, 26 Sep 2012 02:54:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+On 25-09-2012 23:18, Charlie Bowman wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>Can I load 10 messages in 1 call? similar to a sql call &quot;select * from 
+</tt><tt>messages where id in (1,2,3,4,5,6,7,8)&quot;
+</tt></blockquote><tt>You can specify an array of keys as inputs to a MapReduce job. 
+</tt><tt><a  rel="nofollow" href="http://wiki.basho.com/MapReduce-Implementation.html#Inputs">http://wiki.basho.com/MapReduce-Implementation.html#Inputs</a>
+</tt><tt>MR jobs can be slow - especially if they involve javascript. Link 
+</tt><tt>Walking also fires up a MR job so it has some of the same performance 
+</tt><tt>penalties.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>Whether Link Walking/MR is faster than just getting all values 
+</tt><tt>individually depends on a lot of things. To name some: Your network 
+</tt><tt>latency between client and riak, how many values you get, how big they 
+</tt><tt>are, if you are able to parallelize retrieval of the individual values.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If you have 10ms latency between client and Riak and have to get 100 
+</tt><tt>Messages sequentially, then my money is on LW/MR to be faster.
+</tt><tt>If you have &lt;1 ms latency, 10 messages and can get them in 1 + 10 
+</tt><tt>parallel calls, then I'm not so sure, which is fastest.
+</tt><pre style="margin: 0em;">
+
+It would be interesting with some performance tests!
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>&quot;If you need to read PlayerMessage and corresponding Messages in one 
+</tt><tt>go, you can model the relation from PlayerMessage to Message with Riak 
+</tt><tt>Links, and avoid a database roundtrip by using link walking.&quot;
+</tt><pre style="margin: 0em;">
+
+          If I do this, would I need to keep a second array in the
+        PlayerMessage object to then also map which messages have been
+        read?
+
+</pre></blockquote><tt>Link Walking doesn't care what's inside your JSON. Link walking is based 
+</tt><tt>on metadata that you specify, when you PUT the Riak object.
+</tt><tt>Here is a good example on how you can specify the links using HTTP 
+</tt><tt>headers, and walk them afterwards: 
+</tt><tt><a  rel="nofollow" href="http://basho.com/blog/technical/2010/02/24/link-walking-by-example/">http://basho.com/blog/technical/2010/02/24/link-walking-by-example/</a>
+</tt><pre style="margin: 0em;">
+
+</pre><tt>As Links have &quot;tags&quot;, you can add different link tags to Links for read 
+</tt><tt>and unread messages. Then you could get unread messages using a link 
+</tt><tt>walk like this:
+</tt><tt>curl 
+</tt><tt><a  rel="nofollow" href="http://localhost:8098/buckets/PlayerMessages/keys/">http://localhost:8098/buckets/PlayerMessages/keys/</a>&lt;playerid&gt;/Message,unread,1
+</tt><pre style="margin: 0em;">
+
+And all messages (read and unread):
+</pre><tt>curl 
+</tt><tt><a  rel="nofollow" href="http://localhost:8098/buckets/PlayerMessages/keys/">http://localhost:8098/buckets/PlayerMessages/keys/</a>&lt;playerid&gt;/Message,_,1
+</tt><pre style="margin: 0em;">
+
+- Rune
+
+Trifork
+
+--
+sdfd
+
+Best regards / Venlig hilsen
+
+*Rune Skou Larsen*
+Trifork Public A/S / Team Riak
+Margrethepladsen 4, 8000 Århus C, Denmark
+Phone: +45 3160 2497    Skype: runeskoularsen   twitter: @RuneSkouLarsen
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08696.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08701">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08701">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08707.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08604.html">data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08621.html">Re: data modeling question</a></span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08640.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08662.html">Re: data modeling question</a></span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08694.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08695.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08696.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: data modeling question</span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg08707.html">Re: data modeling question</a></span> <span class="sender italic">Charlie Bowman</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: data modeling question">
+<input type="hidden" name="msgid" value="5062D01E.8050000@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08701.html">
+<input type="submit" value=" Rune Skou Larsen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+data+modeling+question%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08696.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08707.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5062D01E.8050000@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

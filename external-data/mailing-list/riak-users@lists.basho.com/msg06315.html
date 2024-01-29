@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Pending transfers when joining 1.0.3 node to 1.0.0 cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#06315" id="c">
+<link rel="index" href="mail2.html#06315" id="i">
+<link rel="prev" href="msg06314.html" id="p">
+<link rel="next" href="msg06318.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06315.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Pending+transfers+when+joining+1.0.3+node+to+1.0.0+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Pending transfers when joining 1.0.3 node to 1.0.0 cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120118" rel="nofollow">Wed, 18 Jan 2012 15:55:17 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>If you're running 1.0.0 and not 1.0.1 or later, you're probably
+running into this bug:
+<a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=1242">https://issues.basho.com/show_bug.cgi?id=1242</a></pre><pre>
+
+In short, in Riak 1.0.0, there was a bug in the release the prevented
+handoff from occurring on nodes if riak_search was enabled. The most
+straightforward solution is to perform an in-place upgrade of all your
+1.0.0 nodes. Stop one node, install 1.0.2 or 1.0.3, restart the node.
+Repeat for the other nodes.
+
+Another option would be to disable riak_search, restart each node one
+by one, and then issue riak_core_ring_manager:force_update() on the
+claimant node. Not sure which is less disruptive for your particular
+case.
+
+Unfortunately, this particular bug is basically impossible to address
+without switching to newer code.
+
+-Joe
+
+2012/1/18 Aphyr &lt;ap...@aphyr.com&gt;:
+&gt; Hmm. I can tell you that *typically* we see riak-admin transfers show many
+&gt; partitions awaiting transfer. If you run the transfers command it resets the
+&gt; timer for transfers to complete, so don't do it too often. The total number
+&gt; of partitions awaiting transfer should slowly decrease.
+&gt;
+&gt; When zero partitions are waiting to hand off, then you may see riak-admin
+&gt; ring_status waiting to finish ownership changes. Sometimes it gets stuck on
+&gt; [riak_kv_vnode], in which case force-handoffs seems to do the trick. Then it
+&gt; can *also* get stuck on [], and then the long snippet I linked to does the
+&gt; trick.
+&gt;
+&gt; So: give it 15 minutes, and check to see if fewer partitions are awaiting
+&gt; transfer. If you're eager, you can watch the logs for handoff messages or
+&gt; iptraf that sucker to see the handoff network traffic directly; it runs on a
+&gt; distinct port IIRC so it's easy to track.
+&gt;
+&gt; --Kyle
+&gt;
+&gt;
+&gt; On 01/18/2012 02:40 PM, Fredrik Lindström wrote:
+&gt;&gt;
+&gt;&gt; I just ran the two commands on all 4 nodes.
+&gt;&gt;
+&gt;&gt; When run on one of the original nodes the first
+&gt;&gt; command(riak_core_ring_manager:force_update()) resultsin output like the
+&gt;&gt;
+&gt;&gt; following in the console of the new node
+&gt;&gt; &lt;snip&gt;
+&gt;&gt; 23:20:06.928 [info] loading merge_index
+&gt;&gt; './data/merge_index/331121464707782692405522344912282871640797216768'
+&gt;&gt; 23:20:06.929 [info] opened buffer
+&gt;&gt;
+&gt;&gt; './data/merge_index/331121464707782692405522344912282871640797216768/buffer.1'
+&gt;&gt; 23:20:06.929 [info] finished loading merge_index
+&gt;&gt; './data/merge_index/331121464707782692405522344912282871640797216768'
+&gt;&gt; with rollover size 912261.12
+&gt;&gt; 23:20:07.006 [info] loading merge_index
+&gt;&gt; './data/merge_index/730750818665451459101842416358141509827966271488'
+&gt;&gt; 23:20:07.036 [info] opened buffer
+&gt;&gt;
+&gt;&gt; './data/merge_index/730750818665451459101842416358141509827966271488/buffer.1'
+&gt;&gt; 23:20:07.036 [info] finished loading merge_index
+&gt;&gt; './data/merge_index/730750818665451459101842416358141509827966271488'
+&gt;&gt; with rollover size 1132462.08
+&gt;&gt; 23:20:47.050 [info] loading merge_index
+&gt;&gt; './data/merge_index/513809169374145557180982949001818249097788784640'
+&gt;&gt; 23:20:47.054 [info] opened buffer
+&gt;&gt;
+&gt;&gt; './data/merge_index/513809169374145557180982949001818249097788784640/buffer.1'
+&gt;&gt; 23:20:47.055 [info] finished loading merge_index
+&gt;&gt; './data/merge_index/513809169374145557180982949001818249097788784640'
+&gt;&gt; with rollover size 975175.6799999999
+&gt;&gt; &lt;/snip&gt;
+&gt;&gt;
+&gt;&gt; riak_core_vnode_manager:force_handoffs() does not produce any output on
+&gt;&gt; any console on any node besides &quot;OK&quot;. No tasty handover log messages to
+&gt;&gt; be found.
+&gt;&gt;
+&gt;&gt; Furthermore I'm not sure what to make of the output from riak-admin
+&gt;&gt; transfers:
+&gt;&gt; 't...@qbkpxadmin01.ad.qnet.local' waiting to handoff 62 partitions
+&gt;&gt; 'qbkp...@qbkpx03.ad.qnet.local' waiting to handoff 42 partitions
+&gt;&gt; 'qbkp...@qbkpx01.ad.qnet.local' waiting to handoff 42 partitions
+&gt;&gt;
+&gt;&gt; Our second node (qbkpx02) is missing from that list. The output also
+&gt;&gt; states that the new node (test) wants to handoff 62 partitions although
+&gt;&gt; it is the owner of 0 partitions.
+&gt;&gt;
+&gt;&gt; riak-admin ring_status lists various pending ownership handoffs, all of
+&gt;&gt; them are between our 3 original nodes. The new node is not mentioned
+&gt;&gt; anywhere.
+&gt;&gt;
+&gt;&gt; I'm really curious about the current state of our cluster. It does look
+&gt;&gt; rather exciting :)
+&gt;&gt;
+&gt;&gt; /F
+&gt;&gt; ------------------------------------------------------------------------
+&gt;&gt; *From:* Aphyr [ap...@aphyr.com]
+&gt;&gt; *Sent:* Wednesday, January 18, 2012 11:15 PM
+&gt;&gt; *To:* Fredrik Lindström
+&gt;&gt; *Cc:* riak-users@lists.basho.com
+&gt;&gt; *Subject:* Re: Pending transfers when joining 1.0.3 node to 1.0.0 cluster
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Did you try riak_core_ring_manager:force_update() and force_handoffs()
+&gt;&gt; on the old partition owner as well as the new one? Can't recall off the
+&gt;&gt; top of my head which one needs to execute that handoff.
+&gt;&gt;
+&gt;&gt; --Kyle
+&gt;&gt;
+&gt;&gt; On Jan 18, 2012, at 2:08 PM, Fredrik Lindström wrote:
+&gt;&gt;
+&gt;&gt;&gt; Thanks for the response Aphyr.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm seeing Waiting on:
+&gt;&gt;&gt; [riak_search_vnode,riak_kv_vnode,riak_pipe_vnode] instead of [] so I'm
+&gt;&gt;&gt; thinking it's a different scenario.
+&gt;&gt;&gt; It might be worth mentioning that the data directory on the new node
+&gt;&gt;&gt; does contain relevant subdirectories but the disk footprint is so
+&gt;&gt;&gt; small I doubt any data has been transferred.
+&gt;&gt;&gt;
+&gt;&gt;&gt; /F
+&gt;&gt;&gt; ------------------------------------------------------------------------
+&gt;&gt;&gt; *From:*Aphyr [ap...@aphyr.com]
+&gt;&gt;&gt; *Sent:*Wednesday, January 18, 2012 10:46 PM
+&gt;&gt;&gt; *To:*Fredrik Lindström
+&gt;&gt;&gt; *Cc:*riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;&gt; *Subject:*Re: Pending transfers when joining 1.0.3 node to 1.0.0 cluster
+&gt;&gt;&gt;
+&gt;&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak/blob/riak-1.0.2/RELEASE-NOTES.org">https://github.com/basho/riak/blob/riak-1.0.2/RELEASE-NOTES.org</a>
+&gt;&gt;&gt; &lt;<a  rel="nofollow" href="https://github.com/basho/riak/blob/riak-1.0.2/RELEASE-NOTESorg">https://github.com/basho/riak/blob/riak-1.0.2/RELEASE-NOTESorg</a>&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; If partition transfer is blocked awaiting [] (as opposed to [kv_vnode]
+&gt;&gt;&gt; or whatever), There's a snippet in there that might be helpful.
+&gt;&gt;&gt;
+&gt;&gt;&gt; --Kyle
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Jan 18, 2012, at 1:43 PM, Fredrik Lindström wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; After some digging I found a suggestion from Joseph Blomstedt in an
+&gt;&gt;&gt;&gt; earlier mail thread
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2012-January/007116.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2012-January/007116.html</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; in the riak console:
+&gt;&gt;&gt;&gt; riak_core_ring_manager:force_update().
+&gt;&gt;&gt;&gt; riak_core_vnode_manager:force_handoffs().
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; The symptoms would appear to be the same although the cluster
+&gt;&gt;&gt;&gt; referenced in the mail thread does not appear to have search enabled,
+&gt;&gt;&gt;&gt; as far as I can tell from the log snippets. The mail thread doesn't
+&gt;&gt;&gt;&gt; really specify which node to run the commands on so I tried both the
+&gt;&gt;&gt;&gt; new node and the current claimant of the cluster.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Sadly the suggested steps did not produce any kind of ownership handoff.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Any helpful ideas would be much appreciated :)
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; /F
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; ------------------------------------------------------------------------
+&gt;&gt;&gt;&gt; *From:*riak-users-boun...@lists.basho.com
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>&gt;[riak-users-boun...@lists.basho.com]
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; on behalf of Fredrik Lindström [fredrik.lindst...@qbranch.se]
+&gt;&gt;&gt;&gt; *Sent:*Wednesday, January 18, 2012 4:00 PM
+&gt;&gt;&gt;&gt; *To:*riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;&gt;&gt; *Subject:*Pending transfers when joining 1.0.3 node to 1.0.0 cluster
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Hi everyone,
+&gt;&gt;&gt;&gt; when we try to join a 1.0.3 node to an existing 1.0.0 (3 node)
+&gt;&gt;&gt;&gt; cluster the ownership transfer doesn't appear to take place. I'm
+&gt;&gt;&gt;&gt; guessing that we're making some stupid little mistake but we can't
+&gt;&gt;&gt;&gt; figure it out at the moment. Anyone run into something similar?
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Riak Search is enabled on the original nodes in the cluster as well
+&gt;&gt;&gt;&gt; as the new node.
+&gt;&gt;&gt;&gt; Ring size is set to 128
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; The various logfiles do not appear to contain any errors or warnings
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Output from riak-admin member_status
+&gt;&gt;&gt;&gt; ================================= Membership
+&gt;&gt;&gt;&gt; ==================================
+&gt;&gt;&gt;&gt; Status Ring Pending Node
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt;&gt;&gt; valid 33.6% 25.0% 'qbkp...@qbkpx01.ad.qnet.local
+&gt;&gt;&gt;&gt; &lt;mailto:'qbkp...@qbkpx01.ad.qnet.local&gt;'
+&gt;&gt;&gt;&gt; valid 33.6% 25.0% 'qbkp...@qbkpx02.ad.qnet.local
+&gt;&gt;&gt;&gt; &lt;mailto:'qbkp...@qbkpx02.ad.qnet.local&gt;'
+&gt;&gt;&gt;&gt; valid 32.8% 25.0% 'qbkp...@qbkpx03.ad.qnet.local
+&gt;&gt;&gt;&gt; &lt;mailto:'qbkp...@qbkpx03.ad.qnet.local&gt;'
+&gt;&gt;&gt;&gt; valid 0.0% 25.0% 't...@qbkpxadmin01.ad.qnet.local
+&gt;&gt;&gt;&gt; &lt;mailto:'t...@qbkpxadmin01.ad.qnet.local&gt;'
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Output from riak-admin ring_status
+&gt;&gt;&gt;&gt; See attached file
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Output from riak-admin transfers
+&gt;&gt;&gt;&gt; 't...@qbkpxadmin01.ad.qnet.local
+&gt;&gt;&gt;&gt; &lt;mailto:'t...@qbkpxadmin01.ad.qnet.local&gt;' waiting to handoff 10
+&gt;&gt;&gt;&gt; partitions
+&gt;&gt;&gt;&gt; 'qbkp...@qbkpx03.ad.qnet.local
+&gt;&gt;&gt;&gt; &lt;mailto:'qbkp...@qbkpx03.ad.qnet.local&gt;' waiting to handoff 62
+&gt;&gt;&gt;&gt; partitions
+&gt;&gt;&gt;&gt; 'qbkp...@qbkpx01.ad.qnet.local
+&gt;&gt;&gt;&gt; &lt;mailto:'qbkp...@qbkpx01.ad.qnet.local&gt;' waiting to handoff 63
+&gt;&gt;&gt;&gt; partitions
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; /F
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06314.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#06315">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#06315">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06318.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06305.html">Pending transfers when joining 1.0.3 node to 1.0.0 clus...</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06309.html">RE: Pending transfers when joining 1.0.3 node to 1...</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06310.html">Re: Pending transfers when joining 1.0.3 node ...</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06311.html">RE: Pending transfers when joining 1.0.3 n...</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06312.html">Re: Pending transfers when joining 1.0...</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06313.html">RE: Pending transfers when joinin...</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06314.html">Re: Pending transfers when jo...</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Pending transfers whe...</span> <span class="sender italic">Joseph Blomstedt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06318.html">RE: Pending transfers whe...</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06519.html">RE: Pending transfers whe...</a></span> <span class="sender italic">Fredrik Lindström</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Pending transfers when joining 1.0.3 node to 1.0.0 cluster">
+<input type="hidden" name="msgid" value="CANvk2KTc3OOjTVjDbnJwQLiAaAzr-Vi_Y9UOZKVcaECi1m4hpg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06315.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Pending+transfers+when+joining+1.0.3+node+to+1.0.0+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06314.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06318.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KTc3OOjTVjDbnJwQLiAaAzr-Vi_Y9UOZKVcaECi1m4hpg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

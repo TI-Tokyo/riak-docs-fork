@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak 1.4 test on Azure - Webmachine error at path ...</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd13.html#11810" id="c">
+<link rel="index" href="mail12.html#11810" id="i">
+<link rel="prev" href="msg11800.html" id="p">
+<link rel="next" href="msg11811.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11810.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.4+test+on+Azure+%5C-+Webmachine+error+at+path+...%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak 1.4 test on Azure - Webmachine error at path ...</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christian+Rosnes%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christian Rosnes</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130730" rel="nofollow">Tue, 30 Jul 2013 01:52:59 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Sun, Jul 28, 2013 at 10:08 PM, Matthew Von-Maszewski
+&lt;matth...@basho.com&gt;wrote:</pre><pre>
+
+&gt;
+&gt; leveldb has two independent caches:  file cache and data block cache.  You
+&gt; have raised the data block cache from its default 8M to 256M per your
+&gt; earlier note.  I would recommend the follow:
+&gt;
+&gt; {max_open_files, 50},          %% 50 * 4Mbytes allocation for file cache
+&gt; {cache_size, 104857600},  %% 100Mbytes for data block cache
+&gt;
+&gt; The max_open_files default is 20 (which is internally reduced by 10).  You
+&gt; are likely thrashing file opens.  The file cache is far more important to
+&gt; performance than the data block cache.
+&gt;
+&gt; Find the LOG file within one of your database &quot;vnode&quot; directories.  Look
+&gt; for a line like this ' compacted to: files[ 0 9 25 14 2 0 0 ]'.  You would
+&gt; like to be covering that total count of files (plus 10) with your
+&gt; max_open_files setting.  Take the cache_size down to as low as 8Mbytes to
+&gt; achieve the coverage.  Once you are down to 8Mbytes of cache_size, you
+&gt; should go no lower and give up on full max_open_files coverage.
+&gt;
+&gt; Summary:  total memory per vnode in 1.4 is (max_open_files - 10) * 4Mbytes
+&gt; + cache_size;
+&gt;
+&gt;
+Thank you.
+
+In app.config I have now set this for the eleveldb section:
+
+  {cache_size, 8388608} %% 8MB
+  {max_open_files, 260}
+
+The 'max_open_files' was based on the highest sum of the 6 numbers I read
+in the 'compacted to ...' line. Is this the right way to set this parameter,
+or is it too high to have any significant benefit ?
+
+After the sysctl.conf and app.config changes I've inserted about
+50 million json objects via http and not seen any errors. The performance
+for
+each 1-hour test has ranged from 1700 to 1850 insert req/s.
+The bucket used during testing now contains over 84 million json objects.
+
+Btw - when I now check the logs:
+
+[root@riak01 leveldb]# grep 'compacted' */LOG
+2013/07/29-19:38:14.650538 7f96a1bdc700 compacted to: files[ 0 1 21 289 0 0
+0 ]
+2013/07/29-19:34:58.838520 7f9692138700 compacted to: files[ 2 0 30 288 0 0
+0 ]
+2013/07/29-19:38:02.037188 7f96c51b8700 compacted to: files[ 1 0 27 301 0 0
+0 ]
+2013/07/29-19:38:12.214409 7f96c51b8700 compacted to: files[ 1 0 26 302 0 0
+0 ]
+2013/07/29-19:37:06.503530 7f96a1bdc700 compacted to: files[ 1 1 22 284 0 0
+0 ]
+2013/07/29-19:31:41.932370 7f96bffff700 compacted to: files[ 0 1 25 291 0 0
+0 ]
+2013/07/29-19:32:18.097417 7f96bffff700 compacted to: files[ 0 1 24 292 0 0
+0 ]
+2013/07/29-19:30:20.986832 7f968e538700 compacted to: files[ 2 1 24 278 0 0
+0 ]
+2013/07/29-19:37:47.139039 7f96c51b8700 compacted to: files[ 3 0 20 300 0 0
+0 ]
+2013/07/29-19:15:10.950633 7f968db37700 compacted to: files[ 0 2 33 263 0 0
+0 ]
+2013/07/29-19:33:01.001246 7f968e538700 compacted to: files[ 1 1 30 280 0 0
+0 ]
+2013/07/29-19:31:41.494208 7f96bffff700 compacted to: files[ 1 1 25 283 0 0
+0 ]
+2013/07/29-19:31:57.008503 7f96bffff700 compacted to: files[ 1 1 24 284 0 0
+0 ]
+2013/07/29-19:39:00.008635 7f96a1bdc700 compacted to: files[ 0 1 31 289 0 0
+0 ]
+
+Could there be a benefit to increase 'max_open_files' even further, say to:
+340 ?
+(assuming there is enough memory)
+
+Christian
+@NorSoulx
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11800.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd13.html#11810">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail12.html#11810">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11811.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11742.html">Riak 1.4 test on Azure - Webmachine error at path .....</a></span> <span class="sender italic">Christian Rosnes</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11799.html">Re: Riak 1.4 test on Azure - Webmachine error a...</a></span> <span class="sender italic">Christian Rosnes</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11800.html">Re: Riak 1.4 test on Azure - Webmachine err...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak 1.4 test on Azure - Webmachine...</span> <span class="sender italic">Christian Rosnes</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11811.html">Re: Riak 1.4 test on Azure - Webmac...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak 1.4 test on Azure - Webmachine error at path ...">
+<input type="hidden" name="msgid" value="CAMgLkJOPMCXF71y_1nz9LinBnUN2uVjdW8anAchL9MHH5GrvAQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11810.html">
+<input type="submit" value=" Christian Rosnes ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.4+test+on+Azure+%5C-+Webmachine+error+at+path+...%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11800.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11811.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMgLkJOPMCXF71y_1nz9LinBnUN2uVjdW8anAchL9MHH5GrvAQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

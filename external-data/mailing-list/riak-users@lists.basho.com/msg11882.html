@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Many-To-Many relationships</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd12.html#11882" id="c">
+<link rel="index" href="mail12.html#11882" id="i">
+<link rel="prev" href="msg11881.html" id="p">
+<link rel="next" href="msg11886.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11882.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Many%5C-To%5C-Many+relationships%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Many-To-Many relationships</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130804" rel="nofollow">Sun, 04 Aug 2013 12:03:54 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Massimiliano,
+
+</pre><tt>I think your design is very thorough, I wouldn't worry about the 
+</tt><tt>cardinality of such index but its per index size (how many keys a single 
+</tt><tt>2i index will return?) , in that case think of 2i as yet another 
+</tt><tt>relational DB (LevelDB), you should test it with many keys and check its 
+</tt><tt>performance, but from my perspective I see nothing wrong about it.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>If that isn't good enough and what you need is a graph oriented search, 
+</tt><tt>the alternative could be Neo4J, though it is not as high available and 
+</tt><tt>scalable as Riak (In theory), and yes, you are right, for the 
+</tt><tt>many-to-many combinations you are talking about you will have to avoid 
+</tt><tt>MapReduce and use a well designed 2i, or use a MapReduce using a 2i 
+</tt><tt>result as input (As long as the list of keys per 2i index isn't too long)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You might have to do a couple of 2i queries to get your many-to-many 
+</tt><tt>list, then fetch key by key either single threaded or multi-threaded.
+</tt><pre style="margin: 0em;">
+
+Hope that helps,
+
+Guido.
+
+On 04/08/13 19:43, Massimiliano Ciancio wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi all,
+I'm new to Riak and I'm evaluating its use in a project in which I've
+to map some many-to-many relationship with millions of link.
+That is, imagine you have objects of type X={x_0,x_1,...,x_n} and
+objects of type Y={y_0,y_1,...,y_m} that are related. Xs are connected
+to millions of Ys and viceversa.
+If there wasn't a so high number I could put the relation inside the
+objects X as a list of related Ys and viceversa.
+But with this number I'll have a very big data field associated to each object.
+I'm thinking that I can create a bucket &quot;relation X-Y&quot; in which I can
+put objects with key &quot;x_i-y_j&quot; with value, i.e., &quot;True&quot; menaing that
+x_i is related to y_j. In this way it will be simple to know if x_i is
+related to y_j or viceversa: if the object with key &quot;x_i-y_j&quot; exists
+then they are related. Ok. But now, how can I extract all the Ys
+related to x_i or, viceversa, the Xs related to y_j?
+Using map-reduce or similar will imply analizyng all the objects in the cluster.
+I can use a secondary index on the objects of the bucket &quot;relation
+X-Y&quot;. But I imagine it could give performance problems because of the
+hundreds of millions of items in it.
+So I thought of the following use of 2i: when I write a new relation
+&quot;x_i-y_j&quot; I can add it to two secondary indexes, one named &quot;x_i-index&quot;
+with value y_j and the other &quot;y_j-index&quot; with value x_i. In this way
+I'll not have one big index but many (millions!) of smaller indexes.
+Suppose I want all the Ys related to x_i: I can ask Riak for the
+elements in the index &quot;x_i-index&quot;. In my mind this will be a not so
+heavy query...
+Now my questions are: is this approach viable? How many million of
+&quot;small&quot; indexes impact on the riak's performances? Are there best
+practices to do this?
+Thanks in advance
+Massimiliano
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11881.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd12.html#11882">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail12.html#11882">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11886.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11881.html">Many-To-Many relationships</a></span> <span class="sender italic">Massimiliano Ciancio</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Many-To-Many relationships</span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Many-To-Many relationships">
+<input type="hidden" name="msgid" value="51FEA506.1020109@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11882.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Many%5C-To%5C-Many+relationships%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11881.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11886.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">51FEA506.1020109@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using Key Filters to fetch object keys efficiently</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02119" id="c">
+<link rel="index" href="maillist.html#02119" id="i">
+<link rel="prev" href="msg02113.html" id="p">
+<link rel="next" href="msg02120.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02119.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Key+Filters+to+fetch+object+keys+efficiently%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using Key Filters to fetch object keys efficiently</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Gordon+Tillman%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Gordon Tillman</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110125" rel="nofollow">Tue, 25 Jan 2011 06:53:34 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sean thanks again for the feedback.
+
+Using just a reduce function seems to cause Riak problems (unless it's me doing 
+something wrong).</pre><pre>
+
+For example, I populated a bucket called &quot;junk&quot; with with the following command:
+
+for s in `seq 00000 10000`; do curl -X POST -H 'Content-Type: text/plain' 
+<a  rel="nofollow" href="http://localhost:8091/riak/junk/$s">http://localhost:8091/riak/junk/$s</a> -d 0; done
+
+Now if I try and select some keys using key filters and a map function it works:
+
+curl -X POST -H 'Content-Type: application/json' <a  rel="nofollow" href="http://localhost:8091/mapred">http://localhost:8091/mapred</a> 
+-d...@kfm.json&lt;<a  rel="nofollow" href="mailto:-d...@kfm.json">mailto:-d...@kfm.json</a>&gt;
+[&quot;5&quot;,&quot;25&quot;,&quot;37&quot;,&quot;10&quot;, ... ,&quot;18&quot;,&quot;22&quot;,&quot;17&quot;]
+
+where kfm.json is:
+
+{
+    &quot;inputs&quot;: {
+        &quot;bucket&quot;: &quot;junk&quot;,
+        &quot;key_filters&quot;: [ [&quot;string_to_int&quot;], [&quot;less_than&quot;, 100] ]
+    },
+    &quot;query&quot;: [
+        {
+            &quot;map&quot;: {
+                &quot;language&quot;: &quot;javascript&quot;,
+                &quot;source&quot;: &quot;function(v, a) { return [v.key]; }&quot;
+            }
+        }
+    ]
+}
+
+But if I try the same thing with just a reduce phase like this:
+
+curl -X POST -H 'Content-Type: application/json' <a  rel="nofollow" href="http://localhost:8091/mapred">http://localhost:8091/mapred</a> 
+-d...@kfr.json&lt;<a  rel="nofollow" href="mailto:-d...@kfr.json">mailto:-d...@kfr.json</a>&gt; -i
+
+where kfr.json is:
+
+{
+    &quot;inputs&quot;: {
+        &quot;bucket&quot;: &quot;junk&quot;,
+        &quot;key_filters&quot;: [ [&quot;string_to_int&quot;], [&quot;less_than&quot;, 100] ]
+    },
+    &quot;query&quot;: [
+        {
+            &quot;reduce&quot;: {
+                &quot;language&quot;: &quot;javascript&quot;,
+                &quot;source&quot;: &quot;function(v, a) { return v; }&quot;
+            }
+        }
+    ]
+}
+
+The curl command just hangs and I see this in the logs:
+
+=CRASH REPORT==== 25-Jan-2011::08:46:11 ===
+  crasher:
+    initial call: riak_kv_keys_fsm:init/1
+    pid: &lt;0.26942.19&gt;
+    registered_name: []
+    exception exit: badmsg
+      in function  gen_fsm:terminate/7
+      in call from proc_lib:init_p_do_apply/3
+    ancestors: [&lt;0.26941.19&gt;]
+    messages: 
+[{EXIT,&lt;0.26942.19&gt;,normal},{EXIT,&lt;0.26942.19&gt;,normal},{$gen_event,{66195534,{kl,1278813932664540053428224228626747642198940975104,[&lt;&lt;&quot;83&quot;&gt;&gt;,&lt;&lt;&quot;9&quot;&gt;&gt;]}}},{$gen_event,{66195534,{kl,1278813932664540053428224228626747642198940975104,[&lt;&lt;&quot;76&quot;&gt;&gt;]}}},{$gen_event,{66195534,{kl,1278813932664540053428224228626747642198940975104,[&lt;&lt;&quot;95&quot;&gt;&gt;]}}},{$gen_event,{66195534,{kl,1278813932664540053428224228626747642198940975104,[&lt;&lt;&quot;61&quot;&gt;&gt;]}}},{$gen_event,{66195534,1278813932664540053428224228626747642198940975104,done}}]
+    links: []
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 2584
+    stack_size: 24
+    reductions: 94951
+  neighbours:
+
+--gordon
+
+On Jan 25, 2011, at 07:24, Sean Cribbs wrote:
+
+Use a reduce phase instead, which doesn't force loading of the objects.  A 
+simple identity reduce should do what you want: function(values,arg){ return 
+values; }
+
+Sean Cribbs &lt;s...@basho.com&lt;<a  rel="nofollow" href="mailto:s...@basho.com">mailto:s...@basho.com</a>&gt;&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On Jan 24, 2011, at 7:43 PM, Gordon Tillman wrote:
+
+Greetings All,
+
+I have a use case for our app where I need to fetch a list of keys that match 
+some pattern and was hoping to be able to use key filters for that.
+
+In my test I defined a key filter for the input phase of mapred and then 
+defined just a single map phase that returns the object key.   But there is 
+considerable overhead with that map phase because (I'm assuming this part) Riak 
+is having to load each object to provide the necessary inputs to the map 
+function.
+
+Is there a way to do this without Riak having to actually load the objects?
+
+Many thanks,
+
+--gordon
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02113.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02119">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02119">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02120.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02107.html">Using Key Filters to fetch object keys efficiently</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02113.html">Re: Using Key Filters to fetch object keys efficiently</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using Key Filters to fetch object keys efficie...</span> <span class="sender italic">Gordon Tillman</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02120.html">Re: Using Key Filters to fetch object keys eff...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02121.html">Re: Using Key Filters to fetch object keys...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02124.html">Re: Using Key Filters to fetch object keys...</a></span> <span class="sender italic">Gordon Tillman</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using Key Filters to fetch object keys efficiently">
+<input type="hidden" name="msgid" value="C1EFD363-A07A-41A1-8399-2B3E6A25CCD7@mezeo.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02119.html">
+<input type="submit" value=" Gordon Tillman ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Key+Filters+to+fetch+object+keys+efficiently%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02113.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02120.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">C1EFD363-A07A-41A1-8399-2B3E6A25CCD7@mezeo.com</li>
+</ul>
+</div>
+</body>
+</html>

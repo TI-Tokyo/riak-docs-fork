@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Slow performance using linkwalk, help wanted</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01509" id="c">
+<link rel="index" href="maillist.html#01509" id="i">
+<link rel="prev" href="msg01506.html" id="p">
+<link rel="next" href="msg01513.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01509.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+performance+using+linkwalk%2C+help+wanted%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Slow performance using linkwalk, help wanted</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jan+Buchholdt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jan Buchholdt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101109" rel="nofollow">Tue, 09 Nov 2010 07:36:20 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+ Kevin -
+
+</pre><tt>The test client is part of a bigger system and would be a bit too much 
+</tt><tt>top send to you. The method that is calling Riak looks like this:
+</tt><pre style="margin: 0em;"></pre><pre>
+
+    import com.basho.riak.client.*;
+    .
+    .
+    public List&lt;Document&gt; lookupDocuments(String personId, String url) {
+        RiakClient riak = new RiakClient(url);
+
+</pre><tt>        WalkResponse walkResponse = riak.walk(&quot;person&quot;, personId, 
+</tt><tt>&quot;document,_,_&quot;);
+</tt><pre style="margin: 0em;">
+        if (walkResponse.isSuccess()) {
+            List&lt;Document&gt; out = new ArrayList&lt;Document&gt;();
+</pre><tt>            List&lt;? extends List&lt;RiakObject&gt;&gt; steps = 
+</tt><tt>walkResponse.getSteps();
+</tt><pre style="margin: 0em;">
+            if (steps.size() != 1) {
+</pre><tt>                throw new RuntimeException(&quot;Expected to walk one link. 
+</tt><tt>Walked &quot; + steps.size());
+</tt><pre style="margin: 0em;">
+            }
+            List&lt;RiakObject&gt; step = steps.get(0);
+            for (RiakObject o : step) {
+                try {
+                    String chars = o.getValue();
+                    Builder builder = Protos.Document.newBuilder();
+                    JsonFormat2.merge(chars, builder);
+                    out.add(((Document) builder.build()).getDocument());
+                } catch (ParseException e) {
+</pre><tt>                    throw new DocumentServiceException(&quot;Error parsing 
+</tt><tt>document&quot;, e);
+</tt><pre style="margin: 0em;">
+                }
+            }
+            return out;
+        } else {
+</pre><tt>            throw new RuntimeException(&quot;Walk error: &quot; + 
+</tt><tt>walkResponse.getHttpHeaders());
+</tt><pre style="margin: 0em;">
+        }
+    }
+
+</pre><tt>It could be interesting to repeat your test on our cluster, to see if we 
+</tt><tt>get the same numbers as you do. Is it possible for you to send the code 
+</tt><tt>behind your test?
+</tt><pre style="margin: 0em;">
+
+--
+Jan Buchholdt
+Software Pilot
+Trifork A/S
+Cell +45 50761121
+
+
+
+On 2010-11-09 15:47, Karsten Thygesen wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+On Nov 9, 2010, at 14:58 , Kevin Smith wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+On Nov 9, 2010, at 5:01 AM, Karsten Thygesen wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi
+
+OK, we will use a larger ringsize next time and will consider a data reload.
+
+Regarding the metrics: the servers are dedicated to Riak use and it not used 
+for anything else. They are new HP servers with 8 cores each and 4x146GB 10K 
+RPM SAS disks in a contatenated mirror setup. We use Solaris with ZFS as 
+filesystem and I have turned off atime update in the data partition.
+
+The pool is built as such:
+
+pool: pool01
+state: ONLINE
+scrub: scrub completed after 0h0m with 0 errors on Tue Oct 26 21:25:05 2010
+config:
+
+       NAME          STATE     READ WRITE CKSUM
+       pool01        ONLINE       0     0     0
+         mirror-0    ONLINE       0     0     0
+           c0t0d0s7  ONLINE       0     0     0
+           c0t1d0s7  ONLINE       0     0     0
+         mirror-1    ONLINE       0     0     0
+           c0t2d0    ONLINE       0     0     0
+           c0t3d0    ONLINE       0     0     0
+
+errors: No known data errors
+
+so it is as fast as possible.
+
+However - we use the ZFS default blocksize, which is 128Kb - is that optimal 
+with bitcask as backend? It is rather large, but what is optimal with bitcask?
+</pre></blockquote><pre style="margin: 0em;">
+I don't have much experience tuning Solaris or ZFS for Riak. This is a question 
+best asked of Ryan and I will make sure he sees this.
+</pre></blockquote><pre style="margin: 0em;">
+Thanks!
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+The cluster is 4 servers with gigabit connection located in the same datacenter 
+on the same switch. The loadbalancer is a Zeus ZTM, which does quote a few http 
+optimizations including extended reuse of http connections and we usually see 
+far better response times using the loadbalancer than using a node directly.
+</pre></blockquote><pre style="margin: 0em;">
+Hmmm. Can you share what the performance times are like for direct cluster 
+access?
+</pre></blockquote><pre style="margin: 0em;">
+In this case, there is no measurable difference whenever we ask a cluster node 
+directly or we go through the loadbalancer. The largest difference is when we 
+hit it with a lot of small requests, but that is not the case here.
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+When we run the test, each riak node is only about 100% cpu loaded (which on 
+solaris means, that it only uses one of the 8 cores). We have seen spikes in 
+the 160% area, but everything below 800% is not cpu bound. So all-in-all, the 
+cpuload is between 5 and 10%.
+</pre></blockquote><pre style="margin: 0em;">
+Can you send me the code you're using for the performance test? I'd like to run 
+the exact code on my test hardware and see if that reveals anything.
+</pre></blockquote><pre style="margin: 0em;">
+Jan, can you please provide the test client?
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Also, low CPU usage might indicate you are IO bound. Do you know if Riak 
+processes are spending much time waiting for IO to complete?
+
+</pre></blockquote><pre style="margin: 0em;">
+It does not seem so. The servers are not IO bound, there is plenty of network 
+capacity and the disks is only around 10% loaded.
+
+My largest suspicion is on the datamodel - when having a 4-node cluster and 
+doing a linkwalk, which need to combine around 5-600 documents, it will take 
+quite some time, but we still feel, that the numbers is very high.
+
+Perhaps we should consider a datamodel, where we collect, say, 100 documents in 
+a basket and the only have to linkwalk 4-5 baskets to return an answer? 
+Tempting, performancewise, but it makes it a lot harder to maintain the data 
+afterwards as we can not just use map-reduce and similar technologies to handle 
+data...
+
+Karsten
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+--Kevin
+
+
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01506.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01509">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01509">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01513.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01490.html">Re: Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01491.html">Re: Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Jan Buchholdt</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01492.html">Re: Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Jan Buchholdt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01493.html">Re: Slow performance using linkwalk, help wanted</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01494.html">Re: Slow performance using linkwalk, help wante...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01495.html">Re: Slow performance using linkwalk, help wante...</a></span> <span class="sender italic">Jan Buchholdt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01496.html">Re: Slow performance using linkwalk, help w...</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01502.html">Re: Slow performance using linkwalk, he...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01512.html">Re: Slow performance using linkwal...</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01506.html">Re: Slow performance using lin...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Slow performance using lin...</span> <span class="sender italic">Jan Buchholdt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01513.html">Re: Slow performance using lin...</a></span> <span class="sender italic">Kevin Smith</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01497.html">Re: Slow performance using linkwalk, help w...</a></span> <span class="sender italic">Ryan Tilder</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01503.html">Re: Slow performance using linkwalk, he...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01505.html">Re: Slow performance using linkwal...</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01507.html">Re: Slow performance using lin...</a></span> <span class="sender italic">Karsten Thygesen</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Slow performance using linkwalk, help wanted">
+<input type="hidden" name="msgid" value="4CD96A4D.1060401@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01509.html">
+<input type="submit" value=" Jan Buchholdt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Slow+performance+using+linkwalk%2C+help+wanted%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01506.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01513.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4CD96A4D.1060401@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

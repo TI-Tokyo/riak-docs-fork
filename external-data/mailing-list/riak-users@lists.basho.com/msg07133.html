@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: slow mapred_search key lookups for single terms</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07133" id="c">
+<link rel="index" href="maillist.html#07133" id="i">
+<link rel="prev" href="msg07115.html" id="p">
+<link rel="next" href="msg07153.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07133.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+slow+mapred_search+key+lookups+for+single+terms%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: slow mapred_search key lookups for single terms</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Michael+Radford%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Michael Radford</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120404" rel="nofollow">Wed, 04 Apr 2012 08:28:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Aha, I just noticed that the native erlang client is still using
+luke_flow to implement its map-reduce, rather than riak_pipe.  On some
+level, this must be the reason for the differing behavior...either a
+bug in riak_pipe, or a bug in the usage of riak_pipe somewhere in the
+chain?</pre><pre>
+
+Like, maybe someone is forgetting to send end-of-input and causing a
+5-second timeout to occur, something like that?  (Just wild
+speculation.)
+
+Mike
+
+On Mon, Apr 2, 2012 at 2:39 PM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+&gt; Michael,
+&gt;
+&gt; These are some interesting observations.  Thank you for digging into this
+&gt; more.  At first glance it appears that it has something to do with the PB
+&gt; client/server.  If you are feeling adventurous might I suggest using fprof
+&gt; to analyze where the time is being spent.  I wrote up a gist on how you can
+&gt; do that here:
+&gt;
+&gt; <a  rel="nofollow" href="https://gist.github.com/2287383">https://gist.github.com/2287383</a>
+&gt;
+&gt; I ran this analysis myself on a much smaller dataset.  A quick glance at the
+&gt; results shows most of the time being spent in suspend, encode/decode (which
+&gt; I suspected), and queuing data in riak_pipe.  I'm really curious to see what
+&gt; your analysis looks like.  If you can produce one I'm happy to help analyze.
+&gt;  Thanks again for your detailed analysis thus far.
+&gt;
+&gt; -Ryan
+&gt;
+&gt;
+&gt;
+&gt; On Mon, Apr 2, 2012 at 2:33 PM, Michael Radford &lt;m...@blorf.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; I modified the pb client code to print the elapsed time when it
+&gt;&gt; receives the first map-reduce result (in the function
+&gt;&gt; wait_for_mapred), and tried to run a more apples-to-apples comparison
+&gt;&gt; of the same map-reduce job via the local client and the pb client
+&gt;&gt; connecting to 127.0.0.1.
+&gt;&gt;
+&gt;&gt; In a nutshell, the majority of the extra delay from the pb client
+&gt;&gt; occurs before it receives the first result (e.g., 6 out of 7 seconds).
+&gt;&gt; (It's still troubling that it takes another second to receive the rest
+&gt;&gt; of the results when reading from localhost, but maybe I can avoid that
+&gt;&gt; by calling a different reduce phase that somehow packages my results
+&gt;&gt; into a single message?)
+&gt;&gt;
+&gt;&gt; Next, it seems like I should try instrumenting the server side of the
+&gt;&gt; protobufs interface with timing...any pointers on the best place(s) to
+&gt;&gt; do that would be appreciated.
+&gt;&gt;
+&gt;&gt; Here is the function I used with the pb client to localhost, and the
+&gt;&gt; results:
+&gt;&gt; TP =
+&gt;&gt;  fun (Bucket, Query) -&gt;
+&gt;&gt;    {ok, Pid} = riakc_pb_socket:start_link(&quot;127.0.0.1&quot;, 8087),
+&gt;&gt;    Inputs = {modfun, riak_search, mapred_search, [Bucket, Query]},
+&gt;&gt;    Phases =
+&gt;&gt;      [ {reduce,
+&gt;&gt;        {modfun, riak_kv_mapreduce, reduce_identity},
+&gt;&gt;        [{reduce_phase_only_1, true}],
+&gt;&gt;        true} ],
+&gt;&gt;    {MuSec, {ok, [{0, Results}]}} =
+&gt;&gt;      timer:tc (fun () -&gt; riakc_pb_socket:mapred(Pid, Inputs, Phases) end),
+&gt;&gt;    riakc_pb_socket:stop (Pid),
+&gt;&gt;    io:format(user, &quot;~b results, ~f sec~n&quot;, [length(Results),
+&gt;&gt; MuSec/1000000])
+&gt;&gt;  end.
+&gt;&gt;
+&gt;&gt; 3&gt; TP(Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 5848490 musec
+&gt;&gt; 14378 results, 7.235226 sec
+&gt;&gt; ok
+&gt;&gt; 4&gt; TP(Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 5978044 musec
+&gt;&gt; 14378 results, 7.423933 sec
+&gt;&gt; ok
+&gt;&gt; 5&gt; TP(Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 1219112 musec
+&gt;&gt; 14378 results, 2.563079 sec
+&gt;&gt; ok
+&gt;&gt; 6&gt; TP(Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 6017087 musec
+&gt;&gt; 14378 results, 7.326352 sec
+&gt;&gt; ok
+&gt;&gt; 7&gt; TP(Bucket,&lt;&lt;&quot;full_text:green&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 9546654 musec
+&gt;&gt; 24046 results, 13.561474 sec
+&gt;&gt; ok
+&gt;&gt; 8&gt; TP(Bucket,&lt;&lt;&quot;full_text:green&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 1878109 musec
+&gt;&gt; 24047 results, 5.188646 sec
+&gt;&gt; ok
+&gt;&gt; 9&gt;
+&gt;&gt; 9&gt; TP(Bucket,&lt;&lt;&quot;full_text:green&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 9724651 musec
+&gt;&gt; 24047 results, 12.692941 sec
+&gt;&gt; ok
+&gt;&gt; 10&gt; TP(Bucket,&lt;&lt;&quot;full_text:green&quot;&gt;&gt;).
+&gt;&gt; first M-R result in 9627592 musec
+&gt;&gt; 24047 results, 12.769256 sec
+&gt;&gt; ok
+&gt;&gt;
+&gt;&gt; And here is the function I used for the local client, and the results:
+&gt;&gt; TL =
+&gt;&gt;  fun (Bucket, Query) -&gt;
+&gt;&gt;    {ok, Client} = riak:local_client(),
+&gt;&gt;    Inputs = {modfun, riak_search, mapred_search, [Bucket, Query]},
+&gt;&gt;    Phases =
+&gt;&gt;      [ {reduce,
+&gt;&gt;        {modfun, riak_kv_mapreduce, reduce_identity},
+&gt;&gt;        [{reduce_phase_only_1, true}],
+&gt;&gt;        true} ],
+&gt;&gt;    {MuSec, {ok, Results}} =
+&gt;&gt;      timer:tc(fun () -&gt; Client:mapred(Inputs, Phases) end),
+&gt;&gt;    io:format(user, &quot;~b results, ~f sec~n&quot;, [length(Results),
+&gt;&gt; MuSec/1000000])
+&gt;&gt;  end.
+&gt;&gt;
+&gt;&gt; (riak@10.174.223.37)27&gt; TL(Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; 14340 results, 0.106422 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)28&gt; TL(Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; 14340 results, 0.102255 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)29&gt; TL(Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; 14340 results, 0.099877 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)30&gt; TL(Bucket,&lt;&lt;&quot;full_text:blue&quot;&gt;&gt;).
+&gt;&gt; 25017 results, 0.210381 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)31&gt; TL(Bucket,&lt;&lt;&quot;full_text:blue&quot;&gt;&gt;).
+&gt;&gt; 25017 results, 0.200112 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)32&gt; TL(Bucket,&lt;&lt;&quot;full_text:blue&quot;&gt;&gt;).
+&gt;&gt; 25018 results, 0.207553 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)33&gt; TL(Bucket,&lt;&lt;&quot;full_text:green&quot;&gt;&gt;).
+&gt;&gt; 23945 results, 0.173061 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)34&gt; TL(Bucket,&lt;&lt;&quot;full_text:green&quot;&gt;&gt;).
+&gt;&gt; 23945 results, 0.191595 sec
+&gt;&gt; ok
+&gt;&gt; (riak@10.174.223.37)35&gt; TL(Bucket,&lt;&lt;&quot;full_text:green&quot;&gt;&gt;).
+&gt;&gt; 23945 results, 0.177821 sec
+&gt;&gt; ok
+&gt;&gt;
+&gt;&gt; Mike
+&gt;&gt;
+&gt;&gt; On Mon, Apr 2, 2012 at 8:46 AM, Michael Radford &lt;m...@blorf.com&gt; wrote:
+&gt;&gt; &gt; Hi Ryan,
+&gt;&gt; &gt;
+&gt;&gt; &gt; This is getting interesting: the same queries when executed using
+&gt;&gt; &gt; local clients from 'riak attach' are taking only 100-250 ms.
+&gt;&gt; &gt;
+&gt;&gt; &gt; However, I just tried the same test I was running remotely on Saturday
+&gt;&gt; &gt; on one of the machines in the Riak cluster, using the protobufs client
+&gt;&gt; &gt; to connect to 127.0.0.1, and it's still taking 6-7 seconds per query.
+&gt;&gt; &gt; (Still with an occasional dip down to 2-3 seconds).
+&gt;&gt; &gt;
+&gt;&gt; &gt; These machines are on Amazon EC2, so I have little control over the
+&gt;&gt; &gt; network layout. But that includes the 4 Riak boxes, so if their
+&gt;&gt; &gt; inter-node communication was suffering from similar issues I would
+&gt;&gt; &gt; have expected to see it affecting other map-reduce queries. (We're
+&gt;&gt; &gt; running lots of multi-key lookups via map-reduce that return thousands
+&gt;&gt; &gt; of objects in a few ms, much larger than the keys returned from these
+&gt;&gt; &gt; searches.)
+&gt;&gt; &gt;
+&gt;&gt; &gt; And again, there is a huge difference between the same query using the
+&gt;&gt; &gt; local client (200 ms), and using the protobufs client from the exact
+&gt;&gt; &gt; same Riak machine connecting to localhost (6-7 sec but occasionally
+&gt;&gt; &gt; 2-3 sec).
+&gt;&gt; &gt;
+&gt;&gt; &gt; Mike
+&gt;&gt; &gt;
+&gt;&gt; &gt; On Mon, Apr 2, 2012 at 7:44 AM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:
+&gt;&gt; &gt;&gt; Hi Michael, you'll find my responses inline...
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; On Sat, Mar 31, 2012 at 5:04 PM, Michael Radford &lt;m...@blorf.com&gt;
+&gt;&gt; &gt;&gt; wrote:
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; I'm seeing very slow performance from Riak search even when querying
+&gt;&gt; &gt;&gt;&gt; single terms, and I'd appreciate any advice on how to get insight into
+&gt;&gt; &gt;&gt;&gt; where the time is going.
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; Right now, I'm using this function to time queries with the Erlang pb
+&gt;&gt; &gt;&gt;&gt; client:
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; TS =
+&gt;&gt; &gt;&gt;&gt;  fun (Pid, Bucket, Query) -&gt;
+&gt;&gt; &gt;&gt;&gt;    T0 = now(),
+&gt;&gt; &gt;&gt;&gt;    {ok, Results} = riakc_pb_socket:search(Pid, Bucket, Query),
+&gt;&gt; &gt;&gt;&gt;    MuSec = timer:now_diff(now(), T0),
+&gt;&gt; &gt;&gt;&gt;    io:format(user, &quot;~b results, ~f sec~n&quot;, [length(Results),
+&gt;&gt; &gt;&gt;&gt; MuSec/1000000])
+&gt;&gt; &gt;&gt;&gt;  end.
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; Just an FYI, you should checkout `timer:tc`.
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; The bucket I'm querying currently has ~300k keys total (each 16
+&gt;&gt; &gt;&gt;&gt; bytes). (The whole cluster has maybe 1.5M entries in about a dozen
+&gt;&gt; &gt;&gt;&gt; buckets. It's running 1.0.2, 4 nodes on 4 8-core c1.xlarge EC2
+&gt;&gt; &gt;&gt;&gt; instances.)
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; For single-term queries that return 10k+ keys, I'm routinely seeing
+&gt;&gt; &gt;&gt;&gt; times above 6 seconds to run the above function. Intermittently,
+&gt;&gt; &gt;&gt;&gt; however, I'll see the same queries take only 2 seconds:
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 12574 results, 6.094149 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 12574 results, 1.938894 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 12574 results, 1.981492 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:flower&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 12574 results, 6.120589 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:red&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 13461 results, 6.572473 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:red&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 13461 results, 6.626049 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:red&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 13461 results, 2.155847 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; Queries with fewer results are still slow, but not quite as slow as 6
+&gt;&gt; &gt;&gt;&gt; seconds:
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:ring&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 6446 results, 2.831806 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:ring&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 6446 results, 3.037162 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:ring&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 6447 results, 0.780944 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; And queries with no matches only take a few milliseconds:
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; &gt; TS(Pid,Bucket,&lt;&lt;&quot;full_text:blorf&quot;&gt;&gt;).
+&gt;&gt; &gt;&gt;&gt; 0 results, 0.003269 sec
+&gt;&gt; &gt;&gt;&gt; ok
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; During the slow queries, none of the 4 machines seems to be fully
+&gt;&gt; &gt;&gt;&gt; taxing even one cpu, or doing almost any disk i/o.
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; What does intra/inter network look like?
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; As far as I can tell from looking at the riak_kv/riak_search source,
+&gt;&gt; &gt;&gt;&gt; my query should only be hitting the index and streaming back the keys,
+&gt;&gt; &gt;&gt;&gt; not trying to read every document from disk or sort by score. Is that
+&gt;&gt; &gt;&gt;&gt; correct?
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; It will not read the documents at all but it will sort on score.
+&gt;&gt; &gt;&gt;  Currently
+&gt;&gt; &gt;&gt; there is no way to disable sorting.
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt;
+&gt;&gt; &gt;&gt;&gt; Assuming that's the case, I can't imagine why it takes so long to look
+&gt;&gt; &gt;&gt;&gt; up 10k keys from the index for a single term, or why the times seem to
+&gt;&gt; &gt;&gt;&gt; be bimodal (which seems like a big clue). Any pointers welcome!
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; Where is your client sitting in regards to your cluster?  Is it in the
+&gt;&gt; &gt;&gt; local
+&gt;&gt; &gt;&gt; network?  Could you try attaching to one of your riak nodes, running
+&gt;&gt; &gt;&gt; the
+&gt;&gt; &gt;&gt; query there and compare results?
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; e.g.
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; riak attach
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt;&gt; search:search(Bucket, Query).
+&gt;&gt; &gt;&gt;
+&gt;&gt; &gt;&gt; -Ryan
+&gt;&gt; &gt;&gt;
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07115.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07133">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07133">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07153.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07101.html">slow mapred_search key lookups for single terms</a></span> <span class="sender italic">Michael Radford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07103.html">Re: slow mapred_search key lookups for single terms</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07104.html">Re: slow mapred_search key lookups for single ter...</a></span> <span class="sender italic">Michael Radford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07108.html">Re: slow mapred_search key lookups for single...</a></span> <span class="sender italic">Michael Radford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07115.html">Re: slow mapred_search key lookups for si...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: slow mapred_search key lookups f...</span> <span class="sender italic">Michael Radford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07153.html">Re: slow mapred_search key looku...</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07157.html">Re: slow mapred_search key l...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07158.html">Re: slow mapred_search key l...</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07163.html">Re: slow mapred_search key l...</a></span> <span class="sender italic">Michael Radford</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07166.html">Re: slow mapred_search key l...</a></span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: slow mapred_search key lookups for single terms">
+<input type="hidden" name="msgid" value="CAOUfeeH4xaO+i6XPapEu2OAAahKZ_hJqNKt-1sKbdXOznK37FQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07133.html">
+<input type="submit" value=" Michael Radford ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+slow+mapred_search+key+lookups+for+single+terms%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07115.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07153.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOUfeeH4xaO+i6XPapEu2OAAahKZ_hJqNKt-1sKbdXOznK37FQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: SV: Slow inserts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02978" id="c">
+<link rel="index" href="maillist.html#02978" id="i">
+<link rel="prev" href="msg02977.html" id="p">
+<link rel="next" href="msg02979.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02978.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+SV%5C%3A+Slow+inserts%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: SV: Slow inserts</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Russell+Brown%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Russell Brown</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110412" rel="nofollow">Tue, 12 Apr 2011 05:15:10 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Oops, and to the list this time.
+
+Hi Jens,</pre><pre>
+
+On 12 Apr 2011, at 12:03, Jens Rantil wrote:
+
+&gt; Kresten,
+&gt;  
+&gt; Thank you for your response. It is good to have a reference. Thank you for 
+&gt; that.
+&gt;  
+&gt; As of the Python client, I first rewrote the benchmark in Java. It still 
+&gt; seems to be using an http client and I see a similar write performance 
+&gt; (260-330 writes/second). Later, I read in the Python client documentation 
+&gt; that protocol buffers was recommended for production systems. Modifying the 
+&gt; Python client to use protocol buffers indeed yielded a significant 
+&gt; performance boost now up to ~2900 writes/second. This looks very much what I 
+&gt; expected and it does indeed show that http was the overhead.
+&gt;  
+&gt; All benchmarks mentioned above have consisted of 11 threads writing in total 
+&gt; 53000 key-values using round robin over the nodes.
+&gt;  
+&gt; A follow-up question: I am considering using Java for production and 
+&gt; currently my Java benchmark (see above) is very slow. You mention using a 
+&gt; Java stream interface? Do you mean this involves making multiple requests 
+&gt; through the same http connection?
+
+Both the HTTP client and the protocol buffers client reuse connections. The 
+HTTP client holds a pool of connections and the pb client creates a connection 
+per thread, and reuses that connection (unless it is inactive for over a 
+second) so if you can set up your client to have a number of threads busily 
+pumping data you can get some good throughput.
+
+&gt; I have set maxConnections to 50 for every node in (Java) benchmark without 
+&gt; any significant performance boost. Is there anything else I should set?
+
+What version of of the Java client where you using for HTTP? The 0.14 (and 
+previous) only really allowed a maximum of 2 concurrent connections over http. 
+That is fixed and is in the new 0.14.1 release that went out yesterday.
+
+&gt; I stumbled across the java protocol buffers client, and I guess that's the 
+&gt; better alternative.
+
+Without a doubt you want to be using the protobuffers client. 
+
+Using the protobuffers client you have a couple of options about how to use it 
+for best write performance. Either use
+
+public ByteString[] store(RiakObject[] values, RequestMeta meta) from some 
+threads (if you can batch your objects up) or use
+public RiakObject[] store(RiakObject value, IRequestMeta meta) from some 
+threads.
+
+If you use IRequestMete.returnBody(true) the former will be faster as it reads 
+the responses in whilst still writing out the responses. 
+
+If you're just pumping data in then don't set returnBody to true (or use public 
+void store(RiakObject) ).
+
+Setting the *same* client id across the threads (whilst conceptually iffy) 
+yields a performance increase too I've noticed, but to do that you will also 
+need the latest release (0.14.1). 
+
+On my dual core MBP running the client and a single Riak node, the 1400 writes 
+from the Riak Fast Track google.csv file take ~900 millisecs with the 
+protobuffs client, with client Id set using 3 threads and about ~1300 without 
+client id set. 
+HTTP about ~2800 from 3 threads with client Id and about ~3200 without.
+
+(Times include reading the file into RiakObjects)
+
+Cheers
+
+Russell
+
+&gt;  
+&gt; Thanks,
+&gt; Jens
+&gt;  
+&gt; Från: Kresten Krab Thorup [<a  rel="nofollow" href="mailto:k...@trifork.com">mailto:k...@trifork.com</a>] 
+&gt; Skickat: den 11 april 2011 23:34
+&gt; Till: Jens Rantil
+&gt; Kopia: riak-users@lists.basho.com
+&gt; Ämne: Re: Slow inserts
+&gt;  
+&gt; Jens,
+&gt;  
+&gt; Just for reference ...in our dev lab ... we quite consistently get ~3000 
+&gt; puts/second with N=3, W=2 on a 3-node macmini cluster running 0.14.1 
+&gt; w/bitcask as the backend.  That's small machines with 2.6GHz Dual Core 2, and 
+&gt; 8GB ram.
+&gt;  
+&gt; We do use lots of threads in the client, and a load balancer [or you can just 
+&gt; have the threads connect to the different Riak's].  If all requests funnel 
+&gt; through one machine it may become loaded, ... and we're using the Java client 
+&gt; which is able to stream requests  without having to open new connections all 
+&gt; the time .. dunno how the python client is in this regard.  We also have a 
+&gt; proper gigabit managed switch between the macmini's, but I think it is 
+&gt; unlikely that networking is the limiting factor ... 3000 x 
+&gt; 1-kilobyte-per-second /sec corresponds to just 3 mega-bit-per-second ... the 
+&gt; chatter among the clustered machines is roughly N-fold the chatter from the 
+&gt; client to the cluster by my observations.
+&gt;  
+&gt; Have you tried to run some simple CPU/IO monitor on the 3 machines you're 
+&gt; using to see if they are CPU or I/O bound?  ... If they are not really 
+&gt; loaded, you may need to add clients/threads.  You should not be satisfied 
+&gt; until the server machines are saturated.
+&gt;  
+&gt; Kresten
+&gt;  
+&gt;  
+&gt; On Apr 11, 2011, at 18:00 , Jens Rantil wrote:
+&gt; 
+&gt; 
+&gt; Hi,
+&gt;  
+&gt; I have set up a 5-node test environment to give Riak a test run. I wrote a 
+&gt; Python script (<a  rel="nofollow" href="http://pastebin.com/geQ00Ngb">http://pastebin.com/geQ00Ngb</a>) that put 53780 key-values into 
+&gt; my cluster. Using round robin, 11 threads inserted these values in ~70 
+&gt; seconds. This means an average of ~750 key-values/second. Is this the 
+&gt; expected speed of inserts? It seems quite slow. The Mozilla benchmark 
+&gt; (<a  rel="nofollow" href="http://blog.mozilla.com/data/2010/08/16/benchmarking-riak-for-the-mozilla-test-pilot-project/">http://blog.mozilla.com/data/2010/08/16/benchmarking-riak-for-the-mozilla-test-pilot-project/</a>)
+&gt;  reached &gt; 1500 ops/second for significantly bigger values than my benchmark.
+&gt;  
+&gt; Additional information:
+&gt; * Four of the nodes were not doing anything else.
+&gt; * n_val=3
+&gt; * For every insert, w=1 and dw=0.
+&gt; * All nodes are using riak_0.14.1-1_amd64.deb and I have not changed any of 
+&gt; the defaults settings except Erlang -cookie and -name.
+&gt;  
+&gt; Thanks,
+&gt; Jens Rantil
+&gt; &lt;ATT00001..txt&gt;
+&gt;  
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02977.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02978">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02978">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg02979.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02963.html">Slow inserts</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02965.html">Re: Slow inserts</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02966.html">Re: Slow inserts</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02967.html">Re: Slow inserts</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02975.html">SV: Slow inserts</a></span> <span class="sender italic">Jens Rantil</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02969.html">Re: Slow inserts</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02977.html">SV: Slow inserts</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: SV: Slow inserts</span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02979.html">VB: SV: Slow inserts</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02983.html">Re: VB: SV: Slow inserts</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02994.html">SV: VB: SV: Slow inserts</a></span> <span class="sender italic">Jens Rantil</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02995.html">Re: SV: VB: SV: Slow inserts</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: SV: Slow inserts">
+<input type="hidden" name="msgid" value="F0887D96-5931-48A6-87AB-89BCC5B117DE@me.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02978.html">
+<input type="submit" value=" Russell Brown ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+SV%5C%3A+Slow+inserts%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02977.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg02979.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">F0887D96-5931-48A6-87AB-89BCC5B117DE@me.com</li>
+</ul>
+</div>
+</body>
+</html>

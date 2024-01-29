@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: The best (fastest) way to delete/clear a bucket [python]</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14236" id="c">
+<link rel="index" href="maillist.html#14236" id="i">
+<link rel="prev" href="msg14233.html" id="p">
+<link rel="next" href="msg14238.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14236.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+The+best+%5C%28fastest%5C%29+way+to+delete%5C%2Fclear+a+bucket+%5C%5Bpython%5C%5D%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: The best (fastest) way to delete/clear a bucket [python]</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dmitri+Zagidulin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dmitri Zagidulin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140519" rel="nofollow">Mon, 19 May 2014 10:02:25 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Ah, yes, you bring up a good point. (And, that's another subtlety to keep
+in mind, with Option #1).</pre><pre>
+
+Tombstones are definitely something to keep in mind, when deleting unit
+test data.
+As you mentioned in your earlier question, if you're using default
+delete_mode configuration ( 3 seconds ), it means that if you issue a
+delete, a tombstone object is going to be written (and stick around for at
+least 3 seconds), and unfortunately, it is going to show up as a false
+positive on a List Keys call.
+
+The easiest thing to try, in your case, is to set 'delete_mode' to
+'immediate', restart the test cluster, and retest. With an immediate
+delete, your second test with 10 keys should not take as long as the
+previous delete with 10000 keys.
+
+
+
+
+On Mon, May 19, 2014 at 11:46 AM, Paweł Królikowski &lt;rabb...@gmail.com&gt;wrote:
+
+&gt; Hi Dmitri,
+&gt;
+&gt; Thanks a lot for the answer. Option #1 seems the best, but I have a follow
+&gt; up question:
+&gt;
+&gt; - when do the deleted keys disappear from Riak: a part of my problem (have
+&gt; not explained it correctly the first time), is that get_keys() returns keys
+&gt; that no longer exist. So, I run a test with 10 000 keys, I remove them, it
+&gt; takes Nseconds. I then follow with a test with 10 keys, but removing them
+&gt; takes just as much time - I imagine it's because I'm going over that 10 000
+&gt; keys again.
+&gt;
+&gt; This article seems relevant:
+&gt; <a  rel="nofollow" href="http://basho.com/riaks-config-behaviors-part-3/">http://basho.com/riaks-config-behaviors-part-3/</a> - it seems like the
+&gt; tombstones simply remain in my system indefinitely.
+&gt;
+&gt; --
+&gt; Paweł
+&gt;
+&gt;
+&gt; On 19 May 2014 15:32, Dmitri Zagidulin &lt;dzagidu...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; Hi Pawel,
+&gt;&gt;
+&gt;&gt; There's basically three ways to clear data from Riak (for the purposes of
+&gt;&gt; automated testing):
+&gt;&gt;
+&gt;&gt; 1. Iterate through the keys via get_keys(), and delete each one. This is
+&gt;&gt; what you're currently doing, except you don't need to invoke if.exists().
+&gt;&gt; if.exists() makes an additional API call to Riak, and it takes twice as
+&gt;&gt; long as just calling delete() (and trapping a potential 404 doesn't exist
+&gt;&gt; error).
+&gt;&gt;
+&gt;&gt; Advantages: Easy to understand, can be done entirely in code (without
+&gt;&gt; invoking OS/shell commands).
+&gt;&gt;
+&gt;&gt; Disadvantages: It can get slow, for large data sets. Another subtle
+&gt;&gt; disadvantage is that, as your app grows, it can get difficult to keep track
+&gt;&gt; of which buckets you've created and need to be cleared.
+&gt;&gt;
+&gt;&gt; 2. Stop the Riak cluster, delete the riak data directory, and re-start.
+&gt;&gt;
+&gt;&gt; Advantages: Very fast, and you can be sure that you're deleting all
+&gt;&gt; buckets.
+&gt;&gt;
+&gt;&gt; Disadvantages: Involves invoking OS/shell commands. This is fairly easy
+&gt;&gt; if your Riak node is running on the same machine as your tests (and if it's
+&gt;&gt; a single node). To delete the data directories of a multi-node cluster, now
+&gt;&gt; you need to involve either a bash script that uses SSH to log in and
+&gt;&gt; restart, or a coordination framework like Ansible.
+&gt;&gt;
+&gt;&gt; 3. Use an in-memory back end. (And to drop all data, just restart the
+&gt;&gt; node(s)).
+&gt;&gt;
+&gt;&gt; Advantages: Same as #2 - fast, thorough.
+&gt;&gt;
+&gt;&gt; Disadvantages: Same as #2 (involves shell commands, potentially SSH etc).
+&gt;&gt; In addition, since you're likely not going to be running your production
+&gt;&gt; code on an in-memory back end, this method introduces a potential
+&gt;&gt; environmental/functional difference between your testing and production
+&gt;&gt; clusters.
+&gt;&gt;
+&gt;&gt; I generally use method #1 in my unit tests, and manually delete each key.
+&gt;&gt;
+&gt;&gt; Dmitri
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Mon, May 19, 2014 at 8:53 AM, Paweł Królikowski &lt;rabb...@gmail.com&gt;wrote:
+&gt;&gt;
+&gt;&gt;&gt; Hi,
+&gt;&gt;&gt;
+&gt;&gt;&gt; For testing, I'd like to be able to throw a large number of data at Riak
+&gt;&gt;&gt; (100k+ entries), check how it performed, change something in the
+&gt;&gt;&gt; application, run the test again. I'd like to use the same data every time,
+&gt;&gt;&gt; so, I'd like to clear the bucket between every test.
+&gt;&gt;&gt;
+&gt;&gt;&gt; The documentation (
+&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/2.0.0beta1/dev/references/http/">http://docs.basho.com/riak/2.0.0beta1/dev/references/http/</a>) says:
+&gt;&gt;&gt;
+&gt;&gt;&gt; *Delete Buckets*
+&gt;&gt;&gt; There is no straightforward way to delete an entire Bucket. To delete
+&gt;&gt;&gt; all the keys in a bucket, you’ll need to delete them all individually.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; So, I'm currently using something like:
+&gt;&gt;&gt;
+&gt;&gt;&gt; for k in r_bk.get_keys():
+&gt;&gt;&gt; v = r_bk.get(k)
+&gt;&gt;&gt;  if v.exists:
+&gt;&gt;&gt; r_bk.delete(v)
+&gt;&gt;&gt;
+&gt;&gt;&gt; The problem is that r_bk.get_keys() returns a lot of elements that don't
+&gt;&gt;&gt; exist (tombstones?) and iterating over all of them takes time.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Is that the way it's supposed to work? Or am I missing something?
+&gt;&gt;&gt;
+&gt;&gt;&gt; - I'm using default delete_mode configuration ( 3 seconds )
+&gt;&gt;&gt; - I'm using Riak 2.0 alpha 19 with Python. ( there's a bug with strong
+&gt;&gt;&gt; consistency in Beta1, cannot use it)
+&gt;&gt;&gt; - changing the bucket name for every run seems .. impractical?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Any advices welcomed,
+&gt;&gt;&gt;
+&gt;&gt;&gt; --
+&gt;&gt;&gt; Thanks,
+&gt;&gt;&gt; Paweł
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14233.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14236">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14236">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14238.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14230.html">The best (fastest) way to delete/clear a bucket [pytho...</a></span> <span class="sender italic">Paweł Królikowski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14233.html">Re: The best (fastest) way to delete/clear a buck...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: The best (fastest) way to delete/clear a ...</span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14238.html">Re: The best (fastest) way to delete/clea...</a></span> <span class="sender italic">Paweł Królikowski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14239.html">Re: The best (fastest) way to delete/...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14240.html">Re: The best (fastest) way to de...</a></span> <span class="sender italic">Paweł Królikowski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14241.html">Re: The best (fastest) way t...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14242.html">Re: The best (fastest) w...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg14250.html">Re: The best (fastest) w...</a></span> <span class="sender italic">Paweł Królikowski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg14311.html">Re: The best (fastest) w...</a></span> <span class="sender italic">Dave Martorana</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: The best (fastest) way to delete/clear a bucket [python]">
+<input type="hidden" name="msgid" value="CA+TO3kUZOUHQZauNaY5DTTU_cYF4O7XiaoKAB9SYWD2aKikxoQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14236.html">
+<input type="submit" value=" Dmitri Zagidulin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+The+best+%5C%28fastest%5C%29+way+to+delete%5C%2Fclear+a+bucket+%5C%5Bpython%5C%5D%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14233.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14238.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+TO3kUZOUHQZauNaY5DTTU_cYF4O7XiaoKAB9SYWD2aKikxoQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

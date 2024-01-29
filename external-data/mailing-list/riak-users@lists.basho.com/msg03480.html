@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Store whole database in memory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03480" id="c">
+<link rel="index" href="maillist.html#03480" id="i">
+<link rel="prev" href="msg03475.html" id="p">
+<link rel="next" href="msg03473.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03480.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Store+whole+database+in+memory%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Store whole database in memory</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110529" rel="nofollow">Sun, 29 May 2011 02:20:52 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Michael,
+
+</pre><tt>Greg's advice is probably the best, if you really always want to read 
+</tt><tt>back or update predefined groups of 1000 keys at once. It will increase 
+</tt><tt>the rate at which you can write and read by a factor of 1000 ;-).
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>But if that's not what you want to do, and we really don't know what 
+</tt><tt>your design goals are, I honestly think you are trying to put a screw in 
+</tt><tt>with a hammer here. Maybe you should look for alternatives to Riak, 
+</tt><tt>since you exploit all its weaknesses an don't care about most of its 
+</tt><tt>strengths.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Namely storing very small values is a weak spot, as Greg mentioned. 
+</tt><tt>There is an overhead of at least around 400 bytes per entry at the 
+</tt><tt>moment. Even if there are plans to reduce this overhead, I would 
+</tt><tt>estimate it will never get below around 100 bytes if the thing is still 
+</tt><tt>Riak afterwards. Also this overhead exists for all storage backends. So 
+</tt><tt>with the ets backend you will only be able to store about 2-3 million 
+</tt><tt>entries per GB of RAM right now.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Which brings me to the part where you don't care/use most of Riak's 
+</tt><tt>strengths. You don't seem to care about persistence of data, otherwise 
+</tt><tt>you wouldn't use a memory only backend. (Btw, as Mike pointed out, with 
+</tt><tt>enough RAM bitcask is essentially a memory store, especially where the 
+</tt><tt>write performance is concerned)
+</tt><tt>You also don't care about eventual consistency, evidenced by the fact 
+</tt><tt>that you do bulk inserts (only?), and that 12 bytes wouldn't allow for 
+</tt><tt>enough information to resolve conflicts. So you probably want a last 
+</tt><tt>write wins behaviour (which can be set as a bucket property in Riak, but 
+</tt><tt>kind of defeats the purpose in my opinion).
+</tt><pre style="margin: 0em;">
+
+But lets assume Riak was the right tool for your job for a moment.
+</pre><tt>The limiting factor for writing your data is almost certainly not the 
+</tt><tt>disk. Writing 100,000 keys with a size of 12 bytes requires only about 
+</tt><tt>1MB/s, so event the crappiest disk should have no problem with that. But 
+</tt><tt>as I said there is quite a large overhead for storing values in Riak, so 
+</tt><tt>in reality the required rate will be 50MB/s per node (3 nodes, n=3 
+</tt><tt>presumably). Still not a big deal, and this only is a limiting factor 
+</tt><tt>once the filesystem cache uses all available RAM.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>On the other hand, network latency is a problem at such high rates, even 
+</tt><tt>in a LAN. As far as my experience an my short Google research tell me, 
+</tt><tt>that the lowest roundtrip time you can expect on standard Gigabit 
+</tt><tt>ethernet is on the order of 0.1msec or 1/10000 second. For each 
+</tt><tt>operation you need at least one roundtrip (one request packet, one 
+</tt><tt>reponse packet), so that means with one connection you can never go 
+</tt><tt>beyond 10,000 writes per second. This assumes no processing time 
+</tt><tt>whatsoever, so a more realistic number is 2000-5000 ops/s. Therefore you 
+</tt><tt>need at least 20-50 parallel connections or clients to achieve your 
+</tt><tt>target write rate. If you use the Rest API these numbers need to be 
+</tt><tt>doubled, since one additional roundtrip is already need to set up the 
+</tt><tt>TCP connection.
+</tt><tt>In general without a lot of tuning and maybe specialized hardware 
+</tt><tt>(multiple NICs or special low latency NICs) any server will have a hard 
+</tt><tt>time to handle 100,000 ops/s, regardless of the software that is used.
+</tt><pre style="margin: 0em;">
+
+
+Cheers,
+Nico
+
+
+On 28.05.2011 20:36, Greg Nelson wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Depending on the n_val you have set for that bucket, Riak will store the
+objects n times on n different nodes. There are two other parameters you
+should know about, r and w. When writing, Riak will wait for w of the n
+nodes to finish the write before returning. When reading, Riak will wait
+for r of the n nodes to respond before returning. This is the basics of
+how Riak does fault and partition tolerance, i.e. if one node is down
+your cluster still functions, and the r and w vals define a sort of
+&quot;majority vote&quot; threshold to handle a split-brain problem.
+
+Anyway, for your purposes you could set w=1 and r=3 for faster writes at
+the expense of potentially slower reads. I've never tried this (or any
+of the backends besides bitcask) so I don't know what you should expect.
+
+As for bulk insert and preserving locality, I don't know of a way to do
+that with Riak except to batch your 1000 keys into a single object,
+identified by one key. As far as Riak is concerned, it's just a 12KB
+opaque object, which your application would need to always write and
+read all at once.
+
+If you don't batch like that, you should look for a discussion on this
+mailing list from last week regarding capacity planning and very small
+objects. There's a bit of overhead associated with each object that will
+be significant for objects as small as 12 bytes. You could skip over the
+parts about Bitcask overhead...
+
+On Saturday, May 28, 2011 at 9:59 AM, Michael McClain wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Thank you, Mike and Greg, for the response.
+I've just replied to the list.
+In my use case, I need to be able to write 100,000 keys per second.
+Where the key is very small (12 bytes). And I always insert 1000 keys
+at once, in a bulk insert. I would also like to preserve the locality
+of the keys inserted at once (so that they stay always in the same
+node). Do you know if that is possible?
+
+Thank you
+
+2011/5/28 Mike Oxford &lt;moxf...@gmail.com &lt;<a  rel="nofollow" href="mailto:moxf...@gmail.com">mailto:moxf...@gmail.com</a>&gt;&gt;
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+With enough RAM you could just have it keep the whole thing in
+disk-cache...
+
+-mox
+
+
+On Fri, May 27, 2011 at 11:11 PM, Greg Nelson &lt;gro...@dropcam.com
+&lt;<a  rel="nofollow" href="mailto:gro...@dropcam.com">mailto:gro...@dropcam.com</a>&gt;&gt; wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Michael,
+
+You might want to check out riak_kv_ets_backend,
+riak_kv_gb_trees_backend, and riak_kv_cache_backend.
+
+<a  rel="nofollow" href="http://wiki.basho.com/Configuration-Files.html">http://wiki.basho.com/Configuration-Files.html</a>
+
+&lt;<a  rel="nofollow" href="http://wiki.basho.com/Configuration-Files.html">http://wiki.basho.com/Configuration-Files.html</a>&gt;-Greg
+
+On Friday, May 27, 2011 at 10:35 PM, Michael McClain wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+Is it possible to store the whole database in memory?
+In a similar way as Redis does.
+
+I'm really interested in the distributed map reduce done by riak
+(&quot;bring processing to the data, instead of data to processors), but
+I need faster writes/reads that a memory-only database could provide.
+In case you don't support memory-only storage (no disk touched /
+all keys and data fitting the memory in all nodes) yet, do you plan
+on implementing it?
+
+Thank you,
+Michael
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03475.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03480">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03480">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03473.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03469.html">Store whole database in memory</a></span> <span class="sender italic">Michael McClain</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03470.html">Re: Store whole database in memory</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03472.html">Re: Store whole database in memory</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03474.html">Re: Store whole database in memory</a></span> <span class="sender italic">Michael McClain</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03475.html">Re: Store whole database in memory</a></span> <span class="sender italic">Greg Nelson</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Store whole database in memory</span> <span class="sender italic">Nico Meyer</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03473.html">Re: Store whole database in memory</a></span> <span class="sender italic">Michael McClain</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Store whole database in memory">
+<input type="hidden" name="msgid" value="4DE20FDF.40903@adition.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03480.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Store+whole+database+in+memory%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03475.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03473.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4DE20FDF.40903@adition.com</li>
+</ul>
+</div>
+</body>
+</html>

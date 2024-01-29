@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: large ring_creation_size</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07471" id="c">
+<link rel="index" href="maillist.html#07471" id="i">
+<link rel="prev" href="msg07470.html" id="p">
+<link rel="next" href="msg07472.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07471.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+large+ring_creation_size%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: large ring_creation_size</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joseph+Blomstedt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joseph Blomstedt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120516" rel="nofollow">Wed, 16 May 2012 19:15:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We've generally recommend 1024, although I think there are a few users
+running with 2048. It is unfortunate that ring size is currently a
+static parameter that you need to size properly from the onset. There
+are plans to support dynamic resizing of the ring, but those changes
+won't land any sooner than Q3 this year.</pre><pre>
+
+The &quot;Too many processes&quot; message means that you exhausted the process
+limit of the Erlang VM. By default, the Erlang VM has a limit of 32768
+processes. &quot;Processes&quot; in Erlang are very lightweight, and Riak (or
+any Erlang application for that matter) uses processes liberally.
+Thus, each vnode is probably using ~5-20 processes (the vnode process,
+the vnode proxy process, and the async worker pool all come to mind).
+With 4096 vnodes, you're likely using most/all of this default limit.
+
+Of course, you can increase the limit. You just need to add &quot;+P
+number&quot; to your vm.args file. The maximum value you can set is
+134217727. Feel free to try increasing the limit and see how things
+go.
+
+Alexander brings up good points about too many nodes per box
+contending for a limit set of system resources. Each VM instance will
+use up a portion of RAM, a set of TCP sockets, and numerous file
+descriptors for backends. However, depending on the hardware, and how
+you've setup/tuned your OS, you may have plenty of capacity to run 12
+nodes x 4096 partitions per box.
+
+There are a few Riak specific issues that are important to consider.
+The ring size directly impacts the amount of gossip traffic in your
+cluster. Architectural changes introduced in Riak 1.0 led to a
+practical limit of ~1024 partitions due to an issue with gossip
+traffic overloading the cluster. This was partially mitigated in
+1.0.3, and resolved by Riak 1.1. Thus, overload should no longer be a
+critical issue, but it will take longer for a cluster with a larger
+ring to add/remove nodes, and the clustering system will eat up more
+network bandwidth. If this is a problem or not will again depend on
+your hardware and network.
+
+The ring size also correlates directly to the number of open files.
+Each vnode runs a separate backend instance. So, with 4096, you would
+have 4096 open Bitcask/LevelDB databases open per node. Each instance
+opening multiple files. And each instance would content for disk IOPs.
+Granted, once you join all your nodes together, you will have your
+vnodes spread across each Riak node, so you should expect only ~34
+vnode per node (as you calculated) with only 34 backend instances per
+disk. This is standard territory and no big deal. The only thing to
+consider is how a large set of node failures may impact you, as
+fallback traffic sent to secondary nodes would spin up additional
+vnodes on each secondary.
+
+The final point to consider in this design is that Riak does nothing
+to guarantee replica placement outside of trying to ensure that
+replica are on different nodes. Riak doesn't know that 12 of your
+nodes are on the same physical server. Therefore, Riak may assign all
+of your replicas to the same physical machine. Having disjoint disks
+will protect you against a disk failure, but if an entire server goes
+offline or has a catastrophic hardware failure, you risk losing all
+replicas for a portion of your keyspace. Deliberately choosing to
+reduce the safe guards Riak provides doesn't seem like the best idea,
+but if this risk is something your usage can tolerate, then feel free
+to give it a shot and see how things go.
+
+-Joe
+
+On Wed, May 16, 2012 at 6:07 PM, Alexander Sicular &lt;sicul...@gmail.com&gt; wrote:
+&gt; There are reasonable limits. And also for architecture. If I understand you 
+&gt; correctly, yours is not reasonable. Although you have jbod's on each physical 
+&gt; server does not mean you should run &quot;12 riak nodes on a given physical node.&quot; 
+&gt; there are other resource limits than just disk io. In this instance you are 
+&gt; running into an os limitation in the number of file descriptors, aka max open 
+&gt; files including sockets.
+&gt;
+&gt; If you absolutely want to do it your way, which I absolutely do not 
+&gt; recommend, I would run many virtual machines on top of each physical device 
+&gt; from its own disk. But like I said, even then I wouldn't.
+&gt;
+&gt; Constructively, I think the largest recommended ring size is 1024 in practice.
+&gt;
+&gt; -Alexander
+&gt;
+&gt; @siculars on twitter
+&gt; <a  rel="nofollow" href="http://siculars.posterous.com">http://siculars.posterous.com</a>
+&gt;
+&gt; Sent from my iRotaryPhone
+&gt;
+&gt; On May 16, 2012, at 20:47, Sam Lang &lt;saml...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt;
+&gt;&gt; Hello,
+&gt;&gt;
+&gt;&gt; I have a 10 node cluster with 12 disks/devices per node.  I have setup riak 
+&gt;&gt; in a jbod environment with separate riak nodes per device, resulting in 120 
+&gt;&gt; riak nodes total.  Based on the documentation, I set the ring_creation_size 
+&gt;&gt; to 4096, which gives me ~34 partitions/node and allows me to expand the 
+&gt;&gt; cluster in the future.  With this value, soon after starting the 12 riak 
+&gt;&gt; nodes on a given physical node, I get &quot;Too many processes&quot; errors and the 
+&gt;&gt; riak nodes fail.  Decreasing the value of ring_creation_size to 1024 (giving 
+&gt;&gt; me ~8 partitions per riak node) prevents the riak nodes from failing, but 
+&gt;&gt; then expanding the cluster becomes a problem (30 physical nodes would result 
+&gt;&gt; in only ~3 partitions per node).
+&gt;&gt;
+&gt;&gt; Is there a reasonable limit on the value of ring_creation_size?
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+-- 
+Joseph Blomstedt &lt;j...@basho.com&gt;
+Software Engineer
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://www.basho.com/">http://www.basho.com/</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07470.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07471">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07471">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07472.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07469.html">large ring_creation_size</a></span> <span class="sender italic">Sam Lang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07470.html">Re: large ring_creation_size</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: large ring_creation_size</span> <span class="sender italic">Joseph Blomstedt</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: large ring_creation_size">
+<input type="hidden" name="msgid" value="CANvk2KRAmN-uJ8S06N_+cEjR0ixWqX5zOUMGQz7=A4kieJfBPA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07471.html">
+<input type="submit" value=" Joseph Blomstedt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+large+ring_creation_size%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07470.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07472.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANvk2KRAmN-uJ8S06N_+cEjR0ixWqX5zOUMGQz7=A4kieJfBPA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

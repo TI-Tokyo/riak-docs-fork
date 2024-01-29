@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak CS 1.3 S3 access does not seem to mark s3 deleted file as truly	deleted</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#11143" id="c">
+<link rel="index" href="maillist.html#11143" id="i">
+<link rel="prev" href="msg11139.html" id="p">
+<link rel="next" href="msg11146.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11143.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+CS+1.3+S3+access+does+not+seem+to+mark+s3+deleted+file+as+truly%09deleted%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak CS 1.3 S3 access does not seem to mark s3 deleted file as truly	deleted</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Idan+Shinberg%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Idan Shinberg</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130521" rel="nofollow">Tue, 21 May 2013 13:19:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thus , I fear Riak never treats their data as &quot;dead-bytes&quot; and they never
+get merged</pre><pre>
+
+I created 2 buckets using s3cmd and made several tens of uploads  of 32mb
+sized files , deleting them right afterwards ( with proper s3cmd commands ,
+of course) .
+
+I ended up with no buckets and no keys in my riak s3 database ,
+however , directory /var/lib/riak/bitcask/ 64 partitions now occupy 15GB
+worth of space
+
+several riak restarts did not trigger any merges , and my merge settings
+are set to impose very though merge triggering criterias , So I'm guessing
+the only reason the data is not being cleared is the fact that it's still
+in use ...
+
+Relevant riak-cs config :
+
+*              %% == Garbage Collection ==*
+*
+*
+*              %% The number of seconds to retain the block*
+*              %% for an object after it has been deleted.*
+*              %% This leeway time is set to give the delete*
+*              %% indication time to propogate to all replicas.*
+*              %% 86400 is 24-hours.*
+*              {leeway_seconds, 30},*
+*
+*
+*              %% How often the garbage collection daemon*
+*              %% waits in-between gc batches.*
+*              %% 900 is 15-minutes.*
+*              {gc_interval, 60},*
+*
+*
+*              %% How long a move to the garbage*
+*              %% collection to do list can remain*
+*              %% failed, before we retry it.*
+*              %% 21600 is 6-hours.*
+*              {gc_retry_interval,300},*
+
+
+
+Relevant Riak Config
+
+*{riak_kv, [*
+*            %% Storage_backend specifies the Erlang module defining the
+storage*
+*            %% mechanism that will be used on this node.*
+*                {add_paths, [&quot;/usr/lib64/riak-cs/lib/riak_cs-1.3.1/ebin&quot;]},
+*
+*                {storage_backend, riak_cs_kv_multi_backend},*
+*                {multi_backend_prefix_list, [{&lt;&lt;&quot;0b:&quot;&gt;&gt;, be_blocks}]},*
+*                {multi_backend_default, be_default},*
+*                {multi_backend, [*
+*                    {be_default, riak_kv_eleveldb_backend, [*
+*                        {max_open_files, 50},*
+*                        {data_root, &quot;/var/lib/riak/leveldb&quot;}*
+*                    ]},*
+*                    {be_blocks, riak_kv_bitcask_backend, [*
+*
+*
+*                        {max_file_size, 16#4000000}, %% 64MB*
+*
+*
+*                        %% Trigger a merge if any of the following are
+true:*
+*                        {frag_merge_trigger, 10}, %% fragmentation &gt;= 10%*
+*                        {dead_bytes_merge_trigger, 33554432}, %% dead
+bytes &gt; 32 MB*
+*
+*
+*                        %% Conditions that determine if a file will be
+examined during a merge:*
+*                        {frag_threshold, 5}, %% fragmentation &gt;= 5%*
+*                        {dead_bytes_threshold, 8388608}, %% dead bytes &gt; 8
+MB*
+*                        {small_file_threshold, 16#80000000}, %% file is &lt;
+2GB*
+*
+*
+*                        {data_root, &quot;/var/lib/riak/bitcask&quot;}*
+*                    ]}*
+*                ]},*
+
+...
+...
+...
+
+* {bitcask, [*
+*             %% Configure how Bitcask writes data to disk.*
+*             %%   erlang: Erlang's built-in file API*
+*             %%      nif: Direct calls to the POSIX C API*
+*             %%*
+*             %% The NIF mode provides higher throughput for certain*
+*             %% workloads, but has the potential to negatively impact*
+*             %% the Erlang VM, leading to higher worst-case latencies*
+*             %% and possible throughput collapse.*
+*             {io_mode, erlang},*
+*
+*
+*             {max_file_size, 16#4000000}, %% 64MB*
+*             {merge_window, always}, %% Span of hours during which merge
+is acceptable.*
+*
+*
+*             %% Trigger a merge if any of the following are true:*
+*             {frag_merge_trigger, 10}, %% fragmentation &gt;= 10%*
+*             {dead_bytes_merge_trigger, 33554432}, %% dead bytes &gt; 32 MB*
+*
+*
+*             %% Conditions that determine if a file will be examined
+during a merge:*
+*             {frag_threshold, 5}, %% fragmentation &gt;= 5%*
+*             {dead_bytes_threshold, 8388608}, %% dead bytes &gt; 8 MB*
+*             {small_file_threshold, 16#80000000}, %% file is &lt; 2GB*
+*
+*
+*             {data_root, &quot;/var/lib/riak/bitcask&quot;}*
+*
+*
+*           ]},*
+
+I do see merges taking place in riak's console.log , they're just not
+making that much of a difference ...
+
+Any idea what I might be missing here ?
+
+Thanks
+
+Idan Shinberg
+idomoo
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11139.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#11143">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#11143">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11146.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Riak CS 1.3 S3 access does not seem to mark s3 deleted fi...</span> <span class="sender italic">Idan Shinberg</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11146.html">Re: Riak CS 1.3 S3 access does not seem to mark s3 d...</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11147.html">Re: Riak CS 1.3 S3 access does not seem to mark ...</a></span> <span class="sender italic">Idan Shinberg</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11161.html">Re: Riak CS 1.3 S3 access does not seem to m...</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11192.html">Re: Riak CS 1.3 S3 access does not seem ...</a></span> <span class="sender italic">Kelly McLaughlin</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg11177.html">Re: Riak CS 1.3 S3 access does not seem to mark s3 d...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak CS 1.3 S3 access does not seem to mark s3 deleted file as truly	deleted">
+<input type="hidden" name="msgid" value="CAAKd62bjKkq+uDQpY=dG+fWG=+xvaq_NMZY=QrQmAEdB8JJUJA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11143.html">
+<input type="submit" value=" Idan Shinberg ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+CS+1.3+S3+access+does+not+seem+to+mark+s3+deleted+file+as+truly%09deleted%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11139.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11146.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAKd62bjKkq+uDQpY=dG+fWG=+xvaq_NMZY=QrQmAEdB8JJUJA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

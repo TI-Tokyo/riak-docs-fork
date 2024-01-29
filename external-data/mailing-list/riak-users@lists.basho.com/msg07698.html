@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak_core nodes on Heroku?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07698" id="c">
+<link rel="index" href="maillist.html#07698" id="i">
+<link rel="prev" href="msg07689.html" id="p">
+<link rel="next" href="msg07700.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07698.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_core+nodes+on+Heroku%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak_core nodes on Heroku?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ciprian+Dorin+Craciun%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ciprian Dorin Craciun</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120617" rel="nofollow">Sun, 17 Jun 2012 04:47:14 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Thu, Jun 14, 2012 at 4:37 PM, Samuel Elliott &lt;s...@lenary.co.uk&gt; wrote:
+&gt; It's actually very much not possible.
+&gt;
+&gt; Erlang nodes need to listen on one port for the EPMD, and then another
+&gt; for HTTP (and maybe more for other coordination). Heroku only lets you
+&gt; listen on a single node per process, and you can't guarantee scaled
+&gt; processes occur on the same dyno or even machine to another, so you
+&gt; can't explicitly run epmd separately.</pre><pre>
+
+    Although not strictly related to Heroku's dyno's (for which I
+don't have too much &quot;in-depth&quot; knowledge), in a project I'm currently
+working, that provides a similar environment with Heroku, a major
+problem in running distributed Erlang nodes (epecially Riak), is the
+EPMD process. (From my point of view this is quite a serious
+limitation for Erlang and the OTP...)
+
+    The problem is as follows (I make one assertion presented below,
+but which I'm certain is FALSE, thus this paragraph is solely for
+&quot;theoretical&quot; purposes):
+    * all the Erlang nodes in a distributed application must use the
+same EPMD port (as specified by using `ERL_EPMD_PORT`);
+    * now if Heroku provides you with an unique IP per dyno then this
+is no problem, as each Erlang node dyno could run his own `epmd`
+process;
+    * if Heroku doesn't provide an uinque IP per dyno then &quot;game
+over&quot;; (although it could seem it works, but if two dynos of your own
+run on the same machine, then when one dies, the other remains
+&quot;invisible&quot; from further discoveries;)
+
+    The assertion I've made is that Heroku doesn't firewall
+communication on private IP's between arbitrary dyno's. WHICH I DON'T
+THINK IS THE CASE, as I would be an important security issue...
+
+
+&gt; Yes, distribution via other means seems sensible.
+
+    As Sam said, you could however solve these issues by:
+    * providing your own implementation of an `erl_epmd` solver;
+    * and your own implementation of an `inet_tcp_dist`;
+    * both using as communication an HTTP module (like `mochiweb` or
+`misultin`) multiplexing between the two;
+
+    But this road is very hard... If interested you could read one of
+my posts to the Erlang list exactly about this topic, but which
+remained unanswered...
+      <a  rel="nofollow" href="http://erlang.org/pipermail/erlang-questions/2011-October/062004.html">http://erlang.org/pipermail/erlang-questions/2011-October/062004.html</a>
+
+    (One ideea: use ZeroMQ for communication, but again all this goes
+if the previous assertion is true.)
+
+    (Another one: use RabbitMQ, to provide transport for such modules.
+You could use direct exchanges for `inet_amqp_dist` and you wouldn't
+need anymore the `erl_epmd` resolver.)
+
+
+&gt; As for the routing mesh issues, they seem to have support for
+&gt; websockets etc in the proxy, so presumably it is possible somehow to
+&gt; route TCP messages through.
+
+    I have the feeling that Heroku (on their Cedar) stack use the
+`mochiweb` Erlang web-server to provide the routing... As such you
+could try to find &quot;undocumented&quot; ways to fool mochiweb into routing
+requests to the respective dyno.
+
+    Hope this helps,
+    Ciprian.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07689.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07698">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07698">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07700.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07680.html">riak_core nodes on Heroku?</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07681.html">Re: riak_core nodes on Heroku?</a></span> <span class="sender italic">Jonathan Baudanza</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07682.html">Re: riak_core nodes on Heroku?</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07683.html">Re: riak_core nodes on Heroku?</a></span> <span class="sender italic">Jonathan Baudanza</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07684.html">Re: riak_core nodes on Heroku?</a></span> <span class="sender italic">Kresten Krab Thorup</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07689.html">Re: riak_core nodes on Heroku?</a></span> <span class="sender italic">Samuel Elliott</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak_core nodes on Heroku?</span> <span class="sender italic">Ciprian Dorin Craciun</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07700.html">Re: riak_core nodes on Her...</a></span> <span class="sender italic">Samuel Elliott</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak_core nodes on Heroku?">
+<input type="hidden" name="msgid" value="CA+Tk8fwUeDbq3pp-NYR4KG9+OeUf__iC=6p7UgEz9RxCz2fFDw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07698.html">
+<input type="submit" value=" Ciprian Dorin Craciun ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak_core+nodes+on+Heroku%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07689.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07700.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+Tk8fwUeDbq3pp-NYR4KG9+OeUf__iC=6p7UgEz9RxCz2fFDw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

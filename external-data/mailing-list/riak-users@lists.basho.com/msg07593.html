@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Writing a reduce phase with reduce_phase_only_1 and additional	parameters</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07593" id="c">
+<link rel="index" href="maillist.html#07593" id="i">
+<link rel="prev" href="msg07516.html" id="p">
+<link rel="next" href="msg07524.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07593.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Writing+a+reduce+phase+with+reduce_phase_only_1+and+additional%09parameters%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Writing a reduce phase with reduce_phase_only_1 and additional	parameters</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Fink%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Fink</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120601" rel="nofollow">Fri, 01 Jun 2012 06:57:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Wed, May 23, 2012 at 3:03 PM, Manuel Gomez &lt;man...@inaka.net&gt; wrote:
+&gt; This is my function so far:
+&gt;
+&gt; reduce_slice(WList,{Page,PageSize}) -&gt;
+&gt;   lager:info(&quot;Page and PageSize ~p - ~p&quot;,[Page,PageSize]),
+&gt;   lists:sublist(WList, Page, PageSize).
+&gt;
+&gt;
+&gt; This &quot;works&quot;. The problem is that because the reduce phase gets executed
+&gt; with whatever it has at any given moment, the end result is always
+&gt; different. So I need to call this phase with reduce_phase_only_1 as a param,
+&gt; and here is where I'm a bit lost, this is how I call the function now:
+&gt;
+&gt; {reduce,{modfun,whisper_db,reduce_slice},{Page,PageSize},true}])
+&gt;
+&gt; I see that in the Riak's MapReduce documentation you can call a function
+&gt; with &quot;reduce_phase_only_1&quot; like so:
+&gt;
+&gt; {reduce, FunSpec, [reduce_phase_only_1], Keep}
+&gt;
+&gt; So I tried:
+&gt;
+&gt; {reduce,{modfun,whisper_db,reduce_slice},[reduce_phase_only_1,{Page,PageSize}],true}])
+&gt;
+&gt; Which throws (of course because of the the function definition is not
+&gt; expecting a list):
+&gt;
+&gt; Supervisor riak_pipe_vnode_worker_sup had child undefined started with
+&gt; {riak_pipe_vnode_worker,start_link,undefined} at &lt;0.2927.0&gt; exit with reason
+&gt; no function clause matching whisper_db:reduce_slice([</pre><pre>
+
+Hi, Manuel.  You were headed in exactly the right direction.  This is
+just a matter of getting the match spec right in your function clause.
+ The key thing to know is that third element of your phase spec is
+passed, in its entirety, to your reduce function as its second
+argument.
+
+So, when you changed from
+
+    {reduce, {modfun, whisper_db, reduce_slice}, {Page, PageSize}, true}
+
+to
+
+    {reduce, {modfun, whisper_db, reduce_slice}, [reduce_phase_only_1,
+{Page, PageSize}], true}
+
+the argument that was passed to your reduce phase changed from
+
+    {Page, PageSize}
+
+to
+
+    [reduce_phase_only_1, {Page, PageSize}]
+
+The easiest way to figure this out would have been to modify your
+function to accept anything and do some &quot;printf&quot; debugging, like so:
+
+    %% just print out Arg so we can see what we're dealing with
+    reduce_slice_debug(_Input, Arg) -&gt;
+        lager:info(&quot;Arg: ~p&quot;, [Arg]),
+        [].  %% just return nothing for now while we debug
+
+Running the MapReduce again with [reduce_phase_only_1, {1, 10}] will
+cause this to print out on the Riak console:
+
+    09:43:02.125 [info] Arg: [reduce_phase_only_1,{1,10}]
+
+So, all that needs to be done is to modify that Arg to match the whole
+list, instead of just the page-size tuple.  The most direct option is:
+
+    %% Most direct: just match the expected option list
+    reduce_slice(WList, [reduce_phase_only_1, {Page, PageSize}]) -&gt;
+        lager:info(&quot;Page and PageSize ~p - ~p&quot;, [Page, PageSize]),
+        lists:sublist(WList, Page, PageSize).
+
+This is also the most brittle option, however, as it will break if you
+leave reduce_phase_only_1 out of the list, or if you put it at the end
+instead.  A slightly more flexible solution is to match the whole
+argument, and then look through it to find the page-size option:
+
+    %% Slightly more flexible: look for a tuple that is correctly shaped
+    reduce_slice(WList, Options) -&gt;
+        {Page, PageSize} = find_page_option(Options),
+        lager:info(&quot;Page and PageSize ~p - ~p&quot;, [Page, PageSize]),
+        lists:sublist(WList, Page, PageSize).
+
+    find_page_option([{Page, PageSize}|_])
+      when is_integer(Page), is_integer(PageSize) -&gt;
+        {Page, PageSize};
+    find_page_option([_|Rest]) -&gt;
+        find_page_option(Rest);
+    find_page_option([]) -&gt;
+        %% without this clause, the reduce evaluation will error out if
+        %% the page/size option is omitted or incorrectly formed
+        DefaultPage = 1,
+        DefaultPageSize = 100,
+        {DefaultPage, DefaultPageSize}.
+
+This allows you to leave reduce_phase_only_1 out, or put it elsewhere
+in the list.  It also allows you to leave the page-size option out,
+and have a default value filled in, or even to add other options at
+will.
+
+I'll also offer you one additional version, which demonstrates an
+extremely common way to pass around many options in Erlang, known as
+&quot;tagged tuples&quot; or &quot;proplists&quot;:
+
+    %% Most flexible: tagged tuples
+    reduce_slice(WList, Options) -&gt;
+        DefaultPage = 1,
+        DefaultPageSize = 100,
+        Page = proplists:get_value(page, Options, DefaultPage),
+        PageSize = proplists:get_value(page_size, Options, DefaultPageSize),
+        lager:info(&quot;Page and PageSize ~p - ~p&quot;, [Page, PageSize]),
+        lists:sublist(WList, Page, PageSize).
+
+This version expects a slightly different argument.  Instead of a
+{Page, PageSize} tuple, it expects to find two tuples: {page, Page}
+and {page_size, PageSize}.  The MapReduce spec would look like this
+(to start at 1 and grab 10 results):
+
+    {reduce, {modfun, whisper_db, reduce_slice3}, [{page, 1},
+{page_size, 10}, reduce_phase_only_1], true}
+
+I hope that helps.
+
+-Bryan
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07516.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07593">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07593">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07524.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07516.html">Writing a reduce phase with reduce_phase_only_1 and additiona...</a></span> <span class="sender italic">Manuel Gomez</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Writing a reduce phase with reduce_phase_only_1 and ...</span> <span class="sender italic">Bryan Fink</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Writing a reduce phase with reduce_phase_only_1 and additional	parameters">
+<input type="hidden" name="msgid" value="CAOLR_oYEhK5_6KL=PXn1i2NDXxR7VpWVuSa86GBRbGrS143mzg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07593.html">
+<input type="submit" value=" Bryan Fink ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Writing+a+reduce+phase+with+reduce_phase_only_1+and+additional%09parameters%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07516.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07524.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOLR_oYEhK5_6KL=PXn1i2NDXxR7VpWVuSa86GBRbGrS143mzg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

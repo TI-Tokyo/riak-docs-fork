@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: "Failed to compact" in RiakSearch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03057" id="c">
+<link rel="index" href="maillist.html#03057" id="i">
+<link rel="prev" href="msg03056.html" id="p">
+<link rel="next" href="msg03069.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03057.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22Failed+to+compact%5C%22+in+RiakSearch%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: "Failed to compact" in RiakSearch</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rusty+Klophaus%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rusty Klophaus</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110415" rel="nofollow">Fri, 15 Apr 2011 07:40:39 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Morten,
+
+It looks like at least one of the offending fields is &quot;photos_value&quot;, which,
+as you said, should be skipped according to your schema. This makes me think
+that either the schema isn't set correctly, or that one or more nodes is
+caching an old value of the schema.</pre><pre>
+
+Can you try running &quot;search-cmd show-schema INDEXNAME&quot; on each node to
+verify that the schema is set correctly? Also, you can run &quot;search-cmd
+clear-schema-cache&quot; to clear the schema cache across all nodes.
+
+Also, the number of segments is *way* higher than it should be, and this is
+the reason for the &quot;too many DB tables&quot; error. It appears that these
+problems are linked, the compaction errors are preventing the system from
+combining segments, leading to a large number of segments, so solving one
+problem should solve the other.
+
+Best,
+Rusty
+
+On Fri, Apr 15, 2011 at 4:27 AM, Morten Siebuhr &lt;sbhr+li...@sbhr.dk&gt; wrote:
+
+&gt; Hi Rusty,
+&gt;
+&gt; On Thu, Apr 14, 2011 at 8:00 PM, Rusty Klophaus &lt;ru...@basho.com&gt; wrote:
+&gt; &gt; Hi Morten,
+&gt; &gt; Thanks for sending the log files. I was able to figure out, at least
+&gt; &gt; partially, what's going on here.
+&gt;
+&gt; Fantastic - thanks!
+&gt;
+&gt; &gt; The &quot;Failed to compact&quot; message is a result of trying to index a token
+&gt; &gt; that's greater than 32kb in size. (The index storage engine, called
+&gt; &gt; merge_index, assumes tokens sizes smaller than 32kb.) I was able to
+&gt; decode
+&gt; &gt; part of the term in question by pulling data from the log file, and it
+&gt; looks
+&gt; &gt; like you may be indexing HTML with base64 encoded inline images, ie: &lt;img
+&gt; &gt; src=&quot;data:image/jpeg;base64,iVBORw0KG...&quot;&gt; The inline image is being
+&gt; treated
+&gt; &gt; as a single token, and it's greater than 32kb.
+&gt;
+&gt; That's odd - in the search schema, I asked it to ignore everything
+&gt; besides a few specific fields:
+&gt;
+&gt; {
+&gt;        schema,
+&gt;        [
+&gt;                {version, &quot;0.1&quot;},
+&gt;                {default_field, &quot;_owner&quot;},
+&gt;                {n_val, 1}
+&gt;        ],
+&gt;        [
+&gt;                %% Don't parse _id and _owner, just treat it as single token
+&gt;                {field, [
+&gt;                                {name, &quot;id&quot;},
+&gt;                                {required, true},
+&gt;                                {analyzer_factory, {erlang, text_analyzers,
+&gt; noop_analyzer_factory}}
+&gt;                        ]},
+&gt;                {field, [
+&gt;                                {name, &quot;_owner&quot;},
+&gt;                                {required, true},
+&gt;                                {analyzer_factory, {erlang, text_analyzers,
+&gt; noop_analyzer_factory}}
+&gt;                        ]},
+&gt;
+&gt;                %% Parse Name fields for full-text indexing
+&gt;                {field, [
+&gt;                                {name, &quot;displayName&quot;},
+&gt;                                {aliases, [&quot;nickname&quot;, &quot;preferredUsername&quot;,
+&gt; &quot;name_formatted&quot;,
+&gt; &quot;name_displayName&quot;]},
+&gt;                                {analyzer_factory, {erlang, text_analyzers,
+&gt; standard_analyzer_factory}}
+&gt;                        ]},
+&gt;
+&gt;                {field, [
+&gt;                                {name, &quot;emails_value&quot;},
+&gt;                                {analyzer_factory, {erlang, text_analyzers,
+&gt; standard_analyzer_factory}}
+&gt;                        ]},
+&gt;
+&gt;                %% Add modification dates
+&gt;                {field, [
+&gt;                                {name, &quot;published&quot;},
+&gt;                                {aliases, [&quot;updated&quot;]},
+&gt;                                {type, date}
+&gt;                        ]},
+&gt;
+&gt;                %% Skip all else...
+&gt;                {dynamic_field, [
+&gt;                                {name, &quot;*&quot;},
+&gt;                                {skip, true}
+&gt;                        ]}
+&gt;        ]
+&gt; }.
+&gt;
+&gt; (We're indexing Portable Contacts, where the user images reside in a
+&gt; 'image'-field.)
+&gt;
+&gt; &gt; The short term workaround is to either:
+&gt; &gt; 1) Preprocess your data to avoid this situation.
+&gt; &gt; 2) Or, create a custom analyzer that limits the size of terms
+&gt; &gt; (See <a  rel="nofollow" href="http://wiki.basho.com/Riak-Search---Schema.html">http://wiki.basho.com/Riak-Search---Schema.html</a> for more
+&gt; information
+&gt; &gt; about analyzers and custom analyzers.)
+&gt; &gt; The long term solution is for us to increase the maximum token size in
+&gt; &gt; merge_index. I've filed a bugzilla issue for this, trackable
+&gt; &gt; here: <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=1069">https://issues.basho.com/show_bug.cgi?id=1069</a>
+&gt; &gt; Still investigating the &quot;Too many db tables&quot; error. This is being caused
+&gt; by
+&gt; &gt; the system opening too many ETS tables. It *may* be related to the
+&gt; &gt; compaction error described above, but I'm not sure.
+&gt; &gt; Search (specifically merge_index) uses ETS tables heavily, and the number
+&gt; of
+&gt; &gt; tables is affected by a few different factors. Can you send me some more
+&gt; &gt; information to help debug, specifically:
+&gt; &gt;
+&gt; &gt; How many partitions (vnodes) are in your cluster? (If you haven't changed
+&gt; &gt; any settings, then the default is 64.)
+&gt;
+&gt; It's 64 (no defaults changed at all).
+&gt;
+&gt; &gt; How many machines are in your cluster?
+&gt;
+&gt; Four.
+&gt;
+&gt; &gt; How many segments are on the node where you are seeing these errors?
+&gt; &gt; (Run: &quot;find DATAPATH/merge_index/*/*.data | wc -l&quot;, replacing DATAPATH
+&gt; with
+&gt; &gt; the path to your Riak data directory for that node.)
+&gt;
+&gt; foreach srv ( nosql1 nosql2 nosql4 nosql5 )
+&gt; echo -n &quot;$srv &quot;; ssh $srv sh -c 'find
+&gt; /var/lib/riaksearch/merge_index/*/*.data | wc -l'
+&gt; end
+&gt; nosql1 32434
+&gt; nosql2 14170
+&gt; nosql4 15480
+&gt; nosql5 13501
+&gt;
+&gt; (nosql1 is the one the error log is lifted from - but the errors
+&gt; seemed to come of all of the servers.)
+&gt;
+&gt; &gt; Approximately how much data are you loading (# Docs and # MB), and how
+&gt; &gt; quickly are you trying to load it?
+&gt;
+&gt; ~17m records, weighing in just shy of four GB.
+&gt;
+&gt; While I didn't do the loading, I believe we did it with 25 concurrent
+&gt; threads, using the four machines in round-robin fashion.
+&gt;
+&gt; /Siebuhr
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03056.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03057">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03057">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03069.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02999.html">&quot;Failed to compact&quot; in RiakSearch</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03001.html">Re: &quot;Failed to compact&quot; in RiakSearch</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03016.html">Re: &quot;Failed to compact&quot; in RiakSearch</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03017.html">Re: &quot;Failed to compact&quot; in RiakSear...</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03042.html">Re: &quot;Failed to compact&quot; in Riak...</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03056.html">Re: &quot;Failed to compact&quot; in...</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: &quot;Failed to compact&quot...</span> <span class="sender italic">Rusty Klophaus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03069.html">Re: &quot;Failed to compact&...</a></span> <span class="sender italic">Morten Siebuhr</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: &quot;Failed to compact&quot; in RiakSearch">
+<input type="hidden" name="msgid" value="BANLkTik9dQVXYwU0jHNC38dArK2vLz9DCA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03057.html">
+<input type="submit" value=" Rusty Klophaus ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+%5C%22Failed+to+compact%5C%22+in+RiakSearch%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03056.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03069.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTik9dQVXYwU0jHNC38dArK2vLz9DCA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

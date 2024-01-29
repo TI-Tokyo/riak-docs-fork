@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Exploring Riak, need to confirm throughput</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10643" id="c">
+<link rel="index" href="maillist.html#10643" id="i">
+<link rel="prev" href="msg10636.html" id="p">
+<link rel="next" href="msg10649.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10643.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Exploring+Riak%2C+need+to+confirm+throughput%22&amp;o=newest" rel="nofollow"><span itemprop="name">Exploring Riak, need to confirm throughput</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+MacClary%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew MacClary</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130402" rel="nofollow">Tue, 02 Apr 2013 15:51:33 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi all, I am new to this list. Thanks for taking the time to read my
+questions! I just want to know if the data throughput I am seeing is
+expected for the bitcask backend or if it is too low.</pre><pre>
+
+I am doing the preliminary feasibility study to decide if we should
+implement a Riak data store. Our application involves rendering chunks of
+data that range in size from about 1MB-9MB or so. This rendering work is
+CPU intensive so it is spread over a bunch of compute nodes which write the
+output into a data store.
+
+After rendering, a second process consumes that data chunks from the data
+store at a rate of about 480MB/s in a streaming configuration so there is &gt;
+480MB/s of new data coming in at the same time the data is being read.
+
+My testing so far involves a one node cluster on a dev box. What I wanted
+to show is that Riak writes were limited by the hard disk throughput. So
+far I haven't seen writes to localhost come anywhere close to the hard disk
+throughput:
+
+$ MYFILE=/tmp/output.png
+$ dd if=/dev/zero of=$MYFILE bs=8k count=256k
+262144+0 records in
+262144+0 records out
+2147483648 bytes (2.1 GB) copied, 4.48906 seconds, 478 MB/s
+$ rm $MYFILE
+
+So the hard disk throughput is around 478MB/s for this simple write test.
+
+The next test I did was to load a 39MB binary file into my one node
+cluster. I used a script to do 12 POSTs with curl and 12 POSTSs with wget.
+
+curl --tcp-nodelay -XPOST <a  rel="nofollow" href="http://${IP}:${PORT}/riak/test/file3">http://${IP}:${PORT}/riak/test/file3</a> \
+    -H &quot;Content-Type:application/octet-stream&quot; \
+    --data-binary @${UPLOAD_FILE} \
+    --write-out &quot;%{speed_upload}\n&quot;
+
+wget --post-file ${UPLOAD_FILE} <a  rel="nofollow" href="http://127.0.0.1:8098/riak/test/file1">http://127.0.0.1:8098/riak/test/file1</a>
+
+What I found was that I could get only about 26MB/s with this command line
+testing. Does this seam about right? Should I see an 18x slow down over the
+write speed of the disk drive?
+
+Thanks for your comments on my application and test approach!
+
+-Matt
+
+-----------------------------------------------
+Dev Environment Details:
+dev box  running RHEL6.2, 12 cores, 48GB, 6Gb/s SAS 15k HD
+Riak 1.2.1 from
+<a  rel="nofollow" href="http://downloads.basho.com.s3-website-us-east-1.amazonaws.com/riak/1.2/1.2.1/rhel/5/riak-1.2.1-1.el5.x86_64.rpm">http://downloads.basho.com.s3-website-us-east-1.amazonaws.com/riak/1.2/1.2.1/rhel/5/riak-1.2.1-1.el5.x86_64.rpm</a>
+n_val=1
+r=1
+w=1
+backend=bitcask
+
+Deploy Environment Details:
+ Node to node bandwidth &gt; 40Gb/s
+ similar config for node servers
+ n_val=3
+ r=1
+ w=1
+ backend=?
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10636.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10643">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10643">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10649.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Exploring Riak, need to confirm throughput</span> <span class="sender italic">Matthew MacClary</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10649.html">Re: Exploring Riak, need to confirm throughput</a></span> <span class="sender italic">Reid Draper</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10697.html">Re: Exploring Riak, need to confirm through...</a></span> <span class="sender italic">Matthew MacClary</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10698.html">Re: Exploring Riak, need to confirm thr...</a></span> <span class="sender italic">Shuhao</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10705.html">Re: Exploring Riak, need to confirm...</a></span> <span class="sender italic">Matthew MacClary</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10717.html">Re: Exploring Riak, need to co...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10701.html">Re: Exploring Riak, need to confirm thr...</a></span> <span class="sender italic">Reid Draper</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10704.html">Re: Exploring Riak, need to confirm...</a></span> <span class="sender italic">Matthew MacClary</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10719.html">Re: Exploring Riak, need to co...</a></span> <span class="sender italic">Reid Draper</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Exploring Riak, need to confirm throughput">
+<input type="hidden" name="msgid" value="CAFYg45wpQxQRfLLe4o51F5LttCbi2XtWJe2Hmv9G=DwgJ5HtWw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10643.html">
+<input type="submit" value=" Matthew MacClary ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Exploring+Riak%2C+need+to+confirm+throughput%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10636.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10649.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFYg45wpQxQRfLLe4o51F5LttCbi2XtWJe2Hmv9G=DwgJ5HtWw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Cluster Crash down on heavy load Benchmarking</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07716" id="c">
+<link rel="index" href="maillist.html#07716" id="i">
+<link rel="prev" href="msg07742.html" id="p">
+<link rel="next" href="msg07717.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07716.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Cluster+Crash+down+on+heavy+load+Benchmarking%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Cluster Crash down on heavy load Benchmarking</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120619" rel="nofollow">Tue, 19 Jun 2012 11:51:30 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Amol, my response is inline.
+
+On Sat, Jun 16, 2012 at 3:43 AM, Amol Rajoba &lt;amolraj...@gmail.com&gt; wrote:
+&gt;
+&gt; Clients were connected using protocol buffer api.
+&gt; {pb_backlog, 100000}, in app.config</pre><pre>
+
+Why are you setting the backlog so high?  AFAIK that's 3 orders of
+magnitude above the default.  I don't pretend to know the details of
+the linux TCP/IP stack but a backlog of that size does not come free.
+&gt;From a quick google it appears the TCB structure can be anywhere from
+280-1300 bytes [1].  Lets assume a middle ground of 790 bytes.  Given
+that and the 100K backlog we are looking at 790*100000 = 79000000b or
+~75MB.  I'm not sure if there is other overhead for keeping that many
+TCBs but it seems sketchy to me.
+
+
+&gt;
+&gt; Nodes: 2  (I know cluster of 5 is best but this is just test setup)
+&gt; OS: Ubuntu 12.04 32bit
+&gt; CPU: Core i3
+&gt; RAM: 4GB
+&gt; HDD: 500GB
+
+In a real production cluster we recommend a minimum of 5 nodes.  With
+two nodes you'll have replicas overlapping which will increase IO
+contention and reduce availability/safety in node down/crash
+scenarios.  Trying to infer how 5 nodes will run from 2 nodes is a
+guessing game IMO.
+
+&gt;
+&gt; app.config [changes only]
+&gt;
+&gt; %% eLevelDB Config
+&gt;  {eleveldb, [
+&gt;              {data_root, &quot;/data/riak/leveldb&quot;},
+&gt;              {block_size, 262144}, %%256k
+&gt;              {cache_size, 104857600}, %% 100MB - default cache size 8MB
+&gt; per-partition
+&gt;              {write_buffer_size, 524288000}, %% 500MB in bytes
+&gt;                 {write_buffer_size_min, 524288000}, %% 500MB in bytes
+&gt;                 {write_buffer_size_max, 524288000}, %% 500MB in bytes
+&gt;                 {max_open_files, 100} %% Maximum number of files open at
+&gt; once per partition- Default: 20 - Minimum: 20
+&gt;             ]},
+&gt;
+&gt;
+&gt; vm.args [changes only]
+&gt; ## Enable kernel poll and a few async threads
+&gt; +K true
+&gt; +A 128
+
+Do you realize those eleveldb configs apply for each instance (one per
+vnode)?  If you have two nodes that's 32 leveldb instances per node.
+I would recommend trying the defaults first.
+
+-Z
+
+[1]: 
+<a  rel="nofollow" href="http://www.cisco.com/web/about/ac123/ac147/archived_issues/ipj_9-4/syn_flooding_attacks.html">http://www.cisco.com/web/about/ac123/ac147/archived_issues/ipj_9-4/syn_flooding_attacks.html</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07742.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07716">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07716">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07717.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07696.html">Riak Cluster Crash down on heavy load Benchmarking</a></span> <span class="sender italic">Amol Rajoba</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07712.html">Re: Riak Cluster Crash down on heavy load Benchmarking</a></span> <span class="sender italic">Amol Rajoba</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07715.html">Re: Riak Cluster Crash down on heavy load Benchmark...</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07724.html">Re: Riak Cluster Crash down on heavy load Bench...</a></span> <span class="sender italic">Amol Rajoba</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07742.html">Re: Riak Cluster Crash down on heavy load B...</a></span> <span class="sender italic">Amol Rajoba</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Cluster Crash down on heavy load Benchmarking</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg07717.html">Riak Cluster Crash down on heavy load Benchmarking</a></span> <span class="sender italic">Amol Rajoba</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Cluster Crash down on heavy load Benchmarking">
+<input type="hidden" name="msgid" value="CACZcpek0a1yyTfPiD9ox+bCJiZjxaSU1FQZKuf6j7LuiZk_mWA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07716.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Cluster+Crash+down+on+heavy+load+Benchmarking%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07742.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07717.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpek0a1yyTfPiD9ox+bCJiZjxaSU1FQZKuf6j7LuiZk_mWA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

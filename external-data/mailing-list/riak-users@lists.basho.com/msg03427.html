@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Client Resources,  Deleting a Key Doesn't Remove it from	bucket.keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#03427" id="c">
+<link rel="index" href="maillist.html#03427" id="i">
+<link rel="prev" href="msg03426.html" id="p">
+<link rel="next" href="msg03433.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03427.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Client+Resources%2C++Deleting+a+Key+Doesn%27t+Remove+it+from%09bucket.keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Client Resources,  Deleting a Key Doesn't Remove it from	bucket.keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Aphyr%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Aphyr</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110526" rel="nofollow">Thu, 26 May 2011 09:52:25 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>Agreed. In fact, jrecursive pointed out to me last week that vnode 
+</tt><tt>operations are synchronous. That means that when you call list-keys, not 
+</tt><tt>only is it going to take a long time (right now upwards of 5 minutes) to 
+</tt><tt>complete, but while each vnode is returning its list of keys *it blocks 
+</tt><tt>any other requests*.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>While list-keys is an unfortunate necessity for some things, its use 
+</tt><tt>should be minimized if you're going to get to any appreciable (100M 
+</tt><tt>keys) scale. I don't even know how we're going to use it at all above a 
+</tt><tt>billion. Possibly by listing the keys periodically from bitcask 
+</tt><tt>directly, and maintaining an index ourselves.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+--Kyle
+
+On 05/26/2011 09:40 AM, Sean Cribbs wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+With recent commits (
+<a  rel="nofollow" href="https://github.com/seancribbs/ripple/compare/35d7323fb0e179c8c971...da3ab71a19d194c65a7b">https://github.com/seancribbs/ripple/compare/35d7323fb0e179c8c971...da3ab71a19d194c65a7b</a>
+&lt;<a  rel="nofollow" href="https://github.com/seancribbs/ripple/compare/35d7323fb0e179c8c971..da3ab71a19d194c65a7b">https://github.com/seancribbs/ripple/compare/35d7323fb0e179c8c971..da3ab71a19d194c65a7b</a>&gt;
+), it is cached until you either refresh it manually by passing :reload
+=&gt; true or a block (for streaming key lists). This was the compromise
+reached in that pull-request.
+
+All of this caching discussion glosses over the fact that you *should
+not list keys* in any real application. It really begs the question --
+how often do you list keys in Redis, or memcached? I suspect that
+generally you don't. This isn't a relational database. (Also, how often
+do you actually do a full-table scan in MySQL? You don't if you're sane
+-- you use an index, or even LIMIT + OFFSET.)
+
+I'm tempted to remove Document::all and make Bucket#keys harder to
+access, but the balance between discouraging bad behavior and exposing
+available functionality is a hard one to strike. I don't want new
+developers to immediately use list-keys and then be discouraged from
+using Riak because it's slow; on the other hand, it /can be useful/ in
+some circumstances. In those cases where it's useful, the developer
+should probably be responsible enough to request the key list only once;
+the caching behavior simply does this for them. I guess whether it
+/should/ do this for them is the issue at hand.
+
+All that said, I'm really torn on this issue, and the same problem
+applies to full-bucket MapReduce. Caveat emptor.
+
+Sean Cribbs &lt;s...@basho.com &lt;<a  rel="nofollow" href="mailto:s...@basho.com">mailto:s...@basho.com</a>&gt;&gt;
+Developer Advocate
+Basho Technologies, Inc.
+<a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+On May 26, 2011, at 10:35 AM, Jonathan Langevin wrote:
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+How long is the key list cached like that, naturally?*
+
+&lt;<a  rel="nofollow" href="http://www.loomlearning.com/">http://www.loomlearning.com/</a>&gt;
+        */
+/*Jonathan Langevin*/
+Systems Administrator
+*Loom Inc.*
+Wilmington, NC: (910) 241-0433 - jlange...@loomlearning.com
+&lt;<a  rel="nofollow" href="mailto:jlange...@loomlearning.com">mailto:jlange...@loomlearning.com</a>&gt; - www.loomlearning.com
+&lt;<a  rel="nofollow" href="http://www.loomlearning.com/">http://www.loomlearning.com/</a>&gt; - Skype: intel352
+
+/*
+
+*
+
+
+On Thu, May 26, 2011 at 10:35 AM, Sean Cribbs &lt;s...@basho.com
+&lt;<a  rel="nofollow" href="mailto:s...@basho.com">mailto:s...@basho.com</a>&gt;&gt; wrote:
+
+    Keith,
+
+    There was a pull-request issue out for this on the Github project
+    (<a  rel="nofollow" href="https://github.com/seancribbs/ripple/pull/168">https://github.com/seancribbs/ripple/pull/168</a>). For various
+    reasons, the list of keys is memoized in the Riak::Bucket
+    instance. Passing :reload =&gt; true to the #keys method will cause
+    it to refresh. I like to discourage list-keys, but with the
+    memoized list you don't shoot yourself in the foot as often.
+
+    Sean Cribbs &lt;s...@basho.com &lt;<a  rel="nofollow" href="mailto:s...@basho.com">mailto:s...@basho.com</a>&gt;&gt;
+    Developer Advocate
+    Basho Technologies, Inc.
+    <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+
+    On May 26, 2011, at 10:29 AM, Keith Bennett wrote:
+
+    &gt; All -
+    &gt;
+    &gt; I just started working with Riak, and am using the riak-client
+    Ruby gem.
+    &gt;
+    &gt; When I delete a key from a bucket, and try to fetch the value
+    associated with that key, I get a 404 error (which is reasonable).
+    However, it remains in the bucket's list of keys (i.e. the value
+    returned by bucket.keys(). Why is the key still reported to exist
+    in the bucket? Is bucket.keys cached, and therefore unaware of the
+    deletion? Here's a riak-client Ruby script and its output in irb
+    that illustrates this:
+    &gt;
+    &gt; ree-1.8.7-2010.02 :001 &gt; require 'riak'
+    &gt; =&gt; true
+    &gt; ree-1.8.7-2010.02 :002 &gt;
+    &gt; ree-1.8.7-2010.02 :003 &gt; client = Riak::Client.new
+    &gt; =&gt; #&lt;Riak::Client <a  rel="nofollow" href="http://127.0.0.1:8098">http://127.0.0.1:8098</a> &lt;<a  rel="nofollow" href="http://127.0.0.1:8098/">http://127.0.0.1:8098/</a>&gt;&gt;
+    &gt; ree-1.8.7-2010.02 :004 &gt; bucket = client['links']
+    &gt; =&gt; #&lt;Riak::Bucket {links}&gt;
+    &gt; ree-1.8.7-2010.02 :005 &gt; key = bucket.keys.first
+    &gt; =&gt; &quot;4000-17.xml&quot;
+    &gt; ree-1.8.7-2010.02 :006 &gt; object = bucket[key]
+    &gt; =&gt; #&lt;Riak::RObject {links,4000-17.xml} [text/xml]:(6430 bytes)&gt;
+    &gt; ree-1.8.7-2010.02 :007 &gt; object.delete
+    &gt; =&gt; #&lt;Riak::RObject {links,4000-17.xml} [text/xml]:(6430 bytes)&gt;
+    &gt; ree-1.8.7-2010.02 :008 &gt; bucket.keys.first
+    &gt; =&gt; &quot;4000-17.xml&quot;
+    &gt; ree-1.8.7-2010.02 :009 &gt; object = bucket[key]
+    &gt; Riak::HTTPFailedRequest: Expected [200, 300] from Riak but
+    received 404. not found
+    &gt;
+    &gt; from
+    
+/Users/kbennett/.rvm/gems/ree-1.8.7-2010.02/gems/riak-client-0.9.4/lib/riak/client/net_http_backend.rb:55:in
+    `perform'
+    &gt; from
+    
+/Users/kbennett/.rvm/rubies/ree-1.8.7-2010.02/lib/ruby/1.8/net/http.rb:1054:in
+    `request'
+    &gt; from
+    
+/Users/kbennett/.rvm/rubies/ree-1.8.7-2010.02/lib/ruby/1.8/net/http.rb:2142:in
+    `reading_body'
+    &gt; from
+    
+/Users/kbennett/.rvm/rubies/ree-1.8.7-2010.02/lib/ruby/1.8/net/http.rb:1053:in
+    `request'
+    &gt; from
+    
+/Users/kbennett/.rvm/rubies/ree-1.8.7-2010.02/lib/ruby/1.8/net/http.rb:1037:in
+    `request'
+    &gt; from
+    
+/Users/kbennett/.rvm/rubies/ree-1.8.7-2010.02/lib/ruby/1.8/net/http.rb:543:in
+    `start'
+    &gt; from
+    
+/Users/kbennett/.rvm/rubies/ree-1.8.7-2010.02/lib/ruby/1.8/net/http.rb:1035:in
+    `request'
+    &gt; from
+    
+/Users/kbennett/.rvm/gems/ree-1.8.7-2010.02/gems/riak-client-0.9.4/lib/riak/client/net_http_backend.rb:47:in
+    `perform'
+    &gt; from
+    
+/Users/kbennett/.rvm/gems/ree-1.8.7-2010.02/gems/riak-client-0.9.4/lib/riak/client/net_http_backend.rb:46:in
+    `tap'
+    &gt; from
+    
+/Users/kbennett/.rvm/gems/ree-1.8.7-2010.02/gems/riak-client-0.9.4/lib/riak/client/net_http_backend.rb:46:in
+    `perform'
+    &gt; from
+    
+/Users/kbennett/.rvm/gems/ree-1.8.7-2010.02/gems/riak-client-0.9.4/lib/riak/client/http_backend/transport_methods.rb:59:in
+    `get'
+    &gt; from
+    
+/Users/kbennett/.rvm/gems/ree-1.8.7-2010.02/gems/riak-client-0.9.4/lib/riak/client/http_backend.rb:72:in
+    `fetch_object'
+    &gt; from
+    
+/Users/kbennett/.rvm/gems/ree-1.8.7-2010.02/gems/riak-client-0.9.4/lib/riak/bucket.rb:101:in
+    `[]'
+    &gt; from riak-delete-failure.rb:9
+    &gt;
+    &gt; Thanks,
+    &gt; Keith
+    &gt;
+    &gt;
+    &gt;
+    &gt; _______________________________________________
+    &gt; riak-users mailing list
+    &gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    &gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_listsbasho.com">http://lists.basho.com/mailman/listinfo/riak-users_listsbasho.com</a>
+    &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_listsbasho.com">http://lists.basho.com/mailman/listinfo/riak-users_listsbasho.com</a>
+    &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03426.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#03427">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#03427">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03433.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg03421.html">Riak Client Resources,	Deleting a Key Doesn't Remove it ...</a></span> <span class="sender italic">Keith Bennett</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03422.html">Re: Riak Client Resources,	Deleting a Key Doesn't R...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03423.html">Re: Riak Client Resources,	Deleting a Key Doesn...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03426.html">Re: Riak Client Resources,	Deleting a Key D...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Client Resources,  Deleting a ...</span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03433.html">Re: Riak Client Resources,	Deletin...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03434.html">Re: Riak Client Resources,	Del...</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03437.html">Re: Riak Client Resources,...</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03438.html">Re: Riak Client Resources,...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03428.html">Re: Riak Client Resources,	Deleting a K...</a></span> <span class="sender italic">Keith Bennett</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03429.html">Re: Riak Client Resources,	Deletin...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg03430.html">Re: Riak Client Resources,	Del...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03431.html">Re: Riak Client Resources,  Deleti...</a></span> <span class="sender italic">Aphyr</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03425.html">Re: Riak Client Resources,	Deleting a Key Doesn...</a></span> <span class="sender italic">Keith Bennett</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Client Resources,  Deleting a Key Doesn't Remove it from	bucket.keys">
+<input type="hidden" name="msgid" value="4DDE853D.1010600@aphyr.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03427.html">
+<input type="submit" value=" Aphyr ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Client+Resources%2C++Deleting+a+Key+Doesn%27t+Remove+it+from%09bucket.keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03426.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03433.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4DDE853D.1010600@aphyr.com</li>
+</ul>
+</div>
+</body>
+</html>

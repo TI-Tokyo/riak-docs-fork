@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Understanding Riaks rebalancing and handoff behaviour</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01510" id="c">
+<link rel="index" href="maillist.html#01510" id="i">
+<link rel="prev" href="msg01504.html" id="p">
+<link rel="next" href="msg01508.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01510.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Understanding+Riaks+rebalancing+and+handoff+behaviour%22&amp;o=newest" rel="nofollow"><span itemprop="name">Understanding Riaks rebalancing and handoff behaviour</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sven+Riedel%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sven Riedel</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101109" rel="nofollow">Tue, 09 Nov 2010 07:09:01 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+I'm currently assessing how well riak fits our needs as a large scale data 
+store. </pre><pre>
+
+In the course of testing riak, I've set up a cluster in Amazons with 6 nodes 
+across two EC2 instances (m2.xlarge). After seeing surprisingly a surprisingly 
+bad write performance (which I'll write more on in a separate post once I've 
+finished my tests), I wanted to migrate the cluster to instances with a better 
+IO performance.
+
+Lets call the original EC2 instances A and B. The plan was to migrate the 
+cluster to new EC2 instances called C and D. During the following actions no 
+other processes were reading/writing from/to the cluster. All instances are in 
+the same availability zone.
+
+What I did so far was to tell all riak nodes on B to leave the ring and let the 
+ring re-stabilize. One surprising behaviour here was that the riak nodes on A 
+suddenly all went into deep sleep mode (process state D) for about 30 minutes, 
+and all riak-admin status/transfer calls claimed all nodes were down when in 
+fact they weren't and were quite busy. But left to themselves they sorted 
+everything out in the end.
+
+Then I set up 3 new riak nodes on C and told them to join the cluster.
+
+So far everything went well. riak-admin transfers showed me that both the nodes 
+on A and the nodes on C were waiting on/for handoffs. However, the handoffs 
+didn't start. I gave the cluster an hour, but no data transfer got initiated to 
+the new nodes. 
+
+Since I didn't find any way to manually trigger the handoff, I told all the 
+nodes on A (riak01, riak02 and riak03) to leave the cluster and after the last 
+node on A left the ring, the handoffs started.
+After all the data in riak01 got moved to the nodes on C, the master process 
+shut down and the handoff for the remaining data from riak02 and riak03 
+stopped. I tried restarting riak01 manually, however riak-admin ringready 
+claims that riak01 and riak04 (on C) disagree on the partition owners. 
+riak-admin transfers still lists the same amount of partitions awaiting handoff 
+as when the the handoff to the nodes on C started.
+
+My current data distribution is as follows (via du -c):
+On A:
+1780 riak01/data
+188948 riak02/data
+3766736 riak03/data
+
+On B:
+13215908 riak04/data
+1855584 riak05/data
+5745076 riak06/data
+
+riak04 and riak05 are awaiting the handoff of 341 partitions, riak06 of 342 
+partitions.
+
+The ring_creation_size is 512, n_val for the bucket is 3, w is set to 1.
+
+My questions at this point are:
+1. What would normally trigger a rebalancing of the nodes? 
+2. Is there a way to manually trigger a rebalancing?
+3. Did I do anything wrong with the procedure described above to be left in the 
+current odd state by riak?
+4. How would I rectify this situation in a production environment?
+
+Regards,
+Sven
+
+------------------------------------------
+Scoreloop AG, Brecherspitzstrasse 8, 81541 Munich, Germany, www.scoreloop.com
+sven.rie...@scoreloop.com
+
+Sitz der Gesellschaft: München, Registergericht: Amtsgericht München, HRB 
+174805 
+Vorstand: Dr. Marc Gumpinger (Vorsitzender), Dominik Westner, Christian van der 
+Leeden, Vorsitzender des Aufsichtsrates: Olaf Jacobi 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01504.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01510">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01510">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01508.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Understanding Riaks rebalancing and handoff behaviou...</span> <span class="sender italic">Sven Riedel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01508.html">Re: Understanding Riaks rebalancing and handoff...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01515.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Justin Sheehy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01516.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Sven Riedel</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01520.html">Re: Understanding Riaks rebalancing and handoff...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01521.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Sven Riedel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01522.html">Re: Understanding Riaks rebalancing and...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01527.html">Re: Understanding Riaks rebalancing...</a></span> <span class="sender italic">Sven Riedel</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01528.html">Re: Understanding Riaks rebala...</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01538.html">Re: Understanding Riaks re...</a></span> <span class="sender italic">Sven Riedel</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01523.html">Re: Understanding Riaks rebalancing and han...</a></span> <span class="sender italic">Scott Lystig Fritchie</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Understanding Riaks rebalancing and handoff behaviour">
+<input type="hidden" name="msgid" value="AAA042F5-6BCB-4737-ABD4-F996A62C0AA1@scoreloop.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01510.html">
+<input type="submit" value=" Sven Riedel ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Understanding+Riaks+rebalancing+and+handoff+behaviour%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01504.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01508.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AAA042F5-6BCB-4737-ABD4-F996A62C0AA1@scoreloop.com</li>
+</ul>
+</div>
+</body>
+</html>

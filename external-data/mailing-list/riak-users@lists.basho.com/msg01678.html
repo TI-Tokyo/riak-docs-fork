@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>More on Map/Reduce, Riak, and Grails Gorm, spring-data support</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01678" id="c">
+<link rel="index" href="maillist.html#01678" id="i">
+<link rel="prev" href="msg01676.html" id="p">
+<link rel="next" href="msg01684.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01678.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22More+on+Map%5C%2FReduce%2C+Riak%2C+and+Grails+Gorm%2C+spring%5C-data+support%22&amp;o=newest" rel="nofollow"><span itemprop="name">More on Map/Reduce, Riak, and Grails Gorm, spring-data support</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Brisbin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Brisbin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101130" rel="nofollow">Tue, 30 Nov 2010 13:18:38 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm still struggling with some unexpected results in running tests for the Java 
+support I'm writing for Grails and Spring Data.</pre><pre>
+
+As an example, I ran the full Gorm TCK test suite against my local Riak server 
+(0.13.0) and had 3 failures out of 103. Not bad, though my goal is 0 failures 
+in 103 tests. :) The weirdness started happening when I ran the test that 
+failed during the full test run manually. It passed with no errors. So I got a 
+different result when running it manually than what I got when running it in a 
+batch.
+
+Another thing that's actually a little concerning is the following two calls to 
+Riak's Map/Reduce. I log all the M/R I execute, so on the test that failed, I 
+executed that Javascript. Sure enough, no results, which means a failed test. 
+In the second run, I added the call to ejsLog() so I could see what's going on, 
+and I got a different result:
+
++-( ~ ):&gt; curl -v -H &quot;Content-Type: application/json&quot; 
+<a  rel="nofollow" href="http://localhost:8098/mapred">http://localhost:8098/mapred</a> -d @-
+{&quot;inputs&quot;:&quot;grails.gorm.tests.TestEntity&quot;,&quot;query&quot;:[{&quot;map&quot;:{&quot;language&quot;:&quot;javascript&quot;,&quot;source&quot;:&quot;function(v){ejsLog('/tmp/mapred.log',
+ 'map input: '+JSON.stringify(v)); var row = Riak.mapValuesJson(v); row[0].id = 
+v.key; return row; }&quot;}}]}
+
+&gt; POST /mapred HTTP/1.1
+&gt; User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 
+&gt; OpenSSL/0.9.8l zlib/1.2.3
+&gt; Host: localhost:8098
+&gt; Accept: */*
+&gt; Content-Type: application/json
+&gt; Content-Length: 234
+&gt; 
+&lt; HTTP/1.1 200 OK
+&lt; Server: MochiWeb/1.1 WebMachine/1.7.2 (participate in the frantic)
+&lt; Date: Tue, 30 Nov 2010 20:57:36 GMT
+&lt; Content-Type: application/json
+&lt; Content-Length: 2
+&lt; 
+
+[]
+
++-( ~ ):&gt; curl -v -H &quot;Content-Type: application/json&quot; 
+<a  rel="nofollow" href="http://localhost:8098/mapred">http://localhost:8098/mapred</a> -d @-
+{&quot;inputs&quot;:&quot;grails.gorm.tests.TestEntity&quot;,&quot;query&quot;:[{&quot;map&quot;:{&quot;language&quot;:&quot;javascript&quot;,&quot;source&quot;:&quot;function(v){ejsLog('/tmp/mapred.log',
+ 'map input: '+JSON.stringify(v)); var row = Riak.mapValuesJson(v); row[0].id = 
+v.key; ejsLog('/tmp/mapred.log', 'map output: '+JSON.stringify(row)); return 
+row; }&quot;}}]}
+
+&gt; POST /mapred HTTP/1.1
+&gt; User-Agent: curl/7.19.7 (universal-apple-darwin10.0) libcurl/7.19.7 
+&gt; OpenSSL/0.9.8l zlib/1.2.3
+&gt; Host: localhost:8098
+&gt; Accept: */*
+&gt; Content-Type: application/json
+&gt; Content-Length: 297
+&gt; 
+&lt; HTTP/1.1 200 OK
+&lt; Server: MochiWeb/1.1 WebMachine/1.7.2 (participate in the frantic)
+&lt; Date: Tue, 30 Nov 2010 20:58:08 GMT
+&lt; Content-Type: application/json
+&lt; Content-Length: 75
+&lt; 
+
+[{&quot;child&quot;:&quot;-5040867138647877277&quot;,&quot;name&quot;:&quot;Bob&quot;,&quot;id&quot;:&quot;-7706240328526746461&quot;}]
+
+It's like just by changing the Javascript enough to get a different hash, I got 
+a different result. 
+
+What I suspect is happening with the test suite is that M/R scripts are run 
+against data sets that aren't yet complete because the tests load several 
+entries into the database, then immediately try to query them back out. It 
+looks like if that M/R script is run against this incomplete data, I'll keep 
+getting the same incorrect result until the M/R script's hash changes. This is 
+a complete WAG. All I know is that the code does what it's supposed to when 
+Riak returns the results it's supposed to. :) Is there caching I'm running into 
+here?
+
+If you could help me figure out why some tests are prone to this problem when 
+others aren't, I'd be very appreciative. It seems to be related to tests that 
+save multiple objects in a loop. We had talked about getting close to doing an 
+M1 release of this sometime soon. I'm still not 100% comfortable with moving 
+forward on that until I can get consist and clean test runs. Having tests fail 
+randomly doesn't instill a tremendous amount of confidence in me. :/
+
+If the problem is eventual consistency is biting me, how do you work around 
+that in a test suite with dozens of tests that hit the server as fast as it can?
+
+Thanks for all the help so far! :)
+
+Jon Brisbin
+Portal Webmaster
+NPC International, Inc.
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01676.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01678">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01678">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01684.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">More on Map/Reduce, Riak, and Grails Gorm, spring-data s...</span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01684.html">Re: More on Map/Reduce, Riak, and Grails Gorm, spri...</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01686.html">Re: More on Map/Reduce, Riak, and Grails Gorm, ...</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01687.html">Re: More on Map/Reduce, Riak, and Grails Go...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="More on Map/Reduce, Riak, and Grails Gorm, spring-data support">
+<input type="hidden" name="msgid" value="D7B8729A-B4A6-4F10-9FED-24A450A9B0E2@npcinternational.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01678.html">
+<input type="submit" value=" Jon Brisbin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22More+on+Map%5C%2FReduce%2C+Riak%2C+and+Grails+Gorm%2C+spring%5C-data+support%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01676.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01684.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D7B8729A-B4A6-4F10-9FED-24A450A9B0E2@npcinternational.com</li>
+</ul>
+</div>
+</body>
+</html>

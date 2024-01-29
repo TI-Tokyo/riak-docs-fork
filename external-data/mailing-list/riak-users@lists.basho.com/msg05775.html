@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Weird MapReduce Behavior</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05775" id="c">
+<link rel="index" href="maillist.html#05775" id="i">
+<link rel="prev" href="msg05774.html" id="p">
+<link rel="next" href="msg05776.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05775.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Weird+MapReduce+Behavior%22&amp;o=newest" rel="nofollow"><span itemprop="name">Weird MapReduce Behavior</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Yehuda+Zargrov%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Yehuda Zargrov</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111129" rel="nofollow">Tue, 29 Nov 2011 01:27:03 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi All,
+
+We are facing a very strange map-reduce behavior.
+We use ripple in ruby, this is the call:</pre><pre>
+
+  def yehuda
+    query_result = Riak::MapReduce.new(Ripple.client).add('usage-test1')
+     .map(&quot;function(v) { data = JSON.parse(v.values[0].data).loc; for (var a in 
+data) { for (var b in data[a]) { for (var c in data[a][b]) { return 
+[{date:v.key, sum:data[a][b][c]}]; } } } }&quot;)
+     .reduce(&quot;function(v) {var s={}; for(var i in v)  { var date=''; var sum=0; 
+for(var n in v[i]) { if (n === \&quot;date\&quot;) date=v[i][n]; if (n === \&quot;sum\&quot;) 
+sum=v[i][n]; } if (date in s) s[date] += sum; else s[date] = sum; } return[v]; 
+}&quot;, :keep =&gt; true).run
+
+    puts query_result
+  end
+
+The map function, though looks complicated, works fine. It gives the reduce an 
+array of hashes like this:
+{&quot;date&quot;=&gt;&quot;CT16-20110114&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT18-20101204&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT19-20110314&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT116-20100516&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT17-20110214&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT19-20100511&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT18-20100710&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT19-20110301&quot;, &quot;sum&quot;=&gt;1}
+{&quot;date&quot;=&gt;&quot;CT17-20110213&quot;, &quot;sum&quot;=&gt;1}
+
+There are a lot of items in this array (hundreds).
+The reduce function should sum up the total sum of every date.
+&gt;From some reason it returns only 13 results:
+{&quot;&quot;=&gt;0, &quot;CT18-20101222&quot;=&gt;1, &quot;CT116-20101123&quot;=&gt;1, &quot;CT18-20101208&quot;=&gt;1, 
+&quot;CT18-20101110&quot;=&gt;1, &quot;CT116-20101028&quot;=&gt;1, &quot;CT18-20100904&quot;=&gt;1, 
+&quot;CT18-20100820&quot;=&gt;1, &quot;CT18-20100618&quot;=&gt;1, &quot;CT17-20110420&quot;=&gt;1, &quot;CT17-20110412&quot;=&gt;1, 
+&quot;CT17-20110407&quot;=&gt;1, &quot;CT17-20110401&quot;=&gt;1}.
+
+Does someone have a clue why?
+
+Thanks,
+
+Yehuda Zargarov
+
+
+
+[cid:image001.gif@01CCAE89.BEE19870]
+
+Yehuda Zargrov
+Software Engineer
+Conduit Your Site &lt;<a  rel="nofollow" href="http://www.conduit.com/">http://www.conduit.com/</a>&gt;
+t: 972.8.9461713 ext +314 |   m: +972503473119   |   f: +97286382140
+
+
+This message may contain confidential and/or privileged information. It is 
+intended to be read only by the individual or entity to whom it is addressed or 
+by their designee.
+If the reader of this message is not the intended recipient, you are on notice 
+that any uses, copy, disclose or distribution of this message, in any form, is 
+strictly prohibited.
+If you have received this message in error, please notify the sender by reply 
+email or by telephone and delete or destroy any copy of this message. Thank you.
+
+</pre><p><tt>&lt;&lt;inline: image001.gif&gt;&gt;</tt></p><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05774.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05775">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05775">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05776.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Weird MapReduce Behavior">
+<input type="hidden" name="msgid" value="6AB151AD074C18409E0CA3CD8D43123063DB1BDDAD@EXVMBX017-12.exch017.msoutlookonline.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05775.html">
+<input type="submit" value=" Yehuda Zargrov ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Weird+MapReduce+Behavior%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05774.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05776.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">6AB151AD074C18409E0CA3CD8D43123063DB1BDDAD@EXVMBX017-12.exch017.msoutlookonline.net</li>
+</ul>
+</div>
+</body>
+</html>

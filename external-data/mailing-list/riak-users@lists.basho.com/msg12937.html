@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: aggregate query</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd7.html#12937" id="c">
+<link rel="index" href="mail7.html#12937" id="i">
+<link rel="prev" href="msg12933.html" id="p">
+<link rel="next" href="msg12934.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12937.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+aggregate+query%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: aggregate query</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ron+Pastore%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ron Pastore</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131111" rel="nofollow">Mon, 11 Nov 2013 11:53:00 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>It's probably not a big enough use case to justify another piece of
+architecture, also the distributed nature and availability of Riak is why
+it's great for this data and the rest of the app functionality.  I'm gonna
+try implementing a lightweight transaction with ruby procs to wrap the key
+rotation.  As long as we cover the failure scenarios between the secondary
+index and KV, with at least a rollback and reference log for mishaps it
+should be all good, plus doing the local updates and verification before we
+discard anything permanently. Thanks again.</pre><pre>
+
+
+On Mon, Nov 11, 2013 at 1:58 PM, Mark A. Basil, Jr.
+&lt;m...@badarmadillo.com&gt;wrote:
+
+&gt; At its very core, Riak is meant to provide the alternate benefits of
+&gt; availability and speed.  Transactions are out-of-scope of its use case.  If
+&gt; you’re still thinking in terms of transactions - and have a justified need
+&gt; for them - you might consider standing up a relational DB alongside for the
+&gt; crypto storage.
+&gt;
+&gt;
+&gt;
+&gt; *From:* Ron Pastore [<a  rel="nofollow" href="mailto:vacor...@gmail.com">mailto:vacor...@gmail.com</a>]
+&gt; *Sent:* Monday, November 11, 2013 11:10 AM
+&gt; *To:* Mark A. Basil, Jr.
+&gt; *Cc:* riak-users@lists.basho.com
+&gt; *Subject:* Re: aggregate query
+&gt;
+&gt;
+&gt;
+&gt; Thanks Mark.  Yeah I like the idea of operating locally and ensuring
+&gt; everything before i remove the key.
+&gt;
+&gt;
+&gt;
+&gt; My fears with data loss mainly pertain to mid-operation failures and them
+&gt; leading to a discrepancy between my encrypted values and whatever secondary
+&gt; method i have of storing their usages.   So yeah, i guess my issue is
+&gt; somewhat the same regardless of the secondary storage method.
+&gt;
+&gt;
+&gt;
+&gt; I think with link walking, as with the search index, it comes down to the
+&gt; need to transactionally manage the updating of the secondary place where
+&gt; key usages are stored, with the primary being on the value itself (inside
+&gt; meta).  Essentially, i'd have to manually handle rollback procedures for
+&gt; cases like when an item is stored but key usage storing (search or
+&gt; linkwalk/bucket ) fails.   This get tricky because what if part of the
+&gt; rollback then fails, without persisting some sort of transaction log (may
+&gt; be fine if that's the only way) it's hard to guarantee my secondary store
+&gt; isn't missing something at the time i go to discard a key.
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; On Mon, Nov 11, 2013 at 10:20 AM, Mark A. Basil, Jr. &lt;
+&gt; m...@badarmadillo.com&gt; wrote:
+&gt;
+&gt; Operate on the data locally, validating the decryption process as a final
+&gt; step after the re-encrypted value is put back into the db.
+&gt;
+&gt;
+&gt;
+&gt; Also, you don’t have to do it all in one step.  Pull a list of keys down,
+&gt; break them up, and test your batch job on a small portion.  If you’re
+&gt; concerned with data loss, ensure you haven’t lost any before you delete the
+&gt; updated value locally.
+&gt;
+&gt;
+&gt;
+&gt; The most efficient way to have set up your map would be a bucket to map
+&gt; the keyname to the thing it’s encrypted.
+&gt;
+&gt; Alternatively, you could have added a keys bucket that uses Links which
+&gt; would relate the key name to the thing that was encrypted by it.
+&gt;
+&gt;
+&gt;
+&gt; Lastly, it seems strange that your concerns with data loss are related to
+&gt; how you’ll be pulling the list of keys which need updated.  They really
+&gt; shouldn’t be related.
+&gt;
+&gt;
+&gt;
+&gt; -m
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; *From:* riak-users [<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>] *On Behalf
+&gt; Of *Ron Pastore
+&gt; *Sent:* Monday, November 11, 2013 9:42 AM
+&gt; *To:* riak-users@lists.basho.com
+&gt; *Subject:* aggregate query
+&gt;
+&gt;
+&gt;
+&gt; Hi All,
+&gt;
+&gt; I posted this question to Stack Overflow a few days back but not much
+&gt; luck.  Hoping someone here has some thoughts.
+&gt;
+&gt; I have a use case for an aggregate query across the entire db and all
+&gt; buckets, I'm wondering the best query method to use, leaning towards
+&gt; multiple secondary index calls. This won't be a frequently used feature,
+&gt; possibly invoked once a week or so via scheduled job or something.
+&gt;
+&gt; Some records have a value in their meta attribute that I'd like to
+&gt; match/target for the selection.  After the selection I'll need to update
+&gt; those records.
+&gt;
+&gt; From what I've read, secondary index looks great but it is limited to a
+&gt; single bucket? I also saw &quot;list buckets&quot;, which has warnings about
+&gt; production use, though not sure if that's applicable to such infrequently
+&gt; used functionality. Thought maybe i could list buckets then perform the
+&gt; secondary index query on each.
+&gt;
+&gt; Is there a better way? MapReduce seems heavy, having to load every KV off
+&gt; the file system. Search seem possible too but index setup/maintenance seems
+&gt; overkill if there's an easier way.
+&gt;
+&gt; UPDATE:  i went ahead with a Search index but am now second guessing that.
+&gt;  This lookup will be part of an encryption key rotation, where we'll be
+&gt; finding certain values from Riak that are encrypted with a given key then
+&gt; re-encrypting with a new key.  So, if there are discrepancies or failed
+&gt; operations between the actual encrypted values and the search index, there
+&gt; is a potential for data loss, as we'll be discarding keys once rotated.
+&gt;
+&gt;
+&gt;
+&gt; Sorry for the long winded description.  Any help would be greatly
+&gt; appreciated.
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12933.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd7.html#12937">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#12937">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12934.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12930.html">aggregate query</a></span> <span class="sender italic">Ron Pastore</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12931.html">RE: aggregate query</a></span> <span class="sender italic">Mark A. Basil, Jr.</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12932.html">Re: aggregate query</a></span> <span class="sender italic">Ron Pastore</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12933.html">RE: aggregate query</a></span> <span class="sender italic">Mark A. Basil, Jr.</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: aggregate query</span> <span class="sender italic">Ron Pastore</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: aggregate query">
+<input type="hidden" name="msgid" value="CA+QXGQJuWq4C9v3+eXdxgkg-PoN+ROXh3d_Pytzh7bmDm_54+A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12937.html">
+<input type="submit" value=" Ron Pastore ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+aggregate+query%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12933.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12934.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+QXGQJuWq4C9v3+eXdxgkg-PoN+ROXh3d_Pytzh7bmDm_54+A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

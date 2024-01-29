@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: http 410 deletes and document revival</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00050" id="c">
+<link rel="index" href="maillist.html#00050" id="i">
+<link rel="prev" href="msg00045.html" id="p">
+<link rel="next" href="msg00051.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00050.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+http+410+deletes+and+document+revival%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: http 410 deletes and document revival</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Moore%2C+Jonathan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Moore, Jonathan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100415" rel="nofollow">Thu, 15 Apr 2010 08:08:48 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>James Hamilton makes a recommendation similar to what Doug is asking
+about in this great paper:
+<a  rel="nofollow" href="http://www.mvdirona.com/jrh/talksAndPapers/JamesRH_Lisa.pdf">http://www.mvdirona.com/jrh/talksAndPapers/JamesRH_Lisa.pdf</a></pre><pre>
+
+&quot;Never delete anything. Just mark it deleted.... The ability to recover
+the data can make the difference between a highly embarrassing issue or
+a minor, barely noticeable glitch.&quot;
+
+Hamilton also recommends doing this at the application (service) level,
+echoing Kevin's recommendation:
+
+&quot;Handle failures and correct errors at the service level where the full 
+execution context is available rather than in lower software levels. For
+example, build redundancy into the service rather than depending upon
+recovery at the lower software layer.&quot;
+
+One final comment here: an HTTP 410 response denotes a notion of
+&quot;permanently gone&quot; rather than a soft delete. In fact, the HTTP/1.1 RFC
+explicitly says that you want to use a 404 for a soft delete:
+
+&quot;10.4.11 410 Gone. The requested resource is no longer available at the
+server and no forwarding address is known. This condition is expected to
+be considered permanent.... If the server does not know, or has no
+facility to determine, whether or not the condition is permanent, the
+status code 404 (Not Found) SHOULD be used instead.&quot;
+
+<a  rel="nofollow" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.11">http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.4.11</a>
+
+Jon
+
+-----Original Message-----
+From: riak-users-boun...@lists.basho.com
+[<a  rel="nofollow" href="mailto:riak-users-boun...@lists.basho.com">mailto:riak-users-boun...@lists.basho.com</a>] On Behalf Of Kevin Smith
+Sent: Thursday, April 15, 2010 7:10 AM
+To: Doug Tangren
+Cc: riak-users@lists.basho.com
+Subject: Re: http 410 deletes and document revival
+
+That is an interesting use case. The biggest issue I see with it,
+though, is the implication of a permissions system (x-riak-perm-delete)
+which doesn't exist.
+
+All is not sadness, though. You can achieve something very close to this
+with bucket pre/post commit hooks and modifications to your application
+logic. Pre/post commit hooks will be in the very next release of Riak.
+
+For example, let's say you've set a pre-commit hook function on the
+bucket &quot;important&quot; which looks for the custom header
+&quot;x-riak-myapp-perm-delete&quot;. If this header is set to false, then the
+pre-commit hook makes a copy of the about-to-be deleted object and
+stores it in a bucket named important_deleted and then performs the
+delete. If the header is set to true, then the hook allows the delete
+without making a backup copy.
+
+Now the boss looks for the object and gets a 404. Your application knows
+to check for a backup copy in important_deleted. Your application finds
+the backup copy and restores it to its rightful place in important.
+
+I need to move the docs for pre/post commit hooks over to the wiki but a
+complete write up exists in the Riak bug tracker here:
+<a  rel="nofollow" href="http://issues.basho.com/show_bug.cgi?id=34">http://issues.basho.com/show_bug.cgi?id=34</a>
+
+--Kevin
+
+
+On Apr 15, 2010, at 12:20 AM, Doug Tangren wrote:
+
+&gt; I don' know if this would be worth adding to the http interface or not
+but might it be useful to have a `soft delete` feature where the http
+interface returns a 410 (Gone) rather than a 404 (Not Found) status code
+after a document has been deleted. Perhaps as an audit trail or even a
+rollback feature.
+&gt; 
+&gt; A use case might be
+&gt; 
+&gt; # currently
+&gt; 
+&gt; boss
+&gt; 
+&gt; PUT <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a> { ... } -&gt;
+docA
+&gt; PUT <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentB">http://host.com/riak/important/someImportantDocumentB</a> { ... } -&gt;
+docB
+&gt; 
+&gt; intern 
+&gt; 
+&gt; DELETE <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a> //
+&quot;Whoops! I think I might have deleted the wrong document! Hope the boss
+doesn't find out.&quot;
+&gt; 
+&gt; boss 
+&gt; 
+&gt; GET <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a> // 404
+&quot;wtf!? Where did my TPS report go?&quot;
+&gt; 
+&gt; boss calls up intern --censored--
+&gt; 
+&gt; # a proposal
+&gt; 
+&gt; boss 
+&gt; 
+&gt; PUT <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a> { ... } -&gt;
+docA
+&gt; PUT <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentB">http://host.com/riak/important/someImportantDocumentB</a> { ... } -&gt;
+docB
+&gt; 
+&gt; intern
+&gt; 
+&gt; DELETE <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a>  (with
+new header x-riak-perm-delete=false) // &quot;Whoops! I think I might have
+deleted the wrong document! Hope the boss doesn't find out&quot;
+&gt; 
+&gt; boss
+&gt; 
+&gt; GET <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a> // 410
+&quot;silly intern, let's see what else he did&quot;
+&gt; 
+&gt; GET <a  rel="nofollow" href="http://host.com/riak/important">http://host.com/riak/important</a> { &quot;props&quot;: { ...,
+&quot;deleted_keys&quot;:[&quot;someImportantDocumentA&quot;] ] } }
+&gt; 
+&gt; PUT <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a> (with new
+header x-riak-revive=true)
+&gt; 
+&gt; GET <a  rel="nofollow" href="http://host.com/riak/important/someImportantDocumentA">http://host.com/riak/important/someImportantDocumentA</a> // 200,
+&quot;heh, glad I set my `important` bucket's `perm_delete` property to
+false&quot;
+&gt; 
+&gt; GET <a  rel="nofollow" href="http://host.com/riak/important">http://host.com/riak/important</a>  { &quot;props&quot;: { ...,
+&quot;deleted_keys&quot;:[], &quot;perm_delete&quot;:false ] } }
+&gt; 
+&gt; boss calls up intern and says not to worry and makes sure intern gets
+TSP report, mmm k.
+&gt; 
+&gt; 
+&gt; This is essentially a 2 new features. 
+&gt;  * a deletion audit trail with a bucket's deleted keys (
+&quot;deleted_keys&quot;:[&quot;foo&quot;,&quot;bar&quot;] ) and 410 (gone) responses (of course this
+would probably be turned off by default)
+&gt;  * per document rollback/revive feature that allows up to
+undo/undelete previously soft deleted documents
+&gt; 
+&gt; What does everyone think? Would this be useful?
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; -Doug Tangren
+&gt; <a  rel="nofollow" href="http://lessis.me">http://lessis.me</a>
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00045.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00050">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00050">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00051.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00044.html">http 410 deletes and document revival</a></span> <span class="sender italic">Doug Tangren</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00045.html">Re: http 410 deletes and document revival</a></span> <span class="sender italic">Kevin Smith</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: http 410 deletes and document revival</span> <span class="sender italic">Moore, Jonathan</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: http 410 deletes and document revival">
+<input type="hidden" name="msgid" value="ED97F89464499E4D80A68CDCE1E3D1FF06FEA0FE@PACORPEXCMB03.cable.comcast.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00050.html">
+<input type="submit" value=" Moore, Jonathan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+http+410+deletes+and+document+revival%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00045.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00051.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">ED97F89464499E4D80A68CDCE1E3D1FF06FEA0FE@PACORPEXCMB03.cable.comcast.com</li>
+</ul>
+</div>
+</body>
+</html>

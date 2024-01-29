@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak storage backend change</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08651" id="c">
+<link rel="index" href="maillist.html#08651" id="i">
+<link rel="prev" href="msg08649.html" id="p">
+<link rel="next" href="msg08653.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08651.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+storage+backend+change%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak storage backend change</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22hs+raghu%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">hs raghu</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120923" rel="nofollow">Sun, 23 Sep 2012 03:41:32 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+    I have query related to Riak storage backend change for buckets.</pre><pre>
+
+    In my setup I have defined different storage backends,
+mainly differentiated based on r,w,dw  values.
+
+    I created a bucket using HTTP api (it used default 'bitcask_mult'
+backend).
+
+            %% Storage_backend specifies the Erlang module defining the
+storage
+            %% mechanism that will be used on this node.
+            {storage_backend, riak_kv_multi_backend},
+
+            %% Adding multi backend storage related plugins
+            {multi_backend_default, &lt;&lt;&quot;bitcask_mult&quot;&gt;&gt;},
+            {multi_backend, [
+
+                %% individual backends
+               {&lt;&lt;&quot;bitcask_mult&quot;&gt;&gt;, riak_kv_bitcask_backend, [
+                      %% bitcask configuration
+                        {data_root, &quot;./data/bitcask&quot;},
+                        {open_timeout, 4},
+                        {sync_strategy, {seconds, 60}},
+                        {max_file_size, 16#80000000},
+                        {merge_window, {6, 7}},
+                        {frag_merge_trigger, 60},
+                        {dead_bytes_merge_trigger, 536870912},
+                        {max_fold_age, -1},
+                        {max_fold_puts, 0},
+                        {expiry_secs, 86400}
+                ]},
+
+               {&lt;&lt;&quot;bitcask_mult_l&quot;&gt;&gt;, riak_kv_bitcask_backend, [
+                      %% bitcask configuration
+                        {data_root, &quot;./data/bitcask_l&quot;},
+                        {open_timeout, 4},
+                        {n_val,3},
+                        {r,1},
+                        {w,1},
+                        {dw,1},
+                        {allow_mult,true},
+                        {last_write_wins,false},
+                        {sync_strategy, {seconds, 10}},
+                        {max_file_size, 16#80000000},
+                        {merge_window, {6, 7}},
+                        {frag_merge_trigger, 60},
+                        {dead_bytes_merge_trigger, 536870912},
+                        {max_fold_age, -1},
+                        {max_fold_puts, 0},
+                        {expiry_secs, 86400}
+                ]},
+
+
+   So when I get bucket it shows all the default properties such as
+&quot;r&quot;:&quot;quorum&quot;, &quot;w&quot;:&quot;quorum&quot;, etc ..
+   I changed the storage backend for the bucket to 'bitcask_mult_l'  which
+has different values for  r:1,w:1,dw:1, etc.
+
+   After changing the backend I restarted node (all the nodes on cluster).
+However, I am still getting the old quorum values ...
+   so my queries are:
+
+   1. Is there something missing in configuration?
+   2. Do I have to specifically update (bucket properties with) all the
+quorum and other properties of new storage backend
+(manually/programatically) ?
+   3. What is the proper way of configuring multiple buckets with
+respective storage backends?
+
+   Any help or pointer is highly appreciated.
+
+Command used to change bucket backend:
+
+&gt; curl -X PUT -H &quot;Content-Type: application/json&quot; \
+&gt; -d '{&quot;props&quot;:{&quot;backend&quot;:&quot;bitcask_mult_l&quot;}}' \
+&gt; <a  rel="nofollow" href="http://localhost:8098/riak/test">http://localhost:8098/riak/test</a>
+
+Result show old/stale quorum related properties:
+
+ &gt;  curl <a  rel="nofollow" href="http://192.168.21.201:8098/riak/test">http://192.168.21.201:8098/riak/test</a>
+{&quot;props&quot;:{&quot;allow_mult&quot;:false,&quot;backend&quot;:&quot;bitcask_mult_l&quot;
+,&quot;basic_quorum&quot;:false,&quot;big_vclock&quot;:50,&quot;chash_keyfun&quot;:{&quot;mod&quot;:&quot;riak_core_util&quot;,&quot;fun&quot;:&quot;chash_std_keyfun&quot;},
+&quot;dw&quot;:&quot;quorum&quot;
+,&quot;last_write_wins&quot;:false,&quot;linkfun&quot;:{&quot;mod&quot;:&quot;riak_kv_wm_link_walker&quot;,&quot;fun&quot;:&quot;mapreduce_linkfun&quot;},&quot;n_val&quot;:3,&quot;name&quot;:&quot;test&quot;,&quot;notfound_ok&quot;:true,&quot;old_vclock&quot;:86400,&quot;postcommit&quot;:[],&quot;pr&quot;:0,&quot;precommit&quot;:[],&quot;pw&quot;:0,
+&quot;r&quot;:&quot;quorum&quot;,&quot;rw&quot;:&quot;quorum&quot;,&quot;search&quot;:false,&quot;small_vclock&quot;:50,&quot;w&quot;:&quot;quorum&quot;
+,&quot;young_vclock&quot;:20}}
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08649.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08651">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08651">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08653.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Riak storage backend change</span> <span class="sender italic">hs raghu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08653.html">Re: Riak storage backend change</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak storage backend change">
+<input type="hidden" name="msgid" value="CAP5c0m0=mdkJ6dJ17tbF5_vgpaxo4ktvFD7SvyrnRKx0X5xVLg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08651.html">
+<input type="submit" value=" hs raghu ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+storage+backend+change%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08649.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08653.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAP5c0m0=mdkJ6dJ17tbF5_vgpaxo4ktvFD7SvyrnRKx0X5xVLg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

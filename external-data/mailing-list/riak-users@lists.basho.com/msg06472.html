@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: documents disappear from riak search index</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#06472" id="c">
+<link rel="index" href="maillist.html#06472" id="i">
+<link rel="prev" href="msg06468.html" id="p">
+<link rel="next" href="msg06206.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg06472.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+documents+disappear+from+riak+search+index%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: documents disappear from riak search index</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120131" rel="nofollow">Tue, 31 Jan 2012 07:34:57 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Tue, Jan 31, 2012 at 7:44 AM, francisco treacy &lt;
+francisco.tre...@gmail.com&gt; wrote:
+&gt;
+&gt;
+&gt; db.get('user_books', 'maya012-8542')
+&gt; =&gt; { }
+&gt;</pre><pre>
+
+I'm assuming this does not represent an empty object
+
+
+&gt;
+&gt; It's found, k/v works at least.
+&gt;
+&gt; db.addSearch('user_books', 'bookId:8542 AND userId:maya012').reduce({
+&gt; language: 'erlang', module: 'riak_kv_mapreduce', function:
+&gt; 'reduce_identity' }).run(function(err,d) { console.log(d.length) })
+&gt; =&gt; 0
+&gt;
+&gt; Uh oh, nothing there. Let's see what we have:
+&gt;
+&gt; db.addSearch('user_books', 'userId:maya0121').reduce({ language:
+&gt; 'erlang', module: 'riak_kv_mapreduce', function: 'reduce_identity'
+&gt; }).run(function(err,d) { console.log(d) })
+&gt; =&gt; [ [ 'user_books', 'maya012-8528' ] ]
+&gt;
+
+What about when you run a query on just userId?
+
+
+&gt;
+&gt; Aha. User is supposed to have 2 books but has one. Let's see if
+&gt; there's a disparity between counts in K/V and search:
+&gt;
+&gt; db.add('user_books').map('query', 'where
+&gt; .bookId:val(&quot;8542&quot;)').run(function(err, d) { console.log(d.length) })
+&gt; =&gt; 660
+&gt;
+&gt; db.addSearch('user_books', 'bookId:8542').reduce({ language: 'erlang',
+&gt; module: 'riak_kv_mapreduce', function: 'reduce_identity'
+&gt; }).run(function(err,d) { console.log(d.length) })
+&gt; =&gt; 660
+&gt;
+&gt; WTH? It seems that 'userId' is introducing some weirdness here.
+&gt;
+
+If Search is missing replicas then results will become non-deterministic
+and sometimes you will see correct results and other times you won't.  If
+you run this query many times back-to-back and see different results then
+you are losing data somewhere.
+
+
+&gt;
+&gt; I fetched/saved the document, and now things are back to normal...
+&gt;
+&gt; db.addSearch('user_books', 'bookId:8542 AND userId:maya012').reduce({
+&gt; language: 'erlang', module: 'riak_kv_mapreduce', function:
+&gt; 'reduce_identity' }).run(function(err,d) { console.log(d.length) })
+&gt; =&gt; 1
+&gt;
+
+What happens if you rerun the bookId query and search?  Do they both still
+return 660 or is it now 661?  Next time you run into this I'd like to see
+the results of _all_ the queries before and after.  Also, run the search
+query many times back-to-back and verify the answer is always the same.
+
+
+
+&gt;
+&gt; ...for maya012.  Go figure how many other users are getting incorrect
+&gt; data. Oh yea, I need to write another script to check them one by one.
+&gt;
+&gt; I waded through the logs, because there are tons of errors regarding
+&gt; Luwak... (oh right, that too! Probably 5% of the files return 0 bytes,
+&gt; awesome – but I digress) ... and can't find anything that is even
+&gt; close to be search-related.
+&gt;
+
+Considering you seem to have both Search and Luwak data disappearing I'm a
+bit concerned that it's not just coincidence.  What type of hardware are
+you running on?  What's your network like between these machines?  What
+does your app.config look like (and is it the same across the cluster)?
+ What does your Search schema look like for user_books?  What does
+`riak-admin status` show you?  What about `riak-admin ringready` and
+`riak-admin transfers`?  While we are at it `riak-admin cluster_info
+/tmp/cluster_info.txt` couldn't hurt to try as well.
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg06468.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#06472">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#06472">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg06206.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg06201.html">documents disappear from riak search index</a></span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06202.html">Re: documents disappear from riak search index</a></span> <span class="sender italic">francisco treacy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06205.html">Re: documents disappear from riak search index</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06208.html">Re: documents disappear from riak search index</a></span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06209.html">Re: documents disappear from riak search ind...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06260.html">Re: documents disappear from riak search...</a></span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06272.html">Re: documents disappear from riak s...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06283.html">Re: documents disappear from ri...</a></span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg06286.html">Re: documents disappear fro...</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg06468.html">Re: documents disappear fro...</a></span> <span class="sender italic">francisco treacy</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: documents disappear fro...</span> <span class="sender italic">Ryan Zezeski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: documents disappear from riak search index">
+<input type="hidden" name="msgid" value="CACZcpem0KghZ4qtSFezvGzrAX7EXaWDwdy=i3e3=CU0neN+Beg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg06472.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+documents+disappear+from+riak+search+index%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg06468.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg06206.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACZcpem0KghZ4qtSFezvGzrAX7EXaWDwdy=i3e3=CU0neN+Beg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

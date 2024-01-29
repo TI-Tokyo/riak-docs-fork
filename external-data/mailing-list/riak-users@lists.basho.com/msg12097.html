@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Riak Memory Bloat issues with RiakCS/BitCask</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd11.html#12097" id="c">
+<link rel="index" href="mail11.html#12097" id="i">
+<link rel="prev" href="msg12082.html" id="p">
+<link rel="next" href="msg12100.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12097.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Riak+Memory+Bloat+issues+with+RiakCS%5C%2FBitCask%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Riak Memory Bloat issues with RiakCS/BitCask</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Erik+S%C3%B8e+S%C3%B8rensen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Erik Søe Sørensen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130820" rel="nofollow">Tue, 20 Aug 2013 01:34:04 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Your max file size is (far!) less than your small file size threshold - which 
+means that at each merge,  *all* of the files will participate in the merge. No 
+wonder you need a lot of simultaneously open files... and long merge times too, 
+of course.
+Try changing these parameters.</pre><pre>
+
+
+
+-------- Oprindelig meddelelse --------
+Fra: Idan Shinberg &lt;idan.shinb...@idomoo.com&gt;
+Dato:
+Til: riak-users &lt;riak-users@lists.basho.com&gt;
+Cc: Arik Katsav &lt;a...@idomoo.com&gt;,Assaf Fogel &lt;as...@idomoo.com&gt;
+Emne: Riak Memory Bloat issues with RiakCS/BitCask
+
+
+Hi all
+
+We have a ~300GB Riak Single Node Cluster
+This seems to have worked fine ( merging worked good ) until an 
+OpenFile/OpenPorts limit was reached ( since then , we've tweaked both to 64K )
+The above error caused a crash that left corrupted hint files .We've deleted 
+the hint ( and their corrosponding the data files ) to allow a clean start to 
+riak ( no errors upon start) .
+
+However , merges have not been really  working  ( taking forever to complete  ) 
+since then  , therefor causing :
+
+ *   Huge Bloat on disk ( Data is around 150K objects of roughly 8MB each , but 
+has already more then quadrupled in size the riak storage used ( around 1.2 TB )
+ *   Huge Bloat in memory , which eventually kills riak itself ( OOM killer )
+
+We're not doing anything complex , just using riak and riak-cs to emulate S3 
+access ( and only it ) for roughly 15 client writes  per minute.
+
+Our merge settings ( uber-low , but have worked correctly in the up till a few 
+days ago ) :
+
+ {riak_kv, [
+            %% Storage_backend specifies the Erlang module defining the storage
+            %% mechanism that will be used on this node.
+                {add_paths, [&quot;/usr/lib64/riak-cs/lib/riak_cs-1.3.1/ebin&quot;]},
+                {storage_backend, riak_cs_kv_multi_backend},
+                {multi_backend_prefix_list, [{&lt;&lt;&quot;0b:&quot;&gt;&gt;, be_blocks}]},
+                {multi_backend_default, be_default},
+                {multi_backend, [
+                    {be_default, riak_kv_eleveldb_backend, [
+                        {max_open_files, 50},
+                        {data_root, &quot;/var/lib/riak/leveldb&quot;}
+                    ]},
+                    {be_blocks, riak_kv_bitcask_backend, [
+
+                        {max_file_size, 16#2000000}, %% 32MB
+
+                        %% Trigger a merge if any of the following are true:
+                        {frag_merge_trigger, 10}, %% fragmentation &gt;= 10%
+                        {dead_bytes_merge_trigger, 8388608}, %% dead bytes &gt; 8 
+MB
+
+                        %% Conditions that determine if a file will be examined 
+during a merge:
+                        {frag_threshold, 5}, %% fragmentation &gt;= 5%
+                        {dead_bytes_threshold, 2097152}, %% dead bytes &gt; 2 MB
+                        {small_file_threshold, 16#80000000}, %% file is &lt; 2GB
+
+                        {data_root, &quot;/var/lib/riak/bitcask&quot;},
+                        {log_needs_merge, true}
+
+
+                    ]}
+                ]},
+
+As you've noticed , log_needs_merge is set to true and we do get our logs 
+filled with needs_merge messages such as this one :
+
+,{&quot;/var/l...&quot;,...},...]
+2013-08-19 00:09:49.043 [info] &lt;0.17972.0&gt; 
+&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728&quot; 
+needs_merge: 
+[{&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/1153.bitcask.data&quot;,[{small_file,20506434}]},{&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/1152.bitcask.data&quot;,[{small_file,33393237}]},{&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/1151.bitcask.data&quot;,[{small_file,33123254}]},{&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/1150.bitcask.data&quot;,[{small_file,32505520}]},{&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/1149.
+...
+...
+...
+
+Yet a merge Only a single merge happened  ( and only after around 20 minutes 
+since we started putting pressure on the riak) :
+
+2013-08-19 00:17:29.456 [info] &lt;0.18964.14&gt; Merged 
+{[&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/712.bitcask.data&quot;,&quot;/var/lib/riak/
+bitcask/388211372416021087647853783690262677096107081728/711.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/710.bitcask
+.data&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/709.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/38821137241602108764785378369026267709
+6107081728/708.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/707.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/388211
+...
+...
+...
+var/lib/riak/bitc
+ask/388211372416021087647853783690262677096107081728/697.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/696.bitcask.dat
+a&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/695.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107
+081728/694.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/693.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/38821137241602108764
+7853783690262677096107081728/692.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/388211372416021087647853783690262677096107081728/691.bitcask.data&quot;,&quot;/var/lib/riak/bitcas
+k/38821137241602108...&quot;,...],...} in 1325.611982 seconds.
+
+Is it reasonable for a merge to take more then 20 minutes ?
+Especially assuming riak's memory usage is bloating much faster ?
+Will Scaling the cluster from a single node to a 3-node cluster ease the 
+problem ?
+
+As for the server and usage specs
+
+- Virtual machine having around 8 virtual cores
+- 12 GB of RAM
+- 8 TB of Storage composed of 4 x 2TB disks in Raid 10 ( 4TB available storage )
+- ~150 keys several 10s of bytes long ( using Riak-CS for s3 storage ) .
+- ~8MB value size for each key ( raw file )
+- ~22000 Open files ( mostly hint files ) by riak
+- Replication factor of  1
+- Ring size is 64
+
+I'll provide the logs if needed , yet I doubt they'll prove useful .
+
+Any ideas/advice will be appreciated
+
+
+Regards,
+
+Idan Shinberg
+
+
+System Architect
+
+Idomoo Ltd.
+
+
+
+Mob +972.54.562.2072
+
+email idan.shinb...@idomoo.com&lt;<a  rel="nofollow" href="mailto:idan.shinb...@idomoo.com">mailto:idan.shinb...@idomoo.com</a>&gt;
+
+web www.idomoo.com&lt;<a  rel="nofollow" href="http://www.idomoo.com/">http://www.idomoo.com/</a>&gt;
+
+[cid:image001.jpg@01CE98F3.21F78EB0]
+</pre><p><tt>&lt;&lt;inline: image001.jpg&gt;&gt;</tt></p><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12082.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd11.html#12097">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail11.html#12097">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12100.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12071.html">Riak Memory Bloat issues with RiakCS/BitCask</a></span> <span class="sender italic">Idan Shinberg</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12082.html">Re: Riak Memory Bloat issues with RiakCS/BitCas...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email tSliceCur"><span class="subject">RE: Riak Memory Bloat issues with RiakCS/BitCas...</span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12100.html">Re: Riak Memory Bloat issues with RiakCS/Bi...</a></span> <span class="sender italic">Idan Shinberg</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12105.html">Re: Riak Memory Bloat issues with RiakC...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Riak Memory Bloat issues with RiakCS/BitCask">
+<input type="hidden" name="msgid" value="sn1fl1qsl9029vyrcmjhpaj2.1376947127579@email.android.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12097.html">
+<input type="submit" value=" Erik Søe Sørensen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Riak+Memory+Bloat+issues+with+RiakCS%5C%2FBitCask%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12082.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12100.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">sn1fl1qsl9029vyrcmjhpaj2.1376947127579@email.android.com</li>
+</ul>
+</div>
+</body>
+</html>

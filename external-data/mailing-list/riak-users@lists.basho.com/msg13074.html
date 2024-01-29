@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using Riak to perform aggregate queries</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#13074" id="c">
+<link rel="index" href="mail6.html#13074" id="i">
+<link rel="prev" href="msg13066.html" id="p">
+<link rel="next" href="msg13063.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13074.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Riak+to+perform+aggregate+queries%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using Riak to perform aggregate queries</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christian+Dahlqvist%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christian Dahlqvist</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131124" rel="nofollow">Sun, 24 Nov 2013 00:02:36 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+Instead of updating a summary object for every insert, you could also 
+precompute by periodically aggregating data for a specific time period. If you 
+are using LevelDB and e.g. have a secondary index that contains a timestamp, 
+you could create an hourly summary using a batch job every hour. You could also 
+choose to then daily roll these hourly summary objects up into even larger 
+daily objects. This allows you to spread out the computation effort and 
+provides different levels of granularity for analysis.</pre><pre>
+
+While you in a relational database usually store each event as a separate row 
+in a table, storing each event as a separate object in Riak is not always the 
+optimal approach. When modelling data in Riak it is important to consider how 
+you need to access and query your data when structuring it. As Riak at its core 
+is a key-value store and accessing data directly by key is the most efficient 
+and scalable query method, you ideally want to ensure that the vast majority of 
+querying is done directly by key. In order to do this it is often recommended 
+to use semantic keys that describe the data instead of automatically generated 
+UUIDs.
+
+As retrieving a large number of individual keys is considerably less efficient 
+that retrieving a single larger object containing the same data, it often makes 
+sense to de-normalise in Riak. In your case you might e.g. consider creating 
+objects that contain events of a specific type for a vendor for a set time 
+period. These parameters, which identifies the data held in the object should 
+be used to create the key. This could take the form &lt;vendor id&gt;_&lt;event 
+type&gt;_&lt;date/time in YYYYMMDDHH24 form&gt;. Instead of just inserting a new event 
+as a single record in the database, you would update the appropriate object. 
+Although this results in a bit more work up front, it allows you to retrieve 
+data much more efficiently. 
+
+Examples of how this can be done in real scenarios can be found in these 
+presentations:
+
+Temetra:  <a  rel="nofollow" href="http://basho.com/riak-at-temetra/">http://basho.com/riak-at-temetra/</a>
+Boundary: 
+<a  rel="nofollow" href="http://boundary.com/blog/2012/08/21/boundary-techtalk-large-scale-olap-with-kobayashi/">http://boundary.com/blog/2012/08/21/boundary-techtalk-large-scale-olap-with-kobayashi/</a>
+
+I hope this gives you a better idea of how data can be modelled in Riak and how 
+it differs from working with a RDBMS. If you can share more details about your 
+use case, data and how you need to access and query it, we would love to help 
+you bounce ideas and find a solution that works for you.
+
+Best regards,
+
+Christian
+
+
+
+
+On 22 Nov 2013, at 22:34, Hector Castro &lt;hec...@basho.com&gt; wrote:
+
+&gt; On Thu, Nov 21, 2013 at 4:47 PM, NC &lt;naren.chain...@gmail.com&gt; wrote:
+&gt;&gt; Our use-case is very similar to what Chris has described till now. I am new
+&gt;&gt; to the riak store and have a background with RDBMS.
+&gt;&gt; 
+&gt;&gt; Going over this thread, there was a suggestion to pre-compute things. I am
+&gt;&gt; trying to understand what pre-compute exactly means. Does it mean using pre
+&gt;&gt; or post commit hooks to perform aggregation as different events enter our
+&gt;&gt; system? Or does it mean running map reduce jobs in the background to
+&gt;&gt; precompute the aggregations?
+&gt;&gt; 
+&gt;&gt; A brief background on our use-case. We have vendors in our system that get
+&gt;&gt; millions of events every week. Every two weeks, we sum the amount on all the
+&gt;&gt; events for the vendor to generate an invoice. Querying millions of events
+&gt;&gt; for the vendor using secondary indices or key filters doesn't seem feasible
+&gt;&gt; in riak. I am wondering if we can use post-commit hooks so that as events
+&gt;&gt; enter our system, we maintain a real-time account for the vendor, adding and
+&gt;&gt; subtracting things on the go. When the time comes to create an invoice, we
+&gt;&gt; just look at the account to find the amount to pay to the vendor.
+&gt; 
+&gt; You're on the right track. Avoiding the commit hooks might work better though.
+&gt; 
+&gt; Precomputing in the content of your use case could look something like:
+&gt; 
+&gt; At write time, store the event data in a key/value pair, but also
+&gt; create another key that has an invoice sum for a specific vendor along
+&gt; with a date:
+&gt; 
+&gt; INVOICE_SUM:VENDOR_NAME:DATE
+&gt; 
+&gt; At the end of two weeks, you can get all of the keys that make up two
+&gt; weeks for a specific vendor and sum them up in your client-side code:
+&gt; 
+&gt; INVOICE_SUM:VENDORX:20131122 = 5
+&gt; INVOICE_SUM:VENDORX:20131121 = 10
+&gt; INVOICE_SUM:VENDORX:20131120 = 54
+&gt; 
+&gt; Then do the same for the next vendor. If it makes sense to roll up the
+&gt; sums at something larger than a day, you can do that too.
+&gt; 
+&gt;&gt; My questions are: can we even use post-commit hook in that manner where we
+&gt;&gt; insert / update multiple records? Is there a different way to design such a
+&gt;&gt; schema that I am missing?
+&gt;&gt; 
+&gt;&gt; Thanks.
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; --
+&gt;&gt; View this message in context: 
+&gt;&gt; <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Using-Riak-to-perform-aggregate-queries-tp4027668p4029900.html">http://riak-users.197444.n3.nabble.com/Using-Riak-to-perform-aggregate-queries-tp4027668p4029900.html</a>
+&gt;&gt; Sent from the Riak Users mailing list archive at Nabble.com.
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13066.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#13074">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#13074">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13063.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13055.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">NC</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13066.html">Re: Using Riak to perform aggregate queries</a></span> <span class="sender italic">Hector Castro</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using Riak to perform aggregate queries</span> <span class="sender italic">Christian Dahlqvist</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using Riak to perform aggregate queries">
+<input type="hidden" name="msgid" value="6A9D80B2-8C06-421C-98A8-A68ADC1177BF@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13074.html">
+<input type="submit" value=" Christian Dahlqvist ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Riak+to+perform+aggregate+queries%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13066.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13063.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">6A9D80B2-8C06-421C-98A8-A68ADC1177BF@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

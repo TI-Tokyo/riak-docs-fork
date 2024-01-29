@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Data modeling a write-intensive comment storage cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#13489" id="c">
+<link rel="index" href="mail4.html#13489" id="i">
+<link rel="prev" href="msg13488.html" id="p">
+<link rel="next" href="msg13487.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13489.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Data+modeling+a+write%5C-intensive+comment+storage+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Data modeling a write-intensive comment storage cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jeremiah+Peschka%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jeremiah Peschka</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140127" rel="nofollow">Mon, 27 Jan 2014 06:50:12 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>---
+Jeremiah Peschka - Founder, Brent Ozar Unlimited
+MCITP: SQL Server 2008, MVP
+Cloudera Certified Developer for Apache Hadoop</pre><pre>
+
+
+On Sun, Jan 26, 2014 at 10:27 PM, fxmy wang &lt;fxm...@gmail.com&gt; wrote:
+
+&gt; Thanks for the response, Jeremiah.
+&gt;
+&gt;
+&gt;
+&gt; &gt; &gt; Then here are my questions:
+&gt; &gt; &gt; 1) To get better writing throughput, is it right to set the w=1?
+&gt; &gt;
+&gt; &gt; This will improve perceived throughput at the client, but it won't
+&gt; improve throughput at the server.
+&gt;
+&gt; Thank you for clarifying this for me :D
+&gt;
+&gt; &gt; &gt; 2) What's the best way to query these comments? In this use case, I
+&gt; don't need to retrieve all the comments in one bucket, but just the latest
+&gt; few hundreds comments( if there are so many) based on the time they are
+&gt; posted.
+&gt; &gt; &gt;
+&gt; &gt; &gt; Right now I'm thinking of using line-walking and keeping track of the
+&gt; latest comment so I can trace backwards to get the latest 500 comments (
+&gt; for example). And when new comment comes, point the line to the old latest,
+&gt; then update new latest comment mark.
+&gt; &gt; &gt;
+&gt; &gt;
+&gt; &gt; I wouldn't use link-walking. IIRC this uses MapReduce under the covers.
+&gt; You could use a single key to store the most recent comment.
+&gt;
+&gt; What's bad about MapReduce?
+&gt; Since there will be another cache layer lays on top of the cluster, so
+&gt; the read operation is relatively quite infrequent. That's why I choose
+&gt; to use link-walking.
+&gt;
+
+Even when you run a MapReduce query over a single bucket, MapReduce has to
+contact a majority of nodes in the cluster to perform a coverage query. In
+effect, you're scanning all of the keys to make sure you find only the keys
+in a single bucket. MapReduce can work for limited scenarios (e.g. mutating
+the state of a large number of objects or running batched analytics that
+write to a separate set of buckets/keys) but people have reported
+unsatisfactory results when trying to use MapReduce for live querying.
+
+This sort of thing may be possible with the Riak Search 2.0 functionality
+as well. I haven't played around with it enough to know whether it would be
+a good fit or not.
+
+
+&gt;
+&gt; &gt; You can get the most recent n keys using secondary index queries on the
+&gt; $bucket index, sorting, and pagination.
+&gt; I'm not sure what you mean here =.=
+&gt; How can I query most recent n keys using 2i ? Should I put timestamp
+&gt; -----like by every hour----- in 2i on the coming comments , then when
+&gt; it comes to queries, just try to query 2i by the hour segment? This
+&gt; seems a little blind because some videos could be long time before got
+&gt; commented again.  Querying based on time segmentation seems like
+&gt; shooting in the dark to me :\
+&gt;
+
+&quot;Keys will consist of a timestamp and userID.&quot;
+
+Sounds like you could sort on that to me.
+
+The $bucket index is a special index that only contains a list of the keys
+in a bucket. Querying $bucket is cheaper than a list keys operation.
+
+There are a number of ways you can solve this problem that are all
+implementation dependent.
+
+
+&gt;
+&gt; And doc says listing keys operation should not used in production, so
+&gt; it's a no go either :\
+&gt;
+
+A list keys is not a $bucket index query. See &quot;Retrieve all Bucket Keys via
+$bucket Index&quot; at <a  rel="nofollow" href="http://docs.basho.com/riak/latest/dev/using/2i/">http://docs.basho.com/riak/latest/dev/using/2i/</a>
+
+&gt;
+&gt;
+&gt; &gt; &gt; So in the scenario above, is it possible that after one client has
+&gt; written on nodeA ,modified the latest-mark and another client on nodeB not
+&gt; yet sees the change thus points the line to the old comment, resulting a
+&gt; &quot;branch&quot; in the line?
+&gt; &gt; &gt; If this could happen, then what can be done to avoid it? Are there any
+&gt; better ways to store&amp;query those comments? Any reply is appreciated.
+&gt; &gt;
+&gt; &gt; You can avoid siblings by serializing all of your writes through a
+&gt; single writer. That's not a great idea since you lose many of Riak's
+&gt; benefits.
+&gt; &gt; You could also use a CRDT with a register type. These tend toward the
+&gt; last writer.
+&gt;
+&gt; My goal is to form kind of a single-line-relationship based on
+&gt; timestamp through the keys under high concurrent write pressure. And
+&gt; through this relationship I can easily pick out the last
+&gt; hundreds/thousands comments.
+&gt; As Jeremiah said, serializing all of writes through a single writer
+&gt; can avoid siblings totally. And note that we don't have key clashing
+&gt; problems here ------ every comment holds an unique key. What we want
+&gt; is single-line-relationship. So how about this:
+&gt;
+&gt; Multiple erlang-pb clients just do the writes and don't care about the
+&gt; lining up.
+&gt; Using post-commit hooks to notify one special global registered
+&gt; process( which should be running in the riak cluster?) that &quot;here
+&gt; comes a new comment, line it up when it's appropriate&quot;.
+&gt; Is this feasible? And if it is , how should i prepare for the cluster
+&gt; partition &amp; rejoin scenario when network fails?
+&gt;
+
+It sounds to me like you're doing an awful lot of work to do something that
+a relational database handles remarkably well.
+
+
+&gt;
+&gt; &gt; The point is that you need to decide how you want to deal with this type
+&gt; of scenario - it's going to happen. In a worst case; you lose a write
+&gt; briefly.
+&gt;
+&gt; Hopefully the method above could avoid this :)
+&gt;
+&gt; Please everyone, share your thoughts please. _(:3JZ)_
+&gt;
+&gt; B.R.
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13488.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#13489">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#13489">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13487.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13485.html">Data modeling a write-intensive comment storage cluster</a></span> <span class="sender italic">fxmy wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13486.html">Re: Data modeling a write-intensive comment storage ...</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13488.html">Re: Data modeling a write-intensive comment stor...</a></span> <span class="sender italic">fxmy wang</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Data modeling a write-intensive comment ...</span> <span class="sender italic">Jeremiah Peschka</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Data modeling a write-intensive comment storage cluster">
+<input type="hidden" name="msgid" value="CACJEN2oi3X4KQiUsDiJwTfWbxcTZ8ut5+T0Kao1+X2gPOHqy4Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13489.html">
+<input type="submit" value=" Jeremiah Peschka ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Data+modeling+a+write%5C-intensive+comment+storage+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13488.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13487.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACJEN2oi3X4KQiUsDiJwTfWbxcTZ8ut5+T0Kao1+X2gPOHqy4Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Constant vnode crashes after disk corruption</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07231" id="c">
+<link rel="index" href="maillist.html#07231" id="i">
+<link rel="prev" href="msg07222.html" id="p">
+<link rel="next" href="msg07225.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07231.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Constant+vnode+crashes+after+disk+corruption%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Constant vnode crashes after disk corruption</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Nico+Meyer%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Nico Meyer</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120419" rel="nofollow">Thu, 19 Apr 2012 03:31:05 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Bogunov!
+
+</pre><tt>Simple truncation of the bitcask files won't trigger this error, since 
+</tt><tt>bitcask will notice that the last written entry is truncated and ignore 
+</tt><tt>it. In this case a 'not found' is returned to the layer above bitcask. 
+</tt><tt>If on the other hand, an entry (not necessarily the last one written) 
+</tt><tt>has the right length but the checksum that bitcask writes with each 
+</tt><tt>entry does not match this error is returned as such. The layer above 
+</tt><tt>bitcask (riak_kv_vnode) doesn't handle this case, and therefore chrashes.
+</tt><tt>Of course a checksum error in the middle of the file means the file is 
+</tt><tt>corrupted. But if the only way to resolve the problem, is to delete the 
+</tt><tt>whole file, bitcask might a well pretend the key was not found (an maybe 
+</tt><tt>delete it internally). That way at least the rest of the file might be 
+</tt><tt>still usable.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>I think what happend in my case, is that the file had the right length 
+</tt><tt>to fully contain the last entry, but the data was not fully written. 
+</tt><tt>This is what you get and rightly deserve for using ext4 as the 
+</tt><tt>filesystem :-(.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>But still I would think chrashing the vnode if the bitcask files are 
+</tt><tt>corrupted is always the wrong behaviour. At the very least an error 
+</tt><tt>should be returned to the node performing the get, to fail fast in the 
+</tt><tt>case where R is set to N. Otherwise the request hangs until the timeout 
+</tt><tt>is reached, wich is 60 second by default.
+</tt><pre style="margin: 0em;">
+
+Cheers,
+Nico
+
+Am 19.04.2012 11:19, schrieb Bogunov:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>Actually you get same error if you try to copy bitcask directory while 
+</tt><tt>writing in it, so i assume any not completely-written bitcask file can 
+</tt><tt>cause it. Easy way looks like dropping bitcask directory .
+</tt><pre style="margin: 0em;">
+
+</pre><tt>On Wed, Apr 18, 2012 at 2:26 PM, Nico Meyer &lt;nico.me...@adition.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:nico.me...@adition.com">mailto:nico.me...@adition.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    Oh, I forgot to mention:
+
+    My workaround was to patch riak_kv_bitcask_backend to map all
+    errors to {error,not_found}. Which begs the question if the
+    'get/3' function of any backend should ever return anything other than
+    {ok, Value, State} and {error, not_found, State} if it isn't
+    handled by riak_kv_vnode.
+
+    BTW: I think the -spec() for get/3 is wrong both in
+    riak_kv_bitcask_backend and riak_kv_eleveldb_backend. It states a
+    possible return value of the form '{ok, not_found, state()}' for
+    the not_found case, instead of the actually returned form '{error,
+    not_found, state()}'
+
+    Cheers,
+    Nico
+
+    Am 18.04.2012 12:18, schrieb Nico Meyer:
+
+        Hello,
+
+        I just encountered a problem with one of our Riak nodes, which
+        is caused by a bug in either the disk controller or the
+        firmware of our SSD disks.
+        Anyway, the obvious symptom is, that all writes to the disks
+        suddenly fail, which of course leads to truncated bitcask
+        files. However, this time the files got corrupted in a way,
+        that lead to CRC errors while fetching keys from bitcask. This
+        in turn leads to a crash of the vnode everytime such a key is
+        read. So the log is filled with these messages:
+
+        11:55:52.621 [error] CRASH REPORT Process &lt;0.23175.3&gt; with 0
+        neighbours crashed with reason: no case clause matching
+        
+{error,bad_crc,{state,#Ref&lt;0.0.0.196598&gt;,&quot;262613575457896618114724618378707105094425378816&quot;,[{async_folds,true},[{vnode_vclocks,false},{included_applications,[]},{allow_strfun,false},{reduce_js_vm_count,6},{storage_backend,riak_kv_bitcask_backend},{legacy_keylisting,false},{pb_ip,&quot;0.0.0.0&quot;},{hook_js_vm_count,2},{listkeys_backpressure,false},{mapred_name,&quot;mapred&quot;},{stats_urlpath,&quot;stats&quot;},{legacy_stats,true},{js_thread_stack,16},{riak_kv_stat,true},{add_paths,[]},{http_url_encoding,on},{map_js_vm_count,...},...],...],...}}
+        in riak_kv_vnode:prepare_put/3
+
+        Also those keys cannot be (over)written, since a put without
+        last_write_wins set to true does a get first internally.
+        I think the cause of the error should be obvious to anyone
+        familiar with the riak internals. Otherwise I can provide more
+        information.
+
+        Cheers,
+        Nico
+
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07222.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07231">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07231">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07225.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07221.html">Constant vnode crashes after disk corruption</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07222.html">Re: Constant vnode crashes after disk corruption</a></span> <span class="sender italic">Nico Meyer</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Constant vnode crashes after disk corruption</span> <span class="sender italic">Nico Meyer</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Constant vnode crashes after disk corruption">
+<input type="hidden" name="msgid" value="4F8FE95B.90406@adition.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07231.html">
+<input type="submit" value=" Nico Meyer ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Constant+vnode+crashes+after+disk+corruption%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07222.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07225.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4F8FE95B.90406@adition.com</li>
+</ul>
+</div>
+</body>
+</html>

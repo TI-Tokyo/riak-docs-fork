@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Recap for Jan. 12 - 13.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01982" id="c">
+<link rel="index" href="maillist.html#01982" id="i">
+<link rel="prev" href="msg01981.html" id="p">
+<link rel="next" href="msg01983.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01982.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Recap+for+Jan.+12+%5C-+13.%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Recap for Jan. 12 - 13.</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ryan+Zezeski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ryan Zezeski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110114" rel="nofollow">Fri, 14 Jan 2011 16:49:56 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Fri, Jan 14, 2011 at 7:12 PM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+
+&gt;
+&gt;
+&gt; Crap, the second after I hit &quot;send&quot; the lightbulb goes on!  Why is that?
+&gt;
+&gt; The quorum _was_ met (all vnodes just migrated to the one machine) but
+&gt; since some of them were fail-overs they didn't have the value yet (or the
+&gt; wrong value)?  In this case a read repair happened and subsequent gets
+&gt; worked.
+&gt;
+&gt;
+&gt; Your understanding is correct. However, when I say &quot;quorum was met&quot; I
+&gt; usually mean that &quot;it had R successful replies&quot;. Minor semantic quibble.
+&gt;
+&gt; You are correct in saying that the wiki is misleading -- read repair
+&gt; happens when any successful reply reaches the FSM, even if &quot;not found&quot; was
+&gt; returned to the client, that is, if quorum was not met. We'll get that
+&gt; fixed.
+&gt;
+&gt; I'm still dark on the second question.
+&gt;
+&gt;
+&gt;&gt; 2) Why doesn't r=1 work?
+&gt;&gt;
+&gt;&gt; In the IRC session, you claimed that r=1 would not have helped this
+&gt;&gt; problem.  Just like the OP, this confused me.  You then went on to say it
+&gt;&gt; was because of some optimization and then mentioned a &quot;basic quorum.&quot;
+&gt;&gt;
+&gt;&gt; I took a few minutes to think about this and the only conclusion I came to
+&gt;&gt; is that when r=1 you will treat the first response as the final response,
+&gt;&gt; and in this case the notfound response will always come back first?  I'm not
+&gt;&gt; sure if what I just said makes sense but I would have expected r=1 to work,
+&gt;&gt; just like the OP.  I'll admit that I still haven't read all the wiki docs
+&gt;&gt; yet (but I've read Read Repair 3 times now), so I'd be happy to hear RTFM.
+&gt;&gt;
+&gt;
+&gt; A number of months ago, we ran into some issues with a cluster where &quot;not
+&gt; found&quot; responses were not returning in a reasonable amount of time,
+&gt; especially when R=1. That is, the requests took MUCH longer than a
+&gt; SUCCESSFUL read. We determined that this occurred because one of the
+&gt; partitions was too busy to reply, causing the request timeout to expire.  So
+&gt; we added a special case called &quot;basic quorum&quot; (n_val/2 + 1) that is invoked
+&gt; only when receiving a &quot;not found&quot; response from a replica.  The idea is that
+&gt; if a simple majority of the replica partitions report &quot;not found&quot;, it's
+&gt; probably not there.  This way, you don't sit around waiting for the last
+&gt; lonely partition to reply when R=1 (and your successful reads are still fast
+&gt; because you only wait for one replica).  It's a tradeoff of availability:
+&gt; returning a potentially incorrect response vs. appearing unavailable (timing
+&gt; out). We chose the former.
+&gt;
+&gt; Hope that helps,
+&gt;</pre><pre>
+
+
+Reading your explanation made me realize it's because I'm mucking up
+the semantics of &quot;quorum.&quot;  It was previously my understanding that if R=1
+then you only need a quorum of 1 vnode, where a quorum is simply defined as
+a response.  Which would mean that the first reply (whether notfound or a
+value) would be considered the cluster value.  However, as you subtly hinted
+to above, quorum does not mean that, i.e. it's more than just a response.
+ It's that R vnodes found _a_ value and agreed on it's contents.  Going back
+to the case of R=1, N=3, and the value is missing on 2 of it's preferred
+vnodes it means that the request will take as long as the longest vnode to
+respond, even if 2 vnodes reply immediately with no value.  This sucks, so
+as an optimization you decided that if a majority of the cluster thinks it's
+X, well then it must be X!  I'm not sure I explained that well, but I'm sure
+I understand it now :)
+
+
+-Ryan
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01981.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01982">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01982">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01983.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01976.html">Riak Recap for Jan. 12 - 13.</a></span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01977.html">Re: Riak Recap for Jan. 12 - 13.</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01978.html">Re: Riak Recap for Jan. 12 - 13.</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01979.html">Re: Riak Recap for Jan. 12 - 13.</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01980.html">Re: Riak Recap for Jan. 12 - 13.</a></span> <span class="sender italic">Neville Burnell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01981.html">Re: Riak Recap for Jan. 12 - 13.</a></span> <span class="sender italic">Neville Burnell</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Recap for Jan. 12 - 13.</span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01983.html">Fwd: Riak Recap for Jan. 12 - 13.</a></span> <span class="sender italic">Neville Burnell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Recap for Jan. 12 - 13.">
+<input type="hidden" name="msgid" value="AANLkTi=vKPGEkom6cgaHRwH=RoOF9R4pLho8qd52mOS6@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01982.html">
+<input type="submit" value=" Ryan Zezeski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Recap+for+Jan.+12+%5C-+13.%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01981.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01983.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTi=vKPGEkom6cgaHRwH=RoOF9R4pLho8qd52mOS6@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

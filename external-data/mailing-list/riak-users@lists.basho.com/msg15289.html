@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using $bucket index in java client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15289" id="c">
+<link rel="index" href="maillist.html#15289" id="i">
+<link rel="prev" href="msg15216.html" id="p">
+<link rel="next" href="msg15290.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15289.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+%24bucket+index+in+java+client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using $bucket index in java client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22niedomnie%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">niedomnie</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20141201" rel="nofollow">Mon, 01 Dec 2014 21:48:07 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>not possible on that code - I've overrided some classes, and no it is
+possible - use MyBinIndexQuery instead - it was tested against $key index -
+but problem is with appending _BIN or _INT suffix to key name (always)</pre><pre>
+
+package com.thalesgroup.riak
+
+import com.basho.riak.client.api.commands.CoreFutureAdapter
+import com.basho.riak.client.api.commands.indexes.BinIndexQuery
+import com.basho.riak.client.api.commands.indexes.SecondaryIndexQuery
+import com.basho.riak.client.core.RiakCluster
+import com.basho.riak.client.core.RiakFuture
+import com.basho.riak.client.core.operations.SecondaryIndexQueryOperation
+import com.basho.riak.client.core.query.Location
+import com.basho.riak.client.core.query.Namespace
+import com.basho.riak.client.core.util.BinaryValue
+
+import java.nio.charset.Charset
+
+abstract class MyInit&lt;S, T extends MyInit&amp;lt;S,T&gt;&gt; extends
+SecondaryIndexQuery.Init&lt;S,T&gt;
+{
+    Charset charset = Charset.defaultCharset();
+
+    public MyInit(Namespace namespace, String indexName, S start, S end)
+    {
+//        super(namespace, indexName + SecondaryIndexQuery.Type._BIN, start,
+end);
+        super(namespace, indexName, start, end);
+    }
+
+    public MyInit(Namespace namespace, String indexName, S match)
+    {
+//        super(namespace, indexName + SecondaryIndexQuery.Type._BIN,
+match);
+        super(namespace, indexName, match);
+    }
+
+    T withCharacterSet(Charset charset)
+    {
+        this.charset = charset;
+        return self();
+    }
+}
+
+public class MyBuilder extends MyInit&lt;String, MyBuilder&gt;
+{
+    public MyBuilder(Namespace namespace, String indexName, String start,
+String end)
+    {
+        super(namespace, indexName, start, end);
+    }
+
+    public MyBuilder(Namespace namespace, String indexName, String match)
+    {
+        super(namespace, indexName, match);
+    }
+
+    @Override
+    protected MyBuilder self()
+    {
+        return this;
+    }
+
+    public MyBinIndexQuery build()
+    {
+        return new MyBinIndexQuery(this);
+    }
+}
+
+public class MyBinIndexQuery extends SecondaryIndexQuery&lt;String,
+BinIndexQuery.Response, BinIndexQuery&gt;
+{
+    private final Charset charset;
+    private final SecondaryIndexQuery.IndexConverter&lt;String&gt; converter;
+
+    public MyBinIndexQuery(MyInit&lt;String,?&gt; builder)
+    {
+        super(builder);
+        this.charset = builder.charset;
+        this.converter = new  SecondaryIndexQuery.IndexConverter&lt;String&gt;() {
+            @Override
+            public String convert(BinaryValue input)
+            {
+                return input.toString(charset);
+            }
+
+            @Override
+            public BinaryValue convert(String input)
+            {
+                return BinaryValue.create(input, charset);
+            }
+        };
+    }
+
+    @Override
+    protected SecondaryIndexQuery.IndexConverter&lt;String&gt; getConverter()
+    {
+        return converter;
+    }
+
+    @Override
+    protected RiakFuture&lt;MyResponse, MyBinIndexQuery&gt;
+executeAsync(RiakCluster cluster)
+    {
+        RiakFuture&lt;SecondaryIndexQueryOperation.Response,
+SecondaryIndexQueryOperation.Query&gt; coreFuture =
+                executeCoreAsync(cluster);
+
+        BinQueryFuture future = new BinQueryFuture(coreFuture);
+        coreFuture.addListener(future);
+        return future;
+    }
+
+    protected final class BinQueryFuture extends
+CoreFutureAdapter&lt;MyResponse, MyBinIndexQuery,
+SecondaryIndexQueryOperation.Response, SecondaryIndexQueryOperation.Query&gt; {
+        public
+BinQueryFuture(RiakFuture&lt;SecondaryIndexQueryOperation.Response,
+SecondaryIndexQueryOperation.Query&gt; coreFuture)
+        {
+            super(coreFuture);
+        }
+
+        @Override
+        protected MyResponse
+convertResponse(SecondaryIndexQueryOperation.Response coreResponse)
+        {
+            return new MyResponse(namespace, coreResponse, converter);
+        }
+
+        @Override
+        protected MyBinIndexQuery
+convertQueryInfo(SecondaryIndexQueryOperation.Query coreQueryInfo)
+        {
+            return MyBinIndexQuery.this;
+        }
+    }
+
+    protected static abstract class Init&lt;S, T extends Init&amp;lt;S,T&gt;&gt; extends
+SecondaryIndexQuery.Init&lt;S,T&gt;
+    {
+        private Charset charset = Charset.defaultCharset();
+
+        public Init(Namespace namespace, String indexName, S start, S end)
+        {
+            super(namespace, indexName + Type._BIN, start, end);
+        }
+
+        public Init(Namespace namespace, String indexName, S match)
+        {
+            super(namespace, indexName + Type._BIN, match);
+        }
+
+        T withCharacterSet(Charset charset)
+        {
+            this.charset = charset;
+            return self();
+        }
+
+    }
+
+    /**
+     * Builder used to construct a BinIndexQuery.
+     */
+    public static class Builder extends Init&lt;String, Builder&gt;
+    {
+
+        /**
+         * Construct a Builder for a BinIndexQuery with a range.
+         * &lt;p&gt;
+         * Note that your index name should not include the Riak {@literal
+_int} or
+         * {@literal _bin} extension.
+         * &lt;p&gt;
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The index name in Riak to query.
+         * @param start The start of the 2i range.
+         * @param end The end of the 2i range.
+         */
+        public Builder(Namespace namespace, String indexName, String start,
+String end)
+        {
+            super(namespace, indexName, start, end);
+        }
+
+        /**
+         * Construct a Builder for a BinIndexQuery with a single 2i key.
+         * &lt;p&gt;
+         * Note that your index name should not include the Riak {@literal
+_int} or
+         * {@literal _bin} extension.
+         * &lt;p&gt;
+         * @param namespace The namespace in Riak to query.
+         * @param indexName The name of the index in Riak.
+         * @param match the 2i key.
+         */
+        public Builder(Namespace namespace, String indexName, String match)
+        {
+            super(namespace, indexName, match);
+        }
+
+        @Override
+        protected Builder self()
+        {
+            return this;
+        }
+
+        /**
+         * Construct the query.
+         * @return a new BinIndexQuery
+         */
+        public MyBinIndexQuery build()
+        {
+            return new MyBinIndexQuery(this);
+        }
+
+    }
+
+    public static class MyResponse extends
+SecondaryIndexQuery.Response&lt;String&gt;
+    {
+        final SecondaryIndexQueryOperation.Response coreResponseCopy;
+        final SecondaryIndexQuery.IndexConverter&lt;String&gt; converterCopy;
+
+        protected MyResponse(Namespace queryLocation,
+SecondaryIndexQueryOperation.Response coreResponse,
+SecondaryIndexQuery.IndexConverter&lt;String&gt; converter)
+        {
+            super(queryLocation, coreResponse, converter);
+            this.coreResponseCopy = coreResponse
+            this.converterCopy = converter
+        }
+
+        @Override
+        public List&lt;MyEntry&gt; getEntries()
+        {
+            List&lt;MyEntry&gt; convertedList = new ArrayList&lt;MyEntry&gt;();
+            for (SecondaryIndexQueryOperation.Response.Entry e :
+coreResponseCopy.getEntryList())
+            {
+                Location loc = getLocationFromCoreEntry(e);
+                MyEntry ce = new MyEntry(loc, e.getIndexKey(),
+converterCopy);
+                convertedList.add(ce);
+            }
+            return convertedList;
+        }
+
+        public class MyEntry extends
+SecondaryIndexQuery.Response.Entry&lt;String&gt;
+        {
+            protected MyEntry(Location riakObjectLocation, BinaryValue
+indexKey, SecondaryIndexQuery.IndexConverter&lt;String&gt; converter)
+            {
+                super(riakObjectLocation, indexKey, converter);
+            }
+
+        }
+    }
+}
+
+
+
+--
+View this message in context: 
+<a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Using-bucket-index-in-java-client-tp4032125p4032198.html">http://riak-users.197444.n3.nabble.com/Using-bucket-index-in-java-client-tp4032125p4032198.html</a>
+Sent from the Riak Users mailing list archive at Nabble.com.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15216.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15289">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15289">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15290.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15216.html">Using $bucket index in java client</a></span> <span class="sender italic">Vassil Kolarov</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using $bucket index in java client</span> <span class="sender italic">niedomnie</span></li>
+<li class="icons-email"><span class="subject"><a href="msg15290.html">Re: Using $bucket index in java client</a></span> <span class="sender italic">niedomnie</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15292.html">Re: Using $bucket index in java client</a></span> <span class="sender italic">Vassil Kolarov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15293.html">Re: Using $bucket index in java client</a></span> <span class="sender italic">niedomnie</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg15224.html">Re: Using $bucket index in java client</a></span> <span class="sender italic">Vassil Kolarov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15316.html">Re: Using $bucket index in java client</a></span> <span class="sender italic">niedomnie</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using $bucket index in java client">
+<input type="hidden" name="msgid" value="1417499175458-4032198.post@n3.nabble.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15289.html">
+<input type="submit" value=" niedomnie ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+%24bucket+index+in+java+client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15216.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15290.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1417499175458-4032198.post@n3.nabble.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak Enterprise: can it be used to migrate to a new configuration?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#08976" id="c">
+<link rel="index" href="maillist.html#08976" id="i">
+<link rel="prev" href="msg08975.html" id="p">
+<link rel="next" href="msg08987.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg08976.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Enterprise%5C%3A+can+it+be+used+to+migrate+to+a+new+configuration%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak Enterprise: can it be used to migrate to a new configuration?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rune+Skou+Larsen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rune Skou Larsen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121019" rel="nofollow">Fri, 19 Oct 2012 04:54:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>Yes, we have done excatly that. When we migrated from 256 to 128 
+</tt><tt>partitions in a live dual-cluster system, we took one cluster down. 
+</tt><tt>Wiped the data, changed number of partitions, brought it back up and 
+</tt><tt>synced all data back with a full sync. Then we did the same with the 
+</tt><tt>other cluster.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>However, I must disagree with the recomendation of 512 partitions for 5 
+</tt><tt>nodes. You should go for 128 or 256 unless you plan on scaling out to 
+</tt><tt>10+ nodes pr. cluster.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>There are downsides to having many partitions. The price of the higher 
+</tt><tt>granularity is that the more storage backend processes use more 
+</tt><tt>resources for housekeeping. If you do multibackend, the ressources used 
+</tt><tt>are multiplied yet again with the number of backends because each vnode 
+</tt><tt>will have a number of running backend processes.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Say you go with the 512 partitions and have a multibackend config with 4 
+</tt><tt>backends, because you need to backup 4 different types of data 
+</tt><tt>independently. That gives you 2k running backends on each node of which 
+</tt><tt>412 will be actively in use in normal running scenario and more when 
+</tt><tt>you're doing handoff. Thats a lot of ressources just to run these, that 
+</tt><tt>you might otherwise have used for doing business.
+</tt><pre style="margin: 0em;">
+
+When you increase the number of partitions you should consider:
+- Number of open files. Especially when using eleveldb.
+</pre><tt>- Late triggering of bitcask compaction. The default is no compaction of 
+</tt><tt>any file before it hits 2GB. That means up to 2G of dead space per 
+</tt><tt>vnode. This can however be configured down to a smaller number than the 
+</tt><tt>2 gigs, which is crazy high in almost any use case involving delete, 
+</tt><tt>expiry or update of data.
+</tt><tt>- Leveldb cache is pr. vnode, so you need to lower the number, in order 
+</tt><tt>to not use all memory, which will lead to death by swapping.
+</tt><tt>- With a high number of vnodes pr. node, each vnode's leveldb cache will 
+</tt><tt>be comparatively small leading to (slighty) less effecient cache usage.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Please be in touch if you need onsite or offsite professional assistance 
+</tt><tt>configuring, testing or running your Riak clusters.
+</tt><pre style="margin: 0em;">
+
+BR Rune Skou Larsen
+
+Trifork
+- We do Riak PS.
+
+--
+
+Best regards / Venlig hilsen
+
+*Rune Skou Larsen*
+Trifork Public A/S / Team Riak
+Margrethepladsen 4, 8000 Århus C, Denmark
+Phone: +45 3160 2497    Skype: runeskoularsen   twitter: @RuneSkouLarsen
+
+
+
+Den 19-10-2012 12:38, Dave Brady skrev:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>Can Riak Enterprise replicate between rings where each ring has a 
+</tt><tt>different number of partitions?
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Our five-node ring was originally configured with 64 partitions, and I 
+</tt><tt>saw that Basho is recommending 512 for that number of machines.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Any ideas on how to make as-painless-a-migration-as-possible are 
+</tt><tt>welcome, of course!
+</tt><pre style="margin: 0em;">
+
+--
+Dave Brady
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg08975.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#08976">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#08976">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg08987.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg08975.html">Riak Enterprise: can it be used to migrate to a new ...</a></span> <span class="sender italic">Dave Brady</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak Enterprise: can it be used to migrate ...</span> <span class="sender italic">Rune Skou Larsen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08987.html">Re: Riak Enterprise: can it be used to migr...</a></span> <span class="sender italic">Evan Vigil-McClanahan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg08998.html">Re: Riak Enterprise: can it be used to ...</a></span> <span class="sender italic">Dave Brady</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg08988.html">Re: Riak Enterprise: can it be used to migrate ...</a></span> <span class="sender italic">Rune Skou Larsen</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak Enterprise: can it be used to migrate to a new configuration?">
+<input type="hidden" name="msgid" value="50813E75.2000306@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg08976.html">
+<input type="submit" value=" Rune Skou Larsen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+Enterprise%5C%3A+can+it+be+used+to+migrate+to+a+new+configuration%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg08975.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg08987.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">50813E75.2000306@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

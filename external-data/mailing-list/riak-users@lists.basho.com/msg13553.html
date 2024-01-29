@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: last_write_wins</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#13553" id="c">
+<link rel="index" href="mail4.html#13553" id="i">
+<link rel="prev" href="msg13540.html" id="p">
+<link rel="next" href="msg13541.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13553.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+last_write_wins%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: last_write_wins</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+Daily%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John Daily</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140130" rel="nofollow">Thu, 30 Jan 2014 19:20:07 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Replies inline.
+
+(Thanks to Russell for the link to my blog series, but honestly, as I now 
+re-read the section on conflict resolution, I’m unhappy with it. It’s a very 
+confusing topic and I regret not doing a better job of clarifying it. This 
+answer will undoubtedly also be more confusing than I’d like.)</pre><pre>
+
+On Jan 30, 2014, at 9:53 AM, Guido Medina &lt;guido.med...@temetra.com&gt; wrote:
+
+&gt; All of our buckets have allow_multi=false except for the one bucket we have 
+&gt; for CRDT counters, our application requires certain some level of consistency 
+&gt; so we have full control of our reads/writes using a fine grain locking 
+&gt; mechanism combined with in-memory cache so in our case the LWW=true is what 
+&gt; we would want?, now, we haven't touched this parameter so it is at its 
+&gt; default value.
+
+It’s a bit confusing to refer to “LWW&quot; because the “last write wins” strategy 
+is often referred to as LWW, and separately we have the a last_write_wins 
+configuration parameter, and they’re not the same thing. I’m going to stick to 
+last_write_wins to be explicit when I’m referring to the parameter, and “last 
+write wins” when referring to the strategy. (Informally I often refer to LWW as 
+the strategy and lww as the parameter, but I’ll spare you that casual pedantry 
+here.)
+
+The “last write wins” strategy comes into play whenever allow_mult is set to 
+false, regardless of the value of last_write_wins.
+
+Setting last_write_wins=true when allow_mult=false will optimize Bitcask[1] 
+“put&quot; requests to not bother reading any existing value to compare vector 
+clocks, but if servers are offline or there are network partitions during the 
+put operation, when read repair or active anti-entropy are invoked later the 
+vector clock (including server timestamp) will be used to guess[2] which 
+version of the object is the “last.&quot;
+
+
+If you can truly guarantee serialization at the application layer and you can 
+guarantee that no two updates to a single value will occur within the 
+worst-case clock skew across your cluster, then the “last write wins” strategy 
+is reasonable. If you have any doubt about either and data safety is important, 
+you really should set allow_mult=true and deal with siblings.
+
+Unfortunately, worst-case clock skew across a cluster can be pretty bad. NTP 
+will typically keep it under control, but it’s all too easy for both NTP and 
+your monitoring of NTP to be broken.
+
+&gt; 
+&gt; I'm assuming it will improve performance for our case, but, if we set 
+&gt; LWW=true, will it affect the bucket(s) with allow_multi=true, is it safe to 
+&gt; assume that if allow_multi=true LWW will be ignored? We only modify bucket 
+&gt; properties using Riak Java client 1.4.x atm.
+
+No, it’s definitely not safe. If you set your cluster default to 
+last_write_wins=true, you should explicitly set your allow_mult=true buckets to 
+last_write_wins=false using the Java client. As Russell indicated, the behavior 
+if both allow_mult and last_write_wins are set to true is undefined and not 
+guaranteed at all to be what you want, regardless of the current state of the 
+code.
+
+&gt; 
+&gt; Also, about safety, LWW=true uses timestamp? and LWW=false uses vclock?, 
+&gt; future of both?, should we leave it untouched? we don't really want to use 
+&gt; something that could jeopardise our data consistency requirement even if it 
+&gt; means better performance.
+
+Vector clocks (with embedded server timestamps) are used to help Riak decide 
+what to do about data inconsistencies regardless of the configuration settings. 
+Riak generates (or updates) vector clocks with each put.
+
+-John
+
+
+[1] Why does last_write_wins=true only really impact Bitcask writes? If the 
+backend supports 2i (Memory or LevelDB currently) then we have to read the old 
+value from disk to determine whether any indexes need to be updated when that 
+value is replaced.
+
+[2] You could use the word “determine” here, but given the inherent 
+unreliability of server clocks, it’s just as accurate to say “guess.&quot;
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13540.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#13553">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#13553">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13541.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13503.html">last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13522.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13523.html">Re: last_write_wins</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13524.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13536.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13537.html">Re: last_write_wins</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13538.html">Re: last_write_wins</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13539.html">Re: last_write_wins</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13540.html">Re: last_write_wins</a></span> <span class="sender italic">Guido Medina</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: last_write_wins</span> <span class="sender italic">John Daily</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13541.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13544.html">Re: last_write_wins</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13545.html">Re: last_write_wins</a></span> <span class="sender italic">Eric Redmond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13546.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13547.html">Re: last_write_wins</a></span> <span class="sender italic">Eric Redmond</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13548.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13549.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13550.html">Re: last_write_wins</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13551.html">Re: last_write_wins</a></span> <span class="sender italic">Edgar Veiga</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: last_write_wins">
+<input type="hidden" name="msgid" value="7204D099-89F1-4BE4-8E53-0DE81F0411A8@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13553.html">
+<input type="submit" value=" John Daily ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+last_write_wins%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13540.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13541.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">7204D099-89F1-4BE4-8E53-0DE81F0411A8@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

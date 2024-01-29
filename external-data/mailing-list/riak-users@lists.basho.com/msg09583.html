@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Monotonic Read Consistency</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09583" id="c">
+<link rel="index" href="maillist.html#09583" id="i">
+<link rel="prev" href="msg09572.html" id="p">
+<link rel="next" href="msg09585.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09583.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Monotonic+Read+Consistency%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Monotonic Read Consistency</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Vergara%2C+Jeaneth+Aguilar%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Vergara, Jeaneth Aguilar</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121214" rel="nofollow">Fri, 14 Dec 2012 12:40:38 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>If we have no siblings (last write wins), can we use timestamps to guarantee 
+causality?</pre><pre>
+
+________________________________
+From: Reid Draper [reiddra...@gmail.com]
+Sent: Thursday, December 13, 2012 7:40 AM
+To: Vergara, Jeaneth Aguilar
+Cc: riak-users@lists.basho.com; Shah, Nikhil M
+Subject: Re: Monotonic Read Consistency
+
+
+On Dec 12, 2012, at 6:39 PM, &quot;Vergara, Jeaneth Aguilar&quot; 
+&lt;verga...@illinois.edu&lt;<a  rel="nofollow" href="mailto:verga...@illinois.edu">mailto:verga...@illinois.edu</a>&gt;&gt; wrote:
+
+Monotonic read consistency means if a process has seen a particular value for 
+the object, any subsequent accesses will never return any previous values. 
+(quoted from 
+<a  rel="nofollow" href="http://www.allthingsdistributed.com/2007/12/eventually_consistent.html">http://www.allthingsdistributed.com/2007/12/eventually_consistent.html</a>).
+
+
+Aside from the aforementioned bug [1], requesting reads with PR=quorum will 
+achieve this. Let me rephrase the guarantee this gives you:
+
+Any actor A will always read values causally equal or greater than previous 
+reads by the same actor.
+
+
+Yes, the cache is local to each actor. The actor can read something that it did 
+not write. When it tries to read that object again, it needs to ensure that it 
+either gives back the previously read version because it's more current or 
+return the new one (because it's the latest value). If the Riak server returns 
+an older value (maybe due to a partition failure and it gave back an older 
+value), then we can catch that scenario.
+
+If the last modified timestamp is consistent across all replicas, then maybe we 
+can just use that value instead of setting up our own vector clock. Can you 
+please confirm it's the same in all replicas (or it's the same value for all 
+consistent replicas)? What I mean is for A/B/C/D/E, assuming there's no 
+partition, they'll all have the same value of Dec. 12, 2012 2:20 PM once that 
+update is propagated to all replicas.
+
+The timestamp is tied to a particular 'version' of an object. The same 
+timestamp will always be returned when any replica returns the same version. In 
+all but some extreme cases (ie. spanner), timestamps are not suitable for 
+guaranteeing causality though.
+
+
+________________________________
+From: Reid Draper [reiddra...@gmail.com&lt;<a  rel="nofollow" href="mailto:reiddra...@gmail.com">mailto:reiddra...@gmail.com</a>&gt;]
+Sent: Wednesday, December 12, 2012 2:45 PM
+To: Vergara, Jeaneth Aguilar
+Cc: riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;; Shah, Nikhil 
+M
+Subject: Re: Monotonic Read Consistency
+
+
+On Dec 12, 2012, at 4:01 PM, &quot;Vergara, Jeaneth Aguilar&quot; 
+&lt;verga...@illinois.edu&lt;<a  rel="nofollow" href="mailto:verga...@illinois.edu">mailto:verga...@illinois.edu</a>&gt;&gt; wrote:
+
+Thanks Reid, we have that implementation for Read Your Writes already. We'd 
+like to implement Monotonic Read Consistency as well. For Monotonic Read 
+Consistency, we were hoping to do Vector Clock comparison but we don't know how 
+to convert the byte[] into different client's timestamps.
+
+Can you go into more explanation of exactly what you mean by 'Monotonic Read 
+Consistency'?
+
+Vectors clocks in Riak are meant to be opaque. It's not impossible to 
+use/decode them, but it's not trivial (particularly outside of Erlang).
+We've not run into a use-case (afaik) where someone _needed_ to decode them.
+
+
+Here's a work around we've thought of for now to implement Monotonic Read 
+Consistency:
+
+1. We'll just add another field in our object to track which client wrote it 
+and a version number (so sort of implementing our own vector clock)
+2. Then we'll just do last write wins (no siblings)
+3. We'll cache our writes and reads
+
+where is this cache? is it local to each actor? If so, sounds like you've just 
+implemented read-your-writes
+
+
+4. If we do a read and it has a vector clock less than what's in our cache, 
+we'll use the one in our cache
+5. If we do a read and it has a vector clock greater than what's in our cache, 
+we'll update our cache and use that latest version
+
+If you know of a way how a client can interpret the vector clock returned by 
+Riak API, then  we don't have to implement our own poor man's vector clock.
+
+Also, what's the timestamp returned as part of the Riak API? Is that the 
+timestamp when the response was created? Or is that the timestamp of the record 
+inside each instance of Riak DB where that data came from -- is that timestamp 
+consistent across all replicas?
+
+The last-modified timestamp should be when the write for that version of the 
+value was recorded.
+
+
+
+________________________________
+From: Reid Draper [reiddra...@gmail.com&lt;<a  rel="nofollow" href="mailto:reiddra...@gmail.com">mailto:reiddra...@gmail.com</a>&gt;]
+Sent: Wednesday, December 12, 2012 11:21 AM
+To: Vergara, Jeaneth Aguilar
+Cc: riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+Subject: Re: Monotonic Read Consistency
+
+If your writes and reads are written with PR+PW &gt; N (note PR/PW and not R/W), 
+then you should get read-your-writes consistency. There is unfortunately a bug 
+with PR/PW [1] that means this is not a 100% guarantee at the moment. I'm 
+hoping for it to be fixed by Riak 1.4, if not earlier. I don't have JavaDoc 
+handy, but setting PR and PW should be the same as setting any other 
+per-request parameter. For an N value of 3 (the default), I'd likely recommend 
+setting PR and PW to 2. You can get around the aforementioned bug by setting 
+PR=PW=N, which will lower your availability, but gaurantee read-your-writes 
+consistency.
+
+Note that read-your-writes is slightly different than just monotonic read 
+consistency, but I'm guessing it's closer to what you had in mind.
+
+[1] <a  rel="nofollow" href="https://github.com/basho/riak_kv/issues/388">https://github.com/basho/riak_kv/issues/388</a>
+
+Reid
+
+
+On Dec 5, 2012, at 11:13 PM, &quot;Vergara, Jeaneth Aguilar&quot; 
+&lt;verga...@illinois.edu&lt;<a  rel="nofollow" href="mailto:verga...@illinois.edu">mailto:verga...@illinois.edu</a>&gt;&gt; wrote:
+
+Hi there,
+
+We're trying to implement monotonic read consistency at the client side using 
+Riak's Java client. We're kind of stumped on how to do vector clock comparison 
+so we can ensure that we're always getting the latest version.
+
+Any tips would be appreciated.
+
+Thanks,
+Jing
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09572.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09583">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09583">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09585.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09446.html">Monotonic Read Consistency</a></span> <span class="sender italic">Vergara, Jeaneth Aguilar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09560.html">Re: Monotonic Read Consistency</a></span> <span class="sender italic">Reid Draper</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09565.html">RE: Monotonic Read Consistency</a></span> <span class="sender italic">Vergara, Jeaneth Aguilar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09566.html">Re: Monotonic Read Consistency</a></span> <span class="sender italic">Reid Draper</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09569.html">RE: Monotonic Read Consistency</a></span> <span class="sender italic">Vergara, Jeaneth Aguilar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09572.html">Re: Monotonic Read Consiste...</a></span> <span class="sender italic">Reid Draper</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Monotonic Read Cons...</span> <span class="sender italic">Vergara, Jeaneth Aguilar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg09585.html">Re: Monotonic Read ...</a></span> <span class="sender italic">Eric Redmond</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Monotonic Read Consistency">
+<input type="hidden" name="msgid" value="DDB9845AF76AC74C94161889191ED03E14679E72@CITESMBX2.ad.uillinois.edu">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09583.html">
+<input type="submit" value=" Vergara, Jeaneth Aguilar ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Monotonic+Read+Consistency%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09572.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09585.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">DDB9845AF76AC74C94161889191ED03E14679E72@CITESMBX2.ad.uillinois.edu</li>
+</ul>
+</div>
+</body>
+</html>

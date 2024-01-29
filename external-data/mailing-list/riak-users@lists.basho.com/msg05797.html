@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Luwak PUT Content-Range</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05797" id="c">
+<link rel="index" href="maillist.html#05797" id="i">
+<link rel="prev" href="msg05792.html" id="p">
+<link rel="next" href="msg05793.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05797.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Luwak+PUT+Content%5C-Range%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Luwak PUT Content-Range</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22John+Axel+Eriksson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">John Axel Eriksson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111130" rel="nofollow">Wed, 30 Nov 2011 00:52:11 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Well, I don't know what I'm doing wrong here but I'm mainly using ruby.
+Excon (which Ripple uses) doesn't seem to have a way to pass an IO to a put
+request (am I missing something?).</pre><pre>
+
+I've also tried NetHTTP in ruby which is actually supposed to be able to do
+that and I've tried Javas HttpURLConnection in JRuby (I'm really not a Java
+expert). None of them works unfortunately:
+
+# I tried this
+
+require 'net/http'
+
+## this doesn't work and doesn't store all the data
+path= &quot;/path/to/file/here&quot; ## 88 MB file
+key = &quot;large_file&quot;
+uri = URI(&quot;<a  rel="nofollow" href="http://127.0.0.1:8098&quot">http://127.0.0.1:8098&quot</a>;)
+req = Net::HTTP::Put.new(&quot;/luwak/#{key}&quot;)
+req.body_stream = File.open(path)
+req.content_type = &quot;video/mp4&quot;
+req.add_field 'Transfer-Encoding', 'chunked'
+res = Net::HTTP.start(uri.host, uri.port) do |http|
+  http.request(req)
+end
+
+# And this - in this case riak started thrashing like crazy until
+# I just killed it (it never stored more than  1 MB of data though)
+path= &quot;/path/to/file/here&quot; ## 88 MB file
+key = &quot;large_file&quot;
+uri = URI(&quot;<a  rel="nofollow" href="http://127.0.0.1:8098&quot">http://127.0.0.1:8098&quot</a>;)
+req = Net::HTTP::Put.new(&quot;/luwak/#{key}&quot;)
+req.body_stream = File.open(path)
+req.content_type = &quot;video/mp4&quot;
+req.content_length = File.size(path)
+req.add_field 'Transfer-Encoding', 'chunked'
+res = Net::HTTP.start(uri.host, uri.port) do |http|
+  http.request(req)
+end
+
+# And in JRuby I tried Javas HttpURLConnection
+
+require 'java'
+
+include_class &quot;java.net.URL&quot;
+include_class &quot;java.io.RandomAccessFile&quot;
+include_class &quot;java.io.FileInputStream&quot;
+include_class &quot;java.net.HttpURLConnection&quot;
+
+CHUNK_LENGTH=1048576
+
+u = URL.new('<a  rel="nofollow" href="http://192.168.1.142:8098/luwak/jruby_large_file_upload">http://192.168.1.142:8098/luwak/jruby_large_file_upload</a>')
+c = u.open_connection
+c.request_method = 'PUT'
+c.fixed_length_streaming_mode=File.size(FILE)
+# c.chunked_streaming_mode = CHUNK_LENGTH  ## also tried this
+c.do_input = true
+c.do_output = true
+output_stream = c.output_stream
+error_stream = c.error_stream
+random_access_file = RandomAccessFile.new(FILE, 'r')
+bytes_read = 0
+buffer = Java::byte[CHUNK_LENGTH].new
+begin
+  while(bytes_read &gt;= 0) do
+    bytes_read = random_access_file.read(buffer)
+    puts &quot;bytes_read: #{bytes_read}&quot;
+    if bytes_read&gt;=0
+      ## the second write here gets an Exception - I think it's a 400 from
+riak
+      puts &quot;writing...&quot;
+      output_stream.write(buffer,0,bytes_read)
+      sleep 1
+    end
+  end
+rescue Exception =&gt; e
+  puts &quot;Exception: #{e.message}&quot;
+end
+puts c.response_code rescue nil
+puts c.response_message rescue nil
+random_access_file.close
+output_stream.close
+c.disconnect
+
+
+
+On Tue, Nov 29, 2011 at 10:53 PM, Greg Stein &lt;gst...@gmail.com&gt; wrote:
+
+&gt;
+&gt; On Nov 29, 2011 5:08 AM, &quot;John Axel Eriksson&quot; &lt;j...@insane.se&gt; wrote:
+&gt; &gt;
+&gt; &gt; Is it possible to incrementally add to a file in Luwak using PUT and the
+&gt; Content-Range header. I just assumed that it was but I can't seem to
+&gt; &gt; get the expected results, it just overwrites whatever the key contents
+&gt; were before. The reason I want to do this is because we have some pretty
+&gt; &gt; large files I don't want to load fully into memory before PUTing them.
+&gt;
+&gt; Hmm? You can read from a file and write to the http socket. There is no
+&gt; reason or need to load the entire contents into memory.
+&gt;
+&gt; I don't know what client you're using, but I do know the Python client is
+&gt; broken in this regard. It erroneously loads the full content into memory.
+&gt; But there is nothing from the Riak server that demands such an approach.
+&gt;
+&gt; Cheers,
+&gt; -g
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05792.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05797">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05797">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05793.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05778.html">Luwak PUT Content-Range</a></span> <span class="sender italic">John Axel Eriksson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05781.html">Re: Luwak PUT Content-Range</a></span> <span class="sender italic">Bryan Fink</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05792.html">Re: Luwak PUT Content-Range</a></span> <span class="sender italic">Greg Stein</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Luwak PUT Content-Range</span> <span class="sender italic">John Axel Eriksson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Luwak PUT Content-Range">
+<input type="hidden" name="msgid" value="CAMmJxtJPhupTLc9u3z0Qe+2nfzXRSkPc4Kxia0pwq3i++sY70Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05797.html">
+<input type="submit" value=" John Axel Eriksson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Luwak+PUT+Content%5C-Range%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05792.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05793.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMmJxtJPhupTLc9u3z0Qe+2nfzXRSkPc4Kxia0pwq3i++sY70Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

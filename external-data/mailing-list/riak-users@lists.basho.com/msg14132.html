@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak as log aggregator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14132" id="c">
+<link rel="index" href="maillist.html#14132" id="i">
+<link rel="prev" href="msg14129.html" id="p">
+<link rel="next" href="msg14130.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14132.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+as+log+aggregator%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak as log aggregator</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140425" rel="nofollow">Fri, 25 Apr 2014 03:20:07 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Bryce,
+
+</pre><tt>There is very small chance a sessionID will repeat, let's assume that in 
+</tt><tt>theory it won't happen, that assume, there will be always a single 
+</tt><tt>writer per sessionID and such single writer will always happen to be the 
+</tt><tt>same writer, you want to lock using as locking key the session ID for 
+</tt><tt>two concurrent operations that might happen at the same time:
+</tt><pre style="margin: 0em;"></pre><pre>
+
+1. Add an entry to the sessionID and once it reaches the threshold+1.
+2. Balance the key, meaning, get the last 2000 items and put them at
+   the next sequence and at the current key keep only the last item.
+
+</pre><tt>If it wasn't because of balancing the keys the lock is not needed, and 
+</tt><tt>you don't want to balance while writing, you want add entries ASAP and 
+</tt><tt>them queue a request to redistribute/balance such sessionID.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If I were to give you a Java implementation of an entry, an entry should 
+</tt><tt>have a joda DateTime and a String and use DateTime for the hashcode() 
+</tt><tt>method and both for equals and DateTime for sorting, and instead of a 
+</tt><tt>List, use a sorted set so that unique and order are taken care of 
+</tt><tt>automatically.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>The Session class then will have just equals and hashcode for the 
+</tt><tt>sessionID and have a SortedSet&lt;Entry&gt;
+</tt><pre style="margin: 0em;">
+
+Hope that helps,
+
+Guido.
+
+
+On 25/04/14 00:02, Bryce Verdier wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>Thank you Jason and Guido for the quick responses and for helping me 
+</tt><tt>flesh out this idea.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Jason, Thank you for pointing out how you juggle a similar task, I'll 
+</tt><tt>look into the Set CDRT and hope that its able to get me somewhat close 
+</tt><tt>to what I was hoping for. One concern about your response that worries 
+</tt><tt>me though is this paragraph:
+</tt><pre style="margin: 0em;">
+
+I like sorted JSON, but any data format that produces identical strings
+would work.  If there is a chance of duplicate submissions into Riak,
+you need to ensure the data format always produces identical output to
+allow Riak to recognize and eliminate duplicates.
+
+</pre><tt>Would you mind elaborating on what you mean by that? In theory, this 
+</tt><tt>shouldn't be a problem as the sessionID's are unique (read: a very low 
+</tt><tt>probability of having a duplicate sessionID within a somewhat large 
+</tt><tt>period of time). But I just want to make sure I understand what you're 
+</tt><tt>saying there.
+</tt><pre style="margin: 0em;">
+
+Warm regards,
+Bryce
+
+
+On 04/24/2014 01:13 AM, Guido Medina wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Bryce,
+
+</pre><tt>If each session ID is unique, even with multiple writers is unlikely 
+</tt><tt>for you to be writing to the same key at the same time from two 
+</tt><tt>different writers, that being the case, you could store each event as 
+</tt><tt>a JSON object into a JSON array and when your array reaches a 
+</tt><tt>threshold, say for a sake of an example; 2000, you could move those 
+</tt><tt>entries to another key, so your JSON will look like:
+</tt><pre style="margin: 0em;">
+
+session12345 {
+  next : 10,
+  entries : [
+     ...,...,...
+  ]
+}
+
+session12345-10 {
+  next : 9,
+  entries : [
+     ...,...,...
+  ]
+}
+
+...
+...
+...
+
+session12345-1 {
+  entries : [
+     ...,...,...
+  ]
+}
+
+</pre><tt>The reason while next is decrementing is because entries are sorted 
+</tt><tt>descending by time (newest events 1st) and balanced keys are inserted 
+</tt><tt>in between, so initially you have sesssion12345 and when you get to 
+</tt><tt>2001 events you have session12345 with next pointing to 1 (or 0 base) 
+</tt><tt>and sesssion12345-1, null if that session hasn't been balanced.
+</tt><pre style="margin: 0em;">
+
+I'm using the hyphen as a convention, it can be any separator you want,
+
+Hope that helps,
+
+Guido.
+
+On 24/04/14 04:29, Jason Campbell wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Bryce,
+
+I have code that does something similar to this, and it works well.
+
+In my case, the value is a JSON array, with a JSON object per event.
+
+Siblings are easily resolved by merging the two arrays.
+
+In Riak 2.0, sets using JSON-encoded strings would probably do this
+automatically and more cleanly this manually resolving siblings.
+
+I like sorted JSON, but any data format that produces identical strings
+would work.  If there is a chance of duplicate submissions into Riak,
+you need to ensure the data format always produces identical output to
+allow Riak to recognize and eliminate duplicates.
+
+The other thing I would worry about is how long-lived your sessions are
+and how many events can they generate.  Riak starts having performance
+issues over a few MB and you should probably consider another data
+model at that point (maybe storing references instead of the data
+itself).
+
+Good luck with your project,
+Jason
+
+----- Original Message -----
+From: &quot;Bryce&quot; &lt;bryceverd...@gmail.com&gt;
+To: &quot;riak-users&quot; &lt;riak-users@lists.basho.com&gt;
+Sent: Thursday, 24 April, 2014 1:22:12 PM
+Subject: Riak as log aggregator
+
+Hi All,
+
+I'm interested in using Riak for a log aggregation project. These are
+basically apache logs that I would like to correlate together based on
+their session ID's. These session ID's would make sense as the key, but
+its the &quot;value&quot; part of this that confuses me. There will be multiple
+lines within these logs that have the same session ID, thus I will be
+creating siblings. Now, is there a CRDT that will allow me to combine
+</pre><tt>all of these siblings into a single value or will I need to write my 
+</tt><tt>own
+</tt><tt>solution to do so? Any and all pointers are welcomed. Also, if Riak 
+</tt><tt>is a
+</tt><pre style="margin: 0em;">
+bad fit for this, please let me know.
+
+Warm regard,
+Bryce
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14129.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14132">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14132">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14130.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14126.html">Riak as log aggregator</a></span> <span class="sender italic">Bryce</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14127.html">Re: Riak as log aggregator</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14128.html">Re: Riak as log aggregator</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14129.html">Re: Riak as log aggregator</a></span> <span class="sender italic">Bryce Verdier</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak as log aggregator</span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak as log aggregator">
+<input type="hidden" name="msgid" value="535A3665.5090203@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14132.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+as+log+aggregator%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14129.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14130.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">535A3665.5090203@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

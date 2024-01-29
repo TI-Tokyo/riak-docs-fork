@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Performance Tuning in OmniOS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd4.html#13441" id="c">
+<link rel="index" href="mail4.html#13441" id="i">
+<link rel="prev" href="msg13440.html" id="p">
+<link rel="next" href="msg13450.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13441.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+Tuning+in+OmniOS%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Performance Tuning in OmniOS</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jason+Campbell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jason Campbell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140121" rel="nofollow">Tue, 21 Jan 2014 13:58:22 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>First off, make sure you are comparing apples to apples.  I am assuming the 
+&quot;default&quot; RAID is RAIDZ on ZFS, so make sure the LVM raid is using RAID5 for 
+comparable performance.</pre><pre>
+
+Generally, I wouldn't be using RAIDZ on AWS at all.  The primary issue with 
+RAID5/RAIDZ is that the IO speeds are not only limited to that of a single EBS 
+volume, but that of the slowest EBS volume.  That speed can vary with which 
+host you get assigned to, time of day, contention from other customers, and 
+seemingly the phase of the moon.  I don't think anyone would be surprised if 
+you ran the same test again and got completely different results.  Provisioned 
+IOPS disks will help even out extremely slow disks, but you can still get quite 
+a bit of variance.
+
+I would suggest moving to mirrored disks (RAID1) in both ZFS and Ubuntu.  I'm 
+not sure about LVM, but ZFS will use the mirror to even out reads (writes are 
+harder) which should fix some of the high latency, even on normal EBS volumes.  
+I would suggest 4 disks in a RAID 10 configuration (striping 2 mirrored pairs). 
+ Even better would be a 4-way mirror in ZFS if price isn't much of a concern.  
+This will limit you to the capacity of a single EBS volume, but reads will use 
+the fastest disk of the 4 disks, instead of the slowest.  It also has a nice 
+side effect of being extremely fault tolerant.
+
+The other thing to keep in mind is that ZFS is extremely RAM hungry and read 
+performance drops considerably when it is RAM starved, so I would ensure that 
+Riak doesn't use the last 1 - 1.5 GB of RAM so ZFS can use it for caches.
+
+So in summary:
+ - Test, test and test again on different instances, this will help even out 
+EBS issues.
+ - Use mirrors, not RAID5/RAIDZ
+ - Use dedicated IOPS (at least for testing purposes)
+ - Ensure ZFS has some RAM to play with
+
+Hope this helps,
+Jason Campbell
+
+----- Original Message -----
+From: &quot;Jared Morrow&quot; &lt;ja...@basho.com&gt;
+To: ejh...@gmail.com
+Cc: &quot;riak-users&quot; &lt;riak-users@lists.basho.com&gt;
+Sent: Wednesday, 22 January, 2014 7:51:19 AM
+Subject: Re: Performance Tuning in OmniOS
+
+
+
+Oh I think OmniOS is far from hopeless. The problem you are having is the same 
+problem you'd have if you were on ubuntu and you made a LVM raid on vanilla 
+EBS. EBS is the problem when it comes to predictable write / read speed. People 
+still use it, but not without careful thought and consideration. You can try 
+using provisioned IOPS for EBS, which the m1.large supports, or ask in 
+risk-users what other AWS users have setup. I know we have a lot of customers 
+and OSS users running on AWS, so they are far more knowledgeable about 
+real-world performance than I am. 
+
+
+Good luck, 
+Jared 
+
+
+
+
+
+
+
+
+On Tue, Jan 21, 2014 at 12:05 PM, Hari John Kuriakose &lt; ejh...@gmail.com &gt; 
+wrote: 
+
+
+
+
+I am using the default raid itself. 
+
+Well, if this is the case, I will run the tests again with a different setup as 
+you said, and get back as soon as possible. I would just like to believe that 
+OmniOS is not too hopeless. 
+
+Thank you. 
+
+
+On Jan 21, 2014 11:17 PM, &quot;Jared Morrow&quot; &lt; ja...@basho.com &gt; wrote: 
+
+
+
+What type of RAID did you chose for your spool of 5 volumes? If you chose the 
+default of raidz, you will not be getting much of a performance boost over 
+vanilla EBS, just a big integrity boost. Also, unless you are using provisioned 
+IOPS for EBS, you are starting from an extremely slow base-case, so adding ZFS 
+on top might not help matters much. 
+
+
+If speed is the concern, as a test I'm willing to bet if you do another test 
+run against the two instance storage disks on that m1.large, you will probably 
+beat those 5 EBS volumes pretty easily. 
+
+
+-Jared 
+
+
+
+On Tue, Jan 21, 2014 at 9:22 AM, Hari John Kuriakose &lt; ejh...@gmail.com &gt; 
+wrote: 
+
+
+
+Hello, 
+
+
+I am using standard EBS devices, with a zpool in an instance comprising of five 
+40GB volumes. 
+Each of the Riak instance is of m1.large type. 
+
+
+I have made the following changes in zfs properties: 
+
+
+
+# My reason: the default sst block size for leveldb is 4k. 
+zfs set recordsize=4k tank/riak 
+# My reason: by default, leveldb verifies checksums automatically. 
+zfs set checksum=off tank/riak 
+zfs set atime=off tank/riak 
+zfs set snapdir=visible tank/riak 
+
+
+And I did the following with help from Basho AWS tuning docs: 
+
+
+projadd -c &quot;riak&quot; -K &quot;process.max-file-descriptor=(basic,65536,deny)&quot; user.riak 
+
+bash -c &quot;echo 'set rlim_fd_max=65536' &gt;&gt; /etc/system&quot; 
+
+
+bash -c &quot;echo 'set rlim_fd_cur=65536' &gt;&gt; /etc/system&quot; 
+ndd -set /dev/tcp tcp_conn_req_max_q0 40000 
+
+
+ndd -set /dev/tcp tcp_conn_req_max_q 4000 
+ndd -set /dev/tcp tcp_tstamp_always 0 
+ndd -set /dev/tcp tcp_sack_permitted 2 
+ndd -set /dev/tcp tcp_wscale_always 1 
+ndd -set /dev/tcp tcp_time_wait_interval 60000 
+ndd -set /dev/tcp tcp_keepalive_interval 120000 
+ndd -set /dev/tcp tcp_xmit_hiwat 2097152 
+ndd -set /dev/tcp tcp_recv_hiwat 2097152 
+ndd -set /dev/tcp tcp_max_buf 8388608 
+
+
+Thanks again. 
+
+
+
+
+
+On Tue, Jan 21, 2014 at 9:12 PM, Hector Castro &lt; hec...@basho.com &gt; wrote: 
+
+
+Hello, 
+
+Can you please clarify what type of disk you are using within AWS? 
+EBS, EBS with PIOPS, instance storage? In addition, maybe some details 
+on volume sizes and instance types. 
+
+These details may help someone attempting to answer your question. 
+
+-- 
+Hector 
+
+
+
+
+On Tue, Jan 21, 2014 at 8:11 AM, Hari John Kuriakose &lt; ejh...@gmail.com &gt; 
+wrote: 
+&gt; 
+&gt; I am running LevelDB on ZFS in Solaris (OmniOS specifically) in Amazon AWS. 
+&gt; The iops is very very low. There is no significant progress with tuning too. 
+&gt; 
+&gt; Why I chose ZFS is that since LevelDB requires the node to be stopped before 
+&gt; taking a backup, I needed a filesystem with snapshot ability. And the most 
+&gt; favourable Amazon community AMI seemed to be using OmniOS (fork of Solaris). 
+&gt; Everything is fine, except the performance. 
+&gt; 
+&gt; I did all the AWS tuning proposed by Basho but still Basho Bench gave twice 
+&gt; iops on Ubuntu as compared to OmniOS, under same conditions. Also, I am 
+&gt; using riak-js client library, and its a 5 node Riak cluster with 8GB ram 
+&gt; each. 
+&gt; 
+&gt; Could not yet figure out what is really causing the congestion in OmniOS. 
+&gt; Any pointers will be really helpful. 
+&gt; 
+&gt; Thanks and regards, 
+&gt; Hari John Kuriakose. 
+&gt; 
+&gt; 
+&gt; _______________________________________________ 
+&gt; riak-users mailing list 
+&gt; riak-users@lists.basho.com 
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt; 
+
+
+_______________________________________________ 
+riak-users mailing list 
+riak-users@lists.basho.com 
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13440.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd4.html#13441">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail4.html#13441">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13450.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13421.html">Performance Tuning in OmniOS</a></span> <span class="sender italic">Hari John Kuriakose</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13426.html">Re: Performance Tuning in OmniOS</a></span> <span class="sender italic">Hector Castro</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13427.html">Re: Performance Tuning in OmniOS</a></span> <span class="sender italic">Hari John Kuriakose</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13430.html">Re: Performance Tuning in OmniOS</a></span> <span class="sender italic">Jared Morrow</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13438.html">Re: Performance Tuning in OmniOS</a></span> <span class="sender italic">Tom Santero</span></li>
+<li class="icons-email"><span class="subject"><a href="msg13440.html">Re: Performance Tuning in OmniOS</a></span> <span class="sender italic">Jared Morrow</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Performance Tuning in OmniOS</span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13450.html">Re: Performance Tuning in Om...</a></span> <span class="sender italic">Hari John Kuriakose</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13793.html">Re: Performance Tuning i...</a></span> <span class="sender italic">Hari John Kuriakose</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Performance Tuning in OmniOS">
+<input type="hidden" name="msgid" value="8075005.374.1390341414798.JavaMail.Jason@JasonWin8">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13441.html">
+<input type="submit" value=" Jason Campbell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+Tuning+in+OmniOS%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13440.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13450.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">8075005.374.1390341414798.JavaMail.Jason@JasonWin8</li>
+</ul>
+</div>
+</body>
+</html>

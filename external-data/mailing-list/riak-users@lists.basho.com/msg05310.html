@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: 2i query, weird null results, java pbclient</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05310" id="c">
+<link rel="index" href="maillist.html#05310" id="i">
+<link rel="prev" href="msg05309.html" id="p">
+<link rel="next" href="msg05312.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05310.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+2i+query%2C+weird+null+results%2C+java+pbclient%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: 2i query, weird null results, java pbclient</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Russell+Brown%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Russell Brown</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111025" rel="nofollow">Tue, 25 Oct 2011 11:03:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+On 25 Oct 2011, at 18:48, Alexander Robbins wrote:
+
+&gt; That code snippet isn't working because I've got a RawClient instance and its 
+&gt; mapReduce method wants a MapReduceSpec. I ran into this problem while trying 
+&gt; to use search also. I ended up making a search object and then serializing it 
+&gt; to json and providing it to the MapReduceSpec constructor, then passing the 
+&gt; resulting MapReduceSpec into the mapReduce method on RawClient. Is there a 
+&gt; better way? I considered just using String.format to put the variables into a 
+&gt; handwritten json string and using that to instantiate the MapReduceSpec.
+&gt; 
+&gt; Thanks!
+&gt; Alex
+&gt; 
+&gt; My gross method of making a MapReduceSpec:
+&gt;     final Map&lt;String, Object&gt; mapReduceObject = new HashMap&lt;String, Object&gt;();
+&gt;     final Map&lt;String, Object&gt; inputs = new HashMap&lt;String, Object&gt;();
+&gt;     final List&lt;Map&gt; query = new ArrayList&lt;Map&gt;();
+&gt;     final List&lt;String&gt; searchTerms = new ArrayList&lt;String&gt;();
+&gt;     searchTerms.add(bucket);
+&gt;     searchTerms.add(terms);
+&gt;     inputs.put(&quot;module&quot;, &quot;riak_search&quot;);
+&gt;     inputs.put(&quot;function&quot;, &quot;mapred_search&quot;);
+&gt;     inputs.put(&quot;arg&quot;, searchTerms);
+&gt;     final Map&lt;String,String&gt; reduce = new HashMap&lt;String,String&gt;();
+&gt;     reduce.put(&quot;language&quot;, &quot;erlang&quot;);
+&gt;     reduce.put(&quot;module&quot;, &quot;riak_kv_mapreduce&quot;);
+&gt;     reduce.put(&quot;function&quot;, &quot;reduce_identity&quot;);
+&gt;     final Map&lt;String,Map&lt;String,String&gt;&gt; map1 = new 
+&gt; HashMap&lt;String,Map&lt;String,String&gt;&gt;();
+&gt;     map1.put(&quot;reduce&quot;, reduce);
+&gt;     query.add(map1);
+&gt;     mapReduceObject.put(&quot;inputs&quot;, inputs);
+&gt;     mapReduceObject.put(&quot;query&quot;, query);
+&gt;     final MapReduceSpec spec = new MapReduceSpec(new 
+&gt; Gson().toJson(mapReduceObject));</pre><pre>
+
+OK. So the high-level libraries are there to help, even if you have a 
+RawClient, try this:
+
+        IndexQuery q = new BinValueQuery(BinIndex.named(&quot;docUID&quot;), &quot;mentions&quot;, 
+&quot;5b9d1a6250dbd3e77ff004a12d06958745ee32844ad4aa668001bbe69b5efcf8&quot;);
+        MapReduce mr = new IndexMapReduce(YOUR_RAW_CLIENT_INSTANCE, indexQuery);
+
+        mr.addReducePhase(NamedErlangFunction.REDUCE_IDENTITY, 
+&quot;{reduce_phase_only_1, true}&quot;);
+        MapReduceResult result = mr.execute();  
+        Collection&lt;String[]&gt; r = result.getResult(String[].class);
+
+You can do the same thing with the search map reduce
+
+        MapReduce mr = new SearchMapReduce(YOUR_RAW_CLIENT, &quot;bucket&quot;, &quot;your 
+search query&quot;);
+
+And then use the MapReduce methods to add phases and execute as before.
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05309.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05310">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05310">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05312.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05279.html">2i query, weird null results, java pbclient</a></span> <span class="sender italic">Alexander Robbins</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05280.html">Re: 2i query, weird null results, java pbclient</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05282.html">Re: 2i query, weird null results, java pbclient</a></span> <span class="sender italic">Alexander Robbins</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05283.html">Re: 2i query, weird null results, java pbcl...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05295.html">Re: 2i query, weird null results, java ...</a></span> <span class="sender italic">Alexander Robbins</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05298.html">Re: 2i query, weird null results, ...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05300.html">Re: 2i query, weird null resul...</a></span> <span class="sender italic">Alexander Robbins</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05302.html">Re: 2i query, weird null r...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05308.html">Re: 2i query, weird null r...</a></span> <span class="sender italic">Alexander Robbins</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05309.html">Re: 2i query, weird null r...</a></span> <span class="sender italic">Alexander Robbins</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: 2i query, weird null r...</span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05312.html">Re: 2i query, weird null r...</a></span> <span class="sender italic">Alexander Robbins</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05317.html">Re: 2i query, weird null r...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05318.html">Re: 2i query, weird null r...</a></span> <span class="sender italic">Alexander Robbins</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: 2i query, weird null results, java pbclient">
+<input type="hidden" name="msgid" value="26951AC6-FD8C-4820-8C00-EC4589437F85@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05310.html">
+<input type="submit" value=" Russell Brown ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+2i+query%2C+weird+null+results%2C+java+pbclient%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05309.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05312.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">26951AC6-FD8C-4820-8C00-EC4589437F85@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Question on the symptoms of Ticket 260</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01295" id="c">
+<link rel="index" href="maillist.html#01295" id="i">
+<link rel="prev" href="msg01290.html" id="p">
+<link rel="next" href="msg01296.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01295.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Question+on+the+symptoms+of+Ticket+260%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Question on the symptoms of Ticket 260</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22scott+clasen%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">scott clasen</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101014" rel="nofollow">Thu, 14 Oct 2010 16:04:44 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Dan-
+
+Here is a test case, strangely it passes the first time that is run
+then fails all subsequent runs....running it would require
+scala,scalatest,the riak-java-pb-client and the protobuf jars.</pre><pre>
+
+My guess is that it is vector clock related at this point, but looking
+through the code to the riak-java-pb-client, there is no way to set
+the vector clock when creating a new RiakObject or set a new value on
+a RiakObject retrieved from the server.
+
+
+--SNIP--
+import com.trifork.riak.{RiakClient, RequestMeta, RiakObject}
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.Spec
+
+
+class RiakConsistencyTest extends Spec with ShouldMatchers {
+  describe(&quot;the consistency issue I see&quot;) {
+    it(&quot;is demonstrated by the failure of the following tests&quot;) {
+      val riakClient = new RiakClient(&quot;localhost&quot;);
+      import com.google.protobuf.ByteString._
+      val maps = copyFromUtf8(&quot;Maps&quot;)
+      val key = copyFromUtf8(&quot;key&quot;);
+      val otherkey = copyFromUtf8(&quot;otherkey&quot;)
+      val value = copyFromUtf8(&quot;value&quot;)
+      val x = copyFromUtf8(&quot;x&quot;)
+      val quorum = 0xfffffffd
+      val meta = new RequestMeta().w(quorum).dw(quorum)
+      riakClient.store(new RiakObject(maps, key, otherkey), meta)
+      riakClient.store(new RiakObject(maps, otherkey, value), meta)
+      riakClient.fetch(maps, key, quorum)(0).getValue.toStringUtf8
+should be (otherkey.toStringUtf8)
+      riakClient.fetch(maps, otherkey)(0).getValue.toStringUtf8 should
+be(value.toStringUtf8)
+      riakClient.delete(maps, otherkey)
+      riakClient.store(new RiakObject(maps, key, x), meta)
+      riakClient.fetch(maps, otherkey, quorum).size should be(0)
+      riakClient.fetch(maps, key, quorum)(0).getValue.toStringUtf8
+should be (x.toStringUtf8)  //Fails here
+    }
+  }
+
+}
+
+--SNIP--
+&quot;otherkey&quot; was not equal to &quot;x&quot;
+org.scalatest.TestFailedException: &quot;otherkey&quot; was not equal to &quot;x&quot;
+        at 
+org.scalatest.matchers.Matchers$class.newTestFailedException(Matchers.scala:148)
+        at 
+RiakConsistencyTest.newTestFailedException(RiakConsistencyTest.scala:6)
+        at 
+org.scalatest.matchers.ShouldMatchers$ShouldMethodHelper$.shouldMatcher(ShouldMatchers.scala:871)
+        at 
+org.scalatest.matchers.ShouldMatchers$StringShouldWrapper.should(ShouldMatchers.scala:1081)
+        at 
+RiakConsistencyTest$$anonfun$1$$anonfun$apply$mcV$sp$1.apply$mcV$sp(RiakConsistencyTest.scala:25)
+        at 
+RiakConsistencyTest$$anonfun$1$$anonfun$apply$mcV$sp$1.apply(RiakConsistencyTest.scala:8)
+        at 
+RiakConsistencyTest$$anonfun$1$$anonfun$apply$mcV$sp$1.apply(RiakConsistencyTest.scala:8)
+        at org.scalatest.Spec$$anon$2.apply(Spec.scala:1388)
+
+
+
+On Thu, Oct 14, 2010 at 10:11 AM, Scott Clasen &lt;scott.cla...@gmail.com&gt; wrote:
+&gt; Hi Dan-
+&gt; It is a single client, with no other clients connected to riak.
+&gt; It is really deletes that seem to be missed/lagging, and deletes don't take
+&gt; a vector clock?
+&gt; Pseudocode is something like this...all keys and values are raw bytes
+&gt; wrapped in protobuf bytestring
+&gt; Store(bucket,key,value)
+&gt; Store(bucket,key2,key)
+&gt; Fetch(bucket,key) // properly returns value
+&gt; Delete(bucket,key)
+&gt; Delete(bucket,key2)
+&gt; Fetch(bucket,key) //properly returns null
+&gt; Store(bucket,key,value)
+&gt; Store(bucket,key2,key)
+&gt; Fetch(bucket,key) // properly returns value
+&gt; Delete(bucket,key)
+&gt; Delete(bucket,key2)
+&gt; Fetch(bucket,key) // !!!incorrectly returns value instead of null
+&gt; The correct value is returned if I have breakpoints set that effectively
+&gt; give some wait time between the last delete and fetch.
+&gt;
+&gt; I will code up a simplified test case tonight, maybe it will reveal an error
+&gt; on my side.
+&gt; Thanks
+&gt; Sent from my iPhone
+&gt; On Oct 13, 2010, at 9:21 PM, Dan Reverri &lt;d...@basho.com&gt; wrote:
+&gt;
+&gt; Hi SC,
+&gt; If a single client is writing to a single key with read and write quorums
+&gt; your reads should reflect your writes. Are other clients updating the same
+&gt; key concurrently? Are you updating the values with the correct vclock? Would
+&gt; it be possible to provide a minimal test case that reproduces the issue?
+&gt; Thanks,
+&gt; Dan
+&gt; Daniel Reverri
+&gt; Developer Advocate
+&gt; Basho Technologies, Inc.
+&gt; d...@basho.com
+&gt;
+&gt;
+&gt; On Wed, Oct 13, 2010 at 5:07 PM, scott clasen &lt;scott.cla...@gmail.com&gt;
+&gt; wrote:
+&gt;&gt;
+&gt;&gt; Hi-
+&gt;&gt;
+&gt;&gt;    I am writing a Riak backend for Akka's persistent data structures,
+&gt;&gt; and am running into what looks like behavior similar to what is
+&gt;&gt; mentioned in this ticket.
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="https://issues.basho.com/show_bug.cgi?id=260">https://issues.basho.com/show_bug.cgi?id=260</a>  which says---&gt;
+&gt;&gt;
+&gt;&gt; In cases where objects are rapidly updated and deleted, unpredictable
+&gt;&gt; behavior
+&gt;&gt; seems to occur due to race conditions.  Exposing tombstones to the client
+&gt;&gt; when
+&gt;&gt; allow_mult is true would allow resolution of the conflict that is normally
+&gt;&gt; hidden from the user. This will require the client who is interested in
+&gt;&gt; resolving delete+update conflicts to submit the vclock when performing the
+&gt;&gt; delete.
+&gt;&gt;
+&gt;&gt; This is on a single riak instance 0.13.0, on OS X, installed via 'brew
+&gt;&gt; install riak', w
+&gt;&gt;
+&gt;&gt; The behavior I am seeing is in a single threaded test that rapidly
+&gt;&gt; inserts, updates and deletes the value for a single key in a single
+&gt;&gt; bucket.
+&gt;&gt;
+&gt;&gt; This is using the protobuf interface, via the riak-java-pb-client.
+&gt;&gt; All reads use quorum, and all writes use quorum and durableWrite
+&gt;&gt; quorum as well.
+&gt;&gt;
+&gt;&gt; Running the tests outside the debugger cause test failures because the
+&gt;&gt; reads are not seeing the latest write/delete
+&gt;&gt;
+&gt;&gt; When I run the tests in debug mode, with breakpoints set to watch the
+&gt;&gt; values returned from riak, the tests pass.
+&gt;&gt;
+&gt;&gt; This makes me think there is some race condition like the one
+&gt;&gt; mentioned in ticket 260 occurring. Although it could certainly be user
+&gt;&gt; error  ;).
+&gt;&gt;
+&gt;&gt; Other than the default config, I have tried fiddling with
+&gt;&gt; last_write_wins and allow_multi but no combination of those seem to
+&gt;&gt; help.
+&gt;&gt;
+&gt;&gt; Is there anything I am missing, or any configuration or code that can
+&gt;&gt; give me a consistent view?
+&gt;&gt;
+&gt;&gt; Thanks
+&gt;&gt; SC
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01290.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01295">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01295">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01296.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01278.html">Question on the symptoms of Ticket 260</a></span> <span class="sender italic">scott clasen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01280.html">Re: Question on the symptoms of Ticket 260</a></span> <span class="sender italic">Dan Reverri</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01290.html">Re: Question on the symptoms of Ticket 260</a></span> <span class="sender italic">Scott Clasen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Question on the symptoms of Ticket 260</span> <span class="sender italic">scott clasen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01296.html">Re: Question on the symptoms of Ticket 260</a></span> <span class="sender italic">scott clasen</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Question on the symptoms of Ticket 260">
+<input type="hidden" name="msgid" value="AANLkTinuB16rJjMcajPvFRFCOppK2eyjhVKcFAhzGo=H@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01295.html">
+<input type="submit" value=" scott clasen ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Question+on+the+symptoms+of+Ticket+260%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01290.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01296.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTinuB16rJjMcajPvFRFCOppK2eyjhVKcFAhzGo=H@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

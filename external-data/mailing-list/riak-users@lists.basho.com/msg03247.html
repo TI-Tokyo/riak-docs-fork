@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: C++ Riak client?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd12.html#03247" id="c">
+<link rel="index" href="mail11.html#03247" id="i">
+<link rel="prev" href="msg03246.html" id="p">
+<link rel="next" href="msg03255.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg03247.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+C%5C%2B%5C%2B+Riak+client%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: C++ Riak client?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mike+Oxford%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mike Oxford</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110505" rel="nofollow">Thu, 05 May 2011 15:11:33 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Protobuf does not do inter-message delimiters.  You have to handle that
+aspect yourself.</pre><pre>
+
+In the streambuf, put in the length of your protobuf message (in network
+format), then the stream the message into it.
+On the other end they should extract the length, convert to host format and
+then read the data in and ship to protobuf.
+
+That's the 10,000 foot view.
+
+<a  rel="nofollow" href="http://code.google.com/apis/protocolbuffers/docs/techniques.html">http://code.google.com/apis/protocolbuffers/docs/techniques.html</a>
+
+--snip
+If you want to write multiple messages to a single file or stream, it is up
+to you to keep track of where one message ends and the next begins. The
+Protocol Buffer wire format is not self-delimiting, so protocol buffer
+parsers cannot determine where a message ends on their own. The easiest way
+to solve this problem is to write the size of each message before you write
+the message itself. When you read the messages back in, you read the size,
+then read the bytes into a separate buffer, then parse from that buffer. (If
+you want to avoid copying bytes to a separate buffer, check out the
+CodedInputStream class (in both C++ and Java) which can be told to limit
+reads to a certain number of bytes.)
+
+--end snip
+
+You do have to parse a message in its entirety; there is no incremental
+parsing.  If you have a message which wraps 10,000 messages you'll have to
+load the whole thing in before you can parse.
+
+HTH.
+
+-mox
+
+
+
+
+
+On Thu, May 5, 2011 at 3:02 PM, David Leimbach &lt;leim...@gmail.com&gt; wrote:
+
+&gt; I haven't completely abandoned mine yet either, but I've been finding that
+&gt; some of the  I wanted to use with streambufs aren't going to pan out due to
+&gt; the nature of a socket backed stream and the way protocol buffers expects it
+&gt; to work.  Protocol Buffers expects the stream to be terminated when done
+&gt; receiving a message *THEN* parse it rather than building the parsing in (I
+&gt; think that's what happened anyway... I really need to check my notes I took
+&gt; when I ran into this).  This does appear to make a simple socket fd backed
+&gt; streambuf way to plug into any protocol buffers stream a bit more difficult
+&gt; than I was hoping.
+&gt;
+&gt; Then again, I may just not be overriding a particular member function that
+&gt; I should be either.
+&gt;
+&gt; Might get some time on the weekend to poke at this some more.
+&gt;
+&gt; On the plus side I definitely had some Riak RPC binary protocol bits
+&gt; working.  I was encoding/decoding Ping/Pong just fine (and they don't need
+&gt; any Protocol Buffer anything to work).
+&gt;
+&gt; Dave
+&gt;
+&gt; On Sat, Apr 9, 2011 at 8:47 AM, Sean Cribbs &lt;s...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; I didn't permanently abandon it, but it was much more fiddly than doing
+&gt;&gt; the same thing in pure Ruby.  I have plans to deliver separate &quot;native&quot;
+&gt;&gt; Protocol Buffers libraries for MRI and JRuby (at least) in 1.0 of the Ruby
+&gt;&gt; client.
+&gt;&gt;
+&gt;&gt; Because it's being confused in this conversation, I think it merits
+&gt;&gt; clarification -- the &quot;protocol&quot; that is used to talk to Riak and Google's
+&gt;&gt; Protocol Buffers are NOT the same thing. Riak uses a simple length- and
+&gt;&gt; message-code-prefixed binary protocol, in which the complex messages (ones
+&gt;&gt; that have bodies and not just the message code) are serialized via Google's
+&gt;&gt; Protocol Buffers.  So, while we don't use the RPC facilities in Google's
+&gt;&gt; library, the *serialization format* DOES use Protocol Buffers.
+&gt;&gt;
+&gt;&gt; Sorry for the confusion, we'll work to make that clearer in the wiki.
+&gt;&gt;
+&gt;&gt;  Sean Cribbs &lt;s...@basho.com&gt;
+&gt;&gt; Developer Advocate
+&gt;&gt; Basho Technologies, Inc.
+&gt;&gt; <a  rel="nofollow" href="http://basho.com/">http://basho.com/</a>
+&gt;&gt;
+&gt;&gt; On Apr 8, 2011, at 9:17 PM, Scott Gonyea wrote:
+&gt;&gt;
+&gt;&gt; They are the same and you can actually see me plugging into the C++ code
+&gt;&gt; here:
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="https://github.com/sgonyea/pabst/tree/master/ext">https://github.com/sgonyea/pabst/tree/master/ext</a>
+&gt;&gt;
+&gt;&gt; But as part of an Objective-C library (called ObjFW).  So, the code is
+&gt;&gt; actually an Objective-C++ wrapper around the C++ PB code, that exchanges
+&gt;&gt; messages with Objective-C code (that hooks into Ruby).
+&gt;&gt;
+&gt;&gt; I believe Sean Cribbs has some initial C++-wrapper code in his Ripple
+&gt;&gt; repo...  Though he eventually abandoned it after C++ left him permanently
+&gt;&gt; cross-eyed (I think that's why).
+&gt;&gt;
+&gt;&gt; Scott
+&gt;&gt;
+&gt;&gt; On Apr 8, 2011, at 5:20 PM, Mike Oxford wrote:
+&gt;&gt;
+&gt;&gt; Be careful here..
+&gt;&gt;
+&gt;&gt; I do not thing Riak's &quot;protocol buffers&quot; are the same as Google's protocol
+&gt;&gt; buffers.
+&gt;&gt;  Google's does bit-level packing and some other tricks that Riak does not
+&gt;&gt; do, even though they both use the &quot;.proto&quot; file extension and very very
+&gt;&gt; similar proto semantics.
+&gt;&gt;
+&gt;&gt; That said, if they ARE the same, then you can take the .proto files and
+&gt;&gt; generate C++ classes, and use the secondary library &quot;protobuf-c&quot; to generate
+&gt;&gt; C structs for the wire format.
+&gt;&gt;
+&gt;&gt; -mox
+&gt;&gt;
+&gt;&gt; On Fri, Apr 8, 2011 at 4:43 PM, David Leimbach &lt;leim...@gmail.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Spent a little time poking at this today... Kind of surprised that there
+&gt;&gt;&gt; was no message defined for PingReq or for listing buckets.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I realize these messages really have no usable payload, and just sort of
+&gt;&gt;&gt; have a tag and length, but for completeness it kind of feels like they
+&gt;&gt;&gt; should be there.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Of course I'm not a Protocol Buffers expert in any sense, so I can't say
+&gt;&gt;&gt; whether this is a normal kind of choice or not.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Dave
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Fri, Apr 8, 2011 at 2:49 PM, Scott Gonyea &lt;sc...@aitrus.org&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; If we had this then a C-wrapper would be that much more attainable. So,
+&gt;&gt;&gt;&gt; the author of such a lib would be a superstar in my book :).
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Sent from my iPhone
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; On Apr 8, 2011, at 1:46 PM, David Leimbach &lt;leim...@gmail.com&gt; wrote:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; &gt; I've been writing a bit of code in Haskell to push data to Riak, and
+&gt;&gt;&gt;&gt; the bindings are pretty easy to use (Thanks Brian!), but getting 
+&gt;&gt;&gt;&gt; penetration
+&gt;&gt;&gt;&gt; at my company for Haskell is going to take a little time.
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; As such I'm just wondering if anyone knows of anyone working on a
+&gt;&gt;&gt;&gt; protocol buffers version of a Riak client in C++, or if this is going to be
+&gt;&gt;&gt;&gt; something I'll have to take on.
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; I've found a few generic looking C++ projects that use Boost's
+&gt;&gt;&gt;&gt; asynchronous IO stuff with protocol buffers to make an RPC system, but I'm
+&gt;&gt;&gt;&gt; not sure if any of those are implicitly compatible.
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; Guess I'm just looking for a pointer...
+&gt;&gt;&gt;&gt; &gt;
+&gt;&gt;&gt;&gt; &gt; Dave
+&gt;&gt;&gt;&gt; &gt; _______________________________________________
+&gt;&gt;&gt;&gt; &gt; riak-users mailing list
+&gt;&gt;&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg03246.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd12.html#03247">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail11.html#03247">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg03255.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02951.html">Re: C++ Riak client?</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02952.html">Re: C++ Riak client?</a></span> <span class="sender italic">Les Mikesell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02953.html">Re: C++ Riak client?</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02954.html">Re: C++ Riak client?</a></span> <span class="sender italic">Les Mikesell</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg02955.html">Re: C++ Riak client?</a></span> <span class="sender italic">Mike Oxford</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02956.html">Re: C++ Riak client?</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02961.html">Re: C++ Riak client?</a></span> <span class="sender italic">David Leimbach</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02962.html">Re: C++ Riak client?</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02957.html">Re: C++ Riak client?</a></span> <span class="sender italic">David Leimbach</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg03246.html">Re: C++ Riak client?</a></span> <span class="sender italic">David Leimbach</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: C++ Riak client?</span> <span class="sender italic">Mike Oxford</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03255.html">Re: C++ Riak client?</a></span> <span class="sender italic">David Leimbach</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03256.html">Re: C++ Riak client?</a></span> <span class="sender italic">David Leimbach</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03265.html">Re: C++ Riak client?</a></span> <span class="sender italic">Bryan O'Sullivan</span></li>
+<li class="icons-email"><span class="subject"><a href="msg03267.html">Re: C++ Riak client?</a></span> <span class="sender italic">David Leimbach</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg05316.html">Re: C++ Riak client?</a></span> <span class="sender italic">tack</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: C++ Riak client?">
+<input type="hidden" name="msgid" value="BANLkTinOiDui_pXRBa4bEOBiOtt901edeQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg03247.html">
+<input type="submit" value=" Mike Oxford ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+C%5C%2B%5C%2B+Riak+client%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg03246.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg03255.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BANLkTinOiDui_pXRBa4bEOBiOtt901edeQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Problems Executing Erlang Map Reduce</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#04756" id="c">
+<link rel="index" href="mail2.html#04756" id="i">
+<link rel="prev" href="msg04754.html" id="p">
+<link rel="next" href="msg04758.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04756.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problems+Executing+Erlang+Map+Reduce%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Problems Executing Erlang Map Reduce</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22bill+robertson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">bill robertson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110915" rel="nofollow">Thu, 15 Sep 2011 13:34:48 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I finally found it after looking at the fast track tutorial again.
+
+Mistake #1 -&gt; erlang noob</pre><pre>
+
+    Conn = riakc_pb_socket:start(&quot;127.0.0.1&quot;, 8091)
+
+is wrong, it should be
+
+    {ok, Conn} = ...
+
+And after that I had the port wrong, (8081-3 for the fast track dev db's).
+
+Thanks!
+
+
+On Thu, Sep 15, 2011 at 2:32 PM, bill robertson
+&lt;billrobertso...@gmail.com&gt;wrote:
+
+&gt; I have a 0.14.2 dev database set up from the riak fast track tutorial.
+&gt;
+&gt; I created an Erlang application that creates a new route for webmachine
+&gt; upon startup.
+&gt;
+&gt; configure_webmachine() -&gt;
+&gt;     webmachine_router:add_route(
+&gt;       {[&quot;foo&quot;, bar, '*'], myapp_myresource, []}).
+&gt;
+&gt; I modified vm.args for all three instances to point to the application by
+&gt; adding the following lines.
+&gt;
+&gt; -pa /home/me/my_app/ebin
+&gt; -s my_app
+&gt;
+&gt; I am able to reach the /foo URL from all three instances of Riak
+&gt; (localhost:8091-93). So I assume that every instance also has access to my
+&gt; map-reduce code too.
+&gt;
+&gt; Also included in the application is a module with a test map-reduce query
+&gt; in it. I have a binary encoded Erlang term stored in the database, and I am
+&gt; down to simply trying to just retrieve the one entry and return 'something'
+&gt; from a map function.  (i.e. I've been cutting things out until there is
+&gt; nothing left to cut out), and I am receiving errors.
+&gt;
+&gt; Here is the mapred code.
+&gt;
+&gt;     Conn = riakc_pb_socket:start(&quot;127.0.0.1&quot;, 8091),
+&gt;     A = fun(Value, Key, Arg) -&gt; args(Value, Key, Arg) end,
+&gt;     Result = riakc_pb_socket:mapred(Conn, [{&lt;&lt;&quot;bucket&quot;&gt;&gt;, &lt;&lt;&quot;key&quot;&gt;&gt;}],
+&gt;                                     [{map, {qfun, A}, none, true}]),
+&gt;
+&gt; args(_Value, _Key, _Arg) -&gt;
+&gt;     [args].
+&gt;
+&gt; This code bombs, and then I get the following back from webmachine in the
+&gt; browsers (binary goo elided).
+&gt;
+&gt; Internal Server Error
+&gt; The server encountered an error while processing this request:
+&gt;
+&gt; {error,
+&gt;     {exit,
+&gt;         {{function_clause,
+&gt;              [{gen,call,
+&gt;                   [{ok,&lt;0.268.0&gt;},
+&gt;                    '$gen_call',
+&gt;                    {req,
+&gt;                        {rpbmapredreq,
+&gt;                            &lt;&lt;131,108, ...,106&gt;&gt;,
+&gt;                            &lt;&lt;&quot;application/x-erlang-binary&quot;&gt;&gt;},
+&gt;                        60100,
+&gt;                        {1061003,&lt;0.252.0&gt;}},
+&gt;                    60000]},
+&gt;               {gen_server,call,3},
+&gt;               {riakc_pb_socket,mapred,5},
+&gt;               {myapp_mapred,do_mapred,6},
+&gt;               {myapp_myresource,to_html,2},
+&gt;               {webmachine_resource,resource_call,3},
+&gt;               {webmachine_resource,do,3},
+&gt;               {webmachine_decision_core,resource_call,1}]},
+&gt;          {gen_server,call,
+&gt;              [{ok,&lt;0.268.0&gt;},
+&gt;               {req,
+&gt;                   {rpbmapredreq,
+&gt;                       &lt;&lt;131,108, ...,106&gt;&gt;,
+&gt;                       &lt;&lt;&quot;application/x-erlang-binary&quot;&gt;&gt;},
+&gt;                   60100,
+&gt;                   {1061003,&lt;0.252.0&gt;}},
+&gt;               60000]}},
+&gt;         [{gen_server,call,3},
+&gt;          {riakc_pb_socket,mapred,5},
+&gt;          {myapp_mapred,do_mapred,6},
+&gt;          {myapp_myresource,to_html,2},
+&gt;          {webmachine_resource,resource_call,3},
+&gt;          {webmachine_resource,do,3},
+&gt;          {webmachine_decision_core,resource_call,1},
+&gt;          {webmachine_decision_core,decision,1}]}}
+&gt;
+&gt; sasl-error.log and erlang.log has the same error information as from the
+&gt; browser on the node that I made the request to. I checked the logs of one of
+&gt; the other nodes and found nothing.
+&gt;
+&gt; I must be doing something wrong, but I have no idea what.
+&gt;
+&gt; Any suggestions as to what to do?
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04754.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#04756">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#04756">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04758.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04754.html">Problems Executing Erlang Map Reduce</a></span> <span class="sender italic">bill robertson</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Problems Executing Erlang Map Reduce</span> <span class="sender italic">bill robertson</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Problems Executing Erlang Map Reduce">
+<input type="hidden" name="msgid" value="CANTRYLgJhm=hPaaqJO5NndZ8SsMonUuYi+nu1vFN-x18AknhHA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04756.html">
+<input type="submit" value=" bill robertson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Problems+Executing+Erlang+Map+Reduce%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04754.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04758.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANTRYLgJhm=hPaaqJO5NndZ8SsMonUuYi+nu1vFN-x18AknhHA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

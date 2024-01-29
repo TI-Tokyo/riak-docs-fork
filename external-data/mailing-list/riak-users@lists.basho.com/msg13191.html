@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>2i stopped working on LevelDB with multi backend</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#13191" id="c">
+<link rel="index" href="mail5.html#13191" id="i">
+<link rel="prev" href="msg13185.html" id="p">
+<link rel="next" href="msg13194.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13191.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%222i+stopped+working+on+LevelDB+with+multi+backend%22&amp;o=newest" rel="nofollow"><span itemprop="name">2i stopped working on LevelDB with multi backend</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Chris+Read%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Chris Read</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131210" rel="nofollow">Tue, 10 Dec 2013 09:16:40 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We just rebuilt our test environment (something we do every month) and
+suddenly we get the following error when trying to use 2i:</pre><pre>
+
+{error,{error,{indexes_not_supported,riak_kv_multi_backend}}}
+
+But looking at the properties of the bucket it's set to use leveldb:
+
+# curl -k <a  rel="nofollow" href="https://localhost:8069/riak/eleveldb/">https://localhost:8069/riak/eleveldb/</a> | jq .
+{
+  &quot;props&quot;: {
+    &quot;young_vclock&quot;: 20,
+    &quot;w&quot;: &quot;quorum&quot;,
+    &quot;small_vclock&quot;: 50,
+    &quot;rw&quot;: &quot;quorum&quot;,
+    &quot;r&quot;: &quot;quorum&quot;,
+    &quot;linkfun&quot;: {
+      &quot;fun&quot;: &quot;mapreduce_linkfun&quot;,
+      &quot;mod&quot;: &quot;riak_kv_wm_link_walker&quot;
+    },
+    &quot;last_write_wins&quot;: false,
+    &quot;dw&quot;: &quot;quorum&quot;,
+    &quot;chash_keyfun&quot;: {
+      &quot;fun&quot;: &quot;chash_std_keyfun&quot;,
+      &quot;mod&quot;: &quot;riak_core_util&quot;
+    },
+    &quot;big_vclock&quot;: 50,
+    &quot;basic_quorum&quot;: false,
+    &quot;backend&quot;: &quot;eleveldb_data&quot;,
+    &quot;allow_mult&quot;: false,
+    &quot;n_val&quot;: 3,
+    &quot;name&quot;: &quot;eleveldb&quot;,
+    &quot;notfound_ok&quot;: true,
+    &quot;old_vclock&quot;: 86400,
+    &quot;postcommit&quot;: [],
+    &quot;pr&quot;: 0,
+    &quot;precommit&quot;: [],
+    &quot;pw&quot;: 0
+  }
+}
+
+Here's the relevant app.config snippet:
+
+            {storage_backend, riak_kv_multi_backend},
+            {multi_backend_default, &lt;&lt;&quot;bitcask_data&quot;&gt;&gt;},
+            {multi_backend, [
+              {&lt;&lt;&quot;bitcask_data&quot;&gt;&gt;, riak_kv_bitcask_backend,
+[
+                 {data_root, &quot;/srv/riak/data/bitcask/data&quot;},
+                 %%{io_mode, nif},
+                 {max_file_size, 2147483648}, %% 2G
+                 {merge_window, always},
+                 {frag_merge_trigger, 30},                  %% Merge
+at 30% dead keys
+                 {dead_bytes_merge_trigger, 134217728},     %% Merge
+files that have more than 128MB dead
+                 {frag_threshold, 25},                      %% Files
+that have 25% dead keys will be merged too
+                 {dead_bytes_threshold, 67108864},          %% Include
+files that have 64MB of dead space in merges
+                 {small_file_threshold, 10485760},          %% Files
+smaller than 100MB will not be merged
+                 {log_needs_merge, true},                   %% Log
+when we need to merge...
+                 {sync_strategy, none}
+]
+
+              },
+              {&lt;&lt;&quot;eleveldb_data&quot;&gt;&gt;, riak_kv_eleveldb_backend,
+                [{data_root, &quot;/srv/riak/data/eleveldb/files&quot;},
+                 {write_buffer_size_min, 31457280 }, %% 30 MB in bytes
+                 {write_buffer_size_max, 62914560}, %% 60 MB in bytes
+                 {max_open_files, 20}, %% Maximum number of files open
+at once per partition
+                 {sst_block_size, 4096}, %% 4K blocks
+                 {cache_size, 8388608} %% 8MB default cache size per-partition
+                ]
+
+              }
+            ]},
+
+Anyone have any ideas?
+
+We're using Ubuntu 12.04 with the Basho Riak 1.4.2 .deb. The only
+change to this environment has been to upgrade the kernel from
+3.5.0-26 to 3.8.0-31-generic but I'd be very surprised if that broke
+2i...
+
+Thanks,
+
+Chris
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13185.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#13191">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail5.html#13191">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13194.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="2i stopped working on LevelDB with multi backend">
+<input type="hidden" name="msgid" value="CACahnQb1A=Ak5EMkH+nXQetkW7TTU0j002i28BQ1ryimkehZ4w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13191.html">
+<input type="submit" value=" Chris Read ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%222i+stopped+working+on+LevelDB+with+multi+backend%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13185.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13194.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CACahnQb1A=Ak5EMkH+nXQetkW7TTU0j002i28BQ1ryimkehZ4w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Protobufs & HTTP</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#00098" id="c">
+<link rel="index" href="maillist.html#00098" id="i">
+<link rel="prev" href="msg00097.html" id="p">
+<link rel="next" href="msg00099.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg00098.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Protobufs+%5C%26+HTTP%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Protobufs & HTTP</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20100420" rel="nofollow">Tue, 20 Apr 2010 20:49:47 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Eric,
+
+</pre><tt>For the HTTP interface to work correctly you need to supply a content 
+</tt><tt>type when you do your updated - if you add something like
+</tt><pre style="margin: 0em;"></pre><pre>
+
+    request.content.content_type = 'application/json'
+
+</pre><tt>Then you should be in business.  The python client at 
+</tt><tt><a  rel="nofollow" href="http://bitbucket.org/basho/riak-python-client">http://bitbucket.org/basho/riak-python-client</a> includes support for 
+</tt><tt>protocol buffers now if you'd like to take a look at that.
+</tt><pre style="margin: 0em;">
+
+-- Jon.
+
+On 4/20/10 9:45 PM, Eric Gaumer wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>If I add some data using the protobufs interface, can I retrieve that 
+</tt><tt>data over HTTP? I'm getting an error when I try to GET the id but the 
+</tt><tt>return_body looks proper.
+</tt><pre style="margin: 0em;">
+
+=============================================
+import socket
+from struct import *
+import riakclient_pb2
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect(('127.0.0.1', 8087))
+
+request = riakclient_pb2.RpbPutReq()
+request.bucket = 'test'
+request.key = '1'
+request.content.value = '{&quot;foo&quot;:&quot;bar&quot;}'
+request.return_body = True
+
+data = request.SerializeToString()
+msg_len = len(data)
+
+s.send(pack('!lb%is' % msg_len, msg_len + 1, 11, data))
+
+(length, code) = unpack('!lb', s.recv(5))
+pbm = s.recv(length-1)
+s.close()
+
+resp = riakclient_pb2.RpbPutResp()
+resp.ParseFromString(pbm)
+print 'Return Body:', resp.contents[0].value
+=============================================
+
+egau...@deus:(src)$ python riakclient.py
+Return Body: {&quot;foo&quot;:&quot;bar&quot;}
+
+=============================================
+</pre><tt>egau...@deus:(src)$ curl -v -H &quot;Content-Type: application/json&quot; 
+</tt><tt><a  rel="nofollow" href="http://127.0.0.1:8098/riak/test/1">http://127.0.0.1:8098/riak/test/1</a>
+</tt><pre style="margin: 0em;">
+* About to connect() to 127.0.0.1 port 8098 (#0)
+*   Trying 127.0.0.1... connected
+* Connected to 127.0.0.1 (127.0.0.1) port 8098 (#0)
+&gt; GET /riak/test/1 HTTP/1.1
+</pre><tt>&gt; User-Agent: curl/7.19.4 (universal-apple-darwin10.0) libcurl/7.19.4 
+</tt><tt>OpenSSL/0.9.8l zlib/1.2.3
+</tt><pre style="margin: 0em;">
+&gt; Host: 127.0.0.1:8098 &lt;<a  rel="nofollow" href="http://127.0.0.1:8098">http://127.0.0.1:8098</a>&gt;
+&gt; Accept: */*
+&gt; Content-Type: application/json
+&gt;
+&lt; HTTP/1.1 500 Internal Server Error
+&lt; Server: MochiWeb/1.1 WebMachine/1.6 (eat around the stinger)
+&lt; Date: Wed, 21 Apr 2010 03:41:25 GMT
+&lt; Content-Type: text/html
+&lt; Content-Length: 1430
+&lt;
+</pre><tt>&lt;html&gt;&lt;head&gt;&lt;title&gt;500 Internal Server 
+</tt><tt>Error&lt;/title&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;Internal Server Error&lt;/h1&gt;The server 
+</tt><tt>encountered an error while processing this 
+</tt><tt>request:&lt;br&gt;&lt;pre&gt;[{webmachine_decision_core,'-decision/1-lc$^1/1-1-',
+</tt><pre style="margin: 0em;">
+     [{error,
+          {error,badarg,
+              [{dict,fetch,
+                   [&lt;&lt;&quot;content-type&quot;&gt;&gt;,
+                    {dict,2,16,16,8,80,48,
+                        {[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]},
+                        {{[],[],[],[],[],[],[],[],[],[],
+</pre><tt>                         
+</tt><tt> [[&lt;&lt;&quot;X-Riak-VTag&quot;&gt;&gt;,52,70,122,120,114,66,87,55,51,
+</tt><pre style="margin: 0em;">
+                            105,99,74,114,50,86,89,72,122,101,55,70,82]],
+                          [],[],
+</pre><tt>                         
+</tt><tt> [[&lt;&lt;&quot;X-Riak-Last-Modified&quot;&gt;&gt;|{1271,821233,40580}]],
+</tt><pre style="margin: 0em;">
+                          [],[]}}}]},
+               {riak_kv_wm_raw,content_types_provided,2},
+               {webmachine_resource,resource_call,3},
+               {webmachine_resource,do,3},
+               {webmachine_decision_core,resource_call,1},
+               {webmachine_decision_core,decision,1},
+               {webmachine_decision_core,handle_request,2},
+               {webmachine_mochiweb,loop,1}]}}]},
+ {webmachine_decision_core,decision,1},
+ {webmachine_decision_core,handle_request,2},
+ {webmachine_mochiweb,loop,1},
+ {mochiweb_http,headers,5},
+* Connection #0 to host 127.0.0.1 left intact
+* Closing connection #0
+</pre><tt> {proc_lib,init_p_do_apply,3}]&lt;/pre&gt;&lt;P&gt;&lt;HR&gt;&lt;ADDRESS&gt;mochiweb+webmachine web 
+</tt><tt>server&lt;/ADDRESS&gt;&lt;/body&gt;&lt;/html&gt;
+</tt><pre style="margin: 0em;">
+=================================================
+
+-Eric
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre><tt>   
+</tt></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg00097.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#00098">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#00098">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg00099.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg00097.html">Protobufs &amp; HTTP</a></span> <span class="sender italic">Eric Gaumer</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Protobufs &amp; HTTP</span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg00099.html">Re: Protobufs &amp; HTTP</a></span> <span class="sender italic">Eric Gaumer</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Protobufs &amp; HTTP">
+<input type="hidden" name="msgid" value="4BCE75CF.9000708@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg00098.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Protobufs+%5C%26+HTTP%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg00097.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg00099.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4BCE75CF.9000708@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

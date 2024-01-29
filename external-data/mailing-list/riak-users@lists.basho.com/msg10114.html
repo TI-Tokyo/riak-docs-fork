@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Tune Riak for fast inserts - populate DB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd2.html#10114" id="c">
+<link rel="index" href="mail2.html#10114" id="i">
+<link rel="prev" href="msg10113.html" id="p">
+<link rel="next" href="msg10115.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10114.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Tune+Riak+for+fast+inserts+%5C-+populate+DB%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Tune Riak for fast inserts - populate DB</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130213" rel="nofollow">Wed, 13 Feb 2013 02:41:47 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>Also, which I forgot on my reply, make sure your Riak client is 
+</tt><tt>connected to each node and not only to a single node (cluster config 
+</tt><tt>doesn't work that well, so try haproxy and make sure you are using 
+</tt><tt>protocol buffers)
+</tt><pre style="margin: 0em;">
+
+/HA proxy sample config:/ <a  rel="nofollow" href="https://gist.github.com/gburd/1507077">https://gist.github.com/gburd/1507077</a></pre><pre>
+
+</pre><tt>And a single PB config like this one which will connect HA proxy load 
+</tt><tt>balancer assuming it is running on localhost and it is connected to each 
+</tt><tt>node:
+</tt><pre style="margin: 0em;">
+/
+</pre><tt>final PBClientConfig clientConfig=new 
+</tt><tt>PBClientConfig.Builder().withHost(&quot;127.0.0.1&quot;).withPort(8087).withPoolSize(N).build();/
+</tt><pre style="margin: 0em;">
+
+Guido.
+
+On 13/02/13 10:29, Guido Medina wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><tt>Are you transferring using a single thread? If so, I would recommend 
+</tt><tt>you to use a ThreaPoolExecutor and schedule each write as you, control 
+</tt><tt>the failures (if any) using either an AtomicInteger or a 
+</tt><tt>concurrent/synchronized list where you can track the keys that failed.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>No matter how much you do, a single threaded transfer won't help you 
+</tt><tt>at all. We have done transfers many times and depending on the size of 
+</tt><tt>the DB table, we use single thread or thread pool service. Try 8 
+</tt><tt>threads and see the difference, assuming you have N connections in 
+</tt><tt>your Riak client where N&gt;max thread pool size.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>You might want to remove pw=1 when using multi-threading so Riak 
+</tt><tt>doesn't fallback behind too much (elevel db catch up? whatever that's 
+</tt><tt>called), pw=1 will add more risk than the benefit you gain.
+</tt><pre style="margin: 0em;">
+
+Hope that helps,
+
+Guido.
+
+On 13/02/13 09:44, Bogdan Flueras wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Ok, so I've done something like this:
+</pre><tt>Bucket bucket = client.createBucket(&quot;foo&quot;); // lastWriteWins(true) 
+</tt><tt>doesn't work for Protobuf
+</tt><pre style="margin: 0em;">
+
+when I insert I have:
+bucket.store(someKey, someValue).withoutFetch().pw(1).execute();
+
+</pre><tt>It looks like it's 20% faster than before. Is there something I could 
+</tt><tt>further tweak ?
+</tt><pre style="margin: 0em;">
+
+ing. Bogdan Flueras
+
+
+
+</pre><tt>On Wed, Feb 13, 2013 at 10:19 AM, Bogdan Flueras 
+</tt><tt>&lt;flueras.bog...@gmail.com &lt;<a  rel="nofollow" href="mailto:flueras.bog...@gmail.com">mailto:flueras.bog...@gmail.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    Each thread has it's own bucket instance (pointing to the same
+    location) and I don't re-fetch the bucket per insert.
+    Thank you very much!
+
+    ing. Bogdan Flueras
+
+
+
+    On Wed, Feb 13, 2013 at 10:14 AM, Russell Brown
+    &lt;russell.br...@me.com &lt;<a  rel="nofollow" href="mailto:russell.br...@me.com">mailto:russell.br...@me.com</a>&gt;&gt; wrote:
+
+
+        On 13 Feb 2013, at 08:07, Bogdan Flueras
+        &lt;flueras.bog...@gmail.com &lt;<a  rel="nofollow" href="mailto:flueras.bog...@gmail.com">mailto:flueras.bog...@gmail.com</a>&gt;&gt;
+        wrote:
+
+        &gt; How to set the bucket to last write? Is it in the builder?
+
+        Something like:
+
+            Bucket b =
+        client.createBucket(&quot;my_bucket&quot;).lastWriteWins(true);
+
+        Also, after you've created the bucket, do you use it from all
+        threads? You don't re-fetch the bucket per-insert operation,
+        do you?
+
+        But  the &quot;withoutFecth()&quot; option is probably going to be the
+        biggest performance increase, and safe if you are only doing
+        inserts.
+
+        Cheers
+
+        Russell
+
+        &gt; I'll have a look..
+        &gt; Yes, I use more threads and the bucket is configured to
+        spread the load across all nodes.
+        &gt;
+        &gt; Thanks, I'll have a deeper look into the API and let you
+        know about my results.
+        &gt;
+        &gt; ing. Bogdan Flueras
+        &gt;
+        &gt;
+        &gt;
+        &gt; On Wed, Feb 13, 2013 at 10:02 AM, Russell Brown
+        &lt;russell.br...@me.com &lt;<a  rel="nofollow" href="mailto:russell.br...@me.com">mailto:russell.br...@me.com</a>&gt;&gt; wrote:
+        &gt; Hi,
+        &gt;
+        &gt; On 13 Feb 2013, at 07:37, Bogdan Flueras
+        &lt;flueras.bog...@gmail.com &lt;<a  rel="nofollow" href="mailto:flueras.bog...@gmail.com">mailto:flueras.bog...@gmail.com</a>&gt;&gt;
+        wrote:
+        &gt;
+        &gt; &gt; Hello all,
+        &gt; &gt; I've got a 5 node cluster with Riak 1.2.1, all machines
+        are multicore,
+        &gt; &gt; with min 4GB RAM.
+        &gt; &gt;
+        &gt; &gt; I want to insert something like 50 million records in
+        Riak with the java client (Protobuf used) with default
+        settings.  I've tried also with HTTP protocol and set w = 1
+        but got some problems.
+        &gt; &gt;
+        &gt; &gt; However the process is very slow: it doesn't write more
+        than 6GB/ hour or aprox. 280 KB/second.
+        &gt; &gt; To have all my data filled in, it would take aprox 2 days !!
+        &gt; &gt;
+        &gt; &gt; What can I do to have the data filled into Riak ASAP?
+        &gt; &gt; How should I configure the cluster ? (vm.args/
+        app.config) I don't care so much about consistency at this point.
+        &gt;
+        &gt; If you are certain to be only inserting new data setting
+        your bucket(s) to last write wins will speed things up. Also,
+        are you using multiple threads for the Java client insert?
+        Spreading the load across all five nodes? Are you using the
+        &quot;withoutFetch()&quot; option on the java client?
+        &gt;
+        &gt; Cheers
+        &gt;
+        &gt; Russell
+        &gt;
+        &gt; &gt;
+        &gt; &gt; Thank you,
+        &gt; &gt; ing. Bogdan Flueras
+        &gt; &gt;
+        &gt; &gt; _______________________________________________
+        &gt; &gt; riak-users mailing list
+        &gt; &gt; riak-users@lists.basho.com
+        &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+        &gt; &gt;
+        <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+        &gt;
+        &gt;
+
+
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10113.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd2.html#10114">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail2.html#10114">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10115.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10106.html">Tune Riak for fast inserts - populate DB</a></span> <span class="sender italic">Bogdan Flueras</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10107.html">Re: Tune Riak for fast inserts - populate DB</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10108.html">Re: Tune Riak for fast inserts - populate DB</a></span> <span class="sender italic">Bogdan Flueras</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10109.html">Re: Tune Riak for fast inserts - populate...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10110.html">Re: Tune Riak for fast inserts - popu...</a></span> <span class="sender italic">Bogdan Flueras</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10111.html">Re: Tune Riak for fast inserts -...</a></span> <span class="sender italic">Bogdan Flueras</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10112.html">Re: Tune Riak for fast inser...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10113.html">Re: Tune Riak for fast inser...</a></span> <span class="sender italic">Guido Medina</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Tune Riak for fast i...</span> <span class="sender italic">Guido Medina</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10115.html">Re: Tune Riak for fast i...</a></span> <span class="sender italic">Bogdan Flueras</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg10119.html">Re: Tune Riak for fast inserts - populate DB</a></span> <span class="sender italic">Shuhao</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10121.html">Re: Tune Riak for fast inserts - populate DB</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10123.html">Re: Tune Riak for fast inserts - populate DB</a></span> <span class="sender italic">Bogdan Flueras</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10124.html">Re: Tune Riak for fast inserts - populate DB</a></span> <span class="sender italic">Erik Søe Sørensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg10125.html">Re: Tune Riak for fast inserts - populate...</a></span> <span class="sender italic">Bogdan Flueras</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Tune Riak for fast inserts - populate DB">
+<input type="hidden" name="msgid" value="511B6DAB.5030909@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10114.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Tune+Riak+for+fast+inserts+%5C-+populate+DB%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10113.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10115.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">511B6DAB.5030909@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

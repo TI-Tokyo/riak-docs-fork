@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Is Riak appropriate for website metrics?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#05766" id="c">
+<link rel="index" href="maillist.html#05766" id="i">
+<link rel="prev" href="msg05764.html" id="p">
+<link rel="next" href="msg05801.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg05766.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+Riak+appropriate+for+website+metrics%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Is Riak appropriate for website metrics?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Aphyr%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Aphyr</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20111128" rel="nofollow">Mon, 28 Nov 2011 15:19:00 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Sure.
+
+</pre><tt>To clarify, Riak mapreduce is decent. We store hundreds of millions of 
+</tt><tt>objects without trouble, and mapreduce over hundreds for many requests 
+</tt><tt>with decent (50-500ms) latencies.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>It's just not the best for job over millions of keys; it will take much 
+</tt><tt>longer than a comparable job implemented in, say, Hadoop. It's also 
+</tt><tt>difficult to debug MR in riak--but it's difficult to debug Hadoop as 
+</tt><tt>well. If either *could* work, the answer probably falls down to &quot;do you 
+</tt><tt>have the man-hours and expertise necessary to keep hadoop happy&quot;.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Riak can also collapse in horrible ways when asked to list huge numbers 
+</tt><tt>of keys. Some people say it just gets slow on their large installations. 
+</tt><tt>We've actually seen it hang the cluster altogether. Try it and find out! 
+</tt><tt>Basho understands this and is aiming to address it, but I've heard no 
+</tt><tt>specific timetable or plans. Meanwhile we pull keys out of the 
+</tt><tt>underlying storage directly, and cache them in Redis. That may be a 
+</tt><tt>viable solution for you.
+</tt><pre style="margin: 0em;">
+
+Mecha is something experimental that John Mullerleile is working on.
+
+<a  rel="nofollow" href="http://www.slideshare.net/jmuellerleile/scaling-with-riak-at-showyou">http://www.slideshare.net/jmuellerleile/scaling-with-riak-at-showyou</a>
+
+</pre><tt>Basically, it's a new backend for Riak (if you weren't aware, Riak has 
+</tt><tt>pluggable storage backends). You still read and write to Riak as normal, 
+</tt><tt>but underneath the hood, it stores the data in leveldb (one per 
+</tt><tt>partition per vnode), and *also* indexes specially named fields in a 
+</tt><tt>local solr core on each node. Using the coverage code in Riak 1.0, we 
+</tt><tt>can then issue a solr query to some subset of nodes and receive a 
+</tt><tt>response for all the values stored in Riak. You can filter, count, 
+</tt><tt>facet, etc by text, numbers, multivalued texts, geolocation, etc. I 
+</tt><tt>would describe it as &quot;scary fast&quot;.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Downside is it's also experimental, and glues together a lot of 
+</tt><tt>different technologies. All those moving parts means we haven't had time 
+</tt><tt>to package it up and open-source it yet, but sometime in December or 
+</tt><tt>January we're hoping to focus on polish and release.
+</tt><pre style="margin: 0em;">
+
+--Kyle
+
+On 11/28/2011 02:59 PM, Michael Dungan wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Thank you for getting back to me. It does look like we'll be needing to
+go big, as we're already at 5m new records/month, so just dealing with
+monthly numbers is already beyond the few hundred thousand keys you
+mentioned, unless I'm thinking about this wrong.
+
+I would love to hear more about Mecha if you're willing to share. Feel
+free to contact me off-list.
+
+thanks again,
+
+-mike
+
+
+On 11/28/11 2:24 PM, Aphyr wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+For limited mapreduce (where you know the keys in advance) riak would be
+a fine choice. 500 million keys, n val 3 is readily achievable on
+commodity hardware; say four nodes with 128GB SSDs.
+
+If large-scale mapreduce (more than a few hundred thousand keys) is
+important, or listing keys is critical, you might consider HBase.
+
+If you start hitting latency/write bottlenecks, it may be worth
+accumulating metrics in Redis before flushing them to disk.
+
+At Showyou, we're also building a custom backend called Mecha which
+integrates Riak and SOLR, specifically for this kind of analytics over
+billions of keys. We haven't packaged it for open-source release yet,
+but it might be worth talking about off-list.
+
+--Kyle
+
+On 11/28/2011 02:07 PM, Michael Dungan wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi,
+
+Sorry if this has been asked before - I couldn't find a searchable
+archive of this list.
+
+I was told to ask this list whether or not Riak would be appropriate for
+tracking our site's metrics. We are currently using Redis for this but
+are at the point where we need both clustering and m/r capability, and
+on the surface, Riak looks to fit this bill (we already use Erlang
+elsewhere in our app, so that's an additional plus).
+
+The records are pretty small and can be representated easily in json. An
+example:
+
+{
+&quot;id&quot;: &quot;c4473dc5cfc5da53831d47c4c016d1c7de0a31e4fd94229e47ade569ef011a7b&quot;
+&quot;type&quot;: &quot;Photo::Click&quot;,
+&quot;user_id&quot;: 2640,
+&quot;photo_id&quot;: 255,
+&quot;ip&quot;: &quot;100.101.102.103&quot;,
+&quot;created_at&quot;: &quot;2011/04/08 17:09:40 -0700&quot;
+}
+
+We currently have around 25 million records similar to this one, and are
+adding 4-5 million more each month.
+
+Is Riak appropriate for this use case? Are there any gotchas I need to
+be aware of?
+
+thank you,
+
+-mike
+</pre></blockquote></blockquote><pre style="margin: 0em;">
+
+</pre></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg05764.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#05766">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#05766">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg05801.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg05762.html">Is Riak appropriate for website metrics?</a></span> <span class="sender italic">Michael Dungan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05763.html">Re: Is Riak appropriate for website metrics?</a></span> <span class="sender italic">Aphyr</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg05764.html">Re: Is Riak appropriate for website metrics?</a></span> <span class="sender italic">Michael Dungan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Is Riak appropriate for website metrics...</span> <span class="sender italic">Aphyr</span></li>
+<li class="icons-email"><span class="subject"><a href="msg05801.html">Re: Is Riak appropriate for website metrics...</a></span> <span class="sender italic">Jonathan Langevin</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Is Riak appropriate for website metrics?">
+<input type="hidden" name="msgid" value="4ED416BC.808@aphyr.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg05766.html">
+<input type="submit" value=" Aphyr ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+Riak+appropriate+for+website+metrics%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg05764.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg05801.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4ED416BC.808@aphyr.com</li>
+</ul>
+</div>
+</body>
+</html>

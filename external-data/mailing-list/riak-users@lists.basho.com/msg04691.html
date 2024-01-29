@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Use of binary keys within MapReduce jobs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04691" id="c">
+<link rel="index" href="maillist.html#04691" id="i">
+<link rel="prev" href="msg04690.html" id="p">
+<link rel="next" href="msg04693.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04691.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Use+of+binary+keys+within+MapReduce+jobs%22&amp;o=newest" rel="nofollow"><span itemprop="name">Use of binary keys within MapReduce jobs</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Elias+Levy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Elias Levy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110913" rel="nofollow">Tue, 13 Sep 2011 19:44:40 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I am observing an error while running a MR job that I think is related to my
+attempt as using binary keys.  The error results in a crash. I upgraded to
+1.0.0pre2 in the hope that the better support for binary keys would resolve
+the problem, but it has not.</pre><pre>
+
+The crash and error reports are below.  The MP job in question is a simple
+proof of concept.  It uses a query as input, has a JS inline map function
+that maps each object to 1, and uses the builtin Riak.reduceSum function to
+generate a count of matching objects.
+
+{
+  &quot;timeout&quot;: 600000,
+  &quot;inputs&quot;: {
+    &quot;module&quot; : &quot;riak_search&quot;,
+    &quot;function&quot; : &quot;mapred_search&quot;,
+    &quot;arg&quot; : [ &quot;events&quot;, &quot;data_fnd:foo&quot;]
+  },
+  &quot;query&quot;: [
+    {
+      &quot;map&quot;:
+        {
+          &quot;language&quot;: &quot;javascript&quot;,
+          &quot;source&quot;: &quot;function(obj) { return [1]; }&quot;
+        },
+    },
+    {
+      &quot;reduce&quot;:
+        {
+          &quot;language&quot;: &quot;javascript&quot;,
+          &quot;name&quot;: &quot;Riak.reduceSum&quot;
+        }
+    }
+  ]
+}
+
+As you can see from the error report, the key is binary, while the data is
+encoded in JSON and the char type is 8-bit US ASCII. The JSON is valid JSON.
+   The error claims the problem js_driver, eval_js and that the problem is
+bad encoding.
+
+I am guessing that something is attempting to interpret the binary key as a
+UTF8 string or some such thing, which will generate an error as the keys are
+not valid in the encoding.
+
+Is this what is happening?  And if so, it there any way to use binary keys
+with JS functions?
+
+
+2011-09-14 00:10:58 =CRASH REPORT====
+  crasher:
+    initial call: riak_pipe_vnode_worker:init/1
+    pid: &lt;0.3821.0&gt;
+    registered_name: []
+    exception exit: processing_error
+      in function  gen_fsm:terminate/7
+      in call from proc_lib:init_p_do_apply/3
+    ancestors:
+[&lt;0.202.0&gt;,&lt;0.201.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.91.0&gt;]
+    messages: []
+    links: [&lt;0.201.0&gt;,&lt;0.202.0&gt;]
+    dictionary:
+[{eunit,[{module,riak_pipe_vnode_worker},{partition,68507889249886074290797726533575766546371837952},{&lt;0.201.0&gt;,&lt;0.201.0&gt;},{details,{fitting_details,{fitting,&lt;0.3715.0&gt;,#Ref&lt;0.0.0.65882&gt;,follow,1},{xform_map,0},riak_kv_mrc_map,
+{{jsanon,&lt;&lt;&quot;function(obj) { return [1];
+}&quot;&gt;&gt;},none},{fitting,&lt;0.3714.0&gt;,#Ref&lt;0.0.0.65882&gt;,#Fun&lt;riak_kv_mrc_pipe.2.111096700&gt;,1},[{sink,{fitting,&lt;0.110.0&gt;,#Ref&lt;0.0.0.65882&gt;,sink,undefined}},{log,sink},{trace,{set,1,16,16,8,80,48,{[],[],[],[],[]
+,[],[],[],[],[],[],[],[],[],[],[]},{{[],[],[error],[],[],[],[],[],[],[],[],[],[],[],[],[]}}}}],64}}]}]
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 24
+    reductions: 2002
+  neighbours:
+2011-09-14 00:10:58 =SUPERVISOR REPORT====
+     Supervisor: {&lt;0.202.0&gt;,riak_pipe_vnode_worker_sup}
+     Context:    child_terminated
+     Reason:     processing_error
+     Offender:
+[{pid,&lt;0.3821.0&gt;},{name,undefined},{mfargs,{riak_pipe_vnode_worker,start_link,undefined}},{restart_type,temporary},{shutdown,2000},{child_type,worker}]
+
+2011-09-14 00:10:58 =SUPERVISOR REPORT====
+     Supervisor: {local,riak_kv_js_sup}
+     Context:    child_terminated
+     Reason:
+{function_clause,[{js_driver,eval_js,[#Port&lt;0.7099&gt;,{error,bad_encoding},5000]},{riak_kv_js_vm,invoke_js,2},{riak_kv_js_vm,define_invoke_anon_js,3},{riak_kv_js_vm,handle_call,3},{gen_server,handle_msg,5},{proc_lib,init_p_do_ap
+ply,3}]}
+     Offender:
+[{pid,&lt;0.3812.0&gt;},{name,undefined},{mfargs,{riak_kv_js_vm,start_link,undefined}},{restart_type,temporary},{shutdown,2000},{child_type,worker}]
+
+2011-09-14 00:10:58 =ERROR REPORT====
+** Generic server &lt;0.3822.0&gt; terminating
+** Last message in was
+{dispatch,{&lt;0.3822.0&gt;,#Ref&lt;0.0.0.67797&gt;},{{jsanon,&lt;&lt;&quot;function(obj) { return
+[1]; }&quot;&gt;&gt;},[{struct,[{&lt;&lt;&quot;bucket&quot;&gt;&gt;,&lt;&lt;&quot;events&quot;&gt;&gt;},{
+&lt;&lt;&quot;key&quot;&gt;&gt;,&lt;&lt;&quot;ND&quot;[132,133,109,165,135,33,59,119,71,77,148,101,73,183,107,167,50,239,3,185]&gt;&gt;}
+,{
+&lt;&lt;&quot;vclock&quot;&gt;&gt;,&lt;&lt;&quot;a85hYGBgzmDKBVIsjMej2jOYEhnzWBnuv3xwnA8qzKwhuhwq3HnnIUyYrTmJVSR1M7JEFgA=&quot;&gt;&gt;},{&lt;&lt;&quot;values&quot;&gt;&gt;,[{struct,[{&lt;&lt;&quot;metadata&quot;&gt;&gt;,{struct,[{&lt;&lt;&quot;X-Riak-VTag&quot;&gt;&gt;,&lt;&lt;&quot;1AO1uqa9gpEdppAdAqMdyA&quot;&gt;&gt;},{
+&lt;&lt;&quot;content-type&quot;&gt;&gt;,&lt;&lt;&quot;application/json&quot;&gt;&gt;},{&lt;&lt;&quot;X-Ri
+ak-Last-Modified&quot;&gt;&gt;,&lt;&lt;&quot;Mon, 12 Sep 2011 01:29:45 GMT&quot;&gt;&gt;},{
+&lt;&lt;&quot;charset&quot;&gt;&gt;,&lt;&lt;&quot;ASCII-8BIT&quot;&gt;&gt;
+}]}},{&lt;&lt;&quot;data&quot;&gt;&gt;,&lt;&lt;&quot;{&quot;id&quot;:953,&quot;tso&quot;:1313113221,&quot;data&quot;:{&quot;fnd&quot;:&quot;foo&quot;}}&quot;&gt;&gt;}]}]}]},{struct,[{&lt;&lt;&quot;data_fnd&quot;&gt;&gt;,&lt;&lt;&quot;foo&quot;&gt;&gt;},{p,[3]},{score,[1.0]}]},none]}}
+** When Server state == {state,&lt;0.253.0&gt;,riak_kv_js_map,#Port&lt;0.7112&gt;,false}
+** Reason for termination ==
+**
+{function_clause,[{js_driver,eval_js,[#Port&lt;0.7112&gt;,{error,bad_encoding},5000]},{riak_kv_js_vm,invoke_js,2},{riak_kv_js_vm,define_invoke_anon_js,3},{riak_kv_js_vm,handle_call,3},{gen_server,handle_msg,5},{proc_lib,init_p_do_apply,3}]}
+2011-09-14 00:10:58 =CRASH REPORT====
+  crasher:
+    initial call: riak_kv_js_vm:init/1
+    pid: &lt;0.3822.0&gt;
+    registered_name: []
+    exception 
+exit:{function_clause,[{js_driver,eval_js,[#Port&lt;0.7112&gt;,{error,bad_encoding},5000]}
+,{riak_kv_js_vm,invoke_js,2},{riak_kv_js_vm,define_invoke_anon_js,3},{riak_kv_js_vm,handle_call,3},{gen_server,handle_msg,5},{proc_lib,init_p_do
+_apply,3}]}
+      in function  gen_server:terminate/6
+      in call from proc_lib:init_p_do_apply/3
+    ancestors: [riak_kv_js_sup,riak_kv_sup,&lt;0.172.0&gt;]
+    messages: []
+    links: [&lt;0.252.0&gt;]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 10946
+    stack_size: 24
+    reductions: 8678
+  neighbours:
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04690.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04691">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04691">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04693.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Use of binary keys within MapReduce jobs">
+<input type="hidden" name="msgid" value="CAFDmHdM6VJU-p_tVrPP4ZsnUSPQ1PrfA7mZZFf8tinsSxTp+XA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04691.html">
+<input type="submit" value=" Elias Levy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Use+of+binary+keys+within+MapReduce+jobs%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04690.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04693.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFDmHdM6VJU-p_tVrPP4ZsnUSPQ1PrfA7mZZFf8tinsSxTp+XA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

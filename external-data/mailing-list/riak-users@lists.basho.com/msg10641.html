@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Reusing Riak cluster as API cluster on Amazon EC2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#10641" id="c">
+<link rel="index" href="maillist.html#10641" id="i">
+<link rel="prev" href="msg10631.html" id="p">
+<link rel="next" href="msg10647.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg10641.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Reusing+Riak+cluster+as+API+cluster+on+Amazon+EC2%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Reusing Riak cluster as API cluster on Amazon EC2</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mark+Phillips%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mark Phillips</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130402" rel="nofollow">Tue, 02 Apr 2013 11:52:55 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Dev,
+
+This approach *should* work, but a few caveats to be aware of before you go
+this route:</pre><pre>
+
+* You're relying on the OS to handle to the CPU/IO task sharing for the two
+different services
+* Related to above: depending on the cluster load/task, you could have
+resource contention that could result in end-user issues
+* You're coupling scaling out the API servers with Riak servers, meaning
+you might need to add more CPU for API server-related tasks but Riak won't
+need this
+* If a AWS VM crashes (this never happens), you're losing both an API
+server and a Riak node.
+
+On a general note, ELB is indeed a finicky beast, and if you can avoid it,
+you'll probably be better off. You might investigate using local haproxy if
+you're of a mind.
+
+So, the best approach might be to set up a test cluster the API +
+Riak approach and test some scenarios. :)
+
+Hope that helps.
+
+Mark
+
+On Sun, Mar 31, 2013 at 8:36 AM, Dev Vasantharajan &lt;d...@sourcebits.com&gt;wrote:
+
+&gt; We are looking to deploy a Riak cluster of 5 machines using the Bitcask
+&gt; backend. We're storing almost all user-specific data in Riak, as well as
+&gt; session data which will be validated on each request.
+&gt;
+&gt; Generally speaking, each API request will result in either 4-5 writes to
+&gt; Riak or 4-5 reads from Riak, and the net read:write ratio on Riak is
+&gt; expected to be around 3:1.
+&gt;
+&gt;
+&gt; We are expecting a small number of users initially (say a few 1000), but
+&gt; all the components (including Riak) have been chosen to allow eventual
+&gt; linear scaling to several more.
+&gt;
+&gt; Given this low initial footprint (which will last for a couple of months
+&gt; at least), we WOULD however like to deploy a small number of machines
+&gt; initially so as to control costs.
+&gt;
+&gt;
+&gt; Given that almost all API calls are so heavily dependent on Riak, the
+&gt; thinking in our little group is to host the API servers (nginx, uwsgi and
+&gt; Python) on the same EC2 instances as the Riak servers. This would (so is
+&gt; the hope) let uwsgi and Riak utilize as many of the cores on Amazon as
+&gt; required, efficiently, and allow the utilization on each individual
+&gt; instance to be maximized, before we scale &quot;out&quot; to additional instances.
+&gt;
+&gt; The older design, was to have both the API cluster and Riak cluster behind
+&gt; their own individual ELBs, and scale both independently, automatically
+&gt; using Amazon's auto-scaling. The API  servers would talk to Riak through
+&gt; the ELB. This would have worked too, but the latency from the API servers
+&gt; to Riak via ELB could have been an issue. When we have both API servers and
+&gt; Riak on the same instances *instead*, the Riak read/write requests would
+&gt; go to &quot;localhost&quot;, with Riak gossip doing the rest of the work, thus
+&gt; cutting out the ELB and its latency completely (from the internal network
+&gt; logic).
+&gt;
+&gt;
+&gt; Overall, this seems like a win-win. We get reasonably low-latency with
+&gt; localhost Riak, we get maximal utilization of Amazon EC2 instances even
+&gt; with few users, and scale out reasonably well when additional users come on
+&gt; board.
+&gt;
+&gt; *BUT, are there any caveats we are ignoring here?* All of this just seems
+&gt; a little good to be true, and I want to make sure we are taking care of as
+&gt; many variables as possible.
+&gt;
+&gt; Thanks!
+&gt;
+&gt;
+&gt; Regards.
+&gt; Dev
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg10631.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#10641">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#10641">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg10647.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg10631.html">Reusing Riak cluster as API cluster on Amazon EC2</a></span> <span class="sender italic">Dev Vasantharajan</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Reusing Riak cluster as API cluster on Amazon E...</span> <span class="sender italic">Mark Phillips</span></li>
+<li class="icons-email"><span class="subject"><a href="msg10647.html">RE: Reusing Riak cluster as API cluster on Amazon E...</a></span> <span class="sender italic">Dev Vasantharajan</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Reusing Riak cluster as API cluster on Amazon EC2">
+<input type="hidden" name="msgid" value="CAE8zJQHgG46zrixeBi_Kyk4ymZZiDSrx+CarZBDOKEJmx4=5QQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg10641.html">
+<input type="submit" value=" Mark Phillips ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Reusing+Riak+cluster+as+API+cluster+on+Amazon+EC2%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg10631.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg10647.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAE8zJQHgG46zrixeBi_Kyk4ymZZiDSrx+CarZBDOKEJmx4=5QQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

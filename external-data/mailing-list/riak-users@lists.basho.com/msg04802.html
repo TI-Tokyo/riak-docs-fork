@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Search precommit hook bug?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04802" id="c">
+<link rel="index" href="maillist.html#04802" id="i">
+<link rel="prev" href="msg04795.html" id="p">
+<link rel="next" href="msg04813.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04802.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Search+precommit+hook+bug%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Search precommit hook bug?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Elias+Levy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Elias Levy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110920" rel="nofollow">Tue, 20 Sep 2011 11:41:52 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Tue, Sep 20, 2011 at 7:53 AM, Ryan Zezeski &lt;rzeze...@basho.com&gt; wrote:</pre><pre>
+
+&gt; Elias,
+&gt;
+&gt; It's hard to say from just this one stacktrace but it seems that the
+&gt; vnode/leveldb backend might be failing under load causing the R value to go
+&gt; unmet.  The Search hook has to perform a read of a special object it stores
+&gt; in the backend and that's what is failing here.  However, the root cause
+&gt; seems to be vnodes failing.  I say this because of the presence of the
+&gt; `{r_val_unsatisfied,2,1}` msg.  Could you check the error and crash log
+&gt; files and see if you can't find other traces that might shed more light on
+&gt; this?
+&gt;
+
+Alas, I upgraded to 1.0.0pre4 and no longer observe the behavior.  Before
+that I verified that the problem also occurred when using Bitcask, so it
+seemed not related to the backend in use.
+
+That said, now I am seeing a different error in 1.0.0pre4. I am using the
+same set up (3 nodes, 1 client with 12 concurrent PB connections spread
+across the nodes, inserting data as fast as it can).
+
+This error is a lot rarer.  I have to insert several hundred or million
+objects before it manifests itself, although I've seen it happen once soon
+after starting the load script.
+
+The error occurs within one of the nodes and causes the node to go into a
+tight loop.  The node will not respond to a &quot;riak stop&quot; command.  I usually
+have to kill the riak processes.
+
+The node loops generating the following error:
+
+2011-09-20 01:06:45.819 [error] &lt;0.107.0&gt;
+{mochiweb_socket_server,310,{acceptor_error,{error,accept_failed}}}
+2011-09-20 01:06:45.820 [error] &lt;0.13978.273&gt; application: mochiweb, &quot;Accept
+failed error&quot;, &quot;{error,emfile}
+
+
+The long preamble of errors leading to the loop can be seen at
+<a  rel="nofollow" href="http://pastebin.com/4Eu2UMYf">http://pastebin.com/4Eu2UMYf</a>
+
+I particularly found the following puzzling:
+
+2011-09-20 00:43:39.144 [error] &lt;0.13420.273&gt; CRASH REPORT Process [] with 0
+neighbours crashed with reason: {error,{badmatch,{error,emfile}}}
+
+Notice that the process list is empty.
+
+Now from what I've been able to find,{error,emfile} usually means you are
+out of file descriptors.  Yes?
+
+If so, the system is running with a fd ulimit of 4096.  Is that not
+considered sufficient?  Again, this is a single client with only 12
+concurrent connections.  I am using the leveldb backend, if that makes a
+difference.
+
+Could there be a fd leak somewhere within Riak? Maybe the new eleveldb
+backend?
+
+Is there some command to show how many file descriptors are in use while the
+node is running?
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04795.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04802">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04802">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04813.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04729.html">Search precommit hook bug?</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04795.html">Re: Search precommit hook bug?</a></span> <span class="sender italic">Ryan Zezeski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Search precommit hook bug?</span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04813.html">Re: Search precommit hook bug?</a></span> <span class="sender italic">David Smith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04815.html">Re: Search precommit hook bug?</a></span> <span class="sender italic">Elias Levy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg04829.html">Re: Search precommit hook bug?</a></span> <span class="sender italic">David Smith</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Search precommit hook bug?">
+<input type="hidden" name="msgid" value="CAFDmHdMXMQOq3_xMSYe12ibYk-79M-hx8mun8z58KesrYL_LbQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04802.html">
+<input type="submit" value=" Elias Levy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Search+precommit+hook+bug%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04795.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04813.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAFDmHdMXMQOq3_xMSYe12ibYk-79M-hx8mun8z58KesrYL_LbQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

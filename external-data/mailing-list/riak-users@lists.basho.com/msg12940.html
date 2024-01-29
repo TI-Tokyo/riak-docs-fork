@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Java Client with POJOs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd7.html#12940" id="c">
+<link rel="index" href="mail7.html#12940" id="i">
+<link rel="prev" href="msg12936.html" id="p">
+<link rel="next" href="msg12944.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg12940.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client+with+POJOs%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Java Client with POJOs</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Brian+Roach%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Roach</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131111" rel="nofollow">Mon, 11 Nov 2013 12:17:40 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Michael -
+
+You have something stored in that bucket that isn't the JSON you're
+expecting when you run your second map/reduce. As I mentioned, there's
+nothing special about how the Java client works; it just serializes
+the POJO instance using Jackson.</pre><pre>
+
+My suggestion would be using curl / your browser (or the Java client)
+and seeing what that is; listing the keys and checking the contents.
+
+I notice you're using the &quot;.withoutFetch()&quot; option when storing;
+that's guaranteed to create a sibling if you have allow_multi=true set
+in the bucket. If that's the case then that behavior is expected; both
+versions are stored in Riak.
+
+Also worth noting is that if you're recently deleted something
+(explicitly via a delete operation) it's very likely to get a
+tombstone pass to map/reduce.  If you're doing explicit deletes from
+Riak you need to check the object metadata for the
+&lt;&lt;&quot;X-Riak-Deleted&quot;&gt;&gt; header being true, and then ignore that object in
+your map function.
+
+- Roach
+
+
+On Mon, Nov 11, 2013 at 12:46 PM, Michael Guymon
+&lt;mich...@tobedevoured.com&gt; wrote:
+&gt; Hi Roach,
+&gt;
+&gt; Thanks for taking a moment to give me a hand with this. Let me try and be a
+&gt; bit more clear on what I am trying to figure out. My first steps are a Class
+&gt; Account:
+&gt;
+&gt; public class Account implements Serializable {
+&gt;     private String email;
+&gt; }
+&gt;
+&gt; Storing the account via
+&gt;
+&gt; myBucket.store(&quot;key&quot;, account).withoutFetch().execute();
+&gt;
+&gt; then retrieving it with a map reduce using JS, along the lines of:
+&gt;
+&gt; var accounts = [];
+&gt; for( i=0; i&lt;values.length;i++) {
+&gt;   if ( values[i].email == 't...@test.net ) {
+&gt;     accounts.push(values[i]);
+&gt;   }
+&gt; }
+&gt; return accounts
+&gt;
+&gt; works as expected.
+&gt;
+&gt; Now I updated the Class Account to have the name property:
+&gt;
+&gt; public class Account implements Serializable {
+&gt;     private String name;
+&gt;     private String email;
+&gt; }
+&gt;
+&gt; and storing with data to the same bucket, for the same key and attempting to
+&gt; Map Reduce for &quot;name&quot; I get a
+&gt;
+&gt; {&quot;phase&quot;:1,&quot;error&quot;:&quot;[{&lt;&lt;\&quot;lineno\&quot;&gt;&gt;,1},{&lt;&lt;\&quot;message\&quot;&gt;&gt;,&lt;&lt;\&quot;TypeError:
+&gt; values[i].name is
+&gt; undefined\&quot;&gt;&gt;},{&lt;&lt;\&quot;source\&quot;&gt;&gt;,&lt;&lt;\&quot;unknown\&quot;&gt;&gt;}]&quot;,&quot;input&quot;:null,&quot;type&quot;:null,&quot;stack&quot;:null}.
+&gt;
+&gt; If I change the bucket to a new one, the Map Reduce runs successfully
+&gt; without the above error.
+&gt;
+&gt; This is Riak 1.4.2 running on Ubuntu 13.04
+&gt;
+&gt; thanks,
+&gt; Michael
+&gt;
+&gt;
+&gt; On 11/11/2013 02:32 PM, Brian Roach wrote:
+&gt;
+&gt; Hi Michael,
+&gt;
+&gt; I'm somewhat confused by your question; map/reduce doesn't really have
+&gt; anything to do with your Java POJO/class.
+&gt;
+&gt; When using the Riak Java client and storing a POJO, the default
+&gt; converter (JSONConverter)  uses the Jackson JSON library and converts
+&gt; the instance of your POJO into a JSON string and stores it in Riak.
+&gt;
+&gt; If you change that POJO class and store more things, the resulting
+&gt; JSON is obviously going to be different (in your case having an
+&gt; additional field named &quot;minty&quot;).
+&gt;
+&gt; When doing Map/Reduce, whatever JavaScript or Erlang functions you
+&gt; provide are executing in Riak and being given the data stored in Riak
+&gt; (the JSON you stored); they have no connection to Java.
+&gt;
+&gt; Can you expand on  &quot;Now the map reduce fails for that the new
+&gt; property&quot; with what exactly the problem is? It sounds like you have a
+&gt; problem with your JavaScript or Erlang function(s).
+&gt;
+&gt; Thanks!
+&gt; - Roach
+&gt;
+&gt;
+&gt; On Mon, Nov 11, 2013 at 12:07 PM, Michael Guymon
+&gt; &lt;mich...@tobedevoured.com&gt; wrote:
+&gt;
+&gt; Hello,
+&gt;
+&gt; I have a (hopefully dumb) question about working with the Java client and
+&gt; POJOs. I justed started tinkering with Riak and have created a simple
+&gt; Account POJO and happily crammed it into a bucket &quot;test1&quot; and mapped reduced
+&gt; it (hooray). The problem starts when I updated the Class for Account, adding
+&gt; a new String property &quot;minty&quot;.  Now the map reduce fails for that the new
+&gt; property in the bucket &quot;test1&quot;. Seems like the POJO is always being
+&gt; serialized  to the format of the older Account class. If I create a new
+&gt; bucket, &quot;test2&quot;, and cram and reduce anew, everything works again.
+&gt;
+&gt; I have been grepping around the docs, but have not been able to zero in on
+&gt; my issue. Am I doing something bone headed? Is it possible to update a
+&gt; bucket to support a modified POJO class?
+&gt;
+&gt; thanks,
+&gt; Michael
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg12936.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd7.html#12940">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail7.html#12940">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg12944.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg12934.html">Java Client with POJOs</a></span> <span class="sender italic">Michael Guymon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12935.html">Re: Java Client with POJOs</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12936.html">Re: Java Client with POJOs</a></span> <span class="sender italic">Michael Guymon</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Java Client with POJOs</span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12944.html">Re: Java Client with POJOs</a></span> <span class="sender italic">Michael Guymon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12946.html">Re: Java Client with POJOs</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12949.html">Re: Java Client with POJOs</a></span> <span class="sender italic">Michael Guymon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg12950.html">Re: Java Client with POJOs</a></span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Java Client with POJOs">
+<input type="hidden" name="msgid" value="CAM+FMBvZ9WHgBivgy7Jb9ox5=6ArNy0DWWJO+E-KkkyAeC_C1w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg12940.html">
+<input type="submit" value=" Brian Roach ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client+with+POJOs%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg12936.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg12944.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAM+FMBvZ9WHgBivgy7Jb9ox5=6ArNy0DWWJO+E-KkkyAeC_C1w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

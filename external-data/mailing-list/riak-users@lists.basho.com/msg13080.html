@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Runaway "Failed to compact" errors</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd6.html#13080" id="c">
+<link rel="index" href="mail6.html#13080" id="i">
+<link rel="prev" href="msg13077.html" id="p">
+<link rel="next" href="msg13081.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg13080.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Runaway+%5C%22Failed+to+compact%5C%22+errors%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Runaway "Failed to compact" errors</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Joe+Caswell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Joe Caswell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20131124" rel="nofollow">Sun, 24 Nov 2013 14:12:42 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Justin,
+
+The terms being stored in merge index are too large. The maximum size for an
+{Index, Field, Term} key is 32k bytes.
+The binary blob in your log entry represents a tuple that was 32952 bytes.
+Since merge index uses a 15-bit integer to store term size, if the
+term_to_binary of the given key is larger than 32767, high bits are lost,
+effectively storing (&lt;large size&gt; mod 32767) bytes.
+When this data is read back, binary_to_term is unable to reconstruct the key
+due the missing bytes, and throws a badarg exception.</pre><pre>
+
+Search index repair is document here:
+<a  rel="nofollow" href="http://docs.basho.com/riak/1.4.0/cookbooks/Repairing-Search-Indexes/">http://docs.basho.com/riak/1.4.0/cookbooks/Repairing-Search-Indexes/</a>
+However,  you would need to first modify your extractor to not produce
+search keys larger than 32k or the corruption issues will recur.
+
+Joe Caswell
+
+
+From:  Richard Shaw &lt;rich...@basho.com&gt;
+Date:  Sunday, November 24, 2013 4:25 PM
+To:  Justin Long &lt;justinl...@outlook.com&gt;
+Cc:  riak-users &lt;riak-users@lists.basho.com&gt;
+Subject:  Re: Runaway &quot;Failed to compact&quot; errors
+
+Ok thanks Justin, please can you change the vm.args on each node with the
+following and then restart each node
+
+-env ERL_MAX_ETS_TABLES 256000
+
+I'd also like you to please confirm the ulimit on each server
+
+$ riak attach
+os:cmd(&quot;ulimit -n&quot;).
+
+If you're running Riak &gt;=1.4 then exit with Ctrl+c then a and if you're
+running 1.3 or older then Ctrl+d to exit
+
+I would recommend upping the ulimit to 65536 if its not already there [0]
+
+[0]<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/tuning/open-files-limit/">http://docs.basho.com/riak/latest/ops/tuning/open-files-limit/</a>
+
+I'm going to need to sign off at this point Justin, I'll see if a colleague
+can take over.
+
+
+Kind regards,
+
+Richard
+
+
+
+On 24 November 2013 21:00, Justin Long &lt;justinl...@outlook.com&gt; wrote:
+&gt; Hi Richard,
+&gt; 
+&gt; Result turned up empty on the failed node. Here¹s what is in vm.args:
+&gt; 
+&gt; ------------------------------------------------------
+&gt; 
+&gt; # Name of the riak node
+&gt; -name riak@192.168.3.3
+&gt; 
+&gt; ## Cookie for distributed erlang.  All nodes in the same cluster
+&gt; ## should use the same cookie or they will not be able to communicate.
+&gt; -setcookie riak
+&gt; 
+&gt; ## Heartbeat management; auto-restarts VM if it dies or becomes unresponsive
+&gt; ## (Disabled by default..use with caution!)
+&gt; ##-heart
+&gt; 
+&gt; ## Enable kernel poll and a few async threads
+&gt; +K true
+&gt; +A 64
+&gt; 
+&gt; ## Treat error_logger warnings as warnings
+&gt; +W w
+&gt; 
+&gt; ## Increase number of concurrent ports/sockets
+&gt; -env ERL_MAX_PORTS 4096
+&gt; 
+&gt; ## Tweak GC to run more often
+&gt; -env ERL_FULLSWEEP_AFTER 0
+&gt; 
+&gt; ## Set the location of crash dumps
+&gt; -env ERL_CRASH_DUMP /var/log/riak/erl_crash.dump
+&gt; 
+&gt; ## Raise the ETS table limit
+&gt; -env ERL_MAX_ETS_TABLES 22000
+&gt; 
+&gt; ------------------------------------------------------
+&gt; 
+&gt; 
+&gt; Before I received your email, I have since isolated the node and force-removed
+&gt; it from the cluster. In the meantime, I brought up a new fresh node and joined
+&gt; it to the cluster. When Riak went to handoff some of the RiakSearch indexes
+&gt; here is what was popping up in console.log:
+&gt; 
+&gt; ------------------------------------------------------
+&gt; 
+&gt; &lt;0.4262.0&gt;@merge_index_backend:async_fold_fun:116 failed to iterate the index
+&gt; with reason 
+&gt; {badarg,[{erlang,binary_to_term,[&lt;&lt;131,104,3,109,0,0,0,25,99,111,108,108,101,9
+&gt; 9,116,111,114,45,99,111,108,108,101,99,116,45,116,119,105,116,116,101,114,109,
+&gt; 0,0,0,14,100,97,116,97,95,102,111,108,108,111,119,101,114,115,109,0,0,128,199,
+&gt; 123,34,105,100,115,34,58,91,49,52,52,55,51,54,54,57,53,48,44,53,48,48,55,53,57
+&gt; ,48,55,44,52,51,56,49,55,53,52,56,53,44,49,51,54,53,49,50,49,52,50,44,52,54,50
+&gt; ,52,52,54,56,51,44,49,48,55,57,56,55,49,50,48,48,44,55,55,48,56,51,54,55,57,44
+&gt; ,50,56,51,56,51,57,55,56,44,49,57,50,48,55,50,55,51,48,44,51,57,54,57,56,56,57
+&gt; ,56,55,44,50,56,48,50,54,51,56,48,52,44,53,57,50,56,56,53,50,51,48,44,49,50,52
+&gt; ,55,53,56,57,53,55,56,44,49,55,51,56,56,51,53,52,50,44,49,53,56,57,54,51,50,50
+&gt; ,50,48,44,53,53,49,51,57,57,51,48,49,44,50,50,48,53,52,55,52,55,55,54,44,49,51
+&gt; ,51,52,57,56,57,56,50,53,44,51,49,50,51,57,53,55,54,50&gt;&gt;],[]},{mi_segment,iter
+&gt; ate_all_bytes,2,[{file,&quot;src/mi_segment.erl&quot;},{line,167}]},{mi_server,'-group_i
+&gt; terator/2-fun-1-',2,[{file,&quot;src/mi_server.erl&quot;},{line,725}]},{mi_server,'-grou
+&gt; p_iterator/2-fun-0-',2,[{file,&quot;src/mi_server.erl&quot;},{line,722}]},{mi_server,ite
+&gt; rate2,5,[{file,&quot;src/mi_server.erl&quot;},{line,693}]}]} and partial acc
+&gt; {{ho_acc,226,ok,#Fun&lt;riak_core_handoff_sender.3.77335415&gt;,riak_search_vnode,&lt;0
+&gt; .4042.0&gt;,#Port&lt;0.754041&gt;,{274031556999544297163190906134303066185487351808,274
+&gt; 031556999544297163190906134303066185487351808},{ho_stats,{1385,326398,498434},
+&gt; undefined,14225,2426123},gen_tcp,50226},{{&lt;&lt;&quot;collector-collect-instagram-cache
+&gt; &quot;&gt;&gt;,{&lt;&lt;&quot;data_follows&quot;&gt;&gt;,&lt;&lt;&quot;who&quot;&gt;&gt;}},[{&lt;&lt;&quot;3700758&quot;&gt;&gt;,[{p,[561]}],13837594294135
+&gt; 36},{&lt;&lt;&quot;368835984&quot;&gt;&gt;,[{p,[297,303]}],1383611963556763},{&lt;&lt;&quot;368835984&quot;&gt;&gt;,[{p,[2
+&gt; 98,304]}],1383756713657753},{&lt;&lt;&quot;31715058&quot;&gt;&gt;,[{p,[325]}],1383611996352193}]},4}
+&gt; 2013-11-24 20:53:17.468 [error]
+&gt; &lt;0.16054.14&gt;@riak_core_handoff_sender:start_fold:215 ownership_handoff
+&gt; transfer of riak_search_vnode from 'riak@192.168.3.2'
+&gt; 274031556999544297163190906134303066185487351808 to 'riak@192.168.3.13'
+&gt; 274031556999544297163190906134303066185487351808 failed because of
+&gt; error:{badmatch,{error,{badarg,[{erlang,binary_to_term,[&lt;&lt;131,104,3,109,0,0,0,
+&gt; 25,99,111,108,108,101,99,116,111,114,45,99,111,108,108,101,99,116,45,116,119,1
+&gt; 05,116,116,101,114,109,0,0,0,14,100,97,116,97,95,102,111,108,108,111,119,101,1
+&gt; 14,115,109,0,0,128,199,123,34,105,100,115,34,58,91,49,52,52,55,51,54,54,57,53,
+&gt; 48,44,53,48,48,55,53,57,48,55,44,52,51,56,49,55,53,52,56,53,44,49,51,54,53,49,
+&gt; 50,49,52,50,44,52,54,50,52,52,54,56,51,44,49,48,55,57,56,55,49,50,48,48,44,55,
+&gt; 55,48,56,51,54,55,57,44,50,56,51,56,51,57,55,56,44,49,57,50,48,55,50,55,51,48,
+&gt; 44,51,57,54,57,56,56,57,56,55,44,50,56,48,50,54,51,56,48,52,44,53,57,50,56,56,
+&gt; 53,50,51,48,44,49,50,52,55,53,56,57,53,55,56,44,49,55,51,56,56,51,53,52,50,44,
+&gt; 49,53,56,57,54,51,50,50,50,48,44,53,53,49,51,57,57,51,48,49,44,50,50,48,53,52,
+&gt; 55,52,55,55,54,44,49,51,51,52,57,56,57,56,50,53,44,51,49,50,51,57,53,55,54,50&gt;
+&gt; &gt;],[]},{mi_segment,iterate_all_bytes,2,[{file,&quot;src/mi_segment.erl&quot;},{line,167}
+&gt; ]},{mi_server,'-group_iterator/2-fun-1-',2,[{file,&quot;src/mi_server.erl&quot;},{line,7
+&gt; 25}]},{mi_server,'-group_iterator/2-fun-0-',2,[{file,&quot;src/mi_server.erl&quot;},{lin
+&gt; e,722}]},{mi_server,iterate2,5,[{file,&quot;src/mi_server.erl&quot;},{line,693}]}]},{{ho
+&gt; _acc,226,ok,#Fun&lt;riak_core_handoff_sender.3.77335415&gt;,riak_search_vnode,&lt;0.404
+&gt; 2.0&gt;,#Port&lt;0.754041&gt;,{274031556999544297163190906134303066185487351808,2740315
+&gt; 56999544297163190906134303066185487351808},{ho_stats,{1385,326398,498434},unde
+&gt; fined,14225,2426123},gen_tcp,50226},{{&lt;&lt;&quot;collector-collect-instagram-cache&quot;&gt;&gt;,
+&gt; {&lt;&lt;&quot;data_follows&quot;&gt;&gt;,&lt;&lt;&quot;who&quot;&gt;&gt;}},[{&lt;&lt;&quot;3700758&quot;&gt;&gt;,[{p,[561]}],1383759429413536},
+&gt; {&lt;&lt;&quot;368835984&quot;&gt;&gt;,[{p,[297,303]}],1383611963556763},{&lt;&lt;&quot;368835984&quot;&gt;&gt;,[{p,[298,3
+&gt; 04]}],1383756713657753},{&lt;&lt;&quot;31715058&quot;&gt;&gt;,[{p,[325]}],1383611996352193}]},4}}}
+&gt; [{riak_core_handoff_sender,start_fold,5,[{file,&quot;src/riak_core_handoff_sender.e
+&gt; rl&quot;},{line,161}]}]
+&gt; 
+&gt; ------------------------------------------------------
+&gt; 
+&gt; I am aware that values that bucket might be larger than most of our other
+&gt; objects. Not sure if that would cause the issues, though. Thanks for your
+&gt; help!
+&gt; 
+&gt; J
+&gt; 
+&gt; 
+&gt; 
+&gt; On Nov 24, 2013, at 12:51 PM, Richard Shaw &lt;rich...@basho.com&gt; wrote:
+&gt; 
+&gt;&gt; Hi Justin,
+&gt;&gt; 
+&gt;&gt; Please can you run this command to look for compaction errors in the leveldb
+&gt;&gt; logs on the node with the crash log entries
+&gt;&gt; 
+&gt;&gt; grep -R &quot;Compaction error&quot; /var/lib/riak/leveldb/*/LOG
+&gt;&gt; 
+&gt;&gt; Where the path matches your path to the leveldb dir
+&gt;&gt; 
+&gt;&gt; Thanks
+&gt;&gt; 
+&gt;&gt; Richard
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On 24 November 2013 10:45, Justin Long &lt;justinl...@outlook.com&gt; wrote:
+&gt;&gt;&gt; Hello everyone,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Our Riak cluster has failed after what seems to be an issue in LevelDB.
+&gt;&gt;&gt; Noticed that a process running a segment compact has started to throw errors
+&gt;&gt;&gt; non-stop. I opened a Stack Overflow question here where you will find a lot
+&gt;&gt;&gt; of log data: 
+&gt;&gt;&gt; <a  rel="nofollow" href="http://stackoverflow.com/questions/20172878/riak-is-throwing-failed-to-compa">http://stackoverflow.com/questions/20172878/riak-is-throwing-failed-to-compa</a>
+&gt;&gt;&gt; ct-like-crazy
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Here is exactly what we're getting in console.log:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 2013-11-24 10:38:46.803 [info]
+&gt;&gt;&gt; &lt;0.19760.0&gt;@riak_core_handoff_receiver:process_message:99 Receiving handoff
+&gt;&gt;&gt; data for partition
+&gt;&gt;&gt; riak_search_vnode:1050454301831586472458898473514828420377701515264
+&gt;&gt;&gt; 2013-11-24 10:38:47.239 [info]
+&gt;&gt;&gt; &lt;0.19760.0&gt;@riak_core_handoff_receiver:handle_info:69 Handoff receiver for
+&gt;&gt;&gt; partition 1050454301831586472458898473514828420377701515264 exited after
+&gt;&gt;&gt; processing 5409 objects
+&gt;&gt;&gt; 2013-11-24 10:38:49.743 [error] emulator Error in process &lt;0.19767.0&gt; on
+&gt;&gt;&gt; node 'riak@192.168.3.3' with exit value:
+&gt;&gt;&gt; {badarg,[{erlang,binary_to_term,[&lt;&lt;260
+&gt;&gt;&gt; bytes&gt;&gt;],[]},{mi_segment,iterate_all_bytes,2,[{file,&quot;src/mi_segment.erl&quot;},{l
+&gt;&gt;&gt; ine,167}]},{mi_server,'-group_iterator/2-fun-0-',2,[{file,&quot;src/mi_server.erl
+&gt;&gt;&gt; &quot;},{line,722}]},{mi_server,'-group_iterator/2-fun-1-'...
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 2013-11-24 10:38:49.743 [error] &lt;0.580.0&gt;@mi_scheduler:worker_loop:141
+&gt;&gt;&gt; Failed to compact &lt;0.11868.0&gt;:
+&gt;&gt;&gt; {badarg,[{erlang,binary_to_term,[&lt;&lt;131,104,3,109,0,0,0,25,99,111,108,108,101
+&gt;&gt;&gt; ,99,116,111,114,45,99,111,108,108,101,99,116,45,116,119,105,116,116,101,114,
+&gt;&gt;&gt; 109,0,0,0,14,100,97,116,97,95,102,111,108,108,111,119,101,114,115,109,0,0,12
+&gt;&gt;&gt; 8,203,123,34,105,100,115,34,58,91,49,54,50,51,53,50,50,50,50,51,44,49,55,51,
+&gt;&gt;&gt; 55,51,52,52,50,44,49,50,56,51,52,52,56,55,51,57,44,51,57,56,56,57,56,50,51,5
+&gt;&gt;&gt; 2,44,49,52,52,55,51,54,54,57,53,48,44,53,48,48,55,53,57,48,55,44,52,51,56,49
+&gt;&gt;&gt; ,55,53,52,56,53,44,49,51,54,53,49,50,49,52,50,44,52,54,50,52,52,54,56,51,44,
+&gt;&gt;&gt; 49,48,55,57,56,55,49,50,48,48,44,55,55,48,56,51,54,55,57,44,50,56,51,56,51,5
+&gt;&gt;&gt; 7,55,56,44,49,57,50,48,55,50,55,51,48,44,51,57,54,57,56,56,57,56,55,44,50,56
+&gt;&gt;&gt; ,48,50,54,51,56,48,52,44,53,57,50,56,56,53,50,51,48,44,49,50,52,55,53,56,57,
+&gt;&gt;&gt; 53,55,56,44,49,55,51,56,56,51,53,52,50,44,49,53,56,57,54,51,50,50,50,48,44,5
+&gt;&gt;&gt; 3,53,49,51&gt;&gt;],[]},{mi_segment,iterate_all_bytes,2,[{file,&quot;src/mi_segment.erl
+&gt;&gt;&gt; &quot;},{line,167}]},{mi_server,'-group_iterator/2-fun-0-',2,[{file,&quot;src/mi_serve
+&gt;&gt;&gt; r.erl&quot;},{line,722}]},{mi_server,'-group_iterator/2-fun-1-',2,[{file,&quot;src/mi_
+&gt;&gt;&gt; server.erl&quot;},{line,725}]},{mi_server,'-group_iterator/2-fun-0-',2,[{file,&quot;sr
+&gt;&gt;&gt; c/mi_server.erl&quot;},{line,722}]},{mi_server,'-group_iterator/2-fun-1-',2,[{fil
+&gt;&gt;&gt; e,&quot;src/mi_server.erl&quot;},{line,725}]},{mi_server,'-group_iterator/2-fun-0-',2,
+&gt;&gt;&gt; [{file,&quot;src/mi_server.erl&quot;},{line,722}]},{mi_segment_writer,from_iterator,4,
+&gt;&gt;&gt; [{file,&quot;src/mi_segment_writer.erl&quot;},{line,110}]}]}
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; The log is just full of them. Thanks for your help! We need to get this
+&gt;&gt;&gt; cluster back up ASAP, appreciated!
+&gt;&gt;&gt; 
+&gt;&gt;&gt; - Justin
+&gt;&gt;&gt; 
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt; 
+&gt;&gt; 
+&gt; 
+
+_______________________________________________ riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg13077.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd6.html#13080">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail6.html#13080">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg13081.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg13075.html">Runaway &quot;Failed to compact&quot; errors</a></span> <span class="sender italic">Justin Long</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13076.html">Re: Runaway &quot;Failed to compact&quot; errors</a></span> <span class="sender italic">Richard Shaw</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13078.html">Re: Runaway &quot;Failed to compact&quot; errors</a></span> <span class="sender italic">Justin Long</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13079.html">Re: Runaway &quot;Failed to compact&quot; errors</a></span> <span class="sender italic">Richard Shaw</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg13077.html">Re: Runaway &quot;Failed to compact&quot; errors</a></span> <span class="sender italic">Richard Shaw</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Runaway &quot;Failed to compact&quot; errors</span> <span class="sender italic">Joe Caswell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13081.html">Re: Runaway &quot;Failed to compact&quot; errors</a></span> <span class="sender italic">Justin Long</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13082.html">Re: Runaway &quot;Failed to compact&quot; errors</a></span> <span class="sender italic">Joe Caswell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13083.html">Re: Runaway &quot;Failed to compact&quot; er...</a></span> <span class="sender italic">Justin Long</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg13084.html">Re: Runaway &quot;Failed to compact&quo...</a></span> <span class="sender italic">Justin Long</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Runaway &quot;Failed to compact&quot; errors">
+<input type="hidden" name="msgid" value="CEB7E3BF.28C3D%jcaswell@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg13080.html">
+<input type="submit" value=" Joe Caswell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Runaway+%5C%22Failed+to+compact%5C%22+errors%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg13077.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg13081.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CEB7E3BF.28C3D%jcaswell@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Generating key for an object</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#02933" id="c">
+<link rel="index" href="maillist.html#02933" id="i">
+<link rel="prev" href="msg02932.html" id="p">
+<link rel="next" href="#" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg02933.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Generating+key+for+an+object%22&amp;o=newest" rel="nofollow"><span itemprop="name">Generating key for an object</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kresten+Krab+Thorup%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kresten Krab Thorup</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110408" rel="nofollow">Fri, 08 Apr 2011 03:58:00 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We just had an enlightening experience, that I'd like to share regarding 
+&quot;choosing keys&quot; ...</pre><pre>
+
+In one of the systems we're currently prototyping, we're moving a searchable 
+audit log to Riak; and we want to size it to handle a sustained throughput of 
+500 writes/second (N=3), keeping the data around for 5 years (thats ~45 billion 
+keys x N=3).  The problem is that with this rate, there is no chance that we 
+can keep all the keys in memory, and so bitcask was not really an option.  
+Well, yes, ... bitcask could handle it with by just adding extra machines, but 
+it is also OK if GETs are relatively slow.
+
+Enter innostore.  As opposed to bitcask, it's slower, but lets you define how 
+much memory to allocate for the in-memory representation of key/values, and 
+lets us put much more data onto our hardware.
+
+We were using 160-bit random keys (easily safe enough to not run into the 
+&quot;birthday problem&quot;), but throughput was not good enough ( fell dramatically to 
+~200/sec on our 4-node macmini dev cluster, when we ran out of memory after 
+only ~10M key/values ).
+
+Innostore uses a B-tree, and we realized that it was really suffering from the 
+random keys, because it then needs to do I/O on random nodes of the B-tree.
+
+So we changed the keys to be    &quot;&lt;&lt;timestamp&gt;&gt;:&lt;&lt;random-bits&gt;&gt;&quot;   i.e., such 
+that successive writes have keys that are lexicographically close.  The random 
+bits are there to make the chance of conflict small enough.   
+
+Using such keys cause the underlying B-tree to only writes to a few nodes at a 
+time, and ideally innostore only needs to keep tree-nodes in memory 
+corresponding to a path from the root of the tree to the node currently being 
+added to.
+
+Now our little play-cluster with 4 mac mini's can handle sustained 2000 
+writes/sec, or 10x throughput of our first setup.  All ... just by choosing 
+some better keys.
+
+Cheers,
+
+Kresten
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg02932.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#02933">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#02933">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright buttondisabled" accesskey="n" href="#">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg02930.html">PBC API: Generating key for an object</a></span> <span class="sender italic">Ishwar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg02931.html">Re: PBC API: Generating key for an object</a></span> <span class="sender italic">Joseph Lambert</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02934.html">Re: PBC API: Generating key for an object</a></span> <span class="sender italic">Andrew Thompson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg02932.html">Re: PBC API: Generating key for an object</a></span> <span class="sender italic">Ishwar</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Generating key for an object</span> <span class="sender italic">Kresten Krab Thorup</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Generating key for an object">
+<input type="hidden" name="msgid" value="926559A1-25C6-48D7-AE47-7BEC5DF6B1AB@trifork.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg02933.html">
+<input type="submit" value=" Kresten Krab Thorup ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Generating+key+for+an+object%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg02932.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="#" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">926559A1-25C6-48D7-AE47-7BEC5DF6B1AB@trifork.com</li>
+</ul>
+</div>
+</body>
+</html>

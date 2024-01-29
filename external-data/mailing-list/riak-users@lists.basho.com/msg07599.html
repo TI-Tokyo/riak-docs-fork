@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Handoff stalled on 1.0.2 riak cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#07599" id="c">
+<link rel="index" href="maillist.html#07599" id="i">
+<link rel="prev" href="msg07598.html" id="p">
+<link rel="next" href="msg07602.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg07599.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Handoff+stalled+on+1.0.2+riak+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Handoff stalled on 1.0.2 riak cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Mark+Phillips%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Mark Phillips</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20120603" rel="nofollow">Sun, 03 Jun 2012 19:43:48 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi John,
+
+Assuming things aren't back to normal... A few things:</pre><pre>
+
+Attach to any running node and run this:
+
+rpc:multicall([node() | nodes()], riak_core_vnode_manager, force_handoffs, []).
+
+This will attempt to force handoff. If this restarts handoff, you've
+got new issue that we'll need to track down. Please report back if
+this gets handoffs running again .
+
+Another possible fix:
+
+Take a look at <a  rel="nofollow" href="https://github.com/basho/riak_core/pull/153">https://github.com/basho/riak_core/pull/153</a>
+
+This was fixed on 1.1, but it might be what's hitting you (though,
+admittedly, your issue does seem like a perfect match for the issue
+from the 1.0.2 release notes).
+
+If this is what's ailing you, there's a work-around here:
+<a  rel="nofollow" href="https://github.com/basho/riak_core/pull/153#issuecomment-4527706">https://github.com/basho/riak_core/pull/153#issuecomment-4527706</a>
+
+If neither of these work, let us know and we'll take a deeper look.
+Specifically:
+
+a) any log files you could send along would be helpful
+b) the output of the following diagnostic:
+
+f(Members).
+Members = riak_core_ring:all_members(element(2,
+riak_core_ring_manager:get_raw_ring())).
+[{N, rpc:call(N, riak_core_handoff_manager, status, [])} || N &lt;- Members].
+
+Thanks, John.
+
+Mark
+
+
+
+On Sun, Jun 3, 2012 at 5:06 AM, John Axel Eriksson &lt;j...@insane.se&gt; wrote:
+
+&gt; Hi.
+&gt;
+&gt; We had an issue where one of the riak servers died (had to be force
+&gt; removed from cluster). After we did that things got really bad and most
+&gt; data was unreachable for hours. I added a new node to replace the old one
+&gt; at one point as well - that never got any data and even now about a day
+&gt; later it hasn't gotten any data.
+&gt; What seems to be the issue now is that there are a few nodes are waiting
+&gt; on handoff of 1 partition. When I look at ring_status I see this:
+&gt;
+&gt; Attempting to restart script through sudo -u riak
+&gt; ================================== Claimant
+&gt; ===================================
+&gt; Claimant:  'riak@r-001.x.x.x
+&gt; Status:     up
+&gt; Ring Ready: true
+&gt;
+&gt; ============================== Ownership Handoff
+&gt; ==============================
+&gt; Owner:      riak@r-004.x.x.x
+&gt; Next Owner: riak@r-003.x.x.x
+&gt;
+&gt; Index: 930565495644285842450002452081070828921550798848
+&gt;   Waiting on: []
+&gt;   Complete:   [riak_kv_vnode,riak_pipe_vnode,riak_search_vnode]
+&gt;
+&gt;
+&gt; -------------------------------------------------------------------------------
+&gt;
+&gt; ============================== Unreachable Nodes
+&gt; ==============================
+&gt; All nodes are up and reachable
+&gt;
+&gt;
+&gt; Ok, so it looks like the problem described in the Release Notes for 1.0.2
+&gt; here <a  rel="nofollow" href="https://github.com/basho/riak/blob/1.0.2-release/RELEASE-NOTES.org">https://github.com/basho/riak/blob/1.0.2-release/RELEASE-NOTES.org</a>.
+&gt; Unfortunately I've run that code (through riak attach) with no result.
+&gt;
+&gt; It's been in this state for 12 hours now I think. What can we do to fix
+&gt; our cluster?
+&gt;
+&gt; I upgraded to 1.0.3 hoping it would fix our problems but that didn't help.
+&gt; I cannot upgrade to 1.1.x because we mainly use Luwak for large object
+&gt; support
+&gt; and that's discontinued in 1.1.x as far as I know.
+&gt;
+&gt; Thanks for your help,
+&gt; John
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg07598.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#07599">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#07599">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg07602.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg07598.html">Handoff stalled on 1.0.2 riak cluster</a></span> <span class="sender italic">John Axel Eriksson</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Handoff stalled on 1.0.2 riak cluster</span> <span class="sender italic">Mark Phillips</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg07602.html">Re: Handoff stalled on 1.0.2 riak cluster</a></span> <span class="sender italic">John Axel Eriksson</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Handoff stalled on 1.0.2 riak cluster">
+<input type="hidden" name="msgid" value="CAE8zJQGcN9ihODpJeP53QumnrGOzj7PoX2L3L4URjmsup4_Lqg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg07599.html">
+<input type="submit" value=" Mark Phillips ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Handoff+stalled+on+1.0.2+riak+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg07598.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg07602.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAE8zJQGcN9ihODpJeP53QumnrGOzj7PoX2L3L4URjmsup4_Lqg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

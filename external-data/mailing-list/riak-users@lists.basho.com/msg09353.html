@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak crashing on startup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#09353" id="c">
+<link rel="index" href="maillist.html#09353" id="i">
+<link rel="prev" href="msg09351.html" id="p">
+<link rel="next" href="msg09352.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg09353.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+crashing+on+startup%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak crashing on startup</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22David+Lowell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">David Lowell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20121120" rel="nofollow">Tue, 20 Nov 2012 10:28:03 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>An update on the investigation and resolution yesterday.
+
+These log messages were similar to those others have reported following a 
+corruption of riak's merge index files. This thread from August was 
+particularly helpful:</pre><pre>
+
+<a  rel="nofollow" href="http://comments.gmane.org/gmane.comp.db.riak.user/8442">http://comments.gmane.org/gmane.comp.db.riak.user/8442</a>
+
+By disabling search on this host, I was able to get riak to start without 
+crashing. This seemed to confirm the theory that corrupted merge index files 
+were behind the instability.
+
+Next I tried to run the recommended steps to repair the search indexes:
+
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/cookbooks/Repairing-Search-Indexes/">http://docs.basho.com/riak/latest/cookbooks/Repairing-Search-Indexes/</a>
+
+These efforts were unsuccessful. Riak needs to be running to apply these fixes, 
+obviously. I could only get riak to stay up with search disabled. And running 
+the commands in this how-to didn't seem to do anything initially, I assumed 
+because search was disabled.
+
+So I went back to the first thread above, and the external script suggested by 
+Ryan Zezeski for detecting corruption in merge index files. Running that script 
+on all 512 merge index partitions on this host showed that 13 of them were 
+corrupted. I moved those 13 directories elsewhere, and started up riak with 
+search enabled. It did not crash this time.
+
+I again ran the above steps to repair the search index, in the hopes of 
+replacing the indexed data that I had moved aside from replicas. With riak 
+running with search enabled, the steps seemed to do something this time--there 
+were records in the logs reporting repair activity. Unfortunately, riak 
+processes started crashing during the repair. So I restarted riak to put it out 
+of its misery, and it came up cleanly. I've decided to live with the loss of 
+index data.
+
+So that's where yesterday's issues ended up. This of course leaves open the 
+question of how these index files got corrupted in the first place. I'm 
+theorizing that the corruption is resulting from the riak weirdness I've 
+reported in other threads, with &quot;Unrecognized message&quot;, various timeouts, and 
+&quot;riak_kv_vnode worker pool crashed&quot; errors.
+
+Dave
+
+--
+Dave Lowell
+d...@connectv.com
+
+On Nov 19, 2012, at 9:49 AM, David Lowell wrote:
+
+&gt; Riak is crashing on startup. This is on the same host on which I've reported 
+&gt; other riak weirdness. I've included representative logs below. Several 
+&gt; hundred similar log messages follow these ones, followed by messages about 
+&gt; riak shutting down.
+&gt; 
+&gt; This process is configured with a file descriptor limit of 100,000. We're 
+&gt; running riak 1.2.1. The host has 32 GB of physical memory. 512 vnodes. 
+&gt; 
+&gt; Any ideas?
+&gt; 
+&gt; Dave
+&gt; 
+&gt; --
+&gt; Dave Lowell
+&gt; d...@connectv.com
+&gt; 
+&gt; 2012-11-19 17:27:07.309 [info] &lt;0.7.0&gt; Application riak_control started on 
+&gt; node 'riak@10.0.3.11'
+&gt; 2012-11-19 17:27:07.310 [info] &lt;0.7.0&gt; Application erlydtl started on node 
+&gt; 'riak@10.0.3.11'
+&gt; 2012-11-19 17:27:07.340 [info] &lt;0.10567.0&gt;@riak_core:wait_for_application:419 
+&gt; Wait complete for application riak_search (0 seconds)
+&gt; 2012-11-19 17:27:15.645 [error] &lt;0.10773.0&gt; CRASH REPORT Process &lt;0.10773.0&gt; 
+&gt; with 0 neighbours exited with reason: bad argument in call to 
+&gt; erlang:binary_to_term(&lt;&lt;131,108,0,0,0,1,104,4,104,3,109,0,0,0,14,99,116,118,95,105,109,103,95,115,101,97,114,99,104,...&gt;&gt;)
+&gt;  in mi_buffer:read_value/2 line 162 in gen_server:init_it/6 line 328
+&gt; 2012-11-19 17:27:15.729 [error] &lt;0.10772.0&gt; CRASH REPORT Process &lt;0.10772.0&gt; 
+&gt; with 0 neighbours exited with reason: no match of right hand value 
+&gt; {error,{badarg,[{erlang,binary_to_term,[&lt;&lt;131,108,0,0,0,1,104,4,104,3,109,0,0,0,14,99,116,118,95,105,109,103,95,115,101,97,114,99,104,109,0,0,0,6,102,111,114,109,97,116,109,0,0,0,4,106,112,101,103,109,0,0,0,34,47,105,109,97,103,101,47,118,50,47,114,101,112,111,47,106,118,98,49,114,53,77,69,117,115,50,102,119,81,46,106,112,101,103,110,7,1,144,25,142,192,207,206,4,108,0,0,0,3,104,2,100,0,1,112,107,0,1,0,104,2,109,0,0,0,7,101,120,112,105,114,101,115,108,0,0,0,1,109,0,0,0,10,57,0,0,0,111,131,...&gt;&gt;],...},...]}}
+&gt;  in merge_index_backend:start/2 line 47 in gen_fsm:init_it/6 line 379
+&gt; 2012-11-19 17:27:15.784 [error] &lt;0.138.0&gt; Supervisor riak_core_vnode_sup had 
+&gt; child undefined started with {riak_core_vnode,start_link,undefined} at 
+&gt; &lt;0.10772.0&gt; exit with reason no match of right hand value 
+&gt; {error,{badarg,[{erlang,binary_to_term,[&lt;&lt;131,108,0,0,0,1,104,4,104,3,109,0,0,0,14,99,116,118,95,105,109,103,95,115,101,97,114,99,104,109,0,0,0,6,102,111,114,109,97,116,109,0,0,0,4,106,112,101,103,109,0,0,0,34,47,105,109,97,103,101,47,118,50,47,114,101,112,111,47,106,118,98,49,114,53,77,69,117,115,50,102,119,81,46,106,112,101,103,110,7,1,144,25,142,192,207,206,4,108,0,0,0,3,104,2,100,0,1,112,107,0,1,0,104,2,109,0,0,0,7,101,120,112,105,114,101,115,108,0,0,0,1,109,0,0,0,10,57,0,0,0,111,131,...&gt;&gt;],...},...]}}
+&gt;  in merge_index_backend:start/2 line 47 in context child_terminated
+&gt; 2012-11-19 17:27:15.843 [error] &lt;0.155.0&gt; gen_server riak_core_vnode_manager 
+&gt; terminated with reason: no match of right hand value 
+&gt; {error,{{badmatch,{error,{badarg,[{erlang,binary_to_term,[&lt;&lt;131,108,0,0,0,1,104,4,104,3,109,0,0,0,14,99,116,118,95,105,109,103,95,115,101,97,114,99,104,109,0,0,0,6,102,111,114,109,97,116,109,0,0,0,4,106,112,101,103,109,0,0,0,34,47,105,109,97,103,101,47,118,50,47,114,101,112,111,47,106,118,98,49,114,53,77,69,117,115,50,102,119,81,46,106,112,101,103,110,7,1,144,25,142,192,207,206,4,108,0,0,0,3,104,2,100,0,1,112,107,0,1,0,104,2,109,0,0,0,7,101,120,112,105,114,101,115,108,0,0,0,1,109,0,0,0,...&gt;&gt;],...},...
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg09351.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#09353">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#09353">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg09352.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg09351.html">riak crashing on startup</a></span> <span class="sender italic">David Lowell</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak crashing on startup</span> <span class="sender italic">David Lowell</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak crashing on startup">
+<input type="hidden" name="msgid" value="4477F9CF-369C-4592-B01F-95870EE17458@go2ctv.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg09353.html">
+<input type="submit" value=" David Lowell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak+crashing+on+startup%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg09351.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg09352.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">4477F9CF-369C-4592-B01F-95870EE17458@go2ctv.com</li>
+</ul>
+</div>
+</body>
+</html>

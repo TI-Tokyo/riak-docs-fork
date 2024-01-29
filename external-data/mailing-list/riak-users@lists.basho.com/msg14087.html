@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Performance slows down with write heavy use</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#14087" id="c">
+<link rel="index" href="maillist.html#14087" id="i">
+<link rel="prev" href="msg14086.html" id="p">
+<link rel="next" href="msg14088.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg14087.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+slows+down+with+write+heavy+use%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Performance slows down with write heavy use</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20140415" rel="nofollow">Tue, 15 Apr 2014 05:43:15 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Jie,
+
+4G ram is small for your ring size and node count.  My first recommendation is 
+that you reduce your ring size to 32 {ring_creation_size, 32}.  Then change the 
+max_open_files setting of eleveldb to 40 {max_open_files, 50} and block_size to 
+32768 {sst_block_size, 32768}.  These three settings should quickly improve 
+performance … but require you start over with your cluster.</pre><pre>
+
+Active Anti-Entropy has a bug in 1.4.7.  You might as well disable it too:  
+{anti_entropy, {off, []}}.  The recommendation is that you upgrade to 1.4.8.
+
+Matthew
+
+
+
+
+On Apr 14, 2014, at 10:10 PM, Jie Lu &lt;lukuil...@gmail.com&gt; wrote:
+
+&gt; 
+&gt; I also have a problem in performance test of Riak Cluster.
+&gt; ~~~~~~~~~~~~
+&gt; Riak version: 1.4.7
+&gt; OS: openSUSE 11.3
+&gt; RAM: 4G
+&gt; ring size is 64
+&gt; backend: leveldb
+&gt; Nodes in cluster: 6 nodes
+&gt; 
+&gt; ~~~~~~~~~~~~~
+&gt; 
+&gt; I write a key/value with value is 1K bytes, and 25 concurrent  threads on one 
+&gt; client nodes. The test result only 20 ops/s performance. 
+&gt; 
+&gt; Is there any performance benchmark to compare with?
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; On Tue, Apr 15, 2014 at 6:26 AM, Luke Bakken &lt;lbak...@basho.com&gt; wrote:
+&gt; Hi Matthew -
+&gt; 
+&gt; Some suggestions:
+&gt; 
+&gt; * Upgrade to Riak 1.4.8
+&gt; 
+&gt; * Test with a ring size of 64
+&gt; 
+&gt; * Use staggered merge windows in your cluster 
+&gt; (<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/">http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/</a>)
+&gt; 
+&gt; * Since you're on dedicated hardware RAID, use the noop scheduler for your 
+&gt; Riak data volumes:
+&gt; 
+&gt; cat /sys/block/sd*/queue/scheduler
+&gt; noop anticipatory deadline [cfq]
+&gt; 
+&gt; * Increase +zdbbl in /etc/riak/vm.args to 96000
+&gt; 
+&gt; Thanks
+&gt; --
+&gt; Luke Bakken
+&gt; CSE
+&gt; lbak...@basho.com
+&gt; 
+&gt; 
+&gt; On Mon, Apr 14, 2014 at 2:33 PM, Matthew MacClary 
+&gt; &lt;maccl...@lifetime.oregonstate.edu&gt; wrote:
+&gt; I have a persistent issue I am trying to diagnose. In our use of Riak we have 
+&gt; multiple data creators writing into a 7 node cluster. The value size is a bit 
+&gt; large at around 2MB. The behavior I am seeing is that if I delete all data 
+&gt; out of bitcask, then test performance I get fast writes. As I keep doing the 
+&gt; same work of writing to the cluster, then the Riak write times will start 
+&gt; tailing off and getting really bad.
+&gt; 
+&gt; Initial write times seen by my application: 0.5 seconds for 100MB worth of 
+&gt; values (~200MB/s)
+&gt; Subsequent write times: 11 seconds for 100MB worth of values (~9MB/s)
+&gt; 
+&gt; This slow down can happen over roughly 20-40 minutes of writing or about 
+&gt; 200GB worth of key/value pairs written.
+&gt; 
+&gt; I can reset the cluster to get fast performance again by stopping Riak and 
+&gt; deleting the bitcask directories, then starting Riak again. This step is not 
+&gt; feasible for production, but during testing at least the write speed goes up 
+&gt; by 20x.
+&gt; 
+&gt; Watching iostat I see that every few seconds the disk io jumps to ~11%. It 
+&gt; doesn't seem that highly loaded from my cursory look. Watching top I see that 
+&gt; beam.smp runs at around 100 for CPU% or less when heavily loaded. I am not 
+&gt; sure how to tell what it is doing though :-)
+&gt; 
+&gt; Thanks for any suggestions!!
+&gt; 
+&gt; -Matt
+&gt; 
+&gt; 
+&gt; 
+&gt; ================
+&gt; System Description
+&gt; 
+&gt; 
+&gt; avg value size = 2MB
+&gt; Riak version = 1.4.1
+&gt; n_val = 2
+&gt; client threads total = 105
+&gt; backend = bitcask
+&gt; ring_creation_size = 128
+&gt; node count = 7
+&gt; node OS = RHEL 6.2
+&gt; server RAM = 128GB
+&gt; RAID = RAID0 across 8 SAS drives
+&gt; FS = ext4
+&gt; FS options = /dev/mapper/vg0-lv0 / ext4 
+&gt; rw,noatime,barrier=0,stripe=512,data=ordered 0 0
+&gt; bitcask size on one server = 133GB
+&gt; AAE = off
+&gt; interface = protobuf
+&gt; client library = riak java client
+&gt; file-max = 65536
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Best Regards.
+&gt; Lu Jie
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Best Regards.
+&gt; Lu Jie
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg14086.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#14087">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#14087">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg14088.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg14083.html">Performance slows down with write heavy use</a></span> <span class="sender italic">Matthew MacClary</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14084.html">Re: Performance slows down with write heavy use</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14085.html">Fwd: Performance slows down with write heav...</a></span> <span class="sender italic">Jie Lu</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14086.html">Re: Performance slows down with write h...</a></span> <span class="sender italic">István</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Performance slows down with write h...</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg14088.html">Re: Performance slows down with wri...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg14095.html">Re: Performance slows down with write heavy...</a></span> <span class="sender italic">Matthew MacClary</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Performance slows down with write heavy use">
+<input type="hidden" name="msgid" value="D9FA8063-465F-4336-A39E-7F9CF658281C@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg14087.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Performance+slows+down+with+write+heavy+use%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg14086.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg14088.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D9FA8063-465F-4336-A39E-7F9CF658281C@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

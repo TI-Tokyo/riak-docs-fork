@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Limiting the number of entries in a set</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15622" id="c">
+<link rel="index" href="maillist.html#15622" id="i">
+<link rel="prev" href="msg15619.html" id="p">
+<link rel="next" href="msg15620.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15622.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Limiting+the+number+of+entries+in+a+set%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Limiting the number of entries in a set</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Shawn+Debnath%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Shawn Debnath</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150131" rel="nofollow">Sat, 31 Jan 2015 15:27:24 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+Thanks for clarifying this aspect Russell. Given the fact that this is per 
+element op and not for the whole set, I think it would work for our 
+scenario: each actor posting a new element in the set  will try to trim 
+the excess elements (&gt; 1000) from the set and add its own. In this case, 
+Riak will potentially see multiple deletes on the same set of  element(s) 
+or possibly deletes on an already deleted elements. Since we are removing 
+from the tail and adding to the head, if there are greater than 1000 
+actors concurrently adding and removing, we can expect that the set will 
+be greater than 1000 but should trim itself down eventually.  That is, we 
+never have the case of someone trying to delete and someone trying to add 
+the same key. Works for us for now (TM) :)</pre><pre>
+
+The 1000 entry limit meets our business scenarios and also falls far short 
+of 1-2 MB per object recommendation for Riak, so we can take the hit on 
+peak loads.
+
+Would be nice if Riak automatically enforced the automatic trim feature 
+though in the system. Will look at those bounded CRDT papers soon.
+
+
+
+
+Thanks,
+Shawn
+
+On 1/31/15, 11:47 AM, &quot;Russell Brown&quot; &lt;russell.br...@me.com&gt; wrote:
+
+&gt;Hi Shawn,
+&gt;
+&gt;If I can get in IRC later I will.
+&gt;
+&gt;On 31 Jan 2015, at 18:11, Shawn Debnath &lt;sh...@debnath.net&gt; wrote:
+&gt;
+&gt;&gt; Good morning,
+&gt;&gt; 
+&gt;&gt; Wondering if there is a better way to do truncation of a set if entries 
+&gt;&gt;exceed a certain threshold. I am trying to create a canonical timeline 
+&gt;&gt;for every user in our system, set of UUID strings. We want the number of 
+&gt;&gt;entries to be limited to about 1000 per timeline to keep the size of 
+&gt;&gt;each KV object in check inside Riak and also not store unnecessary data. 
+&gt;&gt;From looking around code and docs, there doesn’t seem to be a Redis 
+&gt;&gt;style LTRIM option available. So is the only way to enforce this is to 
+&gt;&gt;fetch the set, check count, trim it locally and then update?
+&gt;
+&gt;At the moment, yes that is correct: no LTRIM, you need to fetch and send 
+&gt;back a {remove_all, [elements, to, remove]} type operation (that was 
+&gt;pseudo code.)
+&gt;
+&gt;&gt; 
+&gt;&gt; My fear is that by using CRDTs, a set add wins over remove in the case 
+&gt;&gt;of a conflict. If there were to be 1000 conflicting concurrent updates 
+&gt;&gt;each trying to trim and add one entry to a set that already contains 
+&gt;&gt;1000 entries, I imagine the  final count of the set would be 2000. This 
+&gt;&gt;can be greatly exasperated on a very “friendly” or popular person’s 
+&gt;&gt;timeline and the code never being able to truncate the set back to 1000.
+&gt;
+&gt;That is not how the Set that we ship with riak 2.0 works. You don’t fetch 
+&gt;the object, mutate it, and store it. Instead you fetch a context and the 
+&gt;values. You then send operations to riak. If concurrent actors fetch the 
+&gt;set and remove the same, or some intersection, or even disjoint set of 
+&gt;elements, whilst adding others, all those operations are executed. The 
+&gt;“add wins” applies only to a per-element conflict: client A adds element 
+&gt;X while client B removes element X. In this case, add wins and X is in 
+&gt;the set. However, you are correct, if 1000 actors concurrently remove 
+&gt;every element from a set with 1000 elements, and each add there own 
+&gt;unique element, the set will have 1k entries again. There is no way, at 
+&gt;the moment in Riak, to enforce an invariant, or bound, on the size of the 
+&gt;set.
+&gt;
+&gt;There is some recent academic work by Valter Balegas, and Nuno Pregucia, 
+&gt;(and I am sure others), on this subject, where they created bounded 
+&gt;CRDTs, but I can’t find the reference at the moment. It’s something we’d 
+&gt;like in Riak, in future.
+&gt;
+&gt;If you want a strong invariant on the size of a set, you could use strong 
+&gt;consistency in Riak, maybe?
+&gt;
+&gt;Russell
+&gt;
+&gt;&gt; 
+&gt;&gt; Any thoughts or suggestions appreciated.
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; 
+&gt;&gt; Shawn
+&gt;&gt; freenode (sde)
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15619.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15622">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15622">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15620.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15618.html">Limiting the number of entries in a set</a></span> <span class="sender italic">Shawn Debnath</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15619.html">Re: Limiting the number of entries in a set</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Limiting the number of entries in a set</span> <span class="sender italic">Shawn Debnath</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg15620.html">Re: Limiting the number of entries in a set</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15621.html">Re: Limiting the number of entries in a set</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15623.html">Re: Limiting the number of entries in a set</a></span> <span class="sender italic">Shawn Debnath</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Limiting the number of entries in a set">
+<input type="hidden" name="msgid" value="0C90546F-BD86-4EE6-A946-8C082CF0C424@debnath.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15622.html">
+<input type="submit" value=" Shawn Debnath ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Limiting+the+number+of+entries+in+a+set%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15619.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15620.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">0C90546F-BD86-4EE6-A946-8C082CF0C424@debnath.net</li>
+</ul>
+</div>
+</body>
+</html>

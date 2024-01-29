@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: newbie questions and comments [NT]</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#04481" id="c">
+<link rel="index" href="maillist.html#04481" id="i">
+<link rel="prev" href="msg04477.html" id="p">
+<link rel="next" href="msg04478.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg04481.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+newbie+questions+and+comments+%5C%5BNT%5C%5D%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: newbie questions and comments [NT]</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Ian+Plosker%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Ian Plosker</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20110826" rel="nofollow">Fri, 26 Aug 2011 13:15:44 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Joel,
+
+Let me see if I can help you out. I've worked on a bioinformatics platform, 
+processing reads from next-gen sequencers in a previous role. I didn't use 
+Riak, but hopefully I can help you out.</pre><pre>
+
+&gt; First, a word about my application and its data flow.  I'm doing
+&gt; bioinformatics for data streams that employ next-generation
+&gt; sequencing.  A typical data set for me consists of 35 million 100-base
+&gt; records (reads), and I work with about 100 of them (~3 billion
+&gt; records) at any given time.  If an entire sequencing center were run
+&gt; through my application, and if each read were a bucket that would
+&gt; amount to about a terabyte of data each day and half a billion buckets
+&gt; per hour.  I've been developing analysis methods that can scale to
+&gt; this size, taking web search technology (lucene, so far) as the basis.
+&gt; Indexing has worked so well that I now have to take the database
+&gt; portion more seriously.  I care a lot about scaling and flow, not
+&gt; so much about reliability, and very little about downtime.
+
+First off, I have a few questions. Are you planning to use riaksearch for 
+lucene-style queries? If so, are you planning to implement a custom extractor? 
+Further if you're using a custom extractor, what will you be extracting 
+(ngrams? of what length? and what sensitivity? etc)? You should note that 
+riaksearch indexes are termed partitioned, so you'll have to be careful with 
+common words; they could result in hotspots.
+
+&gt; Questions about riak:
+&gt; 
+&gt; 1.  In terms of number of buckets, what's the largest riak database
+&gt; that the list has seen? How were the individual servers sized?
+
+There's no limit to the number of buckets. The only limitation is that buckets 
+with non-default configurations, will have their configurations gossiped around 
+the ring. If you have a lot of buckets with custom configurations, your gossip 
+can get quite large, which can be a problem. Be aware, there's nothing special 
+about buckets, they're simply namespaces with optional configuration.
+
+&gt; 2. Expiring and deleting data is a critical function for me.  The
+&gt; current docs say &quot;there is no straightforward way of deleting a
+&gt; bucket&quot;.  Does anybody had experience with large-scale deletions?
+&gt; Would deletion just leave a compaction issue anyway?
+
+You're right that deletion of entire buckets is non-trivial.
+
+&gt; 4. How can I estimate the memory footprint per key when using bitcask
+&gt; for, say, a 16-byte bucket and 2-byte key IDs?
+
+Take a look at this: 
+<a  rel="nofollow" href="https://help.basho.com/entries/335865-if-the-size-of-key-index-exceeds-the-amount-of-memory-how-does-bitcask-handle-it">https://help.basho.com/entries/335865-if-the-size-of-key-index-exceeds-the-amount-of-memory-how-does-bitcask-handle-it</a>
+
+&gt; Comments:
+&gt; 
+&gt; 1. Key filters look great, do more of that.  I'd love to see javascript
+&gt;   filters.  It would also be great to have a dynamic component to key
+&gt;   filtering by putting a limited amount (say, 64 bits) of information
+&gt;   from each bucket into memory that could be accessed by the key filters,
+&gt;   even if the consistency of the information weren't guaranteed.
+
+&gt; 4. Bucket and key listing via the HTTP interface hang for me on 0.14.2
+&gt;   under erlang 13, even with only 2 or zero buckets.  This does not
+&gt;   inspire confidence.
+
+Bucket, key listing, and key filters must scan the entire key space. It's speed 
+isn't dependent on the number of buckets, but rather the number of keys. Also, 
+note that shipping data from the Erlang VM to the JS VM and then back is very 
+expensive, so JS key filters would be slow.
+
+&gt; 
+&gt; 2. Secondary indices also look good for my use case.  Features that I'd
+&gt;   like to see: ability to plug in user-specified analyzers, indexer
+&gt;   support for integer values, ability to read the index directly (for
+&gt;   histogramming and linking), ability to delete an index.
+
+I can't talk in too much detail about secondary indices (2i), but it's on the 
+user to pull out the data that goes into the index. 2i indexes metadata fields 
+that are prefixed with x-riak-index and suffixed with the data type, either 
+_bin or _int (warning: this is subject to change). 
+
+&gt; 5. I was able to find patches for 0.14.2 to run under erlang 14 that
+&gt;   enabled riak to compile, but it had run-time errors related to
+&gt;   NIFs when I ran the python tests, perhaps because I made the
+&gt;   NIF compat header files all be the same.  /riak/tests worked,
+&gt;   but I gave up on 0.14.2.
+
+If you must run Riak under the latest Erlang release, you can use the master 
+branch on github. There's no particular reason to use R14 with the 0.14 series; 
+it was designed and tested under R13.
+
+&gt; 7. Building: &quot;make&quot; and &quot;make install&quot; &gt; &quot;make rel&quot;, IMHO.
+
+make install suggests that the application will be installed into /usr/local or 
+--prefix. make rel simple builds a Riak release. This is common among Erlang 
+applications.
+
+&gt; 9. Docs: Depending on which page I stumbled across first, it seemed that
+&gt;   I should start by either doing &quot;make rel&quot; or &quot;make devrel&quot;.  The latter
+&gt;   starts riak at a different port than the former and I wasted
+&gt;   some time before I found the correct port. It would be good to
+&gt;   point the new user to a riak browser so that they can see a different
+&gt;   view of the changes they are making than the one they get from reading
+&gt;   curl output.
+
+make devrel (development release) is used for building test clusters on a 
+single machine thus the non-default ports. make rel builds a release of Riak.
+
+Ian Plosker
+Developer Advocate
+Basho Technologies
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg04477.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#04481">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#04481">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg04478.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg04477.html">[no subject]</a></span> <span class="sender italic">Joel R. Berendzen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: newbie questions and comments [NT]</span> <span class="sender italic">Ian Plosker</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: newbie questions and comments [NT]">
+<input type="hidden" name="msgid" value="1F1BF853-D8DA-4033-BE90-F7B59E4D50AF@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg04481.html">
+<input type="submit" value=" Ian Plosker ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+newbie+questions+and+comments+%5C%5BNT%5C%5D%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg04477.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg04478.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1F1BF853-D8DA-4033-BE90-F7B59E4D50AF@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

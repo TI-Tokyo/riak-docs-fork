@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Python Driver Write Times</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01642" id="c">
+<link rel="index" href="maillist.html#01642" id="i">
+<link rel="prev" href="msg01640.html" id="p">
+<link rel="next" href="msg01643.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01642.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Python+Driver+Write+Times%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Python Driver Write Times</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Derek+Sanderson%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Derek Sanderson</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101128" rel="nofollow">Sun, 28 Nov 2010 12:07:36 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I'm using the defaults for the python library, so that would be the HTTP
+Rest interface. There is support for the PBC interface, which I'm looking
+into using now.</pre><pre>
+
+I had suspected that since I wasn't really using Riak in such a way as to
+let it shine (ie, in a cluster of nodes), that might be part of my problem.
+
+Thanks so much for the detailed response.
+
+On Sun, Nov 28, 2010 at 12:10 PM, Greg Steffensen &lt;greg.steffen...@gmail.com
+&gt; wrote:
+
+&gt; This is due to two factors:
+&gt;
+&gt; 1) Durability.  MongoDB stores writes in RAM and flushes them to disk
+&gt; periodically (by default, every 60 seconds, according to this page:
+&gt; <a  rel="nofollow" href="http://www.mongodb.org/display/DOCS/Durability+and+Repair">http://www.mongodb.org/display/DOCS/Durability+and+Repair</a>).  This means
+&gt; that its writes can seem very, very fast, but if the machine goes down, you
+&gt; could lose up to 60 seconds of data.  Riak writes don't return until the
+&gt; data has actually been persisted to disk.  Casandra takes the same approach
+&gt; as MongoDB, with the same trade-off.
+&gt;
+&gt; 2) Parallelism.  This test isn't taking advantage of Riak's distributed
+&gt; nature.  Riak really shines when its run on a cluster of machines- you can
+&gt; make your write throughput almost arbitrarily fast, as long as you're
+&gt; willing add enough machines to the cluster.
+&gt;
+&gt; I doubt that you'll be able to get single-node Riak to write as fast as
+&gt; Mongo, but I'd guess that that numbers will get a little closer if you do
+&gt; several writes simultaneously in both by multi-threading using python's
+&gt; threading module.  Also, be sure that you're using Riak's protocol buffers
+&gt; interface, instead of the REST (HTTP) one, which adds a lot of overhead- I
+&gt; believe the python client supports both.
+&gt;
+&gt; Greg
+&gt;
+&gt;
+&gt;
+&gt; On Sun, Nov 28, 2010 at 11:48 AM, Derek Sanderson &lt;zapph...@gmail.com&gt;wrote:
+&gt;
+&gt;&gt; Hello,
+&gt;&gt;
+&gt;&gt; I've recently started to explore using Riak (v0.13.0-2) from Python
+&gt;&gt; (v2.6.5) as a datastore, and I've run into a performance issue that I'm
+&gt;&gt; unsure of the true origin of, and would like some input from users who have
+&gt;&gt; been working with Riak and its Python drivers.
+&gt;&gt;
+&gt;&gt; I have 2 tests set up, one for Riak and another for MongoDB, both using
+&gt;&gt; their respectively provided Python drivers. I'm constructing chunks of JSON
+&gt;&gt; data consisting of a Person, who has an Address, and a purchase history
+&gt;&gt; which contains 1 to 20 line items with some data about the item name, cost,
+&gt;&gt; # puchased, etc. A very simple mockup of a purchase history. It does this
+&gt;&gt; for 1 million &quot;people&quot; (my initial goal was to see how lookups fared when
+&gt;&gt; you reach 1m+ records)
+&gt;&gt;
+&gt;&gt; When using MongoDB, the speed of inserts is incredibly fast. When using
+&gt;&gt; Riak, however, there is a very noticeable lag after each insert. So much so
+&gt;&gt; that when running side by side, the MongoDB test breaks into the 10,000s
+&gt;&gt; before Riak hits it's first 1k.
+&gt;&gt;
+&gt;&gt; My main PC is a Windows7 i7 quad core, with 8 gigs of ram, on which I'm
+&gt;&gt; running Ubuntu64 v10.04 on a VM, which has 2GB of memory allotted. On this
+&gt;&gt; VM, I have Riak and MongoDB running concurrently.
+&gt;&gt;
+&gt;&gt; Here is a sample of how I'm using the Riak driver:
+&gt;&gt;
+&gt;&gt;     riak_conn = RiakClient()
+&gt;&gt;     bucket = riak_conn.bucket(&quot;peopledb&quot;)
+&gt;&gt;     for i in range(1,1000000):
+&gt;&gt;         try:
+&gt;&gt;             new_obj = bucket.new(&quot;p&quot; + str(i),MakePerson())
+&gt;&gt;             new_obj.store(return_body=False)
+&gt;&gt;         except Exception as e:
+&gt;&gt;             print e
+&gt;&gt;
+&gt;&gt; I'm wondering if there is something blatantly wrong I'm doing. I didn't
+&gt;&gt; see any kind of batch-store method on the bucket (instead of calling store
+&gt;&gt; on each object, simply persist the entirety of the bucket itself), and I
+&gt;&gt; wasn't sure if this was an issue with my particular setup (maybe the
+&gt;&gt; specifics of my VM are somehow throttling its performance), or maybe just a
+&gt;&gt; known limitation that I wasn't aware of.
+&gt;&gt;
+&gt;&gt; To shed some light on the disparity, I re factored my persistence into
+&gt;&gt; separate methods, and used a wrapper to pull out the execution times. Here
+&gt;&gt; is a very condensed list of run times. The method in question, for both
+&gt;&gt; datastores, simply creates a new &quot;Person&quot; and stores it. Nothing else.
+&gt;&gt;
+&gt;&gt; MakeRiakPerson took 40.139 ms
+&gt;&gt; MakeRiakPerson took 40.472 ms
+&gt;&gt; MakeRiakPerson took 40.651 ms
+&gt;&gt; MakeRiakPerson took 51.630 ms
+&gt;&gt; MakeRiakPerson took 36.733 ms
+&gt;&gt;
+&gt;&gt; MakeMongoPerson took 1.810 ms
+&gt;&gt; MakeMongoPerson took 3.619 ms
+&gt;&gt; MakeMongoPerson took 1.036 ms
+&gt;&gt; MakeMongoPerson took 1.275 ms
+&gt;&gt; MakeMongoPerson took 3.656 ms
+&gt;&gt;
+&gt;&gt; Thankyou in advance for any help that can be offered here. I'm incredibly
+&gt;&gt; new to Riak as a whole, as well as very inexperienced when it comes to
+&gt;&gt; working in a *nix environment, so I imagine there are countless ways I could
+&gt;&gt; have shot myself in the foot without realizing it.
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01640.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01642">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01642">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01643.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01637.html">Python Driver Write Times</a></span> <span class="sender italic">Derek Sanderson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01638.html">Re: Python Driver Write Times</a></span> <span class="sender italic">Greg Steffensen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01639.html">Re: Python Driver Write Times</a></span> <span class="sender italic">Jeremiah Peschka</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01640.html">Re: Python Driver Write Times</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Python Driver Write Times</span> <span class="sender italic">Derek Sanderson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01643.html">Re: Python Driver Write Times</a></span> <span class="sender italic">Derek Sanderson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01644.html">Re: Python Driver Write Times</a></span> <span class="sender italic">Derek Sanderson</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01641.html">Re: Python Driver Write Times</a></span> <span class="sender italic">Daniel Lindsley</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Python Driver Write Times">
+<input type="hidden" name="msgid" value="AANLkTinDmi_-mYog9r1bUaP=7viggVQPzE5FhghFN9Ji@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01642.html">
+<input type="submit" value=" Derek Sanderson ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Python+Driver+Write+Times%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01640.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01643.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTinDmi_-mYog9r1bUaP=7viggVQPzE5FhghFN9Ji@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

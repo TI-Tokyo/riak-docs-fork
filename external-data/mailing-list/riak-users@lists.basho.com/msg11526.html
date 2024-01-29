@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: mapreduce timeout</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd14.html#11526" id="c">
+<link rel="index" href="mail14.html#11526" id="i">
+<link rel="prev" href="msg11519.html" id="p">
+<link rel="next" href="msg11687.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg11526.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+mapreduce+timeout%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: mapreduce timeout</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christian+Dahlqvist%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christian Dahlqvist</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20130715" rel="nofollow">Mon, 15 Jul 2013 06:51:35 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Deyan,
+
+When running mapreduce jobs, reduce phases often end up being the bottleneck. 
+This is especially true when all input data needs to be gathered on the 
+coordinating node before it can be executed, as is the case if the 
+reduce_phase_only_1 flag is enabled. Having this flag set will cause the 
+mapreduce job to not scale very well.</pre><pre>
+
+Depending on your exact requirements, it may be worthwhile considering 
+gathering the histogram data periodically, e.g. per hour and/or day. These 
+aggregates can then be stored in separate buckets with a key that describes the 
+content, e.g. &lt;cust&gt;_&lt;setup&gt;_&lt;date&gt; . Once this has been done, you can 
+efficiently retrieve a limited number of objects that cover the period you want 
+to get statistics for directly through the descriptive keys, and process these 
+in the application layer. Even though this periodically requires a bit more 
+work, it will most likely be much more efficient at query time and scale better.
+
+Best regards,
+
+Christian
+
+
+On 14 Jul 2013, at 12:16, Deyan Dyankov &lt;dyan...@cloudxcel.com&gt; wrote:
+
+&gt; Hi everyone,
+&gt; 
+&gt; first time here. Thanks in advance.
+&gt; 
+&gt; I am experiencing issues with MapReduce and it seems to timeout after a 
+&gt; certain volume data threshold is reached. The reducer is only one and here is 
+&gt; the mapreduce initiation script:
+&gt; #!/usr/bin/env ruby
+&gt; […]
+&gt; @client = Riak::Client.new(
+&gt;   :nodes =&gt; [
+&gt;     {:host =&gt; 'db1', :pb_port =&gt; 8087, :http_port =&gt; 8098},
+&gt;     {:host =&gt; 'db2', :pb_port =&gt; 8087, :http_port =&gt; 8098},
+&gt;     {:host =&gt; 'db3', :pb_port =&gt; 8087, :http_port =&gt; 8098}
+&gt;   ],
+&gt;   :protocol =&gt; 'pbc'
+&gt; )
+&gt; 
+&gt; start_key = &quot;#{cust}:#{setup}:#{start_time}&quot;
+&gt; end_key = &quot;#{cust}:#{setup}:#{end_time}&quot;
+&gt; 
+&gt; result = Riak::MapReduce.new(@client).
+&gt;   index(bucket_name, index_name, start_key..end_key).
+&gt;   map('map95th').
+&gt;   reduce('reduce95th', :arg =&gt; { 'reduce_phase_only_1' =&gt; true }, :keep =&gt; 
+&gt; true).
+&gt;   run()
+&gt; 
+&gt; puts result
+&gt; 
+&gt; The following is the code for the map95th and reduce95th javascript functions:
+&gt; function map95th(v, keyData, arg) {
+&gt;   var key_elements = v['key'].split(':');
+&gt;   var cust = key_elements[0];
+&gt;   var setup = key_elements[1];
+&gt;   var sid = key_elements[2];
+&gt;   var ts = key_elements[3];
+&gt; 
+&gt;   var result_key = cust + ':' + setup + ':' + ts;
+&gt;   var obj = {}
+&gt;   var obj_data = Riak.mapValuesJson(v)[0];
+&gt; 
+&gt;   obj_data['bps'] = (obj_data['rx_bytes'] + obj_data['tx_bytes']) / 60;
+&gt;   return_val = obj_data['bps'];
+&gt;   return [ return_val ];
+&gt; }
+&gt; 
+&gt; // if used, this must be a single reducer! Call from Ruby like this:
+&gt; //  reduce('reduce95th', :arg =&gt; { 'reduce_phase_only_1' =&gt; true }, :keep =&gt; 
+&gt; true).
+&gt; function reduce95th(values) {
+&gt;   var sorted = values.sort(function(a,b) { return a - b; });
+&gt;   var pct = sorted.length / 100;
+&gt;   var element_95th = pct * 95;
+&gt;   element_95th = parseInt(element_95th, 10) + 1;
+&gt; 
+&gt;   return [ sorted[element_95th] ];
+&gt; }
+&gt; 
+&gt; 
+&gt; 
+&gt; Now here is the interesting part. The MR goes through one record per minute. 
+&gt; If I run it for a period of less than ~20 days, it executes. Otherwise, it 
+&gt; times out:
+&gt; [deyandyankov@azobook ~/repos/loshko/mapreduce/ruby (master)]$
+&gt; [deyandyankov@azobook ~/repos/loshko/mapreduce/ruby (master)]$ ./95h.rb 
+&gt; yellingtone default $((`date +%s` - 20 * 86400)) `date +%s`
+&gt; 125581.51666666666
+&gt; [deyandyankov@azobook ~/repos/loshko/mapreduce/ruby (master)]$ ./95h.rb 
+&gt; yellingtone default $((`date +%s` - 30 * 86400)) `date +%s`
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client/beefcake_protobuffs_backend.rb:182:in
+&gt;  `decode_response': Expected success from Riak but received 0. 
+&gt; {&quot;phase&quot;:1,&quot;error&quot;:&quot;timeout&quot;,&quot;input&quot;:null,&quot;type&quot;:null,&quot;stack&quot;:null} 
+&gt; (Riak::ProtobuffsFailedRequest)
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client/beefcake_protobuffs_backend.rb:116:in
+&gt;  `mapred'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client.rb:325:in
+&gt;  `block in mapred'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client.rb:435:in
+&gt;  `block in recover_from'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/innertube-1.0.2/lib/innertube.rb:127:in
+&gt;  `take'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client.rb:433:in
+&gt;  `recover_from'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client.rb:379:in
+&gt;  `protobuffs'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client.rb:133:in
+&gt;  `backend'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/client.rb:324:in
+&gt;  `mapred'
+&gt;       from 
+&gt; /Users/deyandyankov/.rvm/gems/ruby-1.9.3-p392/gems/riak-client-1.1.1/lib/riak/map_reduce.rb:217:in
+&gt;  `run'
+&gt;       from ./95h.rb:29:in `&lt;main&gt;'
+&gt; [deyandyankov@azobook ~/repos/loshko/mapreduce/ruby (master)]$
+&gt; 
+&gt; The records being processed look lie this:
+&gt; {&quot;rx_bytes&quot;:3485395.0,&quot;tx_bytes&quot;:1658479.0}
+&gt; 
+&gt; When running the script with more than 20 days worth of data (two records per 
+&gt; minute are processed, which amounts to 2 * 60 * 24 * 20 = more than 57,600 
+&gt; processed), the script times out and here are some things from the logs:
+&gt; ==&gt; /var/log/riak/erlang.log.1 &lt;==
+&gt; Erlang has closed
+&gt; 
+&gt; ==&gt; /var/log/riak/error.log &lt;==
+&gt; 2013-07-14 13:03:51.580 [error] &lt;0.709.0&gt;@riak_pipe_vnode:new_worker:768 Pipe 
+&gt; worker startup failed:fitting was gone before startup
+&gt; 
+&gt; ==&gt; /var/log/riak/console.log &lt;==
+&gt; 2013-07-14 13:03:51.584 [error] &lt;0.22049.4326&gt; gen_fsm &lt;0.22049.4326&gt; in 
+&gt; state wait_for_input terminated with reason: timeout
+&gt; 
+&gt; ==&gt; /var/log/riak/error.log &lt;==
+&gt; 2013-07-14 13:03:51.584 [error] &lt;0.22049.4326&gt; gen_fsm &lt;0.22049.4326&gt; in 
+&gt; state wait_for_input terminated with reason: timeout
+&gt; 
+&gt; ==&gt; /var/log/riak/console.log &lt;==
+&gt; 2013-07-14 13:03:51.940 [error] &lt;0.22049.4326&gt; CRASH REPORT Process 
+&gt; &lt;0.22049.4326&gt; with 0 neighbours exited with reason: timeout in 
+&gt; gen_fsm:terminate/7 line 611
+&gt; 
+&gt; ==&gt; /var/log/riak/crash.log &lt;==
+&gt; 2013-07-14 13:03:51 =CRASH REPORT====
+&gt;   crasher:
+&gt;     initial call: riak_pipe_vnode_worker:init/1
+&gt;     pid: &lt;0.22049.4326&gt;
+&gt;     registered_name: []
+&gt;     exception exit: 
+&gt; {timeout,[{gen_fsm,terminate,7,[{file,&quot;gen_fsm.erl&quot;},{line,611}]},{proc_lib,init_p_do_apply,3,[{file,&quot;proc_lib.erl&quot;},{line,227}]}]}
+&gt;     ancestors: 
+&gt; [&lt;0.710.0&gt;,&lt;0.709.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.129.0&gt;]
+&gt;     messages: []
+&gt;     links: [&lt;0.710.0&gt;,&lt;0.709.0&gt;]
+&gt;     dictionary: 
+&gt; [{eunit,[{module,riak_pipe_vnode_worker},{partition,388211372416021087647853783690262677096107081728},{&lt;0.709.0&gt;,&lt;0.709.0&gt;},{details,{fitting_details,{fitting,&lt;18125.23420.4566&gt;,#Ref&lt;18125.0.5432.50467&gt;,&lt;&lt;&quot;C�������������������&quot;&gt;&gt;,1},1,riak_kv_w_reduce,{rct,#Fun&lt;riak_kv_w_reduce.0.20542221&gt;,{struct,[{&lt;&lt;&quot;reduce_phase_only_1&quot;&gt;&gt;,true}]}},{fitting,&lt;18125.23418.4566&gt;,#Ref&lt;18125.0.5432.50467&gt;,sink,undefined},[{log,sink},{trace,[error]},{sink,{fitting,&lt;18125.23418.4566&gt;,#Ref&lt;18125.0.5432.50467&gt;,sink,undefined}},{sink_type,{fsm,10,infinity}}],64}}]}]
+&gt;     trap_exit: false
+&gt;     status: running
+&gt;     heap_size: 832040
+&gt;     stack_size: 24
+&gt;     reductions: 1456611
+&gt;   neighbours:
+&gt; 
+&gt; ==&gt; /var/log/riak/error.log &lt;==
+&gt; 2013-07-14 13:03:51.940 [error] &lt;0.22049.4326&gt; CRASH REPORT Process 
+&gt; &lt;0.22049.4326&gt; with 0 neighbours exited with reason: timeout in 
+&gt; gen_fsm:terminate/7 line 611
+&gt; 
+&gt; ==&gt; /var/log/riak/crash.log &lt;==
+&gt; 2013-07-14 13:03:52 =SUPERVISOR REPORT====
+&gt;      Supervisor: {&lt;0.710.0&gt;,riak_pipe_vnode_worker_sup}
+&gt;      Context:    child_terminated
+&gt;      Reason:     timeout
+&gt;      Offender:   
+&gt; [{pid,&lt;0.22049.4326&gt;},{name,undefined},{mfargs,{riak_pipe_vnode_worker,start_link,undefined}},{restart_type,temporary},{shutdown,2000},{child_type,worker}]
+&gt; 
+&gt; 
+&gt; ==&gt; /var/log/riak/console.log &lt;==
+&gt; 2013-07-14 13:03:52.059 [error] &lt;0.710.0&gt; Supervisor 
+&gt; riak_pipe_vnode_worker_sup had child undefined started with 
+&gt; {riak_pipe_vnode_worker,start_link,undefined} at &lt;0.22049.4326&gt; exit with 
+&gt; reason timeout in context child_terminated
+&gt; 
+&gt; ==&gt; /var/log/riak/error.log &lt;==
+&gt; 2013-07-14 13:03:52.059 [error] &lt;0.710.0&gt; Supervisor 
+&gt; riak_pipe_vnode_worker_sup had child undefined started with 
+&gt; {riak_pipe_vnode_worker,start_link,undefined} at &lt;0.22049.4326&gt; exit with 
+&gt; reason timeout in context child_terminated
+&gt; 
+&gt; 
+&gt; The data is in leveldb and is accessed through secondary indexes. 
+&gt; This is a 3 node cluster with 32GB ram, current usage is about 12G per node. 
+&gt; n_val=3. The same issues occurs on a similar 2 node cluster with 8GB of ram 
+&gt; (usage is ~6G).
+&gt; 
+&gt; The following is my app.config:
+&gt; [
+&gt;  {riak_api, [
+&gt;             {pb_ip,   &quot;0.0.0.0&quot; },
+&gt;             {pb_port, 8087 },
+&gt;             {pb_backlog, 100 }
+&gt;             ]},
+&gt;  {riak_core, [
+&gt;               {default_bucket_props, [
+&gt;                     {n_val, 3},
+&gt;                     {last_write_wins, true}
+&gt;                     ]},
+&gt;               {ring_state_dir, &quot;/storage/riak/ring&quot;},
+&gt;               {ring_creation_size, 256},
+&gt;               {http, [ {&quot;0.0.0.0&quot;, 8098 } ]},
+&gt;               {https, [{ &quot;0.0.0.0&quot;, 8069 }]},
+&gt;               {ssl, [
+&gt;                      {certfile, &quot;/etc/ssl/riak/server.crt&quot;},
+&gt;                      {cacertfile, &quot;/etc/ssl/riak/root.crt&quot;},
+&gt;                      {keyfile, &quot;/etc/ssl/riak/server.key&quot;}
+&gt;                     ]},
+&gt;               {handoff_port, 8099 },
+&gt;               {dtrace_support, false},
+&gt;               {enable_health_checks, true},
+&gt;               {platform_bin_dir, &quot;/usr/sbin&quot;},
+&gt;               {platform_data_dir, &quot;/storage/riak&quot;},
+&gt;               {platform_etc_dir, &quot;/etc/riak&quot;},
+&gt;               {platform_lib_dir, &quot;/usr/lib/riak/lib&quot;},
+&gt;               {platform_log_dir, &quot;/var/log/riak&quot;}
+&gt;              ]},
+&gt;  {riak_kv, [
+&gt;             {storage_backend, riak_kv_eleveldb_backend},
+&gt;             {anti_entropy, {on, []}},
+&gt;             {anti_entropy_build_limit, {1, 3600000}},
+&gt;             {anti_entropy_expire, 604800000},
+&gt;             {anti_entropy_concurrency, 2},
+&gt;             {anti_entropy_tick, 15000},
+&gt;             {anti_entropy_data_dir, &quot;/storage/riak/anti_entropy&quot;},
+&gt;             {anti_entropy_leveldb_opts, [{write_buffer_size, 4194304},
+&gt;                                          {max_open_files, 20}]},
+&gt; 
+&gt;             {mapred_name, &quot;mapred&quot;},
+&gt;             {mapred_2i_pipe, true},
+&gt;             {map_js_vm_count, 16 },
+&gt;             {reduce_js_vm_count, 12 },
+&gt;             {hook_js_vm_count, 20 },
+&gt;             {js_max_vm_mem, 8},
+&gt;             {js_thread_stack, 16},
+&gt;             {js_source_dir, &quot;/etc/riak/mapreduce/js_source&quot;},
+&gt;             {http_url_encoding, on},
+&gt;             {vnode_vclocks, true},
+&gt;             {listkeys_backpressure, true},
+&gt;             {vnode_mailbox_limit, {1, 5000}}
+&gt;            ]},
+&gt; 
+&gt;  {riak_search, [
+&gt;                 {enabled, true}
+&gt;                ]},
+&gt; 
+&gt;  {merge_index, [
+&gt;                 {data_root, &quot;/storage/riak/merge_index&quot;},
+&gt;                 {buffer_rollover_size, 1048576},
+&gt;                 {max_compact_segments, 20}
+&gt;                ]},
+&gt; 
+&gt;  {bitcask, [
+&gt;              {data_root, &quot;/storage/riak/bitcask&quot;}
+&gt;            ]},
+&gt; 
+&gt;  {eleveldb, [
+&gt;              {cache_size, 1024},
+&gt;              {max_open_files, 64},
+&gt;              {data_root, &quot;/storage/riak/leveldb&quot;}
+&gt;             ]},
+&gt; 
+&gt;  {lager, [
+&gt;             {handlers, [
+&gt;                            {lager_file_backend, [
+&gt;                                {&quot;/var/log/riak/error.log&quot;, error, 10485760, 
+&gt; &quot;$D0&quot;, 5},
+&gt;                                {&quot;/var/log/riak/console.log&quot;, info, 10485760, 
+&gt; &quot;$D0&quot;, 5}
+&gt;                            ]}
+&gt;                        ] },
+&gt; 
+&gt;             {crash_log, &quot;/var/log/riak/crash.log&quot;},
+&gt;             {crash_log_msg_size, 65536},
+&gt;             {crash_log_size, 10485760},
+&gt;             {crash_log_date, &quot;$D0&quot;},
+&gt;             {crash_log_count, 5},
+&gt;             {error_logger_redirect, true}
+&gt;         ]},
+&gt; 
+&gt;  {riak_sysmon, [
+&gt;          {process_limit, 30},
+&gt;          {port_limit, 2},
+&gt;          {gc_ms_limit, 0},
+&gt;          {heap_word_limit, 40111000},
+&gt;          {busy_port, true},
+&gt;          {busy_dist_port, true}
+&gt;         ]},
+&gt; 
+&gt;  {sasl, [
+&gt;          {sasl_error_logger, false}
+&gt;         ]},
+&gt; 
+&gt; Sorry to bug you with such a long e-mail but I wanted to be as thorough as 
+&gt; possible. I tried raising a few options but it didn't help: map_js_vm_count, 
+&gt; reduce_js_vm_count, js_max_vm_mem
+&gt; I also tried adding a timeout argument to the map reduce caller code but even 
+&gt; if I set it to 60,000 or more (this is milliseconds), the script is 
+&gt; terminating with timeout error after 10-12 secs. The same behaviour is 
+&gt; observed if I use http instead of pbc.
+&gt; 
+&gt; What seems to be the problem? Is this a matter of configuration? I am 
+&gt; surprised about the fact that the job runs with 20-25 days of data and not 
+&gt; more.
+&gt; 
+&gt; thank you for your efforts,
+&gt; Deyan
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg11519.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd14.html#11526">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail14.html#11526">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg11687.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg11519.html">mapreduce timeout</a></span> <span class="sender italic">Deyan Dyankov</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: mapreduce timeout</span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11687.html">Re: mapreduce timeout</a></span> <span class="sender italic">Deyan Dyankov</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11775.html">Re: mapreduce timeout</a></span> <span class="sender italic">Christian Dahlqvist</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg11774.html">Re: mapreduce timeout</a></span> <span class="sender italic">Deyan Dyankov</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: mapreduce timeout">
+<input type="hidden" name="msgid" value="E6A6BED6-CB59-4B56-BE78-6F02ECF4CA7C@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg11526.html">
+<input type="submit" value=" Christian Dahlqvist ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+mapreduce+timeout%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg11519.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg11687.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">E6A6BED6-CB59-4B56-BE78-6F02ECF4CA7C@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: using the erlang API for riak search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01786" id="c">
+<link rel="index" href="maillist.html#01786" id="i">
+<link rel="prev" href="msg01778.html" id="p">
+<link rel="next" href="msg01788.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01786.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+using+the+erlang+API+for+riak+search%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: using the erlang API for riak search</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Rusty+Klophaus%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Rusty Klophaus</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101214" rel="nofollow">Tue, 14 Dec 2010 11:02:51 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Carson,
+
+You are definitely on the right track. The SearchQuery parameter is a
+Lucene-syntax-ish search query, and the Bucket parameter is the bucket on
+which to search. You can find more information on the query syntax here:
+<a  rel="nofollow" href="http://wiki.basho.com/display/RIAK/Riak+Search+-+Querying">http://wiki.basho.com/display/RIAK/Riak+Search+-+Querying</a></pre><pre>
+
+Usage is as follows:
+
+{ok, Pid} = riakc_pb_socket:start(&quot;127.0.0.1&quot;, &quot;8087&quot;),
+Bucket = &quot;json&quot;,
+SearchQuery = &quot;firstname:John&quot;),
+{ok, BucketKeyList} = riakc_pb_socket:search(Pid, Bucket, SearchQuery,
+riakc_pb_socket:stop(Pid).
+
+You can also do more complicated things like using the results to spawn a
+map/reduce operation by adding a MapReducePhases parameter. You can find
+more information on map/reduce phases here:
+<a  rel="nofollow" href="http://wiki.basho.com/display/RIAK/MapReduce">http://wiki.basho.com/display/RIAK/MapReduce</a>
+
+{ok, Result} = riakc_pb_socket:search(Pid, &quot;json&quot;, &quot;firstname:John&quot;,
+MapReducePhases, TimeoutInMS),
+
+Best,
+Rusty
+
+On Mon, Dec 13, 2010 at 4:33 PM, carson li &lt;carson...@liquidanalytics.com&gt;wrote:
+
+&gt; hey everyone,
+&gt;
+&gt; i just started off with using riak search.  (i have some basic riak
+&gt; experience) and i don't know how to use the erlang api for riak to do search
+&gt; queries.
+&gt;
+&gt; what i've done so far
+&gt; ------------------------------
+&gt; I have successfully installed the KV hook, put in a json document,
+&gt; and also used the search-cmd to retrieve something.  for reference i put in
+&gt; the json
+&gt;
+&gt; {
+&gt;    firstname:&quot;John&quot;,
+&gt;    lastName:&quot;Smith&quot;
+&gt; }
+&gt;
+&gt; with the command curl -X PUT <a  rel="nofollow" href="http://127.0.0.1:8098/riak/test/123">http://127.0.0.1:8098/riak/test/123</a> -H
+&gt; &quot;Content-Type: application/json&quot; -d @test.json
+&gt;
+&gt; to retrieve something i by navigating to riah search's bin, then
+&gt; ./search-cmd search json firstname:John
+&gt;
+&gt; the above works well.
+&gt; now i'm buildling an aplpication with webmachine / erlang. and i want to be
+&gt; able to perform searches as well.
+&gt; the wiki indicates that the Erlang api should support this
+&gt;
+&gt; <a  rel="nofollow" href="https://wiki.basho.com/display/RIAK/Riak+Search+-+Querying">https://wiki.basho.com/display/RIAK/Riak+Search+-+Querying</a>
+&gt;
+&gt; looking at riakc_pb_socket.erl, i see there is a search method that has the
+&gt; signature search(Pid, Bucket, SearchQuery)
+&gt;
+&gt; so what exactly is SearchQuery, how is it supposed to look like.  So it
+&gt; just gets passed into a mapred_search?
+&gt; I'm confused on how this works.  Can someone please provide a simple
+&gt; example, of how i can search for say firstname:John with the json above?
+&gt;
+&gt; any help would be greatly appreciated.
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Carson Li
+&gt; Liquid Analytics
+&gt; carson...@liquidanalytics.com
+&gt; 647-273-1024
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01778.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01786">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01786">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01788.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01778.html">using the erlang API for riak search</a></span> <span class="sender italic">carson li</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: using the erlang API for riak search</span> <span class="sender italic">Rusty Klophaus</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01788.html">Re: using the erlang API for riak search</a></span> <span class="sender italic">carson li</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01789.html">Re: using the erlang API for riak search</a></span> <span class="sender italic">Rusty Klophaus</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: using the erlang API for riak search">
+<input type="hidden" name="msgid" value="AANLkTikXJeXrhbE_MTK_GU2KdrGS=n=PPE+QTz_4Pccb@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01786.html">
+<input type="submit" value=" Rusty Klophaus ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+using+the+erlang+API+for+riak+search%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01778.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01788.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">AANLkTikXJeXrhbE_MTK_GU2KdrGS=n=PPE+QTz_4Pccb@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

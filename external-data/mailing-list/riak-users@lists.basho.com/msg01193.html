@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Pervasive replication</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#01193" id="c">
+<link rel="index" href="maillist.html#01193" id="i">
+<link rel="prev" href="msg01192.html" id="p">
+<link rel="next" href="msg01195.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg01193.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Pervasive+replication%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Pervasive replication</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20101004" rel="nofollow">Mon, 04 Oct 2010 20:52:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Andrew,
+
+</pre><tt>Distribution in Riak is based on the concept of the vnode (virtual  
+</tt><tt>node). The vnode is the unit of measure in reference to &quot;N&quot; replicas.  
+</tt><tt>At the time of cluster creation there is some upper limit of vnodes in  
+</tt><tt>a cluster. The number of vnodes a pnode (physical node) owns is based  
+</tt><tt>on how many pnodes are in the cluster.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>Here are some quick points re distribution/replication (which are  
+</tt><tt>different concepts) in Riak as it stands today:
+</tt><pre style="margin: 0em;">
+
+-64 vnodes default. Must be considered when first creating a cluster.
+
+</pre><tt>-a simple rule of thumb is minimum 10 vnodes per pnode with number of  
+</tt><tt>vnodes being a power of 2 (64, 128, 256, ...)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>-homogenious vnode distribution against pnodes. The original dynamo  
+</tt><tt>paper calls for a heterogenious distribution based on relative  
+</tt><tt>performance of pnodes. I believe there are some open tickets on this.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>-homogeneous pnodes. Any pnode can answer any request. If the pnode  
+</tt><tt>does not own the data in it's share of vnodes it will fetch data from  
+</tt><tt>one that does and then return.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>-&quot;N&quot; replicas does not guarantee N copies on N pnodes. It guarantees  
+</tt><tt>you copies on N-1 pnodes. That is one of the reasons the minimum  
+</tt><tt>recommended setup is a cluster of 3 pnodes.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>-there is no &quot;eventual propogation&quot; there is &quot;eventual  
+</tt><tt>consistency&quot; (the &quot;C&quot; in CAP theorem). Once you issue a write command  
+</tt><tt>it gets written as fast as possible to all the vnodes that it should  
+</tt><tt>be written to save network partitions (the &quot;P&quot; in CAP) in which case  
+</tt><tt>there are fallback vnodes.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>In order to accomplish what I think you want to accomplish you would  
+</tt><tt>have to hash the key in the same manner that Riak does, then translate  
+</tt><tt>that hash to it's vnode in the keyspace, then map that vnode to a  
+</tt><tt>pnode, then open a connection to that pnode and get your data. Having  
+</tt><tt>said that, I think it is quite possible by becoming quite familiar  
+</tt><tt>with riak_core (the module that governs hashing (I believe), vnodes,  
+</tt><tt>handoffs and gossip) and either wrapping or extending it to taste.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>On the other hand bare in mind that Riak, as it is configured by  
+</tt><tt>default, is a disk store (although you could configure memory only  
+</tt><tt>backends - which I highly discourage). Ultimately your latency will be  
+</tt><tt>i/o bound. You may do better to shard Redis if ultra low latency is  
+</tt><tt>your primary concern. A possible approach could be replicated clusters  
+</tt><tt>across sites. Bitcask is basically a WOL (write only log) that could  
+</tt><tt>theoretically be realtime replicated over a SAN.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Additionaly, open source Riak does not support multiple site clusters.  
+</tt><tt>Enterprise Riak does and may have what you need re multisite but I  
+</tt><tt>doubt it does re a guarantee as to having a physical copy of data in  
+</tt><tt>each site. Currently the only benefit to having your data on more  
+</tt><tt>vnodes is for the distributed map phase of a map/reduce query which, I  
+</tt><tt>have no doubt, will reach a point of diminishing returns (interesting  
+</tt><tt>research project though).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Further, in regards to systems of Dynamo pedegree it should be noted  
+</tt><tt>that Dynamo is principally concerned with maximally available systems  
+</tt><tt>(the &quot;A&quot; in CAP) with regards to write availability. Conflicts are not  
+</tt><tt>resolved at the persistence layer but rather at the application layer  
+</tt><tt>(under certain configurations).
+</tt><pre style="margin: 0em;">
+
+Good luck,
+Alexander
+
+@siculars on twitter
+<a  rel="nofollow" href="http://siculars.posterous.com">http://siculars.posterous.com</a>
+
+Sent from my iPhone
+
+</pre><tt>On Oct 4, 2010, at 22:35, Andrew Cooper  
+</tt><tt>&lt;andrew.stephen.coo...@gmail.com&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hello everyone,
+
+The Dynamo replication scheme allows one to specify how many nodes a
+change should be propagated to. But what if I want a change to be
+(eventually) propagated to each and every machine in the cluster?
+I can't simply specify a fixed number of nodes to replicate to,
+because, in the general case, this is time-varying. My use case is a
+multi-datacenter cluster with a low read latency requirement for
+certain records (thus those records need to be present in each
+datacenter, if not even on each machine).
+
+Is this currently possible, or would it require a patch? Or would this
+be too difficult to implement with the current architecture? This
+seems to be a problem common to all databases using the Dynamo
+replication scheme... or is it? Thoughts?
+
+Thanks,
+Andrew
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg01192.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#01193">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#01193">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg01195.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg01192.html">Pervasive replication</a></span> <span class="sender italic">Andrew Cooper</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Pervasive replication</span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01195.html">Re: Pervasive replication</a></span> <span class="sender italic">Dean Cookson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01197.html">Re: Pervasive replication</a></span> <span class="sender italic">Jason J. W. Williams</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01199.html">Re: Pervasive replication</a></span> <span class="sender italic">francisco treacy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01200.html">Re: Pervasive replication</a></span> <span class="sender italic">Alex Wolfe</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01201.html">Re: Pervasive replication</a></span> <span class="sender italic">Sean Cribbs</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg01202.html">Re: Riak timeout</a></span> <span class="sender italic">Sean Cribbs</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg01204.html">Re: Pervasive replication</a></span> <span class="sender italic">Jason J. W. Williams</span></li>
+<li class="icons-email"><span class="subject"><a href="msg01205.html">Re: Pervasive replication</a></span> <span class="sender italic">Dean Cookson</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Pervasive replication">
+<input type="hidden" name="msgid" value="CABB5626-8EA3-4F89-B82D-76FBB9A2B0D8@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg01193.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Pervasive+replication%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg01192.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg01195.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABB5626-8EA3-4F89-B82D-76FBB9A2B0D8@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>
