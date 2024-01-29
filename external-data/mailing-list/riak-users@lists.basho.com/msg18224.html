@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Core Claim and Property-Based Tests</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18224" id="c">
+<link rel="index" href="maillist.html#18224" id="i">
+<link rel="prev" href="msg18223.html" id="p">
+<link rel="next" href="msg18216.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18224.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Core+Claim+and+Property%5C-Based+Tests%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Core Claim and Property-Based Tests</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Martin+Sumner%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Martin Sumner</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170519" rel="nofollow">Fri, 19 May 2017 02:29:38 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Jon,
+
+BTW, I wasn't suggesting that claim v3 would choose a plan with violations
+over one without - so I don't think there is a bug.</pre><pre>
+
+The plan below which I said scored well, but was &quot;worse&quot; than a purely
+sequential plan, is worse only in the sense that it does not cope as well
+with dual node failures (which is not something the algorithm even tries to
+score for).  So in the two plans below the first plan scores better for
+diversity, but there are numerous dual-node failures (e.g n1, n2) that
+would lead to writes to some partitions being stored on just two physical
+nodes.  There are no target_n_val violations in either cluster.
+
+&gt; ScoreFun([n1, n2, n3, n4, n1, n2, n3, n4, n5, n6, n7, n8, n5, n6, n7,
+n8], 4).
+66.0
+
+&gt; ScoreFun([n1, n2, n3, n4, n5, n6, n7, n8, n1, n2, n3, n4, n5, n6, n7,
+n8], 4).
+109.7142857142855
+
+Perhaps the algorithm could be expanded to include other factors such as
+the minimum spacing for any node, but then I assume other anomalies will
+occur.  I suspect the scoring algorithm could be made ever more complex
+without ever managing to please all of the people all of the time.  It is
+because of this that I think claim v3 is perhaps best suited as a secondary
+option rather than it being the default algorithm: and we should work on
+ironing out some of the v2 issues rather than just switching to v3.
+
+Thanks
+
+Martin
+
+
+On 19 May 2017 at 05:06, Jon Meredith &lt;jmeredit...@gmail.com&gt; wrote:
+
+&gt; That's what I get for doing things from memory and not running the
+&gt; simulator :)
+&gt; I think you're right about the actual operation of the preference lists -
+&gt; but i haven't had a chance to look over the code or run some simulations.
+&gt; The effect isn't quite as severe, but as you say unevenly loads the cluster
+&gt; which is best avoided.
+&gt;
+&gt; I took a quick look at the v3 code from my phone and it looks like the
+&gt; plans are ordered by target nval violations, node ownership balance and
+&gt; finally diversity.
+&gt; It shouldn't ever pick a plan that increases violations, however if the
+&gt; starting plan has violations that aren't resolved (which is very possible
+&gt; for lots of combinations of Q and S) then it will start optimizing on the
+&gt; balance and then diversity. Maybe there's a bug somewhere.
+&gt;
+&gt; One thing I thought about but never implemented was adding some freedom to
+&gt; the algorithm to move a small number of unnecessary partitions to see if
+&gt; that would free things up and get better balance/diversity.
+&gt;
+&gt; For improving v2 you might try seeing if there's a way to
+&gt; deterministically shuffle the starting point where it starts to look for
+&gt; patitions to take - rather than always from the beginning or end.
+&gt;
+&gt; Jon
+&gt;
+&gt;
+&gt; On Thu, May 18, 2017 at 12:21 PM Martin Sumner &lt;
+&gt; martin.sum...@adaptip.co.uk&gt; wrote:
+&gt;
+&gt;&gt; Jon,
+&gt;&gt;
+&gt;&gt; With regards to this snippet below, I think I get your point, but I don't
+&gt;&gt; think the example is valid:
+&gt;&gt;
+&gt;&gt; &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; If with N=3 if a node goes down, all of the responsibility for that
+&gt;&gt; node is shift to another single node in the cluster.
+&gt;&gt;
+&gt;&gt; n1 | n2 | n3 | n4 | n1 | n2 | n3 | n4    (Q=8 S=4,TargetN4)
+&gt;&gt;
+&gt;&gt; Partition   All Up     n4 down
+&gt;&gt; (position)
+&gt;&gt;     0       n2 n3 n4   n2 n3 n1
+&gt;&gt;     1       n3 n4 n1   n3 n1 n1
+&gt;&gt;     2       n4 n1 n2   n1 n1 n2
+&gt;&gt;     3       n1 n2 n3   n1 n2 n3
+&gt;&gt;     4       n2 n3 n4   n2 n3 n1
+&gt;&gt;     5       n3 n4 n1   n3 n1 n1
+&gt;&gt;     6       n4 n1 n2   n1 n1 n2
+&gt;&gt;     7       n1 n2 n3   n1 n2 n3
+&gt;&gt;
+&gt;&gt; With all nodes up, the number of times each node appears in a preflist
+&gt;&gt; is equal.  6 * n1, 6 * n2, 6 * n3, 6 * n4 each appears (TN*Q/S)
+&gt;&gt;
+&gt;&gt; But during single node failure
+&gt;&gt; 12 * n1, 6 * n2, 6 * n3, n4 down.
+&gt;&gt;
+&gt;&gt; The load on n1 is doubled.
+&gt;&gt;
+&gt;&gt; &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; This is not how I understood fallback election works.  My understanding
+&gt;&gt; is that the fallback is the node which owns the first vnode after the
+&gt;&gt; preflist, where the node is up.  Not the node which owns the first vnode
+&gt;&gt; after the unavailable vnode.  That is to say to find fallbacks for a
+&gt;&gt; preflist, Riak will iterate around the ring from after the primaries, not
+&gt;&gt; iterate around the ring from after the unavailable vnode.
+&gt;&gt;
+&gt;&gt; So I would expect the following arrangement on n4 going down.
+&gt;&gt;
+&gt;&gt; ring = n1 | n2 | n3 | n4 | n1 | n2 | n3 | n4     (Q=8 S=4,TargetN4)
+&gt;&gt;
+&gt;&gt; Partition   All Up
+&gt;&gt; (position)
+&gt;&gt;     0       n2       n3       n4 (p3)
+&gt;&gt;     1       n3       n4 (p3) n1
+&gt;&gt;     2       n4 (p3) n1       n2
+&gt;&gt;     3       n1       n2        n3
+&gt;&gt;     4       n2       n3        n4 (p7)
+&gt;&gt;     5       n3       n4 (p7) n1
+&gt;&gt;     6       n4 (p7) n1       n2
+&gt;&gt;     7       n1        n2       n3
+&gt;&gt;
+&gt;&gt; Partition   n4 down
+&gt;&gt; (position)
+&gt;&gt;     0       n2  n3  n1 (fb for p3)
+&gt;&gt;     1       n3  n1  n2 (fb for p3)
+&gt;&gt;     2       n1  n2  n3 (fb for p3)
+&gt;&gt;     3       n1  n2  n3
+&gt;&gt;     4       n2  n3  n1 (fb for p7)
+&gt;&gt;     5       n3  n1  n2 (fb for p7)
+&gt;&gt;     6       n1  n2  n3 (fb for p7)
+&gt;&gt;     7       n1  n2  n3
+&gt;&gt;
+&gt;&gt; So there isn't a biasing of load in this case, all nodes 33.3% more
+&gt;&gt; load.  Interestingly we do go from having 8 vnodes live on 4 nodes, to
+&gt;&gt; having 12 vnodes live on 3 nodes when one node fails in this case - so the
+&gt;&gt; number of vnodes active does double on all nodes (not sure if the dynamic
+&gt;&gt; memory allocation in leveldb handles this?).
+&gt;&gt;
+&gt;&gt; I still think you have a valid point about about simple sequenced
+&gt;&gt; allocations being bad though.  If we have a ring-size of 16 and a node
+&gt;&gt; count of 8:
+&gt;&gt;
+&gt;&gt; ring = n1 | n2 | n3 | n4 | n5 | n6 | n7 | n8 | n1 | n2 | n3 | n4 | n5 |
+&gt;&gt; n6 | n7 | n8    (Q=16 S=8,TargetN4)
+&gt;&gt;
+&gt;&gt; Then on failure of node 4 - n5, n6, n7 have a 33% increase in load, but
+&gt;&gt; all other nodes remain with their previous load.  This is true for any
+&gt;&gt; failure in this diagonalised ring.
+&gt;&gt;
+&gt;&gt; Whereas if we shuffle the ring this way:
+&gt;&gt;
+&gt;&gt; ring = n1 | n2 | n3 | n4 | n5 | n6 | n7 | n8 | n4 | n3 | n2 | n1 | n8 |
+&gt;&gt; n7 | n6 | n5    (Q=16 S=8,TargetN4)
+&gt;&gt;
+&gt;&gt; Now node 4 down will lead to n1, n2, n3, n5, n6, and n7 each having 16.7%
+&gt;&gt; extra load each.  This more even balance of load is also true for the
+&gt;&gt; failure of any node in this ring.
+&gt;&gt;
+&gt;&gt; So I think your point is valid - but I think the example is wrong.
+&gt;&gt;
+&gt;&gt; And claim v3 does do a good job on these two rings, as the scoring for
+&gt;&gt; the second ring is much better:
+&gt;&gt;
+&gt;&gt; &gt; ScoreFun = fun(L, N) -&gt; riak_core_claim_util:score_am(
+&gt;&gt; lists:sort(riak_core_claim_util:adjacency_matrix_from_al(
+&gt;&gt; riak_core_claim_util:adjacency_list(L))),N) end.
+&gt;&gt; #Fun&lt;erl_eval.12.80484245&gt;
+&gt;&gt;
+&gt;&gt; &gt; ScoreFun([n1, n2, n3, n4, n5, n6, n7, n8, n1, n2, n3, n4, n5, n6, n7,
+&gt;&gt; n8], 4).
+&gt;&gt; 109.7142857142855
+&gt;&gt;
+&gt;&gt; &gt; ScoreFun([n1, n2, n3, n4, n5, n6, n7, n8, n4, n3, n2, n1, n8, n7, n6,
+&gt;&gt; n5], 4).
+&gt;&gt; 61.71428571428584
+&gt;&gt;
+&gt;&gt; Neither can I think of a way of bettering this by improving claim v2.
+&gt;&gt; However as mentioned in the long read, one of the issues with claim v3
+&gt;&gt; might be that rings with bad properties (such as loss of physical diversity
+&gt;&gt; on dual node failures) can also get good scores:
+&gt;&gt;
+&gt;&gt; &gt; ScoreFun([n1, n2, n3, n4, n1, n2, n3, n4, n5, n6, n7, n8, n5, n6, n7,
+&gt;&gt; n8], 4).
+&gt;&gt; 66.0
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Regards
+&gt;&gt;
+&gt;&gt; Martin
+&gt;&gt; On 17 May 2017 at 16:34, Jon Meredith &lt;jmeredit...@gmail.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thanks for the excellent writeup.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I have a few notes on your writeup and then a little history to help
+&gt;&gt;&gt; explain the motivation for the v3 work.
+&gt;&gt;&gt;
+&gt;&gt;&gt; The Claiming Problem
+&gt;&gt;&gt;
+&gt;&gt;&gt;   One other property of the broader claim algorithm + claimant + handoff
+&gt;&gt;&gt;   manager group of processes that's worth mentioning is safety during
+&gt;&gt;&gt;   transition.  The cluster should ensure that target N-val copies
+&gt;&gt;&gt;   are always available even during transitions.  Much earlier in Riak's
+&gt;&gt;&gt;   life the claim would just execute and ownership transfer immediately,
+&gt;&gt;&gt;   without putting the data in place (fine, it's eventually consistent,
+&gt;&gt;&gt; right?)
+&gt;&gt;&gt;   but that meant if more than two vnodes in a preference list changed
+&gt;&gt;&gt;   ownership then clients would read not found until at least one of the
+&gt;&gt;&gt;   objects it was receiving had transferred. The claimant now shepherds
+&gt;&gt;&gt; those
+&gt;&gt;&gt;   transitions so it should be safe.  The solution of transferring the
+&gt;&gt;&gt;   data before ownership has fixed the notfound problem, but Riak lost
+&gt;&gt;&gt;   agility in adding capacity to the cluster - existing data has to
+&gt;&gt;&gt; transfer
+&gt;&gt;&gt;   to new nodes before they are freed up, and they continue to grow
+&gt;&gt;&gt;   while waiting.  In hindsight, Ryan Zezeski's plan of just adding new
+&gt;&gt;&gt;   capacity and proxying back to the original vnode is probably a better
+&gt;&gt;&gt;   option.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   Predicting load on the cluster is also difficult with the single
+&gt;&gt;&gt;   ring with a target n-val set at creation time being used for all
+&gt;&gt;&gt;   buckets despite their n-value.  To compute the operations sent to
+&gt;&gt;&gt;   each vnode you need to know the proportion of access to each N-value.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   There's also the problem that if a bucket is created with an N-value
+&gt;&gt;&gt;   larger than target N all bets are off about the number of physical
+&gt;&gt;&gt; nodes
+&gt;&gt;&gt;   values are written to (*cough* strong consistency N-5)
+&gt;&gt;&gt;
+&gt;&gt;&gt;   Having a partitioning-scheme-per-N-value is one way of sidestepping
+&gt;&gt;&gt; the
+&gt;&gt;&gt;   load prediction and max-N problems.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Promixity of Vnodes
+&gt;&gt;&gt;
+&gt;&gt;&gt;   An alternate solution to the target_n_val problem is to change the way
+&gt;&gt;&gt;   fallback partitions are added and apply an additional uniqueness
+&gt;&gt;&gt; constraint
+&gt;&gt;&gt;   as target nodes are added.  That provides safety against multiple node
+&gt;&gt;&gt;   failures (although can potentially cause loading problems).  I think
+&gt;&gt;&gt;   you imply this a couple of points when you talk about 'at runtime'.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Proximity of vnodes as the partition list wraps
+&gt;&gt;&gt;
+&gt;&gt;&gt;   One kludge I considered solving the wraparound problem is to go from
+&gt;&gt;&gt;   a ring to a 'spiral' where you add extra target_n_val-1 additional
+&gt;&gt;&gt;   vnodes that alias the few vnodes in the ring.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   Using the pathalogically bad (vnodes) Q=4, (nodes) S=3, (nval) N=3
+&gt;&gt;&gt; ```
+&gt;&gt;&gt;   v0 | v1 | v2 | v3
+&gt;&gt;&gt;   nA | nB | nC | nA
+&gt;&gt;&gt;
+&gt;&gt;&gt;   p0 = [ {v1, nB} {v2, Nc} {v3, nA} ]
+&gt;&gt;&gt;   p1 = [ {v2, Nc} {v3, nA} {v0, nA} ] &lt;&lt;&lt; Bad
+&gt;&gt;&gt;   p2 = [ {v3, nA} {v0, nA} {v1, nB} ] &lt;&lt;&lt; Bad
+&gt;&gt;&gt;   p3 = [ {v0, nA} {v1, nB} {v2, nC} ]
+&gt;&gt;&gt; ```
+&gt;&gt;&gt;   You get 2/4 preflists violating target_n_val=3.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   If you extend the ring to allow aliasing (i.e. go beyond 2^160) but
+&gt;&gt;&gt;   only use it for assignment
+&gt;&gt;&gt;
+&gt;&gt;&gt; ```
+&gt;&gt;&gt;   v0 | v1 | v2 | v3 | v0' | v1'
+&gt;&gt;&gt;   nA | nB | nC | nA | nB  | nC
+&gt;&gt;&gt;
+&gt;&gt;&gt;   p0 = [ {v1, nB} {v2, Nc}  {v3, nA} ]
+&gt;&gt;&gt;   p1 = [ {v2, Nc} {v3, nA}  {v0', nB} ]
+&gt;&gt;&gt;   p2 = [ {v3, nA} {v0', nB} {v1', nB} ]
+&gt;&gt;&gt;   p3 = [ {v0, nA} {v1, nB}  {v2, nC} ]
+&gt;&gt;&gt; ```
+&gt;&gt;&gt;   The additional vnodes can never be hashed directly, just during
+&gt;&gt;&gt;   wraparound.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; As you say, the v3 algorithm was written (by me) a long time ago and
+&gt;&gt;&gt; never made it to production.  It was due to a few factors, partly
+&gt;&gt;&gt; the non-determinism, partly because I didn't like the (very stupid)
+&gt;&gt;&gt; optimization system tying up the claimant node for multiple seconds,
+&gt;&gt;&gt; but more troublingly when we did some commissioning tests for a large
+&gt;&gt;&gt; customer that ran with a ring size of 256 with 60 nodes we experienced
+&gt;&gt;&gt; a performance drop of around 5% when the cluster was maxed out for
+&gt;&gt;&gt; reads.  The diversity measurements were much 'better' in that the
+&gt;&gt;&gt; v3 claimed cluster was far more diverse and performed better during
+&gt;&gt;&gt; node failures, but the (unproven) fear that having a greater number
+&gt;&gt;&gt; of saturated disterl connections between nodes dropped performance
+&gt;&gt;&gt; without explanation stopped me from promoting it to default.
+&gt;&gt;&gt;
+&gt;&gt;&gt; The reason the v3 algorithm was created was to resolve problems with
+&gt;&gt;&gt; longer lived clusters created with the v2 claim that had had nodes
+&gt;&gt;&gt; added and removed over time.  I don't remember all the details now,
+&gt;&gt;&gt; but I think the cluster had a ring size of 1024 (to future proof,
+&gt;&gt;&gt; as no 2I/listkey on that cluster) and somewhere between 15-30 nodes.
+&gt;&gt;&gt;
+&gt;&gt;&gt; In that particular configuration, the v2 algorithm had left the original
+&gt;&gt;&gt; sequential node assignment (n1, n2, ..., n15, n1, n2, ...) and assigned
+&gt;&gt;&gt; new nodes in place, but that left many places were the original
+&gt;&gt;&gt; sequential
+&gt;&gt;&gt; assignments still existed.
+&gt;&gt;&gt;
+&gt;&gt;&gt; What we hadn't realized at the time is that sequential node assignment
+&gt;&gt;&gt; is the *worst* possible plan for handling fallback load.
+&gt;&gt;&gt;
+&gt;&gt;&gt; If with N=3 if a node goes down, all of the responsibility for that
+&gt;&gt;&gt; node is shift to another single node in the cluster.
+&gt;&gt;&gt;
+&gt;&gt;&gt; n1 | n2 | n3 | n4 | n1 | n2 | n3 | n4    (Q=8 S=4,TargetN4)
+&gt;&gt;&gt;
+&gt;&gt;&gt; Partition   All Up     n4 down
+&gt;&gt;&gt; (position)
+&gt;&gt;&gt;     0       n2 n3 n4   n2 n3 n1
+&gt;&gt;&gt;     1       n3 n4 n1   n3 n1 n1
+&gt;&gt;&gt;     2       n4 n1 n2   n1 n1 n2
+&gt;&gt;&gt;     3       n1 n2 n3   n1 n2 n3
+&gt;&gt;&gt;     4       n2 n3 n4   n2 n3 n1
+&gt;&gt;&gt;     5       n3 n4 n1   n3 n1 n1
+&gt;&gt;&gt;     6       n4 n1 n2   n1 n1 n2
+&gt;&gt;&gt;     7       n1 n2 n3   n1 n2 n3
+&gt;&gt;&gt;
+&gt;&gt;&gt; With all nodes up, the number of times each node appears in a preflist
+&gt;&gt;&gt; is equal.  6 * n1, 6 * n2, 6 * n3, 6 * n4 each appears (TN*Q/S)
+&gt;&gt;&gt;
+&gt;&gt;&gt; But during single node failure
+&gt;&gt;&gt; 12 * n1, 6 * n2, 6 * n3, n4 down.
+&gt;&gt;&gt;
+&gt;&gt;&gt; The load on n1 is doubled.
+&gt;&gt;&gt;
+&gt;&gt;&gt; In the real scenario, although it was no longer sequentially assigned
+&gt;&gt;&gt; there were still a large number of very similar preference lists to
+&gt;&gt;&gt; the original assignment (as growing a few nodes on that ring size
+&gt;&gt;&gt; only reassigns preference lists in proportion to the new nodes claiming
+&gt;&gt;&gt; partitions).
+&gt;&gt;&gt;
+&gt;&gt;&gt; The production cluster was running fairly close to capacity, so the
+&gt;&gt;&gt; increased loading during failure, even though it wasn't as bad as doubled
+&gt;&gt;&gt; was enough to push it over the performance 'step' lowering tail latencies
+&gt;&gt;&gt; and slowed it down enough to overload the vnodes and exhaust memory
+&gt;&gt;&gt; crashing the next node causing a cascade.  This was before vnodes had
+&gt;&gt;&gt; overload protection so would present differently now.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; Another pre-claimant problem that shaped some of the earlier claim
+&gt;&gt;&gt; code vnode 'want' threshods was that when the nodes were individually
+&gt;&gt;&gt; allowed to say if they wanted to claim more vnodes (with the
+&gt;&gt;&gt; wants_claim function, before calling choose_claim), there were some
+&gt;&gt;&gt; states
+&gt;&gt;&gt; the cluster would get into where two nodes both decided they were under
+&gt;&gt;&gt; capacity and continually tried to claim, causing the vnode to flip/flop
+&gt;&gt;&gt; back and forth between them (that was a reason for writing one of the
+&gt;&gt;&gt; early
+&gt;&gt;&gt; QuickCheck tests).
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm not sure if you've encountered it or not, but the riak_core_claim_sim
+&gt;&gt;&gt; is also a good tool for testing the behavior of the claim functions and
+&gt;&gt;&gt; the claimant.  You don't mention it in your write up, but one of the
+&gt;&gt;&gt; important functions of the claimant is to make sure it only performs
+&gt;&gt;&gt; safe transitions between rings.  It makes sure that the n val is not
+&gt;&gt;&gt; violated during handoff.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; What to do?
+&gt;&gt;&gt;
+&gt;&gt;&gt;   Fixing the claim algorithm is one way of doing things, but I worry
+&gt;&gt;&gt;   it has a number of problems that are hard to solve (multi-AZ,
+&gt;&gt;&gt; multi-Nval
+&gt;&gt;&gt;   etc).
+&gt;&gt;&gt;
+&gt;&gt;&gt;   One more radical option is to dump the ring and just publish a table
+&gt;&gt;&gt;   per-vnode of the nodes and vnode hash you'd like to service them.
+&gt;&gt;&gt;   Riak doesn't really need consistent hashing - it doesn't *really* use
+&gt;&gt;&gt;   it's original form (the Dynamo A scheme), and is more of a hybrid
+&gt;&gt;&gt;   of the B/C schemes.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   Use cluster metadata and publish out the tables, update riak_core_apl
+&gt;&gt;&gt;   to take the new data and serve up the preference lists.  Obviously
+&gt;&gt;&gt;   it trickles into things like the vnode and handoff managers, but it
+&gt;&gt;&gt;   may be possible.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   That gives you the advantage of no longer being constrained in how
+&gt;&gt;&gt;   you assign the nodes - a separation of policy and execution.  You
+&gt;&gt;&gt;   could keep the existing ring based algorithms, or you could do
+&gt;&gt;&gt; something
+&gt;&gt;&gt;   better.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   It may be interesting to change the number of vnodes/hashing algorithm
+&gt;&gt;&gt;   too.  Jordan West was a big fan of Consistent Jump Hashing at one
+&gt;&gt;&gt; point.
+&gt;&gt;&gt;
+&gt;&gt;&gt;   The thing you give up if you lose the power-of-2 partitioning scheme
+&gt;&gt;&gt;   is the ability to split and combine partitions.  Each partition in
+&gt;&gt;&gt;   a 64 vnode ring maps to exactly two (non-consecutive) partitions in a
+&gt;&gt;&gt; 128
+&gt;&gt;&gt;   vnode ring.  Which is a very nice for replicating between clusters
+&gt;&gt;&gt;   with different ring sizes and localizing where to look for data.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Good luck!
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Wed, May 17, 2017 at 6:37 AM Daniel Abrahamsson &lt;hams...@gmail.com&gt;
+&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thanks for the writeup and detailed investigation, Martin.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; We ran into these issues a few months when we expanded a 5 node cluster
+&gt;&gt;&gt;&gt; into a 8 node cluster. We ended up rebuilding the cluster and writing a
+&gt;&gt;&gt;&gt; small escript to verify that the generated riak ring lived up to our
+&gt;&gt;&gt;&gt; requirements (which were 1: to survive an AZ outage, and 2: to survive any
+&gt;&gt;&gt;&gt; 2 nodes going down at the same time).
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; This will be a great document to refer to when explaining the
+&gt;&gt;&gt;&gt; subtleties of setting up a Riak cluster.
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; //Daniel
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18223.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18224">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18224">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18216.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li><ul>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18210.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Tom Santero</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18211.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18212.html">Re: Core Claim and Property-Based Test...</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18213.html">Re: Core Claim and Property-Based ...</a></span> <span class="sender italic">DeadZen</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18215.html">Re: Core Claim and Property-B...</a></span> <span class="sender italic">Russell Brown</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg18217.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Daniel Abrahamsson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18218.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18220.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18222.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18223.html">Re: Core Claim and Property-Based Test...</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Core Claim and Property-Based ...</span> <span class="sender italic">Martin Sumner</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg18216.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Martin.Cox</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18221.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">Matt Davis</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg18219.html">Re: Core Claim and Property-Based Tests</a></span> <span class="sender italic">andrei zavada</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Core Claim and Property-Based Tests">
+<input type="hidden" name="msgid" value="CANzjUxC+rkUEB+TCx-Phv+qGFogFa7PhdjEfyzeWppuaG_+T7w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18224.html">
+<input type="submit" value=" Martin Sumner ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Core+Claim+and+Property%5C-Based+Tests%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18223.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18216.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANzjUxC+rkUEB+TCx-Phv+qGFogFa7PhdjEfyzeWppuaG_+T7w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

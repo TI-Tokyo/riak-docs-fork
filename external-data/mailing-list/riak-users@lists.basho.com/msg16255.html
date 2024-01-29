@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Bitcask expiration issue</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16255" id="c">
+<link rel="index" href="maillist.html#16255" id="i">
+<link rel="prev" href="msg16249.html" id="p">
+<link rel="next" href="msg16250.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16255.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Bitcask+expiration+issue%22&amp;o=newest" rel="nofollow"><span itemprop="name">Bitcask expiration issue</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Damien+Krotkine%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Damien Krotkine</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150619" rel="nofollow">Fri, 19 Jun 2015 04:42:31 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+[ this is a possible duplicate, but it seems that messages sent by my
+other email account (damien.krotk...@booking.com don't reach list
+recipients - if I'm wrong, let me know - so I'm sending it again with
+this address ]</pre><pre>
+
+I'm seeing strange things with bitcask expiration: When a new node joins 
+a Ring, it gets data from the other nodes to rebalance. It seems that 
+the starting date to count expiration of this data is the time when they 
+were copied to the new node, *not* the date they were originally created 
+in the Ring
+
+For instance, on a Ring with 2 weeks expiration:
+I write 1 key at T=0 in a Ring with 3 nodes.
+At T+7days I add a new node 4. This node gets the ownership of the key.
+It seems that this key will expire on node 4 only at T+21 instead of
+T+14
+
+That's annoying because we have a lot of data that is constantly being 
+written and that *must* be expired at proper time.
+Here is a graph (warning, it shows the free disk space, not the disk 
+space used) of data expiration when adding new nodes.
+
+<a  rel="nofollow" href="https://www.dropbox.com/s/1od5xo5wxsvk11j/render_1.png?dl=0">https://www.dropbox.com/s/1od5xo5wxsvk11j/render_1.png?dl=0</a>
+
+Is it a wrong configuration ? Here is my bitcask expiration
+configuration:
+
+multi_backend.bitcask_mult_events.storage_backend = bitcask
+multi_backend.bitcask_mult_events.bitcask.data_root = 
+/var/lib/riak/bitcask_mult_events
+multi_backend.bitcask_mult_events.bitcask.expiry = 8d
+multi_backend.bitcask_mult_events.bitcask.expiry.grace_time = 1d
+multi_backend.bitcask_mult_events.bitcask.io_mode = erlang
+multi_backend.bitcask_mult_events.bitcask.max_file_size = 4GB
+multi_backend.bitcask_mult_events.bitcask.merge.policy = always
+multi_backend.bitcask_mult_events.bitcask.merge.thresholds.dead_bytes =
+4GB
+multi_backend.bitcask_mult_events.bitcask.merge.thresholds.fragmentation 
+= 100
+multi_backend.bitcask_mult_events.bitcask.merge.triggers.dead_bytes =
+4GB
+multi_backend.bitcask_mult_events.bitcask.merge.triggers.fragmentation =
+100
+
+Maybe the configuration is not right, let me know if you think so. What 
+I try to do here is to limit disk usage by compacting a file only if it 
+contains only expired keys. Our data is pure readonly.
+
+EDIT: on IRC I got this reply from EvilEngel:
+
+EvilEngel&gt; Hey dams. Unfortunately that is how Bitcask expiry works. the
+timestamp is internal and not part of the object, so re-writing it
+restarts the TTL.
+
+This is worrying: it implies that any new node added to a cluster should
+have enough disk space to be able to store *twice* the amount of
+expirable data it is supposed to store. This is ( in my opinion ) an
+important fact that should be stressed in the documentation at least,
+and if possible, fixed. One way would be to have handoffs transfer
+transmit the original timestamp in addition to the data, so that it's
+properly set on the target node.
+
+
+
+Thanks,
+dams.
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16249.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16255">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16255">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16250.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16249.html">Bitcask expiration issue</a></span> <span class="sender italic">Damien Krotkine</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Bitcask expiration issue</span> <span class="sender italic">Damien Krotkine</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Bitcask expiration issue">
+<input type="hidden" name="msgid" value="1434714084.3761839.299860417.76AD0FB8@webmail.messagingengine.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16255.html">
+<input type="submit" value=" Damien Krotkine ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Bitcask+expiration+issue%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16249.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16250.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1434714084.3761839.299860417.76AD0FB8@webmail.messagingengine.com</li>
+</ul>
+</div>
+</body>
+</html>

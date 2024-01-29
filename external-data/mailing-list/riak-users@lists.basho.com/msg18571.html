@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: High disk usage on node</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18571" id="c">
+<link rel="index" href="maillist.html#18571" id="i">
+<link rel="prev" href="msg18570.html" id="p">
+<link rel="next" href="msg18572.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18571.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+disk+usage+on+node%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: High disk usage on node</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Fred+Dushin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Fred Dushin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20181101" rel="nofollow">Thu, 01 Nov 2018 07:31:00 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>I think your best bet is to do a force-replace (and then a manual repair, if 
+you are not using AAE) with a node that has higher capacity than your current 
+standby.  You are correct that replacing with your standby will fail when you 
+run repairs and end up running out of space.</pre><pre>
+
+I think you do NOT want to do a remove (or force remove) of the node that has 
+run out of space, as you will likely just end up pushing those partitions to 
+other nodes that are already stressed for capacity.
+
+I would not tempt fate by doing an add on a cluster with a node that is down 
+for the count.  Fix that node first, and then add capacity to the cluster.  But 
+others here might have more experience with expanding clusters that are in ill 
+health.  For example, it might be possible to do a replace without a manual 
+repair (which will leave a bunch of near-empty partitions on your new node), 
+and then do an add with the node you took out of the cluster.  You would then 
+need to track down where all the partitions got moved to in the cluster, and 
+then do a manual repair of those partitions.  (Or I suppose if you are using 
+AAE, wait for a full set of exchanges to complete, but if were me I'd turn off 
+AAE and run the repairs manually, so you can monitor which partitions actually 
+got repaired.)
+
+If you are moving to the latest version of Riak (2.2.6), then you may find that 
+the v2 claim algorithm does a better job of distributing (ownership) partitions 
+more evenly around the cluster, but you should upgrade all your nodes first 
+(before running your cap add).
+
+Also make use of `riak_core_claim_sim:help()` in the Riak console.  You can get 
+pretty good insight into what your cap adds will look like, without having to 
+do a cluster plan.  As Drew has mentioned, you might not want to try the 
+claim_v3 algorithms if you are on an already under-provisioned cluster, as 
+claim_v3 may move partitions around to already heavily-loaded nodes as part of 
+its ownership handoff, which in your case could be catastrophic, as you 
+currently have keys that have only two replicas (and presumably are already 
+growing in size with secondary partitions), so losing a node or two in the rest 
+of your cluster due to disk space could result in data loss (4eva).
+
+-Fred
+
+PS&gt; I see Sick has posted a temporary workaround if you can add extra disk 
+capacity to your node (NAS, etc), and that seems like a good route to go, if 
+you can do that.  Otherwise, I'd find a machine with more disk and do the 
+replace as described above.
+
+&gt; On Nov 1, 2018, at 9:25 AM, Travis Kirstine 
+&gt; &lt;tkirst...@firstbasesolutions.com&gt; wrote:
+&gt; 
+&gt; I’m running riak (v2.14) in a 5 node cluster and for some reason one of the 
+&gt; nodes has higher disk usage than the other nodes.  The problem seems to be 
+&gt; related to how riak distributes the partitions, in my case I’m using the 
+&gt; default 64, riak has given each node 12 partition except one node that gets 
+&gt; 16 (4x12+16=64).  As a result the node with 16 partitions has filled the disk 
+&gt; and become ‘un-reachable’.
+&gt;  
+&gt; I have a node on standby with roughly the same disk space as the failed node, 
+&gt; my concern is that if a add it to the cluster it will overflow as well.
+&gt;  
+&gt; How do I recover the failed node and add a new node without destroying the 
+&gt; cluster….. BTW just to make things more fun the new node is at a newer 
+&gt; version of riak so I need to perform a rolling upgrade at the same time.
+&gt;  
+&gt; Any help would be greatly appreciated!    
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18570.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18571">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18571">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18572.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18569.html">High disk usage on node</a></span> <span class="sender italic">Travis Kirstine</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18570.html">RE: High disk usage on node</a></span> <span class="sender italic">Nicholas Adams</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: High disk usage on node</span> <span class="sender italic">Fred Dushin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18572.html">RE: High disk usage on node</a></span> <span class="sender italic">Travis Kirstine</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg18573.html">Re: High disk usage on node</a></span> <span class="sender italic">István</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: High disk usage on node">
+<input type="hidden" name="msgid" value="BA89BE1A-7A61-43EE-B9ED-76816A2F291E@dushin.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18571.html">
+<input type="submit" value=" Fred Dushin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+disk+usage+on+node%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18570.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18572.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BA89BE1A-7A61-43EE-B9ED-76816A2F291E@dushin.net</li>
+</ul>
+</div>
+</body>
+</html>

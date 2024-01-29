@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Client get 503 response from riak server</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15827" id="c">
+<link rel="index" href="maillist.html#15827" id="i">
+<link rel="prev" href="msg15826.html" id="p">
+<link rel="next" href="msg15828.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15827.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Client+get+503+response+from+riak+server%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Client get 503 response from riak server</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christopher+Meiklejohn%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christopher Meiklejohn</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150304" rel="nofollow">Wed, 04 Mar 2015 12:33:07 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+&gt; On Mar 4, 2015, at 2:22 PM, Bora Kou &lt;b...@zendesk.com&gt; wrote:
+&gt; 
+&gt; Hi,
+&gt; 
+&gt; We have a 6 nodes riak cluster configured with 256 size.  We are using 
+&gt; versions 1.4.8. Occasionally, we see the server return 503 response.  Looking 
+&gt; at the log, it seems that we have a lot of warning about reading large object 
+&gt; and busy_dist_port.  The majority of the objects are less than 2MB but we do 
+&gt; have some large objects in the ranch of 5-15MB.
+&gt; 
+&gt; 
+&gt; These are the two type of log entries we consistently see across all nodes 
+&gt; when that happen:
+&gt; 
+&gt; 2015-03-04 17:53:48.149 [warning] &lt;0.1142.0&gt;@riak_kv_vnode:do_get_object:1299 
+&gt; Reading large object of size 5498696 from...
+&gt; 
+&gt; 2015-03-04 19:06:35.824 [info] 
+&gt; &lt;0.95.0&gt;@riak_core_sysmon_handler:handle_event:92 monitor busy_dist_port 
+&gt; &lt;0.32259.1162&gt; 
+&gt; [{initial_call,{riak_kv_get_fsm,init,1}},{almost_current_function,{gen_fsm,loop,7}},{message_queue_len,0}]
+&gt;  {#Port&lt;0.3353&gt;,'riak@servername...'}
+&gt; 
+&gt; The doc suggest increasing +zdbbl to deal with busy_dist_port.  But does 
+&gt; anybody have any other suggestion to what other parameters I should look at 
+&gt; to improve the situation?</pre><pre>
+
+Hi Bora,
+
+Given that most of the internode communication of Riak is performed over 
+Distributed Erlang, which uses a single TCP connection between nodes, storing 
+large objects [3] can create throughput problems in the cluster such as head of 
+line blocking [1] and filling up the Erlang’s bounded distribution buffers 
+(messages are stored here waiting to be sent over the TCP connection; any 
+message attempting to perform a TCP send will synchronize on this buffer) [2]. 
+
+Increasing zdbbl increases the size of this buffer, which, if you’re system has 
+the available memory is a smart choice.  Carefully balance increasing the 
+distribution buffer size with available system memory, given you don’t want to 
+overflow into virtual memory, which will further slow down your system.
+
+If you’re going to be storing objects greater than 1 MB, we recommend using 
+Riak CS.
+
+- Christopher
+
+[1] <a  rel="nofollow" href="http://en.wikipedia.org/wiki/Head-of-line_blocking">http://en.wikipedia.org/wiki/Head-of-line_blocking</a>
+[2] 
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/community/faqs/logs/#riak-logs-have-busy_dist_port-messages">http://docs.basho.com/riak/latest/community/faqs/logs/#riak-logs-have-busy_dist_port-messages</a>
+[3] 
+<a  rel="nofollow" href="http://stackoverflow.com/questions/24389183/riak-returns-an-error-reading-large-object-of-size-when-a-mapreduce">http://stackoverflow.com/questions/24389183/riak-returns-an-error-reading-large-object-of-size-when-a-mapreduce</a>
+
+Christopher Meiklejohn
+Senior Software Engineer
+Basho Technologies, Inc.
+cmeiklej...@basho.com
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15826.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15827">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15827">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15828.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15826.html">Client get 503 response from riak server</a></span> <span class="sender italic">Bora Kou</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Client get 503 response from riak server</span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15828.html">Re: Client get 503 response from riak serv...</a></span> <span class="sender italic">Bora Kou</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Client get 503 response from riak server">
+<input type="hidden" name="msgid" value="8B189F08-81F2-4721-A6CE-C4964331BAB7@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15827.html">
+<input type="submit" value=" Christopher Meiklejohn ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Client+get+503+response+from+riak+server%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15826.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15828.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">8B189F08-81F2-4721-A6CE-C4964331BAB7@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

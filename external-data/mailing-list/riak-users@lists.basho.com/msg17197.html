@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Yokozuna inconsistent search results</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17197" id="c">
+<link rel="index" href="maillist.html#17197" id="i">
+<link rel="prev" href="msg17196.html" id="p">
+<link rel="next" href="msg17198.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17197.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Yokozuna+inconsistent+search+results%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Yokozuna inconsistent search results</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Fred+Dushin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Fred Dushin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160405" rel="nofollow">Tue, 05 Apr 2016 12:43:16 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Oleksiy,
+
+I assume you are getting this information through riak-admin.  Can you post the 
+results here?</pre><pre>
+
+If you want to dig deeper, you can probe the individual hash trees for their 
+build time.  I will paste a few snippets of erlang here, which I am hoping you 
+can extend to use with list comprehensions and rpc:multicalls.  If that's too 
+much to ask, let us know and I can try to put something together that is more 
+&quot;big easy button&quot;.
+
+First, on any individual node, you can get the Riak partitions on that node, via
+
+(dev1@127.0.0.1)1&gt; Partitons = [P || {_, P, _} &lt;- 
+riak_core_vnode_manager:all_vnodes(riak_kv_vnode)]. 
+[913438523331814323877303020447676887284957839360,
+ 182687704666362864775460604089535377456991567872,
+ 1187470080331358621040493926581979953470445191168,
+ 730750818665451459101842416358141509827966271488,
+ 1370157784997721485815954530671515330927436759040,
+ 1004782375664995756265033322492444576013453623296,
+ 822094670998632891489572718402909198556462055424,
+ 456719261665907161938651510223838443642478919680,
+ 274031556999544297163190906134303066185487351808,
+ 1096126227998177188652763624537212264741949407232,
+ 365375409332725729550921208179070754913983135744,
+ 91343852333181432387730302044767688728495783936,
+ 639406966332270026714112114313373821099470487552,0,
+ 1278813932664540053428224228626747642198940975104,
+ 548063113999088594326381812268606132370974703616]
+
+For any one partition, you can get to the Pid associated with the 
+yz_index_hashtree associated with that partition, e.g.,
+
+(dev1@127.0.0.1)2&gt; {ok, Pid} = 
+yz_entropy_mgr:get_tree(913438523331814323877303020447676887284957839360). 
+{ok,&lt;0.2872.0&gt;}
+
+and from there you can get the state information about the hahstree, which 
+includes its build time.  You can read the record definitions associated with 
+the yz_index_hashtree state by calling rr() on the yz_index_hashtree module 
+first, if you want to make the state slightly more readable:
+
+(dev1@127.0.0.1)3&gt; rr(yz_index_hashtree).
+[entropy_data,state,xmerl_event,xmerl_fun_states,
+ xmerl_scanner,xmlAttribute,xmlComment,xmlContext,xmlDecl,
+ xmlDocument,xmlElement,xmlNamespace,xmlNode,xmlNsNode,
+ xmlObj,xmlPI,xmlText]
+(dev1@127.0.0.1)5&gt; sys:get_state(Pid).                      
+#state{index = 913438523331814323877303020447676887284957839360,
+       built = true,expired = false,lock = undefined,
+       path = 
+&quot;./data/yz_anti_entropy/913438523331814323877303020447676887284957839360&quot;,
+       build_time = {1459,801655,506719},
+       trees = [{{867766597165223607683437869425293042920709947392,
+                  3},
+                 {state,&lt;&lt;152,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...&gt;&gt;,
+                        
+913438523331814323877303020447676887284957839360,3,1048576,
+                        1024,0,
+                        {dict,0,16,16,8,80,48,{[],[],...},{{...}}},
+                        &lt;&lt;&gt;&gt;,
+                        
+&quot;./data/yz_anti_entropy/913438523331814323877303020447676887284957839360&quot;,
+                        &lt;&lt;&gt;&gt;,incremental,[],0,
+                        {array,38837,0,...}}},
+                {{890602560248518965780370444936484965102833893376,3},
+                 {state,&lt;&lt;156,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...&gt;&gt;,
+                        
+913438523331814323877303020447676887284957839360,3,1048576,
+                        1024,0,
+                        {dict,0,16,16,8,80,48,{[],...},{...}},
+                        &lt;&lt;&gt;&gt;,
+                        
+&quot;./data/yz_anti_entropy/913438523331814323877303020447676887284957839360&quot;,
+                        &lt;&lt;&gt;&gt;,incremental,[],0,
+                        {array,38837,...}}},
+                {{913438523331814323877303020447676887284957839360,3},
+                 {state,&lt;&lt;160,0,0,0,0,0,0,0,0,0,0,0,0,0,...&gt;&gt;,
+                        
+913438523331814323877303020447676887284957839360,3,1048576,
+                        1024,0,
+                        {dict,0,16,16,8,80,48,{...},...},
+                        &lt;&lt;&gt;&gt;,
+                        
+&quot;./data/yz_anti_entropy/913438523331814323877303020447676887284957839360&quot;,
+                        &lt;&lt;&gt;&gt;,incremental,[],0,
+                        {array,...}}}],
+       closed = false}
+
+You can convert the timestamp to local time via:
+
+(dev1@127.0.0.1)8&gt; calendar:now_to_local_time({1459,801655,506719}).
+{{2016,4,4},{16,27,35}}
+
+Again, this is just an example, but with the right erlang incantations, you 
+should be able to iterate over all the timestamps across all the nodes.
+
+Let us know if that is helpful, or if you need more examples so you can do it 
+in one swipe.
+
+-Fred
+
+&gt; On Apr 5, 2016, at 9:29 AM, Oleksiy Krivoshey &lt;oleks...@gmail.com&gt; wrote:
+&gt; 
+&gt; How can I check that AAE trees have expired? Yesterday I ran &quot; 
+&gt; riak_core_util:rpc_every_member_ann(yz_entropy_mgr, expire_trees, [], 5000).&quot; 
+&gt; on each node (just to be sure). Still today I see that on 3 nodes (of 5) all 
+&gt; entropy tress and all last AAE exchanges are older than 20 days.
+&gt; 
+&gt; On 4 April 2016 at 17:15, Oleksiy Krivoshey &lt;oleks...@gmail.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:oleks...@gmail.com">mailto:oleks...@gmail.com</a>&gt;&gt; wrote:
+&gt; Continuation...
+&gt; 
+&gt; The new index has the same inconsistent search results problem. 
+&gt; I was making a snapshot of `search aae-status` command almost each day. There 
+&gt; were absolutely no Yokozuna errors in logs. 
+&gt; 
+&gt; I can see that some AAE trees were not expired (built &gt; 20 days ago). I can 
+&gt; also see that on two nodes (of 5) last AAE exchanges happened &gt; 20 days ago.
+&gt; 
+&gt; For now I have issued ` riak_core_util:rpc_every_member_ann(yz_entropy_mgr, 
+&gt; expire_trees, [], 5000).` on each node again. I will wait 10 days more but I 
+&gt; don't think that will fix anything. 
+&gt; 
+&gt; 
+&gt; On 25 March 2016 at 09:28, Oleksiy Krivoshey &lt;oleks...@gmail.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:oleks...@gmail.com">mailto:oleks...@gmail.com</a>&gt;&gt; wrote:
+&gt; One interesting moment happened when I tried removing the index:
+&gt; 
+&gt; - this index was associated with a bucket type, called fs_chunks
+&gt; - so I first called RpbSetBucketTypeReq to set search_index: _dont_index_
+&gt; - i then tried to remove the index with RpbYokozunaIndexDeleteReq which 
+&gt; failed with &quot;index is in use&quot; and list of all buckets of the fs_chunks type
+&gt; - for some reason all these buckets had their own search_index property set 
+&gt; to that same index
+&gt; 
+&gt; How can this happen if I definitely never set the search_index property per 
+&gt; bucket?
+&gt; 
+&gt; On 24 March 2016 at 22:41, Oleksiy Krivoshey &lt;oleks...@gmail.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:oleks...@gmail.com">mailto:oleks...@gmail.com</a>&gt;&gt; wrote:
+&gt; OK!
+&gt; 
+&gt; On 24 March 2016 at 21:11, Magnus Kessler &lt;mkess...@basho.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:mkess...@basho.com">mailto:mkess...@basho.com</a>&gt;&gt; wrote:
+&gt; Hi Oleksiy,
+&gt; 
+&gt; On 24 March 2016 at 14:55, Oleksiy Krivoshey &lt;oleks...@gmail.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:oleks...@gmail.com">mailto:oleks...@gmail.com</a>&gt;&gt; wrote:
+&gt; Hi Magnus,
+&gt; 
+&gt; Thanks! I guess I will go with index deletion because I've already tried 
+&gt; expiring the trees before.
+&gt; 
+&gt; Do I need to delete AAE data somehow or removing the index is enough?
+&gt; 
+&gt; If you expire the AAE trees with the commands I posted earlier, there should 
+&gt; be no need to remove the AAE data directories manually.
+&gt; 
+&gt; I hope this works for you. Please monitor the tree rebuild and exchanges with 
+&gt; `riak-admin search aae-status` for the next few days. In particular the 
+&gt; exchanges should be ongoing on a continuous basis once all trees have been 
+&gt; rebuilt. If they don't, please let me know. At that point you should also 
+&gt; gather `riak-debug` output from all nodes before it gets rotated out after 5 
+&gt; days by default.
+&gt; 
+&gt; Kind Regards,
+&gt; 
+&gt; Magnus
+&gt;  
+&gt; 
+&gt; On 24 March 2016 at 13:28, Magnus Kessler &lt;mkess...@basho.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:mkess...@basho.com">mailto:mkess...@basho.com</a>&gt;&gt; wrote:
+&gt; Hi Oleksiy,
+&gt; 
+&gt; As a first step, I suggest to simply expire the Yokozuna AAE trees again if 
+&gt; the output of `riak-admin search aae-status` still suggests that no recent 
+&gt; exchanges have taken place. To do this, run `riak attach` on one node and then
+&gt; 
+&gt; riak_core_util:rpc_every_member_ann(yz_entropy_mgr, expire_trees, [], 5000).
+&gt; 
+&gt; Exit from the riak console with `Ctrl+G q`.
+&gt; 
+&gt; Depending on your settings and amount of data the full index should be 
+&gt; rebuilt within the next 2.5 days (for a cluster with ring size 128 and 
+&gt; default settings). You can monitor the progress with `riak-admin search 
+&gt; aae-status` and also in the logs, which should have messages along the lines 
+&gt; of
+&gt; 
+&gt; 2016-03-24 10:28:25.372 [info] &lt;0.4647.6477&gt;@yz_exchange_fsm:key_exchange:179 
+&gt; Repaired 83055 keys during active anti-entropy exchange of partition 
+&gt; 1210306043414653979137426502093171875652569137152 for preflist 
+&gt; {1164634117248063262943561351070788031288321245184,3}
+&gt; 
+&gt; 
+&gt; Re-indexing can put additional strain on the cluster and may cause elevated 
+&gt; latency on a cluster already under heavy load. Please monitor the response 
+&gt; times while the cluster is re-indexing data.
+&gt; 
+&gt; If the cluster load allows it, you can force more rapid re-indexing by 
+&gt; changing a few parameters. Again at the `riak attach` console, run
+&gt; 
+&gt; riak_core_util:rpc_every_member_ann(application, set_env, [yokozuna, 
+&gt; anti_entropy_build_limit, {4, 60000}], 5000).
+&gt; riak_core_util:rpc_every_member_ann(application, set_env, [yokozuna, 
+&gt; anti_entropy_concurrency, 5], 5000).
+&gt; This will allow up to 4 trees per node to be built/exchanged per hour, with 
+&gt; up to 5 concurrent exchanges throughout the cluster. To return back to the 
+&gt; default settings, use
+&gt; 
+&gt; riak_core_util:rpc_every_member_ann(application, set_env, [yokozuna, 
+&gt; anti_entropy_build_limit, {1, 360000}], 5000).
+&gt; riak_core_util:rpc_every_member_ann(application, set_env, [yokozuna, 
+&gt; anti_entropy_concurrency, 2], 5000).
+&gt; 
+&gt; If the cluster still doesn't make any progress with automatically re-indexing 
+&gt; data, the next steps are pretty much what you already suggested, to drop the 
+&gt; existing index and re-index from scratch. I'm assuming that losing the 
+&gt; indexes temporarily is acceptable to you at this point.
+&gt; 
+&gt; Using any client API that supports RpbYokozunaIndexDeleteReq, you can drop 
+&gt; the index from all Solr instances, losing any data stored there immediately. 
+&gt; Next, you'll have to re-create the index. I have tried this with the python 
+&gt; API, where I deleted the index and re-created it with the same already 
+&gt; uploaded schema:
+&gt; 
+&gt; from riak import RiakClient
+&gt; 
+&gt; c = RiakClient()
+&gt; c.delete_search_index('my_index')
+&gt; c.create_search_index('my_index', 'my_schema')
+&gt; 
+&gt; Note that simply deleting the index does not remove it's existing association 
+&gt; with any bucket or bucket type. Any PUT operations on these buckets will lead 
+&gt; to indexing failures being logged until the index has been recreated. 
+&gt; However, this also means that no separate operation in `riak-admin` is 
+&gt; required to associate the newly recreated index with the buckets again.
+&gt; 
+&gt; After recreating the index expire the trees as explained previously.
+&gt; 
+&gt; Let us know if this solves your issue.
+&gt; 
+&gt; Kind Regards,
+&gt; 
+&gt; Magnus
+&gt; 
+&gt; 
+&gt; On 24 March 2016 at 08:44, Oleksiy Krivoshey &lt;oleks...@gmail.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:oleks...@gmail.com">mailto:oleks...@gmail.com</a>&gt;&gt; wrote:
+&gt; This is how things are looking after two weeks:
+&gt; 
+&gt; - there are no solr indexing issues for a long period (2 weeks)
+&gt; - there are no yokozuna errors at all for 2 weeks
+&gt; - there is an index with all empty schema, just _yz_* fields, objects stored 
+&gt; in a bucket(s) are binary and so are not analysed by yokozuna
+&gt; - same yokozuna query repeated gives different number for num_found, 
+&gt; typically the difference between real number of keys in a bucket and 
+&gt; num_found is about 25%
+&gt; - number of keys repaired by AAE (according to logs) is about 1-2 per few 
+&gt; hours (number of keys &quot;missing&quot; in index is close to 1,000,000)
+&gt; 
+&gt; Should I now try to delete the index and yokozuna AAE data and wait another 2 
+&gt; weeks? If yes - how should I delete the index and AAE data? Will 
+&gt; RpbYokozunaIndexDeleteReq be enough?
+&gt; 
+&gt; 
+&gt;  
+&gt; -- 
+&gt; Magnus Kessler
+&gt; Client Services Engineer
+&gt; Basho Technologies Limited
+&gt; 
+&gt; Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg 07970431
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; -- 
+&gt; Magnus Kessler
+&gt; Client Services Engineer
+&gt; Basho Technologies Limited
+&gt; 
+&gt; Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg 07970431
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17196.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17197">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17197">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17198.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17161.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17162.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17170.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17171.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17172.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17173.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17174.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17175.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17185.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17196.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Yokozuna inconsistent search results</span> <span class="sender italic">Fred Dushin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17198.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17200.html">Re: Yokozuna inconsistent search results</a></span> <span class="sender italic">Oleksiy Krivoshey</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Yokozuna inconsistent search results">
+<input type="hidden" name="msgid" value="E26832C4-86F5-4F2D-B536-61C8A0C41974@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17197.html">
+<input type="submit" value=" Fred Dushin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Yokozuna+inconsistent+search+results%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17196.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17198.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">E26832C4-86F5-4F2D-B536-61C8A0C41974@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Uneven distribution of partitions in RIAK cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17791" id="c">
+<link rel="index" href="maillist.html#17791" id="i">
+<link rel="prev" href="msg17747.html" id="p">
+<link rel="next" href="msg17738.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17791.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Uneven+distribution+of+partitions+in+RIAK+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Uneven distribution of partitions in RIAK cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Semov%2C+Raymond%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Semov, Raymond</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20161129" rel="nofollow">Tue, 29 Nov 2016 12:44:11 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Drew,
+Thank you for the response! I would love to consider the claim_v2 -&gt; claim_v3 
+but since it’s experimental I’d rather not, I’m dealing with a RIAK cluster 
+that is in production.
+What I will end up doing is (after our team cleans up all the junk in the 
+cluster) have a node leave the cluster and then rejoin. That’ll fix the 
+fragmentation that will happen after the old data purge as well.</pre><pre>
+
+From: Drew Pirrone-Brusse 
+&lt;dpirrone-bru...@basho.com&lt;<a  rel="nofollow" href="mailto:dpirrone-bru...@basho.com">mailto:dpirrone-bru...@basho.com</a>&gt;&gt;
+Date: Monday, November 14, 2016 at 10:05 AM
+To: &quot;Semov, Raymond&quot; &lt;rse...@ebay.com&lt;<a  rel="nofollow" href="mailto:rse...@ebay.com">mailto:rse...@ebay.com</a>&gt;&gt;
+Cc: &quot;riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;&quot; 
+&lt;riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;&gt;
+Subject: Re: Uneven distribution of partitions in RIAK cluster
+
+Hi Ray,
+
+Riak's partition distribution is automatically calculated using our 
+nondeterministic `claim` algorithm. That system is able to re-balance clusters, 
+but is typically only run during membership operations; joining, leaving, or 
+replacing nodes. The uneven partition distribution won't self-heal unless you 
+add a new node to this cluster.
+
+We can force a re-balance of this sort of uneven distribution by temporarily 
+switching from `claim_v2` to `claim_v3`, and triggering a membership 
+recalculation. `claim_v3` is still an experimental system that is much more 
+aggressive about avoiding preflist violations and lumpy claims, without much 
+regard for limiting the scope of membership changes. With `claim_v2`, the 
+addition of a new node to an existing cluster will almost always only involve 
+moving partitions off of existing nodes and onto the new node. With `claim_v3`, 
+it's somewhat common to see partitions also being moved between existing 
+partitions in order to prevent lumpy claims.
+
+These unpredictable spikes in membership changes have caused serious problems 
+for our customers in the past, and they are nearly impossible to plan for, so 
+we don't advise using `claim_v3` for the majority of operations.
+
+To enable `claim_v3` and trigger a re-balance of the ring,
+
+1. Enable the use of `claim_v3` by opening a `riak attach` session on any node 
+in this cluster, and running the below snippets,
+
+    rpc:multicall(application, set_env, [riak_core, wants_claim_fun, 
+{riak_core_claim, wants_claim_v3}]).
+    rpc:multicall(application, set_env, [riak_core, choose_claim_fun, 
+{riak_core_claim, choose_claim_v3}]).
+
+(Please note, the `.`s are syntactically significant in Erlang, and you can 
+exit `attach` sessions with `ctrl+g, q, enter`.)
+
+2. Determine which node is currently the Claimant by running `riak-admin 
+ring-status` on any node in the cluster. Look for the line similar to 
+`Claimant: 'dev2@127.0.0.1&lt;<a  rel="nofollow" href="mailto:dev2@127.0.0.1">mailto:dev2@127.0.0.1</a>&gt;'`.
+
+3. Stop the claimant. In this case I would run `riak stop` on 
+dev2@127.0.0.1&lt;<a  rel="nofollow" href="mailto:dev2@127.0.0.1">mailto:dev2@127.0.0.1</a>&gt;.
+
+4. Trigger the election of a new claimant by marking the current claimant DOWN 
+in the ring. In this case, I would run `riak-admin down 
+dev2@127.0.0.1&lt;<a  rel="nofollow" href="mailto:dev2@127.0.0.1">mailto:dev2@127.0.0.1</a>&gt;` on any active node in this cluster.
+
+5. Verify the reelection with `riak-admin ring-status` (checking to make sure 
+the claimant has changed), and restart the node that was previously stopped.
+
+At this time the rebalance should have occurred and membership transfers 
+started.
+
+6. To disable `claim_v3`, open another `riak attach` session on any node in 
+this cluster, and run the below snippets,
+
+    rpc:multicall(application, set_env, [riak_core, wants_claim_fun, 
+{riak_core_claim, default_wants_claim}]).
+    rpc:multicall(application, set_env, [riak_core, choose_claim_fun, 
+{riak_core_claim, default_choose_claim}]).
+
+This can be done while the transfers are in-flight. The new plan will have 
+already been injected into the ring.
+
+I hope this helps.
+Best regards,
+-Drew
+
+On Fri, Nov 11, 2016 at 2:13 PM, Semov, Raymond 
+&lt;rse...@ebay.com&lt;<a  rel="nofollow" href="mailto:rse...@ebay.com">mailto:rse...@ebay.com</a>&gt;&gt; wrote:
+I have a 5-node cluster with 12 partitions in 4 of the nodes and 16 partitions 
+in node #5. That is causing dangerously high disk utilization in that node. I 
+plowed thru the documentation and Googled the hell out of it but I can’t find 
+info on how rebalance the extra 4 partitions on the 4 underutilized nodes. The 
+docs say the cluster balances itself but that’s apparently not the case here. 
+Can anyone give any suggestions?
+I run RIAK version 1.4.8 on Linux kernel 3.13
+Ray
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com&lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17747.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17791">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17791">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17738.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17737.html">Uneven distribution of partitions in RIAK cluster</a></span> <span class="sender italic">Semov, Raymond</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17747.html">Re: Uneven distribution of partitions in RIAK clu...</a></span> <span class="sender italic">Drew Pirrone-Brusse</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Uneven distribution of partitions in RIAK...</span> <span class="sender italic">Semov, Raymond</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Uneven distribution of partitions in RIAK cluster">
+<input type="hidden" name="msgid" value="340606A5-6787-4DC0-B87B-88261F73D89A@ebay.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17791.html">
+<input type="submit" value=" Semov, Raymond ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Uneven+distribution+of+partitions+in+RIAK+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17747.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17738.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">340606A5-6787-4DC0-B87B-88261F73D89A@ebay.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Java Client update vs store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15806" id="c">
+<link rel="index" href="maillist.html#15806" id="i">
+<link rel="prev" href="msg15805.html" id="p">
+<link rel="next" href="msg15630.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15806.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client+update+vs+store%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Java Client update vs store</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Cosmin+Marginean%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Cosmin Marginean</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150227" rel="nofollow">Fri, 27 Feb 2015 13:27:49 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thanks Brian, looking forward to the new client.
+Thanks for the workaround too!</pre><pre>
+
+Cheers
+Cos
+
+
+
+On Friday, 27 February 2015 at 18:45, Brian Roach wrote:
+
+&gt; This was due to the UpdateValueFuture not checking for the exception
+&gt; when the get() methods were called. Just fixed this, it'll be in the
+&gt; very-soon-to-be-cut 2.0.1 release.
+&gt;  
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client/pull/503">https://github.com/basho/riak-java-client/pull/503</a>
+&gt;  
+&gt; Sync calls are just a wrapper around the async call that calls get() -
+&gt; You can currently work around this by calling UpdateValue async:
+&gt;  
+&gt; RiakFuture&lt;UpdateValue.Response, Location&gt; future =
+&gt; Riakclient.executeAsync(updateOp);
+&gt;  
+&gt; future.await();
+&gt; if (future.isSuccess()) {
+&gt; ...
+&gt; } else {
+&gt; ...
+&gt; }
+&gt;  
+&gt; Thanks,
+&gt; - Roach
+&gt;  
+&gt; On Tue, Feb 3, 2015 at 3:39 PM, Cosmin Marginean &lt;cosmin...@gmail.com 
+&gt; (<a  rel="nofollow" href="mailto:cosmin...@gmail.com">mailto:cosmin...@gmail.com</a>)&gt; wrote:
+&gt; &gt; I have an edge case where consistency is favoured over availability so I’m
+&gt; &gt; using a &quot;consistent&quot;: true bucket type for a very specific operation.
+&gt; &gt; I worked in testing my setup so ended up faking an entire failure by
+&gt; &gt; deliberately using an incorrect vClock.
+&gt; &gt;  
+&gt; &gt; Using StoreValue, the (second) write fails as expected
+&gt; &gt;  
+&gt; &gt; FetchValue fetchOp = new FetchValue.Builder(location(id)).build();
+&gt; &gt; VClock vClock = client.execute(fetchOp).getVectorClock();
+&gt; &gt; //fiddle with vClock or allow the first write to finish before the next
+&gt; &gt; step
+&gt; &gt; StoreValue storeOp = new StoreValue.Builder(value)
+&gt; &gt; .withVectorClock(vClock)
+&gt; &gt; .withLocation(location(id)).build();
+&gt; &gt; StoreValue.Response response = client.execute(storeOp);
+&gt; &gt;  
+&gt; &gt;  
+&gt; &gt; Caused by: com.basho.riak.client.core.netty.RiakResponseException: failed
+&gt; &gt; at
+&gt; &gt; com.basho.riak.client.core.netty.RiakResponseHandler.channelRead(RiakResponseHandler.java:52)
+&gt; &gt; at
+&gt; &gt; io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+&gt; &gt; at
+&gt; &gt; io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+&gt; &gt;  
+&gt; &gt;  
+&gt; &gt; I managed to override the UpdateValue class to simulate a similar failure
+&gt; &gt; scenario (so I don’t have to do the fetch + store myself). I was expecting a
+&gt; &gt; similar result, however, after some analysis I realised that an exception is
+&gt; &gt; being swallowed somewhere.
+&gt; &gt; I believe the trouble might be around this area:
+&gt; &gt; <a  rel="nofollow" href="https://github.com/basho/riak-java-client/blob/develop/src/main/java/com/basho/riak/client/api/commands/kv/UpdateValue.java#L581">https://github.com/basho/riak-java-client/blob/develop/src/main/java/com/basho/riak/client/api/commands/kv/UpdateValue.java#L581</a>
+&gt; &gt;  
+&gt; &gt; The exception is not allowed to bubble up to the client code. Additionally,
+&gt; &gt; another net effect of this seems to be that a null response is returned here
+&gt; &gt;  
+&gt; &gt; UpdateValue.Response res = client.execute(updateOp);
+&gt; &gt;  
+&gt; &gt; So a call to res.wasUpdated() will produce a NPE!
+&gt; &gt;  
+&gt; &gt; The way I see it, this code needs to either
+&gt; &gt; 1) return not-null res and res.wasUpdated() as false
+&gt; &gt; or
+&gt; &gt; 2) allow the exception to bubble up
+&gt; &gt;  
+&gt; &gt; Please let me know your thoughts
+&gt; &gt;  
+&gt; &gt; Thank you
+&gt; &gt; Cos
+&gt; &gt;  
+&gt; &gt;  
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com (<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>)
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;  
+&gt;  
+&gt;  
+&gt;  
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15805.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15806">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15806">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15630.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15629.html">Java Client update vs store</a></span> <span class="sender italic">Cosmin Marginean</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15805.html">Re: Java Client update vs store</a></span> <span class="sender italic">Brian Roach</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Java Client update vs store</span> <span class="sender italic">Cosmin Marginean</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Java Client update vs store">
+<input type="hidden" name="msgid" value="33B940E1EEFE41048291DD4AE20773B9@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15806.html">
+<input type="submit" value=" Cosmin Marginean ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client+update+vs+store%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15805.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15630.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">33B940E1EEFE41048291DD4AE20773B9@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

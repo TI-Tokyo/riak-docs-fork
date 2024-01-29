@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: speeding up bulk loading</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17625" id="c">
+<link rel="index" href="maillist.html#17625" id="i">
+<link rel="prev" href="msg17624.html" id="p">
+<link rel="next" href="msg17611.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17625.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+speeding+up+bulk+loading%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: speeding up bulk loading</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Guido+Medina%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Guido Medina</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160906" rel="nofollow">Tue, 06 Sep 2016 09:04:28 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Travis,
+
+</pre><tt>I have done similar things using the Java client but I will assume you 
+</tt><tt>have access to change certain settings at the C client, assuming you 
+</tt><tt>have RW = 2 and N =3, your client is returning to you once 2 writes are 
+</tt><tt>made but an asynchronous write is still pending which will eventually 
+</tt><tt>create lots of back pressure and overload your Riak nodes.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>Concurrently speaking don't use more than 8 writer threads for this and 
+</tt><tt>set RW = N (in your case 3) for this tasks so that each write blocks, 
+</tt><tt>that way you won't hit a high back pressure.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Have some sort of blocking queue where you can only put up to (as an 
+</tt><tt>example) 500 tasks, 4 to 8 writer threads consuming from such queue, so 
+</tt><tt>here is a brief description of what I recommend:
+</tt><pre style="margin: 0em;">
+
+ * RW = N (in this case 3) so that your write operation blocks and
+   don't leave asynchronous tasks pending for the Riak cluster.
+ * Don't exceed say, 8 writers (I have been there, more threads won't
+   really help, sometimes 4 will just write faster than 8)
+ * Have a bounded blocking queue (example max size = 500) where you
+   schedule your tasks which the writer threads consume from.
+
+</pre><tt>Try that and see if that helps, I'm quite certain that at using such 
+</tt><tt>mechanism it will be consistent and your Riak nodes should never crash.
+</tt><pre style="margin: 0em;">
+
+Best regards,
+
+Guido.
+
+On 06/09/16 16:42, Travis Kirstine wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+
+Thank Alexander, we’re using HAproxy
+
+*From:*Alexander Sicular [<a  rel="nofollow" href="mailto:sicul...@basho.com">mailto:sicul...@basho.com</a>]
+*Sent:* September-06-16 11:09 AM
+*To:* Travis Kirstine &lt;tkirst...@firstbasesolutions.com&gt;
+*Cc:* Magnus Kessler &lt;mkess...@basho.com&gt;; riak-users@lists.basho.com
+*Subject:* Re: speeding up bulk loading
+
+Hi Travis,
+
+</pre><tt>I also want to confirm that you are spreading your load amongst all 
+</tt><tt>nodes in the cluster. You should be connecting your C client to Riak 
+</tt><tt>via a proxy like nginx/HAproxy/F5 [0]. The proxy will do a round 
+</tt><tt>robin/least connections distribution to all nodes in the cluster. This 
+</tt><tt>will greatly increase performance if you are not already doing it.
+</tt><pre style="margin: 0em;">
+
+-alexander
+
+[0] <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.1.4/configuring/load-balancing-proxy/">http://docs.basho.com/riak/kv/2.1.4/configuring/load-balancing-proxy/</a>
+
+
+
+
+Alexander Sicular
+
+Solutions Architect
+
+Basho Technologies
+9175130679
+
+@siculars
+
+</pre><tt>On Wed, Aug 31, 2016 at 10:41 AM, Travis Kirstine 
+</tt><tt>&lt;tkirst...@firstbasesolutions.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:tkirst...@firstbasesolutions.com">mailto:tkirst...@firstbasesolutions.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    Magnus
+
+    Thanks for your reply.  We’re are using the riack C client library
+    for riak (<a  rel="nofollow" href="https://github.com/trifork/riack">https://github.com/trifork/riack</a>) which is used within
+    an application called MapCache to store 256x256 px images with a
+    corresponding key within riak.  Currently we have 75 million
+    images to transfer from disk into riak which is being done
+    concurrently.  Periodically this transfer process will crash
+
+    Riak is setup using n=3 on 5 nodes with a leveldb backend.  Each
+    server has 45GB of memory and 16 cores with  standard hard
+    drives.  We made no significant modification to the riak.conf
+    except upping the leveldb.maximum_memory.percent to 70 and
+    tweeking the sysctl.conf as follows
+
+    vm.swappiness = 0
+
+    net.ipv4.tcp_max_syn_backlog = 40000
+
+    net.core.somaxconn = 40000
+
+    net.core.wmem_default = 8388608
+
+    net.core.rmem_default = 8388608
+
+    net.ipv4.tcp_sack = 1
+
+    net.ipv4.tcp_window_scaling = 1
+
+    net.ipv4.tcp_fin_timeout = 15
+
+    net.ipv4.tcp_keepalive_intvl = 30
+
+    net.ipv4.tcp_tw_reuse = 1
+
+    net.ipv4.tcp_moderate_rcvbuf = 1
+
+    # Increase the open file limit
+
+    # fs.file-max = 65536 # current setting
+
+    I have seen this error in the logs
+
+    2016-08-30 22:26:07.180 [error] &lt;0.20777.512&gt; CRASH REPORT Process
+    &lt;0.20777.512&gt; with 0 neighbours crashed with reason: no function
+    clause matching
+    webmachine_request:peer_from_peername({error,enotconn},
+    
+{webmachine_request,{wm_reqstate,#Port&lt;0.2817336&gt;,[],undefined,undefined,undefined,{wm_reqdata,'GET',...},...}})
+    line 150
+
+    Regards
+
+    *From:*Magnus Kessler [<a  rel="nofollow" href="mailto:mkess...@basho.com">mailto:mkess...@basho.com</a>
+    &lt;<a  rel="nofollow" href="mailto:mkess...@basho.com">mailto:mkess...@basho.com</a>&gt;]
+    *Sent:* August-31-16 4:08 AM
+    *To:* Travis Kirstine &lt;tkirst...@firstbasesolutions.com
+    &lt;<a  rel="nofollow" href="mailto:tkirst...@firstbasesolutions.com">mailto:tkirst...@firstbasesolutions.com</a>&gt;&gt;
+    *Cc:* riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    *Subject:* Re: speeding up bulk loading
+
+    On 26 August 2016 at 22:20, Travis Kirstine
+    &lt;tkirst...@firstbasesolutions.com
+    &lt;<a  rel="nofollow" href="mailto:tkirst...@firstbasesolutions.com">mailto:tkirst...@firstbasesolutions.com</a>&gt;&gt; wrote:
+
+        Is there any way to speed up bulk loading?  I wondering if I
+        should be tweeking the erlang, aae or other config options?
+
+    Hi Travis,
+
+    Excuse the late reply; your message had been stuck in the
+    moderation queue. Please consider subscribing to this list.
+
+    Without knowing more about how you perform bulk uploads, it's
+    difficult to recommend any changes. Are you using the HTTP REST
+    API or one of the client libraries, which use protocol buffers by
+    default? What concerns do you have about the upload performance?
+    Please let us know a bit more about your setup.
+
+    Kind Regards,
+
+    Magnus
+
+</pre><tt>    -- 
+</tt><tt>
+</tt><pre style="margin: 0em;">
+    Magnus Kessler
+
+    Client Services Engineer
+
+    Basho Technologies Limited
+
+    Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg
+    07970431
+
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17624.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17625">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17625">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17611.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17609.html">speeding up bulk loading</a></span> <span class="sender italic">Travis Kirstine</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17610.html">Re: speeding up bulk loading</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17615.html">RE: speeding up bulk loading</a></span> <span class="sender italic">Travis Kirstine</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17616.html">Re: speeding up bulk loading</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17623.html">Re: speeding up bulk loading</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17624.html">RE: speeding up bulk loading</a></span> <span class="sender italic">Travis Kirstine</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: speeding up bulk loading</span> <span class="sender italic">Guido Medina</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: speeding up bulk loading">
+<input type="hidden" name="msgid" value="81e62cfe-4b24-4a98-6746-271bf7461084@temetra.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17625.html">
+<input type="submit" value=" Guido Medina ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+speeding+up+bulk+loading%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17624.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17611.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">81e62cfe-4b24-4a98-6746-271bf7461084@temetra.com</li>
+</ul>
+</div>
+</body>
+</html>

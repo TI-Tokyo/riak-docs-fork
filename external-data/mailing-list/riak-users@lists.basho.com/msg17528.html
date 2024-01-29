@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Recovering Riak data if it can no longer load in memory</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17528" id="c">
+<link rel="index" href="maillist.html#17528" id="i">
+<link rel="prev" href="msg17527.html" id="p">
+<link rel="next" href="msg17530.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17528.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Recovering+Riak+data+if+it+can+no+longer+load+in+memory%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Recovering Riak data if it can no longer load in memory</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160712" rel="nofollow">Tue, 12 Jul 2016 13:21:33 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>You can further reduce memory used by leveldb with the following setting in 
+riak.conf:</pre><pre>
+
+    leveldb.threads = 5
+
+The value &quot;5&quot; needs to be a prime number.  The system defaults to 71.  Many 
+Linux implementations will allocate 8Mbytes per thread for stack.  So bunches 
+of threads lead to bunches of memory reserved for stack.  That is fine on 
+servers with higher memory.  But probably part of your problem on a small 
+memory machine.
+
+The thread count is high to promote parallelism across vnodes on the same 
+server, especially with &quot;entropy = active&quot;.  So again, this setting is 
+sacrificing performance to save memory.
+
+Matthew
+
+P.S.  You really want 8 CPU cores, 4 as a dirt minimum.  And review this for 
+more cpu performance info:
+
+    <a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/riak-tuning-2">https://github.com/basho/leveldb/wiki/riak-tuning-2</a>
+
+
+
+&gt; On Jul 12, 2016, at 4:04 PM, Vikram Lalit &lt;vikramla...@gmail.com&gt; wrote:
+&gt; 
+&gt; Thanks much Matthew. Yes the server is low-memory given only development 
+&gt; right now - I'm using an AWS micro instance, so 1 GB RAM and 1 vCPU.
+&gt; 
+&gt; Thanks for the tip - let me try move the manifest file to a larger instance 
+&gt; and see how that works. More than reducing the memory footprint in dev, my 
+&gt; concern was more around reacting to a possible production scenario where the 
+&gt; db stops responding due to memory overload. Understood now that moving to a 
+&gt; larger instance should be possible. Thanks again.
+&gt; 
+&gt; On Tue, Jul 12, 2016 at 12:26 PM, Matthew Von-Maszewski &lt;matth...@basho.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:matth...@basho.com">mailto:matth...@basho.com</a>&gt;&gt; wrote:
+&gt; It would be helpful if you described the physical characteristics of the 
+&gt; servers:  memory size, logical cpu count, etc.
+&gt; 
+&gt; Google created leveldb to be highly reliable in the face of crashes.  If it 
+&gt; is not restarting, that suggests to me that you have a low memory condition 
+&gt; that is not able to load leveldb's MANIFEST file.  That is easily fixed by 
+&gt; moving the dataset to a machine with larger memory.
+&gt; 
+&gt; There is also a special flag to reduce Riak's leveldb memory foot print 
+&gt; during development work.  The setting reduces the leveldb performance, but 
+&gt; lets you run with less memory.
+&gt; 
+&gt; In riak.conf, set:
+&gt; 
+&gt; leveldb.limited_developer_mem = true
+&gt; 
+&gt; Matthew
+&gt; 
+&gt; 
+&gt; &gt; On Jul 12, 2016, at 11:56 AM, Vikram Lalit &lt;vikramla...@gmail.com 
+&gt; &gt; &lt;<a  rel="nofollow" href="mailto:vikramla...@gmail.com">mailto:vikramla...@gmail.com</a>&gt;&gt; wrote:
+&gt; &gt;
+&gt; &gt; Hi - I've been testing a Riak cluster (of 3 nodes) with an ejabberd 
+&gt; &gt; messaging cluster in front of it that writes data to the Riak nodes. Whilst 
+&gt; &gt; load testing the platform (by creating 0.5 million ejabberd users via 
+&gt; &gt; Tsung), I found that the Riak nodes suddenly crashed. My question is how do 
+&gt; &gt; we recover from such a situation if it were to occur in production?
+&gt; &gt;
+&gt; &gt; To provide further context / details, the leveldb log files storing the 
+&gt; &gt; data suddenly became too huge, thus making the AWS Riak instances not able 
+&gt; &gt; to load them in memory anymore. So we get a core dump if 'riak start' is 
+&gt; &gt; fired on those instances. I had an n_val = 2, and all 3 nodes went down 
+&gt; &gt; almost simultaneously, so in such a scenario, we cannot even rely on a 2nd 
+&gt; &gt; copy of the data. One way to of course prevent it in the first place would 
+&gt; &gt; be to use auto-scaling, but I'm wondering is there a ex post facto / post 
+&gt; &gt; the event recovery that can be performed in such a scenario? Is it possible 
+&gt; &gt; to simply copy the leveldb data to a larger memory instance, or to curtail 
+&gt; &gt; the data further to allow loading in the same instance?
+&gt; &gt;
+&gt; &gt; Appreciate if you can provide inputs - a tad concerned as to how we could 
+&gt; &gt; recover from such a situation if it were to happen in production (apart 
+&gt; &gt; from leveraging auto-scaling as a preventive measure).
+&gt; &gt;
+&gt; &gt; Thanks!
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt; &gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17527.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17528">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17528">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17530.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17525.html">Recovering Riak data if it can no longer load in mem...</a></span> <span class="sender italic">Vikram Lalit</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17526.html">Re: Recovering Riak data if it can no longer lo...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17527.html">Re: Recovering Riak data if it can no longe...</a></span> <span class="sender italic">Vikram Lalit</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Recovering Riak data if it can no l...</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17530.html">Re: Recovering Riak data if it can ...</a></span> <span class="sender italic">Vikram Lalit</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Recovering Riak data if it can no longer load in memory">
+<input type="hidden" name="msgid" value="9B795566-B4E7-4028-AD11-B1E61A52B000@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17528.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Recovering+Riak+data+if+it+can+no+longer+load+in+memory%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17527.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17530.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">9B795566-B4E7-4028-AD11-B1E61A52B000@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

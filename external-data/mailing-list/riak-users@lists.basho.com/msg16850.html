@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Two quick questions about X-RIak-Meta-* headers....</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16850" id="c">
+<link rel="index" href="maillist.html#16850" id="i">
+<link rel="prev" href="msg16849.html" id="p">
+<link rel="next" href="msg16853.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16850.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Two+quick+questions+about+X%5C-RIak%5C-Meta%5C-%5C%2A+headers....%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Two quick questions about X-RIak-Meta-* headers....</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Damien+Krotkine%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Damien Krotkine</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151207" rel="nofollow">Mon, 07 Dec 2015 22:38:12 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hi Joe,
+
+</pre><tt>First of all, what Dmitri says makes a lot of sense. From what I 
+</tt><tt>understand, you are trying to avoid wasting network bandwidth by 
+</tt><tt>transferring data where you only need the metadata of your keys. As 
+</tt><tt>Dmitri pointed out, if your replication factor is 3 (default), then Riak 
+</tt><tt>will internally query all the replica full *data* and metadata, then 
+</tt><tt>only return the metadata to the client. From a network perspective, 
+</tt><tt>you'll save network bandwidth *outside* of your cluster, but you'll use 
+</tt><tt>quite a lot of network bandwidth *inside* of your cluster. Maybe that's 
+</tt><tt>not an issue. But if it is, read on:
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>1/ first solution : as Dmitri suggested, the best approach is to 
+</tt><tt>decouple your metadata and data, if possible. If your key is &quot;my_stuff&quot;, 
+</tt><tt>then have your data stored in the bucket &quot;data&quot; and the metadata stored 
+</tt><tt>in the bucket &quot;metadata&quot;. So that you'd fetch &quot;metadata/my_stuff&quot;, then 
+</tt><tt>fetch &quot;data/my_stuff&quot;. This should make your life way easier, but the 
+</tt><tt>issue is that you loose the strong relationship between data and 
+</tt><tt>metadata. To try to mitigate this:
+</tt><tt> - when writing your data, start by writing &quot;data/my_stuff&quot; with 
+</tt><tt>conservative parameters ( w=3 for instance ) then wait for the 
+</tt><tt>successful write before storing the metadata. So that when the metadata 
+</tt><tt>is there, there is a very high chance that the data is there as well.
+</tt><tt>- when updating your data: ry to be smart, like marking the metadata as 
+</tt><tt>invalid or unavailable, while you change the data underneath then update 
+</tt><tt>the metadata
+</tt><tt>- be fault tolerant on your application: if you fetch some metadata, but 
+</tt><tt>the data is missing, retry, or wait, or gracefully fallback.
+</tt><tt>- be fault tolerant again: when fetching some data, have it contain a 
+</tt><tt>header or an id that must match with the metadata. If it doesn't match, 
+</tt><tt>you need to wait/retry/fallback
+</tt><tt>- if you don't want/can't handle that on the client side, it's possible 
+</tt><tt>to enrich the Riak API and have Riak do the bookeeping itself. If you're 
+</tt><tt>interested, let me know.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>2/ second solution: you don't want / can't separate metadata and data. 
+</tt><tt>In this case, you can try to reduce the network usage
+</tt><tt>- first, reduce the internal network usage inside the cluster. When 
+</tt><tt>querying the metadata, if you're using the PB API, you can pass &quot;n_val&quot; 
+</tt><tt>as parameter of your request. If you pass n_val=1, then Riak will not 
+</tt><tt>query the 3 replicas to fetch the value, instead it'll fetch only one 
+</tt><tt>replica, saving a lot of internal bandwidth.
+</tt><tt>- second, you can have your client query one of the primary node (where 
+</tt><tt>one of the replica is) for a given key. Coupled with passing n_val=1, 
+</tt><tt>Riak will not transfer anything on the internal network. you can check 
+</tt><tt>out <a  rel="nofollow" href="https://github.com/dams/riak_preflists">https://github.com/dams/riak_preflists</a> to find the primary nodes.
+</tt><pre style="margin: 0em;">
+
+Dmitri Zagidulin wrote:
+</pre><blockquote style="border-left: #5555EE solid 0.2em; margin: 0em; padding-left: 0.85em"><pre style="margin: 0em;">
+Hi Joe,
+
+</pre><tt>1. Yes, it's possible (with the HTTP HEAD request, or the client 
+</tt><tt>library equivalent (I'm pretty sure all the client libraries expose 
+</tt><tt>the 'return only the headers' part of the object fetch -- see the 
+</tt><tt>Optional Parameters head=true section of the PB API 
+</tt><tt><a  rel="nofollow" href="http://docs.basho.com/riak/latest/dev/references/protocol-buffers/fetch-object/">http://docs.basho.com/riak/latest/dev/references/protocol-buffers/fetch-object/</a> 
+</tt><tt>)).
+</tt><pre style="margin: 0em;">
+
+</pre><tt>However, this is not going to be very helpful in your case. Behind the 
+</tt><tt>scenes, a HEAD request still requests all replicas of an object -- 
+</tt><tt>*full* replicas, including the value. It's just that the node 
+</tt><tt>coordinating the request drops the actual object value before 
+</tt><tt>returning the metadata/headers to the client.
+</tt><tt>So, if you use this 'just give me the metadata' request, you're only 
+</tt><tt>saving on the cost of shipping the object value down the wire from the 
+</tt><tt>cluster to the client. But you're still incurring the cost of all 3 
+</tt><tt>copies of the object (so, 3-4MB, in your case) being transferred over 
+</tt><tt>the network between the nodes, as a result of that HEAD request.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>2. I don't know that there is a specific size limit on the object 
+</tt><tt>header values. However, this question is definitely a red flag -- it's 
+</tt><tt>very likely that you're trying to use the custom headers in a way that 
+</tt><tt>they weren't intended for.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Can you describe in more detail what's your use case? (As in, what are 
+</tt><tt>you trying to store as metadata, and why would retrieving just the 
+</tt><tt>headers be useful to you.)
+</tt><pre style="margin: 0em;">
+
+</pre><tt>Don't forget, that if you need to store a LOT of metadata on an 
+</tt><tt>object, and you can't do it within the object value itself (for 
+</tt><tt>example, when storing binary images), you can simply store a separate 
+</tt><tt>metadata object, in a different bucket, using the same key as the object.
+</tt><tt>For example, if I'm storing my primary objects in the 'blobs' bucket, 
+</tt><tt>I can also store a JSON object with corresponding metadata in a 
+</tt><tt>'blobs-meta' object, like so:
+</tt><pre style="margin: 0em;">
+
+/buckets/blobs/keys/blob123   --&gt;  binary object value
+/buckets/blobs-meta/keys/blob123   --&gt; json metadata object
+
+</pre><tt>The downsides of this setup is that you're now doing 2 writes for each 
+</tt><tt>object (one to the blobs bucket, and one to the meta bucket).
+</tt><pre style="margin: 0em;">
+But the benefits are considerable:
+
+</pre><tt>- You can store arbitrarily large metadata object (you're not abusing 
+</tt><tt>object headers by stuffing large values into them)
+</tt><tt>- Since the metadata object is likely to be much smaller than the 
+</tt><tt>object it's referring to, you can use the metadata object to check for 
+</tt><tt>an object's existence (or to get the actual headers that you care 
+</tt><tt>about) without the cost of requesting the full giant blob.
+</tt><pre style="margin: 0em;">
+
+Dmitri
+
+
+
+</pre><tt>On Mon, Nov 30, 2015 at 12:18 PM, Joe Olson &lt;technol...@nododos.com 
+</tt><tt>&lt;<a  rel="nofollow" href="mailto:technol...@nododos.com">mailto:technol...@nododos.com</a>&gt;&gt; wrote:
+</tt><pre style="margin: 0em;">
+
+    Two quick questions about X-RIak-Meta-* headers:
+
+    1. Is it possible to pull the headers for a key without pulling
+    the key itself? The reason I am interested in this is because the
+    values for our keys are in the 1.2-1.6 MB range, so the headers
+    are a lot smaller in comparison. I know I can index the headers
+    using Solr or 2i, but I am trying to involve the overhead of doing
+    that.
+
+    2. What are the size limits on the headers values that are strings?
+
+    As always, thanks in advance!
+
+    _______________________________________________
+    riak-users mailing list
+    riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+    <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre></blockquote><pre style="margin: 0em;">
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16849.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16850">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16850">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16853.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16834.html">Two quick questions about X-RIak-Meta-* headers....</a></span> <span class="sender italic">Joe Olson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16849.html">Re: Two quick questions about X-RIak-Meta-* headers....</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Two quick questions about X-RIak-Meta-* head...</span> <span class="sender italic">Damien Krotkine</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16853.html">Re: Two quick questions about X-RIak-Meta-* ...</a></span> <span class="sender italic">Joe Olson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16854.html">Re: Two quick questions about X-RIak-Meta-* ...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Two quick questions about X-RIak-Meta-* headers....">
+<input type="hidden" name="msgid" value="56667A4C.9010505@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16850.html">
+<input type="submit" value=" Damien Krotkine ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Two+quick+questions+about+X%5C-RIak%5C-Meta%5C-%5C%2A+headers....%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16849.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16853.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">56667A4C.9010505@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

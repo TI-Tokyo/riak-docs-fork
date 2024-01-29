@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Monitoring protobuffs and CPU usage on a Riak KV cluster</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16387" id="c">
+<link rel="index" href="maillist.html#16387" id="i">
+<link rel="prev" href="msg16372.html" id="p">
+<link rel="next" href="msg16415.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16387.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Monitoring+protobuffs+and+CPU+usage+on+a+Riak+KV+cluster%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Monitoring protobuffs and CPU usage on a Riak KV cluster</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jon+Meredith%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jon Meredith</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150808" rel="nofollow">Sat, 08 Aug 2015 10:46:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Sean,
+
+Thank you for the info.  I had exchanged a couple of emails with Russell
+Brown (who implemented the maps/sets) and he was interested how
+enabled/disabling compression affected your results.  The shipping
+implementation keeps a fair bit of metadata around which we compress to try
+and improve size, but it may be impacting performance.</pre><pre>
+
+If you have the time, you could try adding this to your advanced.config
+file and restarting,
+[{riak_dt, [{binary_compression, false}]}]
+
+Or on a running cluster you could execute
+
+(dev1@127.0.0.1)2&gt; rpc:multicall(application, set_env, [riak_dt,
+binary_compression, false]).
+
+{[ok],[]}
+
+To revert back to the default behavior
+
+(dev1@127.0.0.1)2&gt; rpc:multicall(application, set_env, [riak_dt,
+binary_compression, 1]).
+
+{[ok],[]}
+
+
+The compression uses gzip - and is currently set for least compression
+time.  Increasing from 1 through 9 will increase CPU load and could provide
+a counter example in the other direction.
+
+If you find anything interesting, please share, we'd really like the
+feedback on real world data.
+
+Jon
+
+On Thu, Aug 6, 2015 at 8:41 AM Sean Kelly &lt;sean.ke...@tapjoy.com&gt; wrote:
+
+&gt; Because it's important to note, the version of Riak is 2.0.5.
+&gt;
+&gt; AAE was actually the first thing I checked - it was on, but turning it off
+&gt; had no impact.
+&gt;
+&gt; Interestingly enough, I was able to pinpoint the source of the higher than
+&gt; expected CPU to a service that was frequently polling a set of map and set
+&gt; CRDTs from Riak once every second (which does not really seem all that
+&gt; frequent) to keep up with any changes that may have occurred since the last
+&gt; time it cached the information in process.
+&gt;
+&gt; I'm trying to get some time to look more into if we're doing something
+&gt; dumb in our service (always possible) or if there are settings for these
+&gt; CRDTs that we're not making proper use of in Riak itself.
+&gt;
+&gt; For now, I've tuned down the polling frequency for the test environment
+&gt; (which for some reason was higher than the production environment), and the
+&gt; problem appears to have gone away. We didn't seem to see any noticeable
+&gt; rise or fall in the CPU utilization of the service itself, just in Riak
+&gt;
+&gt; If anyone has any insights into poor performance with the map / set CRDT
+&gt; types (maps and sets, and maps containing sets), any input would be welcome
+&gt; to help hunt down why that seemed to be such a issue.
+&gt;
+&gt; On Thu, Aug 6, 2015 at 8:19 AM, Matthew Von-Maszewski &lt;matth...@basho.com&gt;
+&gt; wrote:
+&gt;
+&gt;&gt; Two ideas about lots of cpu with nothing happening:
+&gt;&gt;
+&gt;&gt; - is Riak entropy setting &quot;active&quot;.  Weekly it will rebuild hash trees
+&gt;&gt;
+&gt;&gt; - does this activity occur after a handoff?  Sometimes leveldb needs time
+&gt;&gt; to catch up afterward in current releases (fix coming soon).
+&gt;&gt;
+&gt;&gt; Matthew
+&gt;&gt;
+&gt;&gt; Sent from my iPad
+&gt;&gt;
+&gt;&gt; &gt; On Aug 5, 2015, at 7:16 PM, Matthew Brender &lt;mbren...@basho.com&gt; wrote:
+&gt;&gt; &gt;
+&gt;&gt; &gt; Hey all, I'm practicing what I preach and asking a question to others
+&gt;&gt; &gt; here. A community member pinged me with a couple questions:
+&gt;&gt; &gt;
+&gt;&gt; &gt; &quot;I'm looking into an issue with Riak on our test environment (we
+&gt;&gt; &gt; basically let devs spin up a copy of our prod stack on a giant box in
+&gt;&gt; &gt; ec2).
+&gt;&gt; &gt;
+&gt;&gt; &gt; We've gotten some complaints that riak seems to be using a lot of CPU,
+&gt;&gt; &gt; even when &quot;nothing&quot; is happening (something is always happening with
+&gt;&gt; &gt; the # of apps and services on the box, even when no one is poking it).
+&gt;&gt; &gt;
+&gt;&gt; &gt; Is there a way to turn on an &quot;access&quot; log, so I could see what
+&gt;&gt; &gt; requests are being made against riak, to try and correlate with? It
+&gt;&gt; &gt; would have to be able to tell me about pbuffs usage, not just http.&quot;
+&gt;&gt; &gt;
+&gt;&gt; &gt; Could anyone help with these questions. I see a couple separate ones:
+&gt;&gt; &gt;
+&gt;&gt; &gt; 1. How to monitor what is causing higher CPU usage on a Riak cluster
+&gt;&gt; &gt; 2. How to view an access log of protobuff and http requests, or just
+&gt;&gt; &gt; the *most helpful* counters for them
+&gt;&gt; &gt;
+&gt;&gt; &gt; I know a ton of statistics are visible [1] through riak-admin, but I'd
+&gt;&gt; &gt; like to hear what others recommend in particular.
+&gt;&gt; &gt;
+&gt;&gt; &gt; [1] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/stats-and-monitoring/">http://docs.basho.com/riak/latest/ops/running/stats-and-monitoring/</a>
+&gt;&gt; &gt;
+&gt;&gt; &gt; Thanks,
+&gt;&gt; &gt;
+&gt;&gt; &gt; Matt Brender | Developer Advocacy Lead
+&gt;&gt; &gt; Basho Technologies
+&gt;&gt; &gt; t: @mjbrender
+&gt;&gt; &gt;
+&gt;&gt; &gt; _______________________________________________
+&gt;&gt; &gt; riak-users mailing list
+&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16372.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16387">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16387">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16415.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16365.html">Monitoring protobuffs and CPU usage on a Riak KV clu...</a></span> <span class="sender italic">Matthew Brender</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16369.html">Re: Monitoring protobuffs and CPU usage on a Ri...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16372.html">Re: Monitoring protobuffs and CPU usage on ...</a></span> <span class="sender italic">Sean Kelly</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Monitoring protobuffs and CPU usage...</span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16415.html">Re: Monitoring protobuffs and CPU u...</a></span> <span class="sender italic">Sean Kelly</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Monitoring protobuffs and CPU usage on a Riak KV cluster">
+<input type="hidden" name="msgid" value="CAGgQeSttWf3rV4kYUvB4T26P610+EWyPc8MAWoKyW3kx6LtYkg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16387.html">
+<input type="submit" value=" Jon Meredith ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Monitoring+protobuffs+and+CPU+usage+on+a+Riak+KV+cluster%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16372.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16415.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGgQeSttWf3rV4kYUvB4T26P610+EWyPc8MAWoKyW3kx6LtYkg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

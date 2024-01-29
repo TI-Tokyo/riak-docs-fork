@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak 1.4.12 - Missing keys...</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16240" id="c">
+<link rel="index" href="maillist.html#16240" id="i">
+<link rel="prev" href="msg16237.html" id="p">
+<link rel="next" href="msg16238.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16240.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.4.12+%5C-+Missing+keys...%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak 1.4.12 - Missing keys...</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150612" rel="nofollow">Fri, 12 Jun 2015 11:14:56 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi All,
+
+Praveen sent me the necessary config files and logs. Together with our
+support team (thanks Jimmy) we were able to identify a probable cause of
+this issue. Firstly, we do not recommend doing any serious testing on a
+single machine with an n_val=1 environment (default replica count or n_val
+in Riak is 3). That said, we do take missing data very seriously. Riak is
+specifically designed to remain available and recover from failure of any
+one or more physical machines in a cluster. Running on a single machine
+with a replica count of one obviates all that awesomeness.</pre><pre>
+
+One thing immediately stood out in the config file: a ring size of 512.
+Ring size is the number of virtual nodes or vnodes[1] in the cluster.
+Vnodes are the default level of abstraction in Riak. When planning a
+cluster[2], the general rule of thumb is that you have between 10 and 50
+vnodes per physical machine. There are a number of reasons for this but
+imho, it mostly has to do with finding the sweet spot performance wise
+between optimally loading your hardware and omg wt&amp;*%*# overloading your
+hardware. 512 vnodes on a single machine is categorically the latter. One
+reason you want to limit the max number of vnodes per machine is simply
+file descriptor limitations handled in linux through ulimit. 512 vnodes
+turns into a ton of fd's. So let's take a look at the logs.
+
+In the error log we see this:
+
+=====
+===== LOGGING STARTED Thu Jun  4 08:29:17 GMT 2015
+=====
+Node 'riak@vps1' not responding to pings.
+config is OK
+!!!!
+!!!! WARNING: ulimit -n is 1024; 4096 is the recommended minimum.
+!!!!
+Exec: /usr/lib/riak/erts-5.9.1/bin/erlexec -boot
+/usr/lib/riak/releases/1.4.12/riak              -config
+/etc/riak/app.config            -pa
+/usr/lib/riak/lib/basho-patches            -args_file /etc/riak/vm.args --
+console
+Root: /usr/lib/riak
+Erlang R15B01 (erts-5.9.1) [source] [64-bit] [smp:2:2] [async-threads:64]
+[kernel-poll:true]
+
+
+It is not the simplest thing to figure out what the ulimit is for a given
+process. Thankfully, Erlang is easy to work with in this case. You simply
+attach to the running erlang process[3] and run the following:
+
+os:cmd('ulimit -n').
+
+This will confirm the specific ulimit settings available to erlang. Not
+enough fd's may well have been the issue. Recall, the specific concern was
+that out of 8 thousand keys, 2 or 3 keys were not available three weeks
+after uploading them. Assuming no key deletes via Riak, what can happen to
+disk over time? Disk errors at the os/hardware level or back end compaction
+related issues within Riak. Without adequate file descriptors the erlang
+process can crash and if the erlang process crashes in the middle of a
+compaction operation there is a chance you could lose data. Having multiple
+copies of your data on multiple machines or even on one machine (in
+different back end bitcask or leveldb files) allows Riak to recover from
+these failures via read repair[4] and active anti entropy[5]. AAE was
+turned off here (of course, it too consumes fd's).
+
+At this point having seen Riak crashes in the error log and the ulimit
+warning, assuming you are still working with a single instance with an
+n_val of 1, my advice is to simply return the ring size to its default, 64,
+and ensure that Riak is running with a high number of fd's via increasing
+the ulimit[6].
+
+Give that a shot.
+Best,
+Alexander
+
+
+[1] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/theory/concepts/vnodes/">http://docs.basho.com/riak/latest/theory/concepts/vnodes/</a>
+[2]
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/building/planning/cluster/#Ring-Size-Number-of-Partitions">http://docs.basho.com/riak/latest/ops/building/planning/cluster/#Ring-Size-Number-of-Partitions</a>
+[3] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/tools/riak/#attach">http://docs.basho.com/riak/latest/ops/running/tools/riak/#attach</a>
+[4]
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/theory/concepts/Replication/#Read-Repair">http://docs.basho.com/riak/latest/theory/concepts/Replication/#Read-Repair</a>
+[5] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/theory/concepts/aae/">http://docs.basho.com/riak/latest/theory/concepts/aae/</a>
+[6] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/tuning/open-files-limit/">http://docs.basho.com/riak/latest/ops/tuning/open-files-limit/</a>
+
+On Tue, Jun 9, 2015 at 12:38 PM, Praveen Baratam &lt;praveen.bara...@gmail.com&gt;
+wrote:
+
+&gt; Hello everyone,
+&gt;
+&gt; I have setup a Riak test node in a VPS with n = 1, r = 1 and w =1, Bitcask
+&gt; engine and AAE turned off.. loaded some 8k blobs into it and everything was
+&gt; fine...
+&gt;
+&gt; Today, after three weeks, I noticed that a few of those 8K blobs are
+&gt; missing - not found...
+&gt;
+&gt; I also see a lot of invalid HintFile error in the console.log
+&gt;
+&gt; Can anybody explain why this is happening?
+&gt;
+&gt; Thanks in advance.
+&gt;
+&gt; Best,
+&gt;
+&gt; Praveen Baratam
+&gt;
+&gt; about.me &lt;<a  rel="nofollow" href="http://about.me/praveen.baratam">http://about.me/praveen.baratam</a>&gt;
+&gt; ᐧ
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16237.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16240">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16240">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16238.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16237.html">Riak 1.4.12 - Missing keys...</a></span> <span class="sender italic">Praveen Baratam</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak 1.4.12 - Missing keys...</span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak 1.4.12 - Missing keys...">
+<input type="hidden" name="msgid" value="CALKhwhXFrr4VQ29r8dsJ760P09Rja10RmyOQuwkm2QZidumoAg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16240.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+1.4.12+%5C-+Missing+keys...%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16237.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16238.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CALKhwhXFrr4VQ29r8dsJ760P09Rja10RmyOQuwkm2QZidumoAg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

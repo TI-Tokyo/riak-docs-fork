@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak data model for SCIM (or sets of maps)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18605" id="c">
+<link rel="index" href="maillist.html#18605" id="i">
+<link rel="prev" href="msg18603.html" id="p">
+<link rel="next" href="msg18606.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18605.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+data+model+for+SCIM+%5C%28or+sets+of+maps%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak data model for SCIM (or sets of maps)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Paul+Bismuth%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Paul Bismuth</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20190325" rel="nofollow">Mon, 25 Mar 2019 06:10:05 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi everybody,
+
+I'm implementing SCIM (System for Cross-domain Identity Management -
+<a  rel="nofollow" href="https://tools.ietf.org/html/rfc7643">https://tools.ietf.org/html/rfc7643</a> &amp;
+<a  rel="nofollow" href="https://tools.ietf.org/html/rfc7644">https://tools.ietf.org/html/rfc7644</a>) with several backends and I'm
+scratching my head trying to figure out how to model the data model in
+Riak.</pre><pre>
+
+There are 2 types of attributes:
+* simple attributes: scalars, such as boolean, string, date, integer, float
+* complex attributes: a map of simple attributes
+
+Attributes (simple _and_ complex)  can be:
+* singular (0 or 1 occurence)
+* muti-valued
+
+Example of a &quot;User&quot; object:
+{
+  &quot;userName&quot;: &quot;bjen...@example.com&quot;,
+  &quot;name&quot;: {
+    &quot;formatted&quot;: &quot;Ms. Barbara J Jensen, III&quot;,
+    &quot;familyName&quot;: &quot;Jensen&quot;,
+    &quot;givenName&quot;: &quot;Barbara&quot;,
+    &quot;middleName&quot;: &quot;Jane&quot;,
+    &quot;honorificPrefix&quot;: &quot;Ms.&quot;,
+    &quot;honorificSuffix&quot;: &quot;III&quot;
+  },
+  &quot;access_rights&quot;: [
+    &quot;scope_a&quot;,
+    &quot;scope_b&quot;,
+    &quot;scope_c&quot;
+  ]
+  &quot;emails&quot;: [
+    {
+      &quot;value&quot;: &quot;bjen...@example.com&quot;,
+      &quot;type&quot;: &quot;work&quot;,
+      &quot;primary&quot;: true
+    },
+    {
+      &quot;value&quot;: &quot;b...@jensen.org&quot;,
+      &quot;type&quot;: &quot;home&quot;
+    }
+  ],
+}
+With respectively a simple singular attribute, a complex singular
+attribute, a simple multi-valued attribute and a complex multi-value
+attribute. SCIM prohibits further nesting of objects (therefore the
+deepest level is the subattribute).
+
+I'd like to implement a Riak backend using the core CRDTS, and also to
+implement SCIM &quot;search&quot;
+(<a  rel="nofollow" href="https://tools.ietf.org/html/rfc7644#section-3.4.2">https://tools.ietf.org/html/rfc7644#section-3.4.2</a>). In a nutshell,
+SCIM search allows:
+* comparing equality, inequality, greater/lower than, attribute is
+present, starts/ends with (for strings), contains (for strings)
+* and, or and not operands
+* matching for attribute and sub-attributes (e.g.: name.familyName co
+&quot;O'Malley&quot; - co is for &quot;contains&quot;)
+* complex attribute filter grouping (e.g.: userType eq &quot;Employee&quot; and
+emails[type eq &quot;work&quot; and value co &quot;@example.com&quot;] - eq is for
+&quot;equal&quot;). In this case the expression between the brackets must
+evaluate to true on the same complex attribute
+Note that _any_ attribute can be multi-valued.
+
+Regarding the data model with CRDTs and using a map as the base
+object, implementing:
+* simple singular attribute: straightforward (let's forget the data
+types not natively supported such as floats for now)
+* complex singular attribute: a map of map
+* simple multi-value attribute: use of a set
+* complex multi-valued attribute: that's where I can't find a good
+solution since sets of maps don't exist in Riak CRDTs (sets can only
+have string values)
+
+For this latter case, I've been thinking of map of maps using random keys:
+iex(53)&gt; Riak.Search.query(&quot;test_index&quot;,
+&quot;my_map_map.attr5_0_map.subattr1_register:*&quot;)
+{:ok,
+ {:search_results,
+  [
+    {&quot;test_index&quot;,
+     [
+       {&quot;score&quot;, &quot;1.00000000000000000000e+00&quot;},
+       {&quot;_yz_rb&quot;, &quot;test_bucket&quot;},
+       {&quot;_yz_rt&quot;, &quot;test&quot;},
+       {&quot;_yz_rk&quot;, &quot;key2&quot;},
+       {&quot;_yz_id&quot;, &quot;1*test*test_bucket*key2*20&quot;},
+       {&quot;my_map_map.attr1_register&quot;, &quot;value1&quot;},
+       {&quot;my_map_map.attr2_register&quot;, &quot;value2&quot;},
+       {&quot;my_map_map.attr3_register&quot;, &quot;value3&quot;},
+       {&quot;my_map_map.attr4_register&quot;, &quot;value4&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr1_register&quot;, &quot;subvalue1&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr2_register&quot;, &quot;subvalue2&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr3_register&quot;, &quot;subvalue3&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr4_register&quot;, &quot;oups !&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr1_register&quot;, &quot;subvalue11&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr2_register&quot;, &quot;subvalue12&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr3_register&quot;, &quot;subvalue13&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr4_register&quot;, &quot;oups !&quot;}
+     ]},
+    {&quot;test_index&quot;,
+     [
+       {&quot;score&quot;, &quot;1.00000000000000000000e+00&quot;},
+       {&quot;_yz_rb&quot;, &quot;test_bucket&quot;},
+       {&quot;_yz_rt&quot;, &quot;test&quot;},
+       {&quot;_yz_rk&quot;, &quot;key1&quot;},
+       {&quot;_yz_id&quot;, &quot;1*test*test_bucket*key1*23&quot;},
+       {&quot;my_map_map.attr1_register&quot;, &quot;value1&quot;},
+       {&quot;my_map_map.attr2_register&quot;, &quot;value2&quot;},
+       {&quot;my_map_map.attr3_register&quot;, &quot;value3&quot;},
+       {&quot;my_map_map.attr4_register&quot;, &quot;value4&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr1_register&quot;, &quot;subvalue1&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr2_register&quot;, &quot;subvalue2&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr3_register&quot;, &quot;subvalue3&quot;},
+       {&quot;my_map_map.attr5_0_map.subattr4_register&quot;, &quot;subvalue4&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr1_register&quot;, &quot;subvalue5&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr2_register&quot;, &quot;subvalue6&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr3_register&quot;, &quot;subvalue7&quot;},
+       {&quot;my_map_map.attr5_1_map.subattr4_register&quot;, &quot;subvalue8&quot;}
+     ]}
+  ], 1.0, 2}}
+
+Here the attr5 is multivalued (thanks to _0, _1..., but could be UUIDs
+as well). However:
+* How to search for any &quot;attr5_*&quot;? It seems that wildcards in query
+_attributes_  are not supported (e.g.: Riak.Search.query(&quot;test_index&quot;,
+&quot;my_map_map.attr5_*_map.subattr1_register:*&quot;) won't work)
+* Even if that worked, how to filter on one submap? The search
+&quot;my_map_map.attr5_*_map.subattr1_register:subvalue1 AND
+my_map_map.attr5_*_map.subattr4_register:subvalue4&quot; would return key1
+but not key2?
+
+Are some other approaches worth digging? I've thought of:
+* not storing a whole &quot;user&quot; as an object, but each attribute as an
+object (key being {id, attribute}). However it doesn't enable
+multivalued complex attributes neither
+* using JSON instead of CRDTs: would such search filters be doable?
+Also, no eventual consistency with this approach since, as far as I
+understand, Riak cannot &quot;merge&quot; JSON documents
+
+Any feedback on how you implement such models is welcome.
+
+(Sorry if that's not the right place to ask - if so feel free to tell
+where it's better to ask.)
+
+Cheers,
+
+Paul
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18603.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18605">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18605">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18606.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak data model for SCIM (or sets of maps)">
+<input type="hidden" name="msgid" value="CAAVMdBdczGkHD0h1P_wML9xc=1AdSS3yhsyHUeR+DWVKncvJ_A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18605.html">
+<input type="submit" value=" Paul Bismuth ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+data+model+for+SCIM+%5C%28or+sets+of+maps%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18603.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18606.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAVMdBdczGkHD0h1P_wML9xc=1AdSS3yhsyHUeR+DWVKncvJ_A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

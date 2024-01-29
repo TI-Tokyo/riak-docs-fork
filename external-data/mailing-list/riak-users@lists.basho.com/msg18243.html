@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Put failure: too many siblings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#18243" id="c">
+<link rel="index" href="maillist.html#18243" id="i">
+<link rel="prev" href="msg18241.html" id="p">
+<link rel="next" href="msg18253.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18243.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Put+failure%5C%3A+too+many+siblings%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Put failure: too many siblings</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Vladyslav+Zakhozhai%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Vladyslav Zakhozhai</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170526" rel="nofollow">Fri, 26 May 2017 13:43:01 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Magnus,
+
+Thank you for the tip and clarification. I'll give it a try.</pre><pre>
+
+On Thu, May 25, 2017 at 4:24 PM Magnus Kessler &lt;mkess...@basho.com&gt; wrote:
+
+&gt; On 25 May 2017 at 09:39, Vladyslav Zakhozhai &lt;v.zakhoz...@smartweb.com.ua&gt;
+&gt; wrote:
+&gt;
+&gt;&gt; Hi,
+&gt;&gt;
+&gt;&gt; I've been trying to change dvv_enabled for default bucket type. But this
+&gt;&gt; is impossible with riak-admin:
+&gt;&gt;
+&gt;&gt; riak-admin bucket-type update default '{&quot;props&quot;:{&quot;dvv_enabled&quot;:true}}'
+&gt;&gt; Error updating bucket type default:
+&gt;&gt; no_default_update
+&gt;&gt;
+&gt;&gt; I think that workaround for this is changing default props in riak config:
+&gt;&gt;
+&gt;&gt; {riak_core, [
+&gt;&gt;
+&gt;&gt;              {default_bucket_props, [
+&gt;&gt;                  {allow_mult, true},
+&gt;&gt;                  {dvv_enabled, true}
+&gt;&gt;              ]},
+&gt;&gt; ...
+&gt;&gt;
+&gt;&gt; (yes, I still use old-style configs)
+&gt;&gt;
+&gt;&gt; And then I need to restart all riak nodes. Here is two questions:
+&gt;&gt; 1. Is this approach correct?
+&gt;&gt; 2. Is it ok to have different default_bucket_props value on different
+&gt;&gt; nodes of the same cluster (in short period of time)?
+&gt;&gt;
+&gt;&gt; I have to restart 27 riak nodes. There is several billions of keys in
+&gt;&gt; riak and each node starts wery slow (20-30-60 min; bitcask backend). So I
+&gt;&gt; can't change default_bucket_props simultaneously in a such way.
+&gt;&gt;
+&gt;&gt; I also can change this parameter in riak console, i.e.
+&gt;&gt;
+&gt;&gt; application:set_env(riak_core, default_bucket_props, [{dvv_enabled,
+&gt;&gt; true}, ......]). But what I need to do for applying this changes?
+&gt;&gt;
+&gt;&gt;
+&gt; Hi Vladyslav,
+&gt;
+&gt; The recommended approach for changing the default bucket type's properties
+&gt; is to change the settings in `riak.conf` or `advanced.config`. However, I
+&gt; just checked that any settings changed through a set_env call also seem to
+&gt; be reflected in the runtime configuration.
+&gt;
+&gt; If you'd like to try this, I recommend making the change on a test cluster
+&gt; first, as I have not verified if this causes issues on a production CS
+&gt; cluster. The set_env call should pass in the complete set of bucket type
+&gt; properties, not just the changes. You can try the following (with default
+&gt; default bucket-type properties):
+&gt;
+&gt; riak_core_util:rpc_every_member_ann(application, set_env, [riak_core,
+&gt; default_bucket_props,
+&gt; [{allow_mult,false},{big_vclock,50},{chash_keyfun,{riak_core_util,chash_std_keyfun}},{dvv_enabled,
+&gt; false},{dw,quorum},{last_write_wins,false},{linkfun,{modfun,riak_kv_wm_link_walker,mapreduce_linkfun}},{n_val,3},{notfound_ok,true},{old_vclock,86400},{postcommit,[]},{pr,0},{precommit,[]},{pw,0},{r,quorum},{repl,true},{rw,quorum},{small_vclock,50},{w,quorum},{write_once,false},{young_vclock,20}]],
+&gt; 5000).
+&gt;
+&gt;
+&gt; If you go down this route, please don't forget to also make changes to the
+&gt; configuration files, in order to these settings to persist across a restart.
+&gt;
+&gt; Kind Regards,
+&gt;
+&gt; Magnus
+&gt;
+&gt; --
+&gt; Magnus Kessler
+&gt; Client Services Engineer
+&gt; Basho Technologies Limited
+&gt;
+&gt; Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg 07970431
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18241.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#18243">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18243">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18253.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17453.html">Re: Put failure: too many siblings</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17485.html">Re: Put failure: too many siblings</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17487.html">Re: Put failure: too many siblings</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17488.html">Re: Put failure: too many siblings</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18232.html">Re: Put failure: too many siblings</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18233.html">Re: Put failure: too many siblin...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18234.html">Re: Put failure: too many siblin...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18235.html">Re: Put failure: too many siblin...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18240.html">Re: Put failure: too many siblin...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18241.html">Re: Put failure: too many siblin...</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Put failure: too many siblin...</span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18253.html">Re: Put failure: too many siblin...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18256.html">Re: Put failure: too many siblin...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Put failure: too many siblings">
+<input type="hidden" name="msgid" value="CAArBN7H3CkmwsoLfeg_+_5wtbVRZpksnKcPmQrF4U3EE3CaJMw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18243.html">
+<input type="submit" value=" Vladyslav Zakhozhai ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Put+failure%5C%3A+too+many+siblings%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18241.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18253.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAArBN7H3CkmwsoLfeg_+_5wtbVRZpksnKcPmQrF4U3EE3CaJMw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

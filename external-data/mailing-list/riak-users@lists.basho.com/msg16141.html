@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Java Client: Thread hangs after strange exception</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16141" id="c">
+<link rel="index" href="maillist.html#16141" id="i">
+<link rel="prev" href="msg16080.html" id="p">
+<link rel="next" href="msg16082.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16141.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client%5C%3A+Thread+hangs+after+strange+exception%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Java Client: Thread hangs after strange exception</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Engel+Sanchez%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Engel Sanchez</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150519" rel="nofollow">Tue, 19 May 2015 08:01:32 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Henning. While Alex Moore in the clients team is looking at the client
+side of this issue, I looked up the error messages you were getting in the
+log and sent to him. Messages like this:</pre><pre>
+
+2015-05-08 14:12:18.103 [error] &lt;0.937.0&gt; gen_server &lt;0.937.0&gt;
+terminated with reason: no function clause matching
+riak_object:from_binary(&lt;&lt;&quot;progress&quot;&gt;&gt;, &lt;&lt;&quot;UploadServiceTest10&quot;&gt;&gt;,
+{{ts,{1431,86330,742283}},&lt;&lt;53,1,0,0,0,34,131,108,0,0,0,1,
+104,2,109,0,0,0,8,35,9,254,249,83,136,...&gt;&gt;})
+line 633
+
+Are caused by an issue that since has been fixed in +2.0, where internal
+timestamps from the memory backend when using a TTL could be seen while
+internal processes iterated over the key/values:
+<a  rel="nofollow" href="https://github.com/basho/riak_kv/pull/607">https://github.com/basho/riak_kv/pull/607</a>
+
+I agree with you in that I don't believe this is directly causing your
+client hang issue.
+
+
+
+On Tue, Apr 28, 2015 at 6:40 AM, Henning Verbeek &lt;hankipa...@gmail.com&gt;
+wrote:
+
+&gt; For development, I have a single-node Riak 1.4 cluster that I'm
+&gt; connecting to with the Java client 2.0.1. Both client and server are
+&gt; running on the same node, connecting via localhost.
+&gt;
+&gt; Every now and then, an update operation ... hangs. On the console I
+&gt; see this strange error:
+&gt;
+&gt; 12:21:46.646 [nioEventLoopGroup-2-1] ERROR
+&gt; com.basho.riak.client.core.RiakNode - Operation onException() channel:
+&gt; id:-1348399652 localhost:8087 {}
+&gt; io.netty.util.concurrent.BlockingOperationException:
+&gt; DefaultChannelPromise@63f65d07(incomplete)
+&gt; at
+&gt; io.netty.util.concurrent.DefaultPromise.checkDeadLock(DefaultPromise.java:396)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPromise.checkDeadLock(DefaultChannelPromise.java:157)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at io.netty.util.concurrent.DefaultPromise.await(DefaultPromise.java:257)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPromise.await(DefaultChannelPromise.java:129)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPromise.await(DefaultChannelPromise.java:28)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.doGetConnection(RiakNode.java:667)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.getConnection(RiakNode.java:636)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.execute(RiakNode.java:570)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.DefaultNodeManager.executeOnNode(DefaultNodeManager.java:90)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakCluster.execute(RiakCluster.java:201)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakCluster.execute(RiakCluster.java:195)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.kv.StoreValue.executeAsync(StoreValue.java:117)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.kv.UpdateValue$1.handle(UpdateValue.java:182)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.ListenableFuture.notifyListeners(ListenableFuture.java:78)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.CoreFutureAdapter.handle(CoreFutureAdapter.java:120)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.FutureOperation.fireListeners(FutureOperation.java:131)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.FutureOperation.setResponse(FutureOperation.java:170)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.onSuccess(RiakNode.java:824)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.netty.RiakResponseHandler.channelRead(RiakResponseHandler.java:58)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:155)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.handler.codec.ByteToMessageCodec.channelRead(ByteToMessageCodec.java:108)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:785)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:116)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:494)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:461)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:378)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:350)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:101)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at java.lang.Thread.run(Thread.java:745) [na:1.8.0_40]
+&gt;
+&gt; 12:21:46.653 [nioEventLoopGroup-2-1] WARN
+&gt; i.n.channel.DefaultChannelPipeline - An exception was thrown by a user
+&gt; handler's exceptionCaught() method while handling the following
+&gt; exception:
+&gt; io.netty.util.concurrent.BlockingOperationException:
+&gt; DefaultChannelPromise@63f65d07(incomplete)
+&gt; at
+&gt; io.netty.util.concurrent.DefaultPromise.checkDeadLock(DefaultPromise.java:396)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPromise.checkDeadLock(DefaultChannelPromise.java:157)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at io.netty.util.concurrent.DefaultPromise.await(DefaultPromise.java:257)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPromise.await(DefaultChannelPromise.java:129)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPromise.await(DefaultChannelPromise.java:28)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.doGetConnection(RiakNode.java:667)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.getConnection(RiakNode.java:636)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.execute(RiakNode.java:570)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.DefaultNodeManager.executeOnNode(DefaultNodeManager.java:90)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakCluster.execute(RiakCluster.java:201)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakCluster.execute(RiakCluster.java:195)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.kv.StoreValue.executeAsync(StoreValue.java:117)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.kv.UpdateValue$1.handle(UpdateValue.java:182)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.ListenableFuture.notifyListeners(ListenableFuture.java:78)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.api.commands.CoreFutureAdapter.handle(CoreFutureAdapter.java:120)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.FutureOperation.fireListeners(FutureOperation.java:131)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.FutureOperation.setResponse(FutureOperation.java:170)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at com.basho.riak.client.core.RiakNode.onSuccess(RiakNode.java:824)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; com.basho.riak.client.core.netty.RiakResponseHandler.channelRead(RiakResponseHandler.java:58)
+&gt; ~[storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:155)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.handler.codec.ByteToMessageCodec.channelRead(ByteToMessageCodec.java:108)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.invokeChannelRead(DefaultChannelHandlerContext.java:340)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelHandlerContext.fireChannelRead(DefaultChannelHandlerContext.java:326)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:785)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:116)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:494)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:461)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:378)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:350)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at
+&gt; io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:101)
+&gt; [storage-backend-2.1-SNAPSHOT.jar:2.1-SNAPSHOT]
+&gt; at java.lang.Thread.run(Thread.java:745) [na:1.8.0_40]
+&gt;
+&gt;
+&gt; VisualVM reports this for the hanging thread:
+&gt;
+&gt;    java.lang.Thread.State: WAITING
+&gt; at sun.misc.Unsafe.park(Native Method)
+&gt; - parking to wait for &lt;4c34894c&gt; (a
+&gt; java.util.concurrent.CountDownLatch$Sync)
+&gt; at java.util.concurrent.locks.LockSupport.park(LockSupport.java:175)
+&gt; at
+&gt; java.util.concurrent.locks.AbstractQueuedSynchronizer.parkAndCheckInterrupt(AbstractQueuedSynchronizer.java:836)
+&gt; at
+&gt; java.util.concurrent.locks.AbstractQueuedSynchronizer.doAcquireSharedInterruptibly(AbstractQueuedSynchronizer.java:997)
+&gt; at
+&gt; java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireSharedInterruptibly(AbstractQueuedSynchronizer.java:1304)
+&gt; at java.util.concurrent.CountDownLatch.await(CountDownLatch.java:231)
+&gt; at
+&gt; com.basho.riak.client.api.commands.kv.UpdateValue$UpdateValueFuture.await(UpdateValue.java:526)
+&gt; at com.basho.riak.client.api.RiakCommand.execute(RiakCommand.java:88)
+&gt; at com.basho.riak.client.api.RiakClient.execute(RiakClient.java:293)
+&gt; at
+&gt; com.skalio.skaliopush.services.ManifestFacade.updateMalware(ManifestFacade.java:222)
+&gt; at
+&gt; com.skalio.skaliopush.tasks.MalwareScanTask.call(MalwareScanTask.java:69)
+&gt; at
+&gt; com.skalio.skaliopush.tasks.MalwareScanTask.call(MalwareScanTask.java:35)
+&gt; at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+&gt; at
+&gt; java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+&gt; at
+&gt; java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+&gt; at java.lang.Thread.run(Thread.java:745)
+&gt;
+&gt;    Locked ownable synchronizers:
+&gt; - locked &lt;617c74e5&gt; (a java.util.concurrent.ThreadPoolExecutor$Worker)
+&gt;
+&gt; The call to RiakClient.execute() does not catch any Exceptions. There
+&gt; is absolutely no load on the box when this happens, and it's not
+&gt; reproducible.
+&gt;
+&gt; What is happening here? How can I fix it? How can I at least become
+&gt; aware of the Exception?
+&gt;
+&gt; Thanks for your help!
+&gt; Cheers,
+&gt; Henning
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16080.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16141">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16141">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16082.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16080.html">Java Client: Thread hangs after strange exception</a></span> <span class="sender italic">Henning Verbeek</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Java Client: Thread hangs after strange exception</span> <span class="sender italic">Engel Sanchez</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Java Client: Thread hangs after strange exception">
+<input type="hidden" name="msgid" value="CABx-oYyT3A0OLiixOAqq=9WbnQ9aVNTFV1cji=WjVLDJiYT=cQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16141.html">
+<input type="submit" value=" Engel Sanchez ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Client%5C%3A+Thread+hangs+after+strange+exception%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16080.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16082.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABx-oYyT3A0OLiixOAqq=9WbnQ9aVNTFV1cji=WjVLDJiYT=cQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

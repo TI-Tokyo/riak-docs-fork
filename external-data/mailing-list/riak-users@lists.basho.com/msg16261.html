@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: uWSGI + Riak connection issues</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16261" id="c">
+<link rel="index" href="maillist.html#16261" id="i">
+<link rel="prev" href="msg16260.html" id="p">
+<link rel="next" href="msg16274.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16261.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+uWSGI+%5C%2B+Riak+connection+issues%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: uWSGI + Riak connection issues</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22tele%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">tele</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150620" rel="nofollow">Sat, 20 Jun 2015 13:12:00 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi All,
+
+This is going to be a long post but it explains exactly how to
+reproduce the issue.</pre><pre>
+
+So i was able to nail down the part of code that is causing the issue.
+Let me explain a little bit, in my app there is an API that gets me a
+random content (key) from a bucket initially my implementation was like
+this:
+
+randn = random.randrange(0000, 9999)
+results = content_bucket.search(&quot;id:*&quot;,fl=&quot;*,score&quot;, sort=&quot;random_%s
+asc&quot; % str(randn), start=0, rows=2) 
+if len(results['docs']) == 0:
+        raise ContentException('No content found')
+images = []
+for res in results['docs']:
+        images.append(res['imageBinary'])
+
+It was not the best in term of performance, so since that bucket does
+not change i decided to do the following:
+
+print 'content bucket'
+content_bucket =riak_client.bucket_type('pickorflip_content').bucket('content') 
+print 'cache content keys' 
+content_keys = [] 
+#content_keys = content_bucket.get_keys() 
+for keys in content_bucket.stream_keys(): 
+        for key in keys:
+                content_keys.append(key)
+
+
+I'm fully aware of NEVER user get_keys() and stream_keys() in
+production but since it's only at startup and we are talking about
+couple of thousand keys i don't see an issue in doing that. By storing
+the keys on an array i can quickly randomly get 3 keys and get the
+content i need much quickly than doing the riak search.
+
+I'm sure it loads that code only at startup and not everytime because
+i've added the print that gets printed only at startupt and not
+everytime i call the API.
+
+So i created another app in order to reproduce the issue:
+
+/opt/myapp/myapp.py
+
+import os, sys
+from flask import Flask, request, Response, jsonify, g, url_for,
+make_response, session import riak
+
+app = Flask(__name__)
+riak_client = riak.RiakClient(host='127.0.0.1', pb_port=10017,
+protocol='pbc')
+
+print 'Content bucket'
+content_bucket =
+riak_client.bucket_type('pickorflip_content').bucket('content')
+
+print 'cache content keys'
+content_keys = []
+#content_keys = content_bucket.get_keys() 
+for keys in content_bucket.stream_keys():
+    for key in keys:
+        content_keys.append(key)
+
+@app.route(&quot;/&quot;)
+def myapp():
+    print 'get bucket'
+    user_bucket = riak_client.bucket_type('user_type').bucket('users')
+    print 'get user info from bucket'
+    user_info = user_bucket.get('myuser')
+    return '', 200
+
+
+if __name__ == '__main__':
+        app.run(
+        host=&quot;0.0.0.0&quot;,debug=False,
+        port=int(&quot;5000&quot;)
+  )
+
+
+The myapp.ini for uwsgi:
+
+[uwsgi]
+vhost = true
+socket = /tmp/myapp.sock
+venv = /opt/myapp/venv
+chdir = /opt/myapp/
+module = myapp
+callable = app
+processes = 4
+close-on-exec=true
+master = true
+carbon = 10.21.1.1:2003
+stats = /tmp/stats.sock
+post-buffering = 1
+
+nginx:
+
+        location / {
+            include uwsgi_params;
+            uwsgi_pass unix:/tmp/myapp.sock;
+        }
+
+
+
+This is my locust load testing script:
+
+test.py
+
+from locust import HttpLocust, TaskSet, task
+
+class LoadTest(TaskSet):
+
+    @task
+    def get_user(self):
+        self.client.get(&quot;/&quot;)
+
+class WebsiteUser(HttpLocust):
+    task_set = LoadTest
+    min_wait = 1000
+    max_wait = 3000
+
+
+And you can run it with: locust -H <a  rel="nofollow" href="http://ip:port">http://ip:port</a> -f test.py
+
+So while it's running i monitor with uwsgitop the socket
+
+uwsgitop /tmp/stats.sock
+
+So i can see what the workers are doing. After less than a minute all
+the workers gets busy and stuck. But if i ran uwsgi with only one
+process it works fine.
+
+If i ran just flask with  python myapp.py and then i loadtest against
+port 5000 i do not hit this issue. So it's only when i use uwsgi and
+multiple processes.
+
+Any idea of what i could further troubleshoot to understand exactly why
+the get_keys is causing the issue with multi processes in uwsgi ?
+Considering that part of the code it's loaded only at startup of uwsgi
+or maybe i'm missing something here?
+
+Thank you
+
+:tele
+
+On Sat, 20 Jun 2015 02:59:20 -0500
+tele &lt;t...@rhizomatica.org&gt; wrote:
+
+&gt; Hi All,
+&gt; 
+&gt; I'm trying to troubleshoot an issue and i'm posting here because its
+&gt; caused by connecting to Riak even if i may miss some configuration on
+&gt; uwsgi. This is my enviroment:
+&gt; 
+&gt; nginx + uwsgi + flask app
+&gt; 
+&gt; The flask app uses Riak and Redis.
+&gt; The connection between nginx and uwsgi is via unix socket.
+&gt; 
+&gt; If i use only one process in uwsgi i can easily run simultaneous
+&gt; requests without hitting the issue i'm having. When i add even only
+&gt; one more process all the workers gets busy and the app hangs. If i
+&gt; remove the riak code part it's working fine, so the issue has to be
+&gt; somewhere on the connection pooling or something else.
+&gt; 
+&gt; I'm experiencing the same issues as this user:
+&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2014-January/014387.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2014-January/014387.html</a>
+&gt; 
+&gt; If i use protobuf protocol i hit the DecodeErrors messages, sometimes
+&gt; i don't get any error the app just hangs. If i use the http protocol
+&gt; with riak, i don't get any exception but it just hangs.
+&gt; 
+&gt; It hangs on a simple snippet:
+&gt; 
+&gt; user_bucket = riak_client.bucket_type('user_type').bucket('users')
+&gt; user_info = user_bucket.get(user_id)
+&gt; 
+&gt; I'm using Locust to generate traffic
+&gt; 
+&gt; 1 uwsgi worker, locust 10 users hatch 2 seconds = no issues
+&gt; 2+ uwsgi worker, locust 10 users hatch 2 seconds = app hangs after few
+&gt; minutes
+&gt; 
+&gt; For Riak i have 3 nodes running on the same box, i'm using the latest
+&gt; version from git.
+&gt; 
+&gt; The app hangs in any of those connection scenarios:
+&gt; 
+&gt; riak_client = riak.RiakClient(host='127.0.0.1', pb_port=10017,
+&gt; protocol='pbc') riak_client = riak.RiakClient(protocol='pbc',
+&gt; nodes=[{'host':'127.0.0.1', 'pb_port':10017},{'host':'127.0.0.1',
+&gt; 'pb_port':10027},{'host':'127.0.0.1', 'pb_port':10037}]) riak_client =
+&gt; riak.RiakClient(protocol='http', http_port=10018, host='127.0.0.1')
+&gt; riak_client = riak.RiakClient(protocol='http',
+&gt; nodes=[{'host':'127.0.0.1', 'http_port':10018},{'host':'127.0.0.1',
+&gt; 'http_port':10028},{'host':'127.0.0.1', 'http_port':10038}])
+&gt; 
+&gt; My uwsgi config is the following:
+&gt; 
+&gt; [uwsgi]
+&gt; vhost = true
+&gt; socket = /tmp/app.sock
+&gt; venv = /opt/app/venv
+&gt; chdir = /opt/app/
+&gt; module = myapp
+&gt; callable = app
+&gt; processes = 2
+&gt; master = true
+&gt; close-on-exec=true
+&gt; master = true
+&gt; post-buffering = 1
+&gt; carbon = 127.0.0.1:2003
+&gt; stats = /tmp/stats.sock
+&gt; 
+&gt; If i sniff the network traffic, when it hangs uwsgi basically stops
+&gt; sending any request to riak, all the workers becomes busy and the only
+&gt; way to restore it it's a restart of uwsgi.
+&gt; 
+&gt; My SW versions are the following:
+&gt; 
+&gt; Riak latest from git.
+&gt; 
+&gt; Python libs:
+&gt; riak (2.2.0)
+&gt; riak-pb (2.0.0.16)
+&gt; protobuf (2.5.0)
+&gt; 
+&gt; UWSGI: 2.0.10
+&gt; 
+&gt; Any idea on how i can troubleshoot this issue? It seems related to
+&gt; uwsgi but it's happening only when using the Riak connection.
+&gt; 
+&gt; Thank you
+&gt; 
+&gt; :tele
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16260.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16261">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16261">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16274.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16260.html">uWSGI + Riak connection issues</a></span> <span class="sender italic">tele</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: uWSGI + Riak connection issues</span> <span class="sender italic">tele</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16274.html">Re: uWSGI + Riak connection issues</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16275.html">Re: uWSGI + Riak connection issues</a></span> <span class="sender italic">tele</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: uWSGI + Riak connection issues">
+<input type="hidden" name="msgid" value="20150620151055.0fa1a96d@2cb">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16261.html">
+<input type="submit" value=" tele ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+uWSGI+%5C%2B+Riak+connection+issues%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16260.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16274.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">20150620151055.0fa1a96d@2cb</li>
+</ul>
+</div>
+</body>
+</html>

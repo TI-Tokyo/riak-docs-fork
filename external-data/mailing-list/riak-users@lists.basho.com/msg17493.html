@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Memory backend doesn't work (with multi backend)?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17493" id="c">
+<link rel="index" href="maillist.html#17493" id="i">
+<link rel="prev" href="msg17491.html" id="p">
+<link rel="next" href="msg17494.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17493.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Memory+backend+doesn%27t+work+%5C%28with+multi+backend%5C%29%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Memory backend doesn't work (with multi backend)?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Luke+Bakken%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Luke Bakken</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160623" rel="nofollow">Thu, 23 Jun 2016 11:07:58 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hello,
+
+I think the documentation for multi backend could use some
+improvement. Once you configure Riak to use the &quot;multi&quot; storage
+backend, you must then *name* backends to be used by your bucket
+types:</pre><pre>
+
+Here is a configuration that you can use, that would create two
+backends, one using the memory backend that is *named*
+&quot;my_memory_backend&quot;, and one using the leveldb backend that is named
+&quot;my_leveldb_backend&quot;:
+
+In riak.conf:
+
+storage_backend = multi
+multi_backend.my_memory_backend.storage_backend = memory
+multi_backend.my_leveldb_backend.storage_backend = leveldb
+
+The following is an example of setting a leveldb-specific setting for
+the &quot;my_leveldb_backend&quot; named backend:
+
+multi_backend.my_leveldb_backend.leveldb.maximum_memory.percent = 70
+
+Then, you associate your &quot;os_cache&quot; bucket type with
+&quot;my_memory_backend&quot; this way:
+
+riak-admin bucket-type create os_cache '{&quot;props&quot;: {&quot;write_once&quot;:
+true,&quot;backend&quot;:&quot;my_memory_backend&quot;,&quot;n_val&quot;:2,&quot;r&quot;:1,&quot;w&quot;:1,&quot;dw&quot;:1}}'
+riak-admin bucket-type activate os_cache
+
+Please let me know if this resolves your issue. You may have to remove
+the content's of Riak's data and ring directories to overwrite your
+old settings.
+
+I have filed an issue in GitHub to improve the documentation for
+multi-backend: <a  rel="nofollow" href="https://github.com/basho/basho_docs/issues/2123">https://github.com/basho/basho_docs/issues/2123</a>
+
+--
+Luke Bakken
+Engineer
+lbak...@basho.com
+
+On Wed, Jun 22, 2016 at 5:34 AM, Nagy, Attila &lt;b...@fsn.hu&gt; wrote:
+&gt; Hi,
+&gt;
+&gt; Trying to use the memory backend via multi.
+&gt;
+&gt; What I did:
+&gt; in riak.conf:
+&gt; storage_backend = multi
+&gt;
+&gt; Then creating a bucket type:
+&gt; riak-admin bucket-type create os_cache '{&quot;props&quot;: {&quot;write_once&quot;:
+&gt; true,&quot;backend&quot;:&quot;memory&quot;,&quot;n_val&quot;:2,&quot;r&quot;:1,&quot;w&quot;:1,&quot;dw&quot;:1}}'
+&gt; riak-admin bucket-type activate os_cache
+&gt;
+&gt; Then I PUT an object:
+&gt; curl -v -XPUT -H &quot;Content-Type: application/octet-stream&quot;
+&gt; '<a  rel="nofollow" href="http://localhost:8098/types/os_cache/buckets/os_cache/keys/test1">http://localhost:8098/types/os_cache/buckets/os_cache/keys/test1</a>' -d 'test'
+&gt;
+&gt; Mext, I shut down all of the servers at once, leaving nothing in the
+&gt; cluster, then restarting them.
+&gt; And a new get for the above URL returns &quot;test&quot;.
+&gt;
+&gt; When I set storage_backend to memory, it works as expected, after a full
+&gt; cluster stop, the bucket is empty.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17491.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17493">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17493">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17494.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17491.html">Memory backend doesn't work (with multi backend)?</a></span> <span class="sender italic">Nagy, Attila</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Memory backend doesn't work (with multi backend)?</span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17494.html">Re: Memory backend doesn't work (with multi backend)...</a></span> <span class="sender italic">Nagy, Attila</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17495.html">Re: Memory backend doesn't work (with multi back...</a></span> <span class="sender italic">Nagy, Attila</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Memory backend doesn't work (with multi backend)?">
+<input type="hidden" name="msgid" value="CAJJ0J9OyE_S2=7ojM5WxZejWRo6NUJ6ekuU8krMShAo6pvnwcg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17493.html">
+<input type="submit" value=" Luke Bakken ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Memory+backend+doesn%27t+work+%5C%28with+multi+backend%5C%29%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17491.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17494.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAJJ0J9OyE_S2=7ojM5WxZejWRo6NUJ6ekuU8krMShAo6pvnwcg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

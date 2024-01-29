@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Using Bucket Data Types slowed insert performance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16677" id="c">
+<link rel="index" href="maillist.html#16677" id="i">
+<link rel="prev" href="msg16676.html" id="p">
+<link rel="next" href="msg16678.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16677.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Using+Bucket+Data+Types+slowed+insert+performance%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Using Bucket Data Types slowed insert performance</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dennis+Nicolay%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dennis Nicolay</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151020" rel="nofollow">Tue, 20 Oct 2015 10:41:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Alexander,
+
+ </pre><pre>
+
+I’m parsing the file and storing each row with own key in a map datatype bucket 
+and each column is a register.  
+
+ 
+
+Thanks,
+
+Dennis
+
+ 
+
+From: Alexander Sicular [<a  rel="nofollow" href="mailto:sicul...@gmail.com">mailto:sicul...@gmail.com</a>] 
+Sent: Tuesday, October 20, 2015 10:34 AM
+To: Dennis Nicolay
+Cc: Christopher Mancini; riak-users@lists.basho.com
+Subject: Re: Using Bucket Data Types slowed insert performance
+
+ 
+
+Hi Dennis,
+
+ 
+
+It's a bit unclear what you are trying to do here. Are you 1. uploading the 
+entire file and saving it to one key with the value being the file? Or are you 
+2. parsing the file and storing each row as a register in a map? 
+
+ 
+
+Either of those approaches are not appropriate in Riak KV. For the first case I 
+would point you to Riak S2 which is designed to manage large binary object 
+storage. You can keep the large file as a single addressable entity and access 
+it via Amazon S3 or Swift protocol. For the second case I would consider 
+maintaining one key (map) per row in the file and have a register per column in 
+the row. Or not use Riak data types (maps, sets, registers, flags and counters) 
+and simply keep each row in the file as a KV in Riak either as a raw string or 
+as a serialized json string. ETL'ing out of relational databases and into Riak 
+is a very common use case and often implemented in the fashion I described. 
+
+ 
+
+As Chris mentioned, soft upper bound on value size should be 1MB. I say soft 
+because we won't enforce it although there are settings in the config that can 
+be changed to enforce it (default 5MB warning, 50MB reject I believe.) 
+
+Best,
+
+Alexander
+
+
+
+
+
+@siculars
+
+<a  rel="nofollow" href="http://siculars.posthaven.com">http://siculars.posthaven.com</a>
+
+ 
+
+Sent from my iRotaryPhone
+
+
+On Oct 20, 2015, at 10:22, Christopher Mancini &lt;cmanc...@basho.com 
+&lt;<a  rel="nofollow" href="mailto:cmanc...@basho.com">mailto:cmanc...@basho.com</a>&gt; &gt; wrote:
+
+Hi Dennis,
+
+I am not the most experienced, but what I do know is that a file that size 
+causes a great deal of network chatter because it has to handoff that data to 
+the other nodes in the network and will cause delays in Riak's ability to send 
+and confirm consistency across the ring. Typically we recommend that you try to 
+structure your objects to around 1mb or less to ensure consistent performance. 
+That max object size can vary of course based on your network / server specs 
+and configuration.
+
+I hope this helps.
+
+Chris
+
+ 
+
+On Tue, Oct 20, 2015 at 8:18 AM Dennis Nicolay &lt;dnico...@orcawave.net 
+&lt;<a  rel="nofollow" href="mailto:dnico...@orcawave.net">mailto:dnico...@orcawave.net</a>&gt; &gt; wrote:
+
+Hi,
+
+ 
+
+I’m using .net RiakClient 2.0 to insert a 44mb delimited file with 139k rows of 
+data into riak.  I switched to a map bucket data type with registers.   It is 
+taking about 3 times longer to insert into this bucket vs non data typed 
+bucket.  Any suggestions?
+
+ 
+
+Thanks in advance,
+
+Dennis
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt; 
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt; 
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16676.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16677">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16677">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16678.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16673.html">Using Bucket Data Types slowed insert performance</a></span> <span class="sender italic">Dennis Nicolay</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16674.html">Re: Using Bucket Data Types slowed insert perform...</a></span> <span class="sender italic">Christopher Mancini</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16676.html">Re: Using Bucket Data Types slowed insert per...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Using Bucket Data Types slowed insert...</span> <span class="sender italic">Dennis Nicolay</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16678.html">Re: Using Bucket Data Types slowed in...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16679.html">RE: Using Bucket Data Types slow...</a></span> <span class="sender italic">Mark Schmidt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16680.html">Re: Using Bucket Data Types ...</a></span> <span class="sender italic">Christopher Mancini</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16681.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Dennis Nicolay</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16683.html">Re: Using Bucket Data Ty...</a></span> <span class="sender italic">Alex Moore</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16693.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Mark Schmidt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16731.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Dennis Nicolay</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16690.html">Re: Using Bucket Data Ty...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16691.html">Re: Using Bucket Data Ty...</a></span> <span class="sender italic">Torben Hoffmann</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16694.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Mark Schmidt</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Using Bucket Data Types slowed insert performance">
+<input type="hidden" name="msgid" value="007301d10b5e$395ad320$ac107960$@orcawave.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16677.html">
+<input type="submit" value=" Dennis Nicolay ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Using+Bucket+Data+Types+slowed+insert+performance%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16676.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16678.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">007301d10b5e$395ad320$ac107960$@orcawave.net</li>
+</ul>
+</div>
+</body>
+</html>

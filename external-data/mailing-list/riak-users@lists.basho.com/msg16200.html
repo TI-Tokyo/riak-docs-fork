@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: uneven disk distribution</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16200" id="c">
+<link rel="index" href="maillist.html#16200" id="i">
+<link rel="prev" href="msg16139.html" id="p">
+<link rel="next" href="msg16140.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16200.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+uneven+disk+distribution%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: uneven disk distribution</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Johnny+Tan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Johnny Tan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150604" rel="nofollow">Thu, 04 Jun 2015 06:53:18 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>To followup:
+
+Since we use chef (configuration management), the riak configs are the same
+across all our riak nodes (except for stuff like hostnames/IPs, etc.).</pre><pre>
+
+I ran riak_kv:repair and it looks like it had fixed the problem on node
+004, but then a _different_ node (002) started to throw a bunch of locking
+errors. (I thought I saved a copy of that log somewhere but can't seem to
+find it now, and the old ones are rotated out.)
+
+Nothing I did would stem those errors on 002, even though 004 seemed
+perfectly fine after the repair. In the end, I rm'd 002's bitcask
+directory, rejoined the cluster, and it seems to now be back in shape. No
+errors, the nodes are all relatively similar in size -- 002 lags a little
+behind the others, but not in a worrisome way.
+
+I'm sure this was related to Bitcask merging, I just still haven't
+pinpointed what it was. But I appreciate the input and suggestions.
+
+johnny
+
+On Fri, May 15, 2015 at 4:48 PM, Charlie Voiselle &lt;cvoise...@basho.com&gt;
+wrote:
+
+&gt; Johnny:
+&gt;
+&gt; Something else to look for would be any errors in the console.log related
+&gt; to Bitcask merging.  It would be interesting to see if the unusual disk
+&gt; utilization was related to a specific partition.  If it is, you could
+&gt; consider removing that particular partition and running riak_kv:repair to
+&gt; restore the replicas from the adjacent partitions.  I can provide more
+&gt; information if you find that to be the case.
+&gt;
+&gt; Regards,
+&gt; Charlie Voiselle
+&gt; Client Services, Basho
+&gt;
+&gt;
+&gt; On May 14, 2015 10:06 PM, &quot;Engel Sanchez&quot; &lt;en...@basho.com&gt; wrote:
+&gt;
+&gt;&gt; Hi Johnny. Make sure that the configuration on that node is not different
+&gt;&gt; to the others. For example, it could be configured to never merge Bitcask
+&gt;&gt; files, so that space could never be reclaimed.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask">http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask</a>
+&gt;&gt;
+&gt;&gt; On Thu, May 14, 2015 at 4:31 PM, Johnny Tan &lt;johnnyd...@gmail.com&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; We have a 6-node test riak cluster. One of the nodes seems to be using
+&gt;&gt;&gt; far more disk:
+&gt;&gt;&gt; staging-riak001.pp /dev/sda3              15G  6.3G  7.2G  47% /
+&gt;&gt;&gt; staging-riak002.pp /dev/sda3              15G  6.4G  7.1G  48% /
+&gt;&gt;&gt; staging-riak003.pp /dev/sda3              15G  6.1G  7.5G  45% /
+&gt;&gt;&gt; staging-riak004.pp /dev/sda3              15G   14G  266M  99% /
+&gt;&gt;&gt; staging-riak005.pp /dev/sda3              15G  5.8G  7.7G  44% /
+&gt;&gt;&gt; staging-riak006.pp /dev/sda3              15G  6.3G  7.3G  47% /
+&gt;&gt;&gt;
+&gt;&gt;&gt; Specifically, /var/lib/riak/bitcask is using up most of that space. It
+&gt;&gt;&gt; seems to have files in there that are much older than any of the other
+&gt;&gt;&gt; nodes. We've done maintenance of various sort on this cluster -- as the
+&gt;&gt;&gt; name indicates, we use it as a staging ground before we go to production. I
+&gt;&gt;&gt; don't recall a specific issue per se, but I wouldn't rule it out.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Is there a way to figure out if there's an underlying issue here, or
+&gt;&gt;&gt; whether some of this disk space is not really current and can somehow be
+&gt;&gt;&gt; purged?
+&gt;&gt;&gt;
+&gt;&gt;&gt; What info would help answer those questions?
+&gt;&gt;&gt;
+&gt;&gt;&gt; johnny
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16139.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16200">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16200">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16140.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16137.html">uneven disk distribution</a></span> <span class="sender italic">Johnny Tan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16138.html">Re: uneven disk distribution</a></span> <span class="sender italic">Engel Sanchez</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16139.html">Re: uneven disk distribution</a></span> <span class="sender italic">Charlie Voiselle</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: uneven disk distribution</span> <span class="sender italic">Johnny Tan</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: uneven disk distribution">
+<input type="hidden" name="msgid" value="CABMVzL0KhFmwi22vWjzv5TgUa=NG=HCUJWpZsmZHH7Y1bmJdJQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16200.html">
+<input type="submit" value=" Johnny Tan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+uneven+disk+distribution%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16139.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16140.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABMVzL0KhFmwi22vWjzv5TgUa=NG=HCUJWpZsmZHH7Y1bmJdJQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

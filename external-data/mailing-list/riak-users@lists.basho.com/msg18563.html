@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>RE: Node Recovery Questions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18563" id="c">
+<link rel="index" href="maillist.html#18563" id="i">
+<link rel="prev" href="msg18562.html" id="p">
+<link rel="next" href="msg18564.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18563.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Node+Recovery+Questions%22&amp;o=newest" rel="nofollow"><span itemprop="name">RE: Node Recovery Questions</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Martin+Sumner%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Martin Sumner</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20180808" rel="nofollow">Wed, 08 Aug 2018 09:38:07 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sean,
+
+Some partial answers to your questions.</pre><pre>
+
+I don't believe force-replace itself will sync anything up - it just
+reassigns ownership (hence handoff happens very quickly).
+
+Read repair would synchronise a portion of the data.  So if 10% of you data
+is read regularly, this might explain some of what you see.
+
+AAE should also repair your data.  But if nothing has happened for 4 days,
+then that doesn't seem to be the case.  It would be worth checking the
+aae-status page (
+<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.3/using/admin/riak-admin/#aae-status">http://docs.basho.com/riak/kv/2.2.3/using/admin/riak-admin/#aae-status</a>) to
+confirm things are happening.
+
+I don't know if there are any minimum levels of data before bitcask will
+perform compaction.  There's nothing obvious in the code that wouldn't be
+triggered way before 90%.  I don't know if it will merge on the active file
+(the one currently being written to), but that is 2GB max size (configured
+through bitcask.max_file_size).
+
+When you say the size of the bitcask directory - is this the size shared
+across all vnodes on the node?  I guess if each vnode has a single file
+&lt;2GB, and there are multiple vnodes - something unexpected might happen
+here?  If bitcask does indeed not merge the file active for writing.
+
+In terms of distribution around the cluster, if you have an n_val of 3 you
+should normally expect to see a relatively even distribution of the data on
+failure (certainly not it all going to one).  Worst case scenario is that 3
+nodes get all the load from that one failed node.
+
+When a vnode is inaccessible, 3 (assuming n=3) fallback vnodes are selected
+to handle the load for that 1 vnode (as that vnode would normally be in 3
+preflists, and commonly a different node will be asked to start a vnode for
+each preflist).
+
+
+I will try and dig later into bitcask merge/compaction code, to see if I
+spot anything else.
+
+Martin
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18562.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18563">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18563">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18564.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18562.html">Node Recovery Questions</a></span> <span class="sender italic">sean mcevoy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">RE: Node Recovery Questions</span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18564.html">Re: Node Recovery Questions</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18565.html">Re: Node Recovery Questions</a></span> <span class="sender italic">sean mcevoy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18566.html">Re: Node Recovery Questions</a></span> <span class="sender italic">sean mcevoy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="RE: Node Recovery Questions">
+<input type="hidden" name="msgid" value="CANzjUxAHuYzuY-a8qM=J57FsONssB2S5QXc8F4VzPnNfBhrqrw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18563.html">
+<input type="submit" value=" Martin Sumner ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22RE%5C%3A+Node+Recovery+Questions%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18562.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18564.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANzjUxAHuYzuY-a8qM=J57FsONssB2S5QXc8F4VzPnNfBhrqrw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Production deployment requirements for memory backend storage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18139" id="c">
+<link rel="index" href="maillist.html#18139" id="i">
+<link rel="prev" href="msg18137.html" id="p">
+<link rel="next" href="msg18140.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18139.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Production+deployment+requirements+for+memory+backend+storage%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Production deployment requirements for memory backend storage</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Charlie+Voiselle%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Charlie Voiselle</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170412" rel="nofollow">Wed, 12 Apr 2017 12:01:32 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Neeraj:
+
+Thanks for you interest in Riak. I will copy your questions into this email for 
+reference and answer them inline.</pre><pre>
+
+1. What is the “platform_data_dir” used for when memory is used as storage 
+backend? Is it only needed for active anti-entropy and cluster metadata? Do I 
+need to persist this data i.e. if a node goes down and restarts in this 
+configuration, is persistence of data in “platform_data_dir” required.
+As you have pointed out, the platform_data_dir contains more than just the 
+actual data stored in the cluster. There are three folders that must be 
+persisted for a node to remain a member of a cluster and to not create issues 
+with the sizes of the vector clocks internal to the objects. They are:
+
+ring - The binary files that describe the cluster and the vnode ownership 
+mappings. Deleting this folder will cause the node to start up and create a new 
+default ring. This default ring will allocate 100% of the partitions to that 
+node. This is non-fatal and is resolved by rejoining the node to the cluster. 
+This extra work can be avoided by persisting the ring file properly.
+
+cluster_meta - This folder contains the properties for bucket types and typed 
+custom buckets.
+
+kv_vnode - This folder contains generated actor-ids for each Riak vnode. The 
+routine loss of this directory will cause orphaned vnode actor-ids to 
+potentially accumulate in objects’ vclocks.
+
+Active anti-entropy is a process to prevent bit-rot in long-lived data. Since 
+your questions we concerning ephemeral data, we would recommend that it be 
+disabled because there are overheads in creating and maintaining the trees that 
+make no sense for ephemeral data.
+
+2. What is the minimum memory requirement of an empty Riak node in this 
+configuration?
+On a sample node that I brought up, an empty Riak KV 2.2.3, the beam.smp 
+process was using 1.5 gb of RAM with an empty memory backend and AAE-disabled.
+
+3. What is the minimum disk and CPU requirement of a Riak node in this 
+configuration?
+There are a few variables that dictate how much actual disk throughput you will 
+use in a Riak cluster that only uses the memory backend-logging overhead, ring 
+changes, and cluster metadata changes.
+
+Logging throughput is determined by the general health of the cluster and is 
+minimal in clusters that are well-behaved. The logfiles themselves have 
+configurable size caps and set numbers of rotations (by default 5 logs capped 
+at 50mb for each file). There are some other logfiles that are not managed by 
+lager and they can grow beyond these expected limits. If you are building nodes 
+optimized for storage, you will want to monitor the size of this folder and 
+trim it as appropriate.
+
+The ring is a data structure that is used to hold information about the 
+cluster’s membership, the node capabilities, MDC replication configuration, and 
+the legacy custom bucket metadata. In stable clusters that are using no custom 
+buckets the impact of writes to the ring is negligible; however there are 
+certain antipatterns involving the creation of a large number of buckets with 
+custom properties in the “default” bucket type that will bloat the ring file 
+and result in a large amount of ring gossip.
+
+Finally, Riak bucket types and their properties as well as the custom bucket 
+properties of typed buckets is stored in cluster-metadata. This backend is a 
+dets-based store that uses hashtree comparisons to maintain consistency across 
+members of the cluster. This backend’s storage also depends on the amount and 
+speed with which you create metadata within your cluster.
+
+There is more generically-applicable information about [cluster capacity 
+planning] 
+&lt;<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.3/setup/planning/cluster-capacity/">http://docs.basho.com/riak/kv/2.2.3/setup/planning/cluster-capacity/</a>&gt; in the 
+Riak KV documentation.
+
+Thanks again for your interest,
+
+Charlie Voiselle
+Sr. Product Manager, Riak KV/Clients
+Basho Technologies
+@angrycub
+
+[cluster capacity planning] - 
+<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.3/setup/planning/cluster-capacity/">http://docs.basho.com/riak/kv/2.2.3/setup/planning/cluster-capacity/</a> 
+&lt;<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.3/setup/planning/cluster-capacity/">http://docs.basho.com/riak/kv/2.2.3/setup/planning/cluster-capacity/</a>&gt;
+
+
+&gt; On Apr 10, 2017, at 3:30 PM, Neeraj Poddar &lt;n.pod...@f5.com&gt; wrote:
+&gt; 
+&gt; Hello,
+&gt;  
+&gt; I wanted to understand the production requirements for using Riak as a 
+&gt; non-persistent ephemeral data store. In particular the following questions 
+&gt; relate to using Riak with “memory” configured as storage backend:
+&gt;  
+&gt; 1.       What is the “platform_data_dir” used for when memory is used as 
+&gt; storage backend? Is it only needed for active anti-entropy and cluster 
+&gt; metadata? Do I need to persist this data i.e. if a node goes down and 
+&gt; restarts in this configuration, is persistence of data in “platform_data_dir” 
+&gt; required.
+&gt; 2.       What is the minimum memory requirement of an empty Riak node in this 
+&gt; configuration?
+&gt; 3.       What is the minimum disk and CPU requirement of a Riak node in this 
+&gt; configuration?
+&gt;  
+&gt; -- 
+&gt; Regards,
+&gt; Neeraj Poddar
+&gt;  
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18137.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18139">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18139">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18140.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18133.html">Production deployment requirements for memory backend sto...</a></span> <span class="sender italic">Neeraj Poddar</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18137.html">Re: Production deployment requirements for memory ba...</a></span> <span class="sender italic">nrjpoddar</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Production deployment requirements for memory ba...</span> <span class="sender italic">Charlie Voiselle</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18140.html">Re: Production deployment requirements for memor...</a></span> <span class="sender italic">nrjpoddar</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Production deployment requirements for memory backend storage">
+<input type="hidden" name="msgid" value="18E5E682-744E-4570-A59A-B3D38BBF06E4@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18139.html">
+<input type="submit" value=" Charlie Voiselle ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Production+deployment+requirements+for+memory+backend+storage%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18137.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18140.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">18E5E682-744E-4570-A59A-B3D38BBF06E4@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

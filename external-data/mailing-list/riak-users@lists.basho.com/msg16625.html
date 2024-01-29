@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Is storing billions of small files a good Riak-CS/KV usecase?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16625" id="c">
+<link rel="index" href="maillist.html#16625" id="i">
+<link rel="prev" href="msg16624.html" id="p">
+<link rel="next" href="msg16630.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16625.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+storing+billions+of+small+files+a+good+Riak%5C-CS%5C%2FKV+usecase%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Is storing billions of small files a good Riak-CS/KV usecase?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22David+Heidt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">David Heidt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151007" rel="nofollow">Wed, 07 Oct 2015 07:38:19 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thank you so much Daniel and Dmitri!
+
+I will benchmark 2i against bitcask expiry and get back to you here in a
+couple of days.</pre><pre>
+
+Best,
+
+David
+
+
+2015-10-07 16:23 GMT+02:00 Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;:
+
+&gt; On second thought, ignore the Search recommendation. Search + Expiry
+&gt; doesn't work very well (when objects expire from Riak, their search index
+&gt; entries persist, except now those are orphaned).
+&gt;
+&gt; On Wed, Oct 7, 2015 at 4:11 PM, Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;
+&gt; wrote:
+&gt;
+&gt;&gt; Hi David,
+&gt;&gt;
+&gt;&gt; 1) Storing billions of small files is definitely a good use case for Riak
+&gt;&gt; KV.  (Since they're small, there's no reason to use CS (now re-branded as
+&gt;&gt; S2)).
+&gt;&gt;
+&gt;&gt; 2) As far as deleting an entire bucket, that part is tougher.
+&gt;&gt;
+&gt;&gt; (Incidentally, if you were thinking of using Riak CS because it has a
+&gt;&gt; 'delete bucket' command (see
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riakcs/latest/references/apis/storage/s3/RiakCS-DELETE-Bucket/">http://docs.basho.com/riakcs/latest/references/apis/storage/s3/RiakCS-DELETE-Bucket/</a>
+&gt;&gt; ) -- that won't work, the delete bucket command requires all objects to be
+&gt;&gt; deleted first. Meaning, you can only perform it on an empty bucket. Which
+&gt;&gt; doesn't help you :) ).
+&gt;&gt;
+&gt;&gt; Your best bet is to use the Bitcask back end (instead of leveldb), and
+&gt;&gt; use its Automatic Expiration setting (see the end of the
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask">http://docs.basho.com/riak/latest/ops/advanced/backends/bitcask/#Configuring-Bitcask</a>
+&gt;&gt; section, under 'Automatic Expiration').
+&gt;&gt;
+&gt;&gt; So, you can say:
+&gt;&gt;
+&gt;&gt; bitcask.expiry = 30d
+&gt;&gt;
+&gt;&gt; And all of the objects (in all buckets using that backend) will be
+&gt;&gt; expired 30 days (from their last-modified timestamp). Which also
+&gt;&gt; effectively deletes the bucket they were in.
+&gt;&gt;
+&gt;&gt; Now, this setting is per-backend. So, if you need other buckets without
+&gt;&gt; expirations, you'd want to set up a Multi backend. So, the default backend
+&gt;&gt; could be a plain non-expiry Bitcask (or leveldb), and then a second backend
+&gt;&gt; would have the expiry setting. You can learn more here:
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/backends/multi/">http://docs.basho.com/riak/latest/ops/advanced/backends/multi/</a>
+&gt;&gt;
+&gt;&gt; What if you want to delete buckets but also use LevelDB?
+&gt;&gt;
+&gt;&gt; That depends on why you want LevelDB. If you're using it for Secondary
+&gt;&gt; Index capability -- you can use Search instead, that works with Bitcask.
+&gt;&gt; Or, on the flip side, you can use 2i (secondary index) queries to delete
+&gt;&gt; the bucket. You'd use a 2i query to get all the keys in an expiring bucket,
+&gt;&gt; and then issue Deletes to each key. (Don't forget to delete with a W value
+&gt;&gt; equal to your N value. Or you may have to run the query + delete a few
+&gt;&gt; times, to account for stray missing replicas).
+&gt;&gt;
+&gt;&gt; Does that help explain the situation?
+&gt;&gt;
+&gt;&gt; Dmitri
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Wed, Oct 7, 2015 at 3:43 PM, David Heidt &lt;david.he...@msales.com&gt;
+&gt;&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; Hi List,
+&gt;&gt;&gt;
+&gt;&gt;&gt; would you say that storing billions of very small (json) files is a good
+&gt;&gt;&gt; usecase for riak kv or cs?
+&gt;&gt;&gt;
+&gt;&gt;&gt; here's what I would do:
+&gt;&gt;&gt;
+&gt;&gt;&gt; * create daily buckets ( i.e. 2015-10-07)
+&gt;&gt;&gt; * up to 130 Million inserts per day
+&gt;&gt;&gt; * about 150.000 read-ony accesses/day
+&gt;&gt;&gt; * no updates on existing keys/files
+&gt;&gt;&gt; * delete buckets (including keys/files) older than x days
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; I already have a working riak-kv/leveldb cluster (inserts and lookups
+&gt;&gt;&gt; are  going smoothly), but when it comes to mass deletion of keys I found no
+&gt;&gt;&gt; way to do this.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; Best,
+&gt;&gt;&gt;
+&gt;&gt;&gt; David
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16624.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16625">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16625">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16630.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16620.html">Is storing billions of small files a good Riak-CS/KV us...</a></span> <span class="sender italic">David Heidt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16621.html">Re: Is storing billions of small files a good Riak...</a></span> <span class="sender italic">Daniel Abrahamsson</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16623.html">Re: Is storing billions of small files a good Riak...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16624.html">Re: Is storing billions of small files a good ...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Is storing billions of small files a g...</span> <span class="sender italic">David Heidt</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Is storing billions of small files a good Riak-CS/KV usecase?">
+<input type="hidden" name="msgid" value="CAEz5G=xVaxv6=D=jCn08ttbiBQPgNBfEuD7wzorsz-_XVNo5Qw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16625.html">
+<input type="submit" value=" David Heidt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Is+storing+billions+of+small+files+a+good+Riak%5C-CS%5C%2FKV+usecase%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16624.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16630.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEz5G=xVaxv6=D=jCn08ttbiBQPgNBfEuD7wzorsz-_XVNo5Qw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

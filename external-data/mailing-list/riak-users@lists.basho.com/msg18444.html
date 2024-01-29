@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Help with handling Riak disk failure</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18444" id="c">
+<link rel="index" href="maillist.html#18444" id="i">
+<link rel="prev" href="msg18443.html" id="p">
+<link rel="next" href="msg18445.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18444.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Help+with+handling+Riak+disk+failure%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Help with handling Riak disk failure</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Bryan+Hunt%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Bryan Hunt</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170919" rel="nofollow">Tue, 19 Sep 2017 12:24:21 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Sorry Leo, 
+
+That’s completely impossible to guess :-D </pre><pre>
+
+Factors include - I/O, Network cards, network switch, selinux, block size, CPU, 
+size of objects, number of objects, CRDT, Riak version, etc… 
+
+Best, 
+
+Bryan 
+
+&gt; On 19 Sep 2017, at 18:53, Leo &lt;scicompl...@gmail.com&gt; wrote:
+&gt; 
+&gt; Dear Bryan,
+&gt; 
+&gt; Thank you very much for your answers. They are very helpful to me.
+&gt; I will use more nodes (&gt;=5) in future.
+&gt; 
+&gt; From your experience with using Riak, what would your guess be for the
+&gt; time taken to finish all the AAE transfers and be done with the
+&gt; recovery for about 1 TB worth of data (assuming my cluster is
+&gt; otherwise completely idle without any user accessing the cluster
+&gt; during this process and that  I am continuously watching the transfers
+&gt; and re-enabling disabled AAE trees gradually )?  I am just asking for
+&gt; rough estimate from your past experience ( please quote from your
+&gt; experience with a difference sized cluster / data size too ). My guess
+&gt; is that it will take approx. 2 days or more. Do you concur?
+&gt; 
+&gt; Thanks,
+&gt; Leo
+&gt; 
+&gt; 
+&gt; On Tue, Sep 19, 2017 at 12:41 PM, Bryan Hunt
+&gt; &lt;bryan.h...@erlang-solutions.com&gt; wrote:
+&gt;&gt; (0) Three nodes are insufficient, you should have 5 nodes
+&gt;&gt; (1) You could iterate and read every object in the cluster - this would also
+&gt;&gt; trigger read repair for every object
+&gt;&gt; (2) - copied from Engel Sanchez response to a similar question  April 10th
+&gt;&gt; 2014 )
+&gt;&gt; 
+&gt;&gt; * If AAE is disabled, you don't have to stop the node to delete the data in
+&gt;&gt; the anti_entropy directories
+&gt;&gt; * If AAE is enabled, deleting the AAE data in a rolling manner may trigger
+&gt;&gt; an avalanche of read repairs between nodes with the bad trees and nodes
+&gt;&gt; with good trees as the data seems to diverge.
+&gt;&gt; 
+&gt;&gt; If your nodes are already up, with AAE enabled and with old incorrect trees
+&gt;&gt; in the mix, there is a better way.  You can dynamically disable AAE with
+&gt;&gt; some console commands. At that point, without stopping the nodes, you can
+&gt;&gt; delete all AAE data across the cluster.  At a convenient time, re-enable
+&gt;&gt; AAE.  I say convenient because all trees will start to rebuild, and that
+&gt;&gt; can be problematic in an overloaded cluster.  Doing this over the weekend
+&gt;&gt; might be a good idea unless your cluster can take the extra load.
+&gt;&gt; 
+&gt;&gt; To dynamically disable AAE from the Riak console, you can run this command:
+&gt;&gt; 
+&gt;&gt;&gt; riak_core_util:rpc_every_member_ann(riak_kv_entropy_manager, disable, [],
+&gt;&gt; 60000).
+&gt;&gt; 
+&gt;&gt; and enable with the similar:
+&gt;&gt; 
+&gt;&gt;&gt; riak_core_util:rpc_every_member_ann(riak_kv_entropy_manager, enable, [],
+&gt;&gt; 60000).
+&gt;&gt; 
+&gt;&gt; That last number is just a timeout for the RPC operation.  I hope this
+&gt;&gt; saves you some extra load on your clusters.
+&gt;&gt; 
+&gt;&gt; (3) That’s going to be :
+&gt;&gt; (3a) List all keys using the client of your choice
+&gt;&gt; (3b) Fetch each object
+&gt;&gt; 
+&gt;&gt; <a  rel="nofollow" href="https://www.tiot.jp/riak-docs/riak/kv/2.2.3/developing/usage/reading-objects/">https://www.tiot.jp/riak-docs/riak/kv/2.2.3/developing/usage/reading-objects/</a>
+&gt;&gt; 
+&gt;&gt; <a  rel="nofollow" href="https://www.tiot.jp/riak-docs/riak/kv/2.2.3/developing/usage/secondary-indexes/">https://www.tiot.jp/riak-docs/riak/kv/2.2.3/developing/usage/secondary-indexes/</a>
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; On 19 Sep 2017, at 18:31, Leo &lt;scicompl...@gmail.com&gt; wrote:
+&gt;&gt; 
+&gt;&gt; Dear Riak users and experts,
+&gt;&gt; 
+&gt;&gt; I really appreciate any help with my questions below.
+&gt;&gt; 
+&gt;&gt; I have a 3 node Riak cluster with each having approx. 1 TB disk usage.
+&gt;&gt; All of a sudden, one node's hard disk failed unrecoverably. So, I
+&gt;&gt; added a new node using the following steps:
+&gt;&gt; 
+&gt;&gt; 1) riak-admin cluster join 2) down the failed node 3) riak-admin
+&gt;&gt; force-replace failed-node new-node 4) riak-admin cluster plan 5)
+&gt;&gt; riak-admin cluster commit.
+&gt;&gt; 
+&gt;&gt; This almost fixed the problem except that after lots of data transfers
+&gt;&gt; and handoffs, now not all three nodes have 1 TB disk usage. Only two
+&gt;&gt; of them have 1 TB disk usage. The other one is almost empty (few 10s
+&gt;&gt; of GBs). This means there are no longer 3 copies on disk anymore. My
+&gt;&gt; data is completely random (no two keys have same data associated with
+&gt;&gt; them. So, compression of data cannot be the reason for less data on
+&gt;&gt; disk),
+&gt;&gt; 
+&gt;&gt; I also tried using the &quot;riak-admin cluster replace failednode newnode&quot;
+&gt;&gt; command so that the leaving node handsoff data to the joining node.
+&gt;&gt; This however is not helpful if the leaving node has a failed hard
+&gt;&gt; disk. I want the remaining live vnodes to help the new node recreate
+&gt;&gt; the lost data using their replica copies.
+&gt;&gt; 
+&gt;&gt; I have three questions:
+&gt;&gt; 
+&gt;&gt; 1) What commands should I run to forcefully make sure there are three
+&gt;&gt; replicas on disk overall without waiting for read-repair or
+&gt;&gt; anti-entropy to make three copies ? Bandwidth usage or CPU usage is
+&gt;&gt; not a huge concern for me.
+&gt;&gt; 
+&gt;&gt; 2) Also, I will be very grateful if someone lists the commands that I
+&gt;&gt; can run using &quot;riak attach&quot; so that I can clear the AAE trees and
+&gt;&gt; forcefully make sure all data has 3 copies.
+&gt;&gt; 
+&gt;&gt; 3) I will be very thankful if someone helps me with the commands that
+&gt;&gt; I should run to ensure that all data has 3 replicas on disk after the
+&gt;&gt; disk failure (instead of just looking at the disk space usage in all
+&gt;&gt; the nodes as hints)?
+&gt;&gt; 
+&gt;&gt; Thanks,
+&gt;&gt; Leo
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+&gt;&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18443.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18444">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18444">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18445.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18441.html">Help with handling Riak disk failure</a></span> <span class="sender italic">Leo</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18442.html">Re: Help with handling Riak disk failure</a></span> <span class="sender italic">Bryan Hunt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18443.html">Re: Help with handling Riak disk failure</a></span> <span class="sender italic">Leo</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Help with handling Riak disk failure</span> <span class="sender italic">Bryan Hunt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18445.html">Re: Help with handling Riak disk failure</a></span> <span class="sender italic">Leo</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Help with handling Riak disk failure">
+<input type="hidden" name="msgid" value="EB0570BC-0484-46EB-BB36-5C3431BB731E@erlang-solutions.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18444.html">
+<input type="submit" value=" Bryan Hunt ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Help+with+handling+Riak+disk+failure%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18443.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18445.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">EB0570BC-0484-46EB-BB36-5C3431BB731E@erlang-solutions.com</li>
+</ul>
+</div>
+</body>
+</html>

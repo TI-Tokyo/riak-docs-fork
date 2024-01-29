@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Clarification questions re bucket types</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17796" id="c">
+<link rel="index" href="maillist.html#17796" id="i">
+<link rel="prev" href="msg17795.html" id="p">
+<link rel="next" href="#" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17796.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Clarification+questions+re+bucket+types%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Clarification questions re bucket types</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Shaun+McVey%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Shaun McVey</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20161205" rel="nofollow">Mon, 05 Dec 2016 08:09:15 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Henning,
+So normally, a bucket's custom properties are stored in the ring file.
+It's this file which is gossiped around regularly in a cluster.  When users
+create hundreds/thousands of custom customer properties (it's been done),
+it can grind the cluster almost to a standstill.</pre><pre>
+
+A bucket-type only has to be created and activated on one node.  The
+operation is still sent to the other nodes automatically on creation so
+there's no need to repeat the command on multiple nodes.
+
+I can see why you think that the example is confusing.  Normally, a
+bucket's custom properties is stored in the ring file, but only for the
+'default' bucket-type.  When you set custom properties on a bucket inside a
+non-default bucket-type, then that information is ALSO stored in the
+cluster metadata file, not the ring file, and is never gossiped around the
+ring.  The example shows setting properties on a bucket, but because the
+bucket-type isn't 'default', there's no penalty involved.
+
+So in summary, operations like this are fine (because the bucket-type is
+'animals', not 'default'):
+
+curl -XPUT $RIAK_HOST/types/animals/buckets/cats/props \ -H 'Content-Type:
+application/json' \ -d '{&quot;props&quot;:{&quot;search_index&quot;:&quot;famous&quot;}}'
+
+Operations like this are should be avoided (first one is using the default
+bucket-type, second also uses the default bucket-type in a backwards
+compatible format):
+
+curl -XPUT $RIAK_HOST/types/default/buckets/cats/props \ -H 'Content-Type:
+application/json' \ -d '{&quot;props&quot;:{&quot;search_index&quot;:&quot;famous&quot;}}'
+
+curl -XPUT $RIAK_HOST/buckets/cats/props \ -H 'Content-Type:
+application/json' \ -d '{&quot;props&quot;:{&quot;search_index&quot;:&quot;famous&quot;}}'
+
+
+On to your second question, if an application were to attempt a write to a
+non-existing bucket-type, it would receive an error that the bucket type is
+unknown, and no data would be stored in the cluster.
+
+I agree with you about that data definition should really be in the domain
+of the application and not an administrator.  Perhaps others can chip in
+with their experiences and how they get around this.  However, you can
+consider this feature is still on the cards for a future release, but I
+couldn't make any immediate promises about when.
+
+Kind Regards,
+Shaun
+
+On Mon, Dec 5, 2016 at 2:40 PM, Henning Verbeek &lt;hankipa...@gmail.com&gt;
+wrote:
+
+&gt; Hi guys,
+&gt;
+&gt; I still struggle with bucket types and have some questions. Going back
+&gt; a year I could not find many threads about it, but forgive me if I
+&gt; missed something and am asking already-answered questions.
+&gt;
+&gt; ## Cluster-awareness
+&gt;
+&gt; I've understood so far that bucket types are used as part of the
+&gt; namespace, and that they can also hold additional configuration
+&gt; properties (such as datatypes). I've also read that they are
+&gt; &quot;lightweight&quot;, and are not being &quot;gossiped around the cluster&quot;
+&gt; compared to properties set on buckets directly. Because of this they
+&gt; are recommended for bucket configuration; in fact configuration of
+&gt; newer properties (CRDT) are only available via bucket types.
+&gt;
+&gt; The statement about &quot;not gossiped around the cluster&quot; makes me wonder:
+&gt; does that mean that the bucket types must be defined (and activated?)
+&gt; on each cluster node? The documentation at
+&gt; [<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.0/using/cluster-">http://docs.basho.com/riak/kv/2.2.0/using/cluster-</a>
+&gt; operations/bucket-types/]
+&gt; does not explain this.
+&gt;
+&gt; I find the example at this link actually really confusing: A bucket
+&gt; type is created _without properties_, and then a property is set on
+&gt; the individual bucket. I thought, you're exactly not supposed to do
+&gt; that but rather use plenty of bucket types...?! (Yes, the example
+&gt; further down explains that the bucket type could be defined with the
+&gt; property; but why is it shown here as if this is the exception?)
+&gt;
+&gt; ## API-availability of bucket type creation
+&gt;
+&gt; I've seen [this
+&gt; thread](<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_">http://lists.basho.com/pipermail/riak-users_</a>
+&gt; lists.basho.com/2016-July/018574.html)
+&gt; about programatically creating bucket-types. Is there any progress on
+&gt; this? I really really struggle with the concept that bucket types are
+&gt; supposed to be created _manually_, _on the node(s)_ themselves. How
+&gt; would the application know if this has happened or not? And what
+&gt; should it do if not - fail?
+&gt;
+&gt; In my eyes, the application is responsible for ensuring &quot;data
+&gt; definition&quot;, not an admin. At startup the application should check the
+&gt; environment against its expectations and make the necessary changes.
+&gt; An example of this is schema versioning in relational databases. If
+&gt; this would require administrator interaction, the synchronisation
+&gt; required is immense. How do others deal with this situation?
+&gt;
+&gt; I couldn't find anything regarding bucket-types in
+&gt; [javadoc](<a  rel="nofollow" href="http://basho.github.io/riak-java-client/2.1.0/">http://basho.github.io/riak-java-client/2.1.0/</a>), so I assume
+&gt; this is not available yet.
+&gt;
+&gt;
+&gt; Thank you for your help and information!
+&gt; Cheers,
+&gt; Henning
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17795.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17796">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17796">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright buttondisabled" accesskey="n" href="#">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17795.html">Clarification questions re bucket types</a></span> <span class="sender italic">Henning Verbeek</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Clarification questions re bucket types</span> <span class="sender italic">Shaun McVey</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Clarification questions re bucket types">
+<input type="hidden" name="msgid" value="CAEj3F5ysP-Q74xYDLSsEaQkUhWxNg1s+8QmtUzN_J9LZBPxpdQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17796.html">
+<input type="submit" value=" Shaun McVey ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Clarification+questions+re+bucket+types%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17795.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="#" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEj3F5ysP-Q74xYDLSsEaQkUhWxNg1s+8QmtUzN_J9LZBPxpdQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

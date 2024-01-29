@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: counter crdt in riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd8.html#16689" id="c">
+<link rel="index" href="mail8.html#16689" id="i">
+<link rel="prev" href="msg16684.html" id="p">
+<link rel="next" href="msg16692.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16689.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+counter+crdt+in+riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: counter crdt in riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Russell+Brown%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Russell Brown</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151020" rel="nofollow">Tue, 20 Oct 2015 23:57:08 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>
+On 21 Oct 2015, at 04:56, David Byron &lt;dby...@dbyron.com&gt; wrote:
+
+&gt; Apologies if this is basic question, or one that's already been answered.  
+&gt; I've done a fair amount of digging (e.g. 
+&gt; <a  rel="nofollow" href="http://thread.gmane.org/gmane.comp.db.riak.user/12808/focus=12816">http://thread.gmane.org/gmane.comp.db.riak.user/12808/focus=12816</a>), but I'm 
+&gt; still confused about the documentation regarding conflict resolution for 
+&gt; riak's crdt counter.  Specifically this: 
+&gt; <a  rel="nofollow" href="https://github.com/basho/basho_docs/blame/riak/2.1.1/source/languages/en/riak/theory/concepts/crdts.md#L238">https://github.com/basho/basho_docs/blame/riak/2.1.1/source/languages/en/riak/theory/concepts/crdts.md#L238</a>
+&gt;  (using the blame view to get a line number reference in markdown), which 
+&gt; says:
+&gt; 
+&gt; &quot;Counters | Each actor keeps an independent count for increments and 
+&gt; decrements; upon merge, the pairwise maximum of the counts for each actor 
+&gt; will win (e.g. if one count for an actor holds 172 and the other holds 173, 
+&gt; 173 will win upon merge)&quot;
+&gt; 
+&gt; This makes it sound to me like an increment from one of the actors gets 
+&gt; dropped.  Fingers crossed this isn't actually what happens.</pre><pre>
+
+How so? I guess the implicit information missing from the statement is that 
+each actor is unique, and acts serially. “An independent count for increments 
+and decrements” means two integers, one for increments, one for decrements.
+
+&gt; 
+&gt; I think this is saying the same thing that the cdrt paper (section 3.1.2 
+&gt; State-based increment-only Counter (G-Counter) of 
+&gt; <a  rel="nofollow" href="https://hal.inria.fr/file/index/docid/555588/filename/techreport.pdf">https://hal.inria.fr/file/index/docid/555588/filename/techreport.pdf</a>) says -- 
+&gt; that increments that happen during a partition eventually resolve correctly.  
+&gt; I could use a more step-by-step illustration though -- pairwise maximum of 
+&gt; the counts for each actor is a little dense.
+
+Imagine the counter as a vector of triples, {ActorName, Increment Count, 
+Decrement Count}
+Imagine 2 nodes A, C as replicas. A increments it’s counter by 1 so the data 
+looks like [{A, 1, 0}]
+C decrements it’s counter, so it’s data is [{C, 0, 1}]
+A sends it’s counter to C so C performs a Merge. It looks at each entry in the 
+vector, and for each entry takes the maximum Increment and maximum Decrement 
+and keeps them. If an Actor is not present in some vector, it’s counters are 
+considered zero. That is the “pairwise maximum.” For any pair of vectors, take 
+the maximum integers for any pair of entries (i.e. {A, 1, 0} compared to {A, 0, 
+0} = {A, max(1, 0), max(0, 0})
+So now C has [{A, 1, 0}, {C, 0, 1}]
+Now C does an increment [{A, 1, 0}, {C, 1, 1}] and sends it’s counter to A
+A increments it’s counter by 1 [{A, 2, 0}] then decrements it by 1 [{A, 2, 1}]
+C sends it’s counter to A and the merge results in [{A, 2, 1}, {C, 1, 1}]
+
+Any actor will _always_ have the maximum values for their own entries.
+
+&gt; 
+&gt; Apologies for ugly formatting, but an example like this would make more sense 
+&gt; to me.
+&gt; 
+&gt; - actor a increments counter
+&gt;  a {a: 1}                   b {}
+&gt; 
+&gt; - actor b increments counter
+&gt;  a {a: 1}                   b {b: 1}
+&gt; 
+&gt; - a merges b's info
+&gt;  a {a: 1, b: 1}             b {b: 1}
+&gt; 
+&gt; - b merges a's info
+&gt;  a:{a: 1, b: 1}             b {a: 1, b: 1}
+&gt; 
+&gt; so eventually this all resolves such that a and b both increment the counter 
+&gt; by 2, right?  Is this how riak's crdt counter works?  If so I'll breathe a 
+&gt; sigh of relief and make a pull request against the docs if you like.
+
+Yes that’s how they work, but there are two integers per actor, one for 
+increments and one for decrements. Please do make your pull request.
+
+Cheers
+
+Russell
+
+&gt; 
+&gt; Thanks much for your help.
+&gt; 
+&gt; -DB
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16684.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd8.html#16689">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="mail8.html#16689">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16692.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16684.html">counter crdt in riak</a></span> <span class="sender italic">David Byron</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: counter crdt in riak</span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16692.html">Re: counter crdt in riak</a></span> <span class="sender italic">David Byron</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg16685.html">Re: counter crdt in riak</a></span> <span class="sender italic">xiaclo</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16688.html">Re: counter crdt in riak</a></span> <span class="sender italic">David Byron</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: counter crdt in riak">
+<input type="hidden" name="msgid" value="49B80641-7DEF-4A39-A363-744BF66E002D@me.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16689.html">
+<input type="submit" value=" Russell Brown ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+counter+crdt+in+riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16684.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16692.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">49B80641-7DEF-4A39-A363-744BF66E002D@me.com</li>
+</ul>
+</div>
+</body>
+</html>

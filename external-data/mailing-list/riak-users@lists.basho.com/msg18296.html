@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Problem Getting/Setting ACL with Boto or RiakCSClient</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18296" id="c">
+<link rel="index" href="maillist.html#18296" id="i">
+<link rel="prev" href="msg18286.html" id="p">
+<link rel="next" href="msg18299.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18296.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Problem+Getting%5C%2FSetting+ACL+with+Boto+or+RiakCSClient%22&amp;o=newest" rel="nofollow"><span itemprop="name">Problem Getting/Setting ACL with Boto or RiakCSClient</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Anthony+Valenti%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Anthony Valenti</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170627" rel="nofollow">Tue, 27 Jun 2017 07:16:14 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We started having an unusual problem last week and I'm not sure what
+happened to change anything, but it our automated process isn't working now.</pre><pre>
+
+The process normally is that we get files in a Riak CS bucket and we have
+an automated program that processes the file and then puts it in another
+bucket and sets the ACL to the same as the parent directory.  The process
+is now getting an error when it tries to get the parent directory ACL and
+set the object ACL (copy the ACL).
+But the account has full control over the parent directory and the object
+that it just wrote to the directory.
+Here is the really strange part.  This is only a problem with our programs
+that use the boto client for python or the RiakCSClient for java.  If we
+use Cloudberry, with the same account (access and secret keys), we can get
+the parent directory ACL and set the object ACL.  No errors.
+
+We versions that we are using are
+Riak-CS - 1.5.3
+Riak - 1.4.12
+Stanchion - 1.5.0
+
+Here is a test python script that we wrote to check the functionality with
+python.
+******************************************************************
+
+import boto3
+from boto3.session import Config
+
+accesskey = '*****************'
+secretkey = '*******************************'
+bucketname = 'analytics'
+key = 'clients/inbound/Tlog_20170626.gz'
+pathing = 'clients/inbound/'
+
+client = boto3.client('s3', endpoint_url='<a  rel="nofollow" href="https://s3.ourserver.com">https://s3.ourserver.com</a>',
+config=Config(s3={'addressing_style': 'virtual'}),
+aws_access_key_id=accesskey, aws_secret_access_key=secretkey)
+response = client.list_objects(Bucket=bucketname)
+print(response)
+
+response = client.get_bucket_acl(Bucket=bucketname)
+print(response)
+
+response = client.get_object_acl(Bucket=bucketname, Key=key)
+print(response)
+
+******************************************************************
+
+This is the error that we get:
+botocore.exceptions.ClientError: An error occurred (AccessDenied) when
+calling the GetBucketAcl operation: Access Denied
+
+
+This is an excerpt of the automated java program that copies the ACL and
+gets a a similar error.
+******************************************************************
+
+import com.basho.riakcs.client.api.RiakCSClient;
+csClient= new RiakCSClient(accesskey, secretkey, &quot;ourserver:8080&quot;, false);
+csClient.copyACLToObject(bucketName, key,
+RiakCSClient.Permission.FULL_CONTROL, pathing);
+
+******************************************************************
+
+
+Thanks,
+
+*Anthony Valenti*
+
+-- 
+
+
+********************************************
+
+ 
+
+*Inmar Confidentiality Note*:  This e-mail and any attachments are 
+confidential and intended to be viewed and used solely by the intended 
+recipient.  If you are not the intended recipient, be aware that any 
+disclosure, dissemination, distribution, copying or use of this e-mail or 
+any attachment is prohibited.  If you received this e-mail in error, please 
+notify us immediately by returning it to the sender and delete this copy 
+and all attachments from your system and destroy any printed copies.  Thank 
+you for your cooperation.
+
+ 
+
+*Notice of Protected Rights*:  The removal of any copyright, trademark, or 
+proprietary legend contained in this e-mail or any attachment is prohibited 
+without the express, written permission of Inmar, Inc.  Furthermore, the 
+intended recipient must maintain all copyright notices, trademarks, and 
+proprietary legends within this e-mail and any attachments in their 
+original form and location if the e-mail or any attachments are reproduced, 
+printed or distributed.
+
+ 
+
+********************************************
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18286.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18296">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18296">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18299.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Problem Getting/Setting ACL with Boto or RiakCSClient">
+<input type="hidden" name="msgid" value="CAOrvsxQfvpPUUTeJiqR07WeC+JYRKOB6EStX2CQz2Asx_dV_5g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18296.html">
+<input type="submit" value=" Anthony Valenti ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Problem+Getting%5C%2FSetting+ACL+with+Boto+or+RiakCSClient%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18286.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18299.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOrvsxQfvpPUUTeJiqR07WeC+JYRKOB6EStX2CQz2Asx_dV_5g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

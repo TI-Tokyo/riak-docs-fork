@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Very slow acquisition time (99 percentile) while fast median times</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17287" id="c">
+<link rel="index" href="maillist.html#17287" id="i">
+<link rel="prev" href="msg17286.html" id="p">
+<link rel="next" href="msg17420.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17287.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Very+slow+acquisition+time+%5C%2899+percentile%5C%29+while+fast+median+times%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Very slow acquisition time (99 percentile) while fast median times</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160504" rel="nofollow">Wed, 04 May 2016 06:18:46 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Guillaume,
+
+Two points:</pre><pre>
+
+1.  You can send the “riak debug” from one server and I will verify that 2.0.18 
+is indicated in the LOG file.
+
+2.  Your previous “riak debug” from server “riak1” indicated that only two CPU 
+cores existed.  We performance test with eight, twelve, and twenty-four core 
+servers, not two.  You have two heavy weight applications, Riak and Solr, 
+competing for time on those two cores.  Actually, you have three applications 
+due to leveldb’s background compaction operations.
+
+One leveldb compaction is CPU intensive.  The compaction reads a block from the 
+disk, computes a CRC32 check of the block, decompresses the block, merges the 
+keys of this block with one or more blocks from other files, then compresses 
+the new block, computes a new CRC32, and finally writes the block to disk.  And 
+there can be multiple compactions running simultaneously.  All of your CPU time 
+could be periodically lost to leveldb compactions.
+
+There are some minor tunings we could do, like disabling compression in 
+leveldb, that might help.  But I seriously doubt you are going to achieve your 
+desired results with only two cores.  Adding a sixth server with two cores is 
+not really going to help.
+
+Matthew
+
+
+&gt; On May 4, 2016, at 4:27 AM, Guillaume Boddaert 
+&gt; &lt;guilla...@lighthouse-analytics.co&gt; wrote:
+&gt; 
+&gt; Thanks, I've installed the new library as stated in the documentation using 
+&gt; 2.0.18 files.
+&gt; 
+&gt; I was unable to find the vnode LOG file from the documentation, as my vnodes 
+&gt; looks like file, not directories. So I can't verify that I run the proper 
+&gt; version of the library after my riak restart.
+&gt; 
+&gt; Anyway, it has unfortunately no effect:
+&gt; <a  rel="nofollow" href="http://www.awesomescreenshot.com/image/1219821/1b292613c051da86df5696034c114b14">http://www.awesomescreenshot.com/image/1219821/1b292613c051da86df5696034c114b14</a>
+&gt;  
+&gt; &lt;<a  rel="nofollow" href="http://www.awesomescreenshot.com/image/1219821/1b292613c051da86df5696034c114b14">http://www.awesomescreenshot.com/image/1219821/1b292613c051da86df5696034c114b14</a>&gt;
+&gt; 
+&gt; I think i'll try to add a 6th node that don't rely on network disks and see 
+&gt; what's going on.
+&gt; 
+&gt; G.
+&gt; 
+&gt; 
+&gt; On 03/05/2016 22:47, Matthew Von-Maszewski wrote:
+&gt;&gt; Guillaume,
+&gt;&gt; 
+&gt;&gt; A prebuilt eleveldb 2.0.18 for Debian 7 is found here:
+&gt;&gt;    
+&gt;&gt;  
+&gt;&gt; &lt;<a  rel="nofollow" href="https://s3.amazonaws.com/downloads.basho.com/patches/eleveldb/2.0.18/eleveldb_2.0.18_debian7.tgz">https://s3.amazonaws.com/downloads.basho.com/patches/eleveldb/2.0.18/eleveldb_2.0.18_debian7.tgz</a>&gt;<a  rel="nofollow" href="https://s3.amazonaws.com/downloads.basho.com/patches/eleveldb/2.0.18/eleveldb_2.0.18_debian7.tgz">https://s3.amazonaws.com/downloads.basho.com/patches/eleveldb/2.0.18/eleveldb_2.0.18_debian7.tgz</a>
+&gt;&gt;  
+&gt;&gt; &lt;<a  rel="nofollow" href="https://s3.amazonaws.com/downloads.basho.com/patches/eleveldb/2.0.18/eleveldb_2.0.18_debian7.tgz">https://s3.amazonaws.com/downloads.basho.com/patches/eleveldb/2.0.18/eleveldb_2.0.18_debian7.tgz</a>&gt;
+&gt;&gt; 
+&gt;&gt; There are good instructions for applying an eleveldb patch here:
+&gt;&gt; 
+&gt;&gt;       
+&gt;&gt; &lt;<a  rel="nofollow" href="http://docs.basho.com/community/productadvisories/leveldbsegfault/#patch-eleveldb-so">http://docs.basho.com/community/productadvisories/leveldbsegfault/#patch-eleveldb-so</a>&gt;<a  rel="nofollow" href="http://docs.basho.com/community/productadvisories/leveldbsegfault/#patch-eleveldb-so">http://docs.basho.com/community/productadvisories/leveldbsegfault/#patch-eleveldb-so</a>
+&gt;&gt;  
+&gt;&gt; &lt;<a  rel="nofollow" href="http://docs.basho.com/community/productadvisories/leveldbsegfault/#patch-eleveldb-so">http://docs.basho.com/community/productadvisories/leveldbsegfault/#patch-eleveldb-so</a>&gt;
+&gt;&gt; 
+&gt;&gt; Key points about the above web page:
+&gt;&gt; 
+&gt;&gt; - use the eleveldb patch file link in this email, NOT links on the web page
+&gt;&gt; 
+&gt;&gt; - the Debian directory listed on the web page will be slightly different 
+&gt;&gt; than your Riak 2.1.4 installation:
+&gt;&gt;     
+&gt;&gt;     /usr/lib/riak/lib/eleveldb-&lt;something_different&gt;/priv/
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; Matthew
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt;&gt; On May 3, 2016, at 1:01 PM, Matthew Von-Maszewski &lt;matth...@basho.com 
+&gt;&gt;&gt; &lt;<a  rel="nofollow" href="mailto:matth...@basho.com">mailto:matth...@basho.com</a>&gt;&gt; wrote:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Guillaume,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; I have reviewed the debug package for your riak1 server.  There are two 
+&gt;&gt;&gt; potential areas of follow-up:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 1.  You are running our most recent Riak 2.1.4 which has eleveldb 2.0.17.  
+&gt;&gt;&gt; We have seen a case where a recent feature in eleveldb 2.0.17 caused too 
+&gt;&gt;&gt; much cache flushing, impacting leveldb’s performance.  A discussion is here:
+&gt;&gt;&gt; 
+&gt;&gt;&gt;   <a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/mv-timed-grooming2">https://github.com/basho/leveldb/wiki/mv-timed-grooming2</a> 
+&gt;&gt;&gt; &lt;<a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/mv-timed-grooming2">https://github.com/basho/leveldb/wiki/mv-timed-grooming2</a>&gt;
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 2.  Yokozuna search was recently updated for some timeout problems.  Those 
+&gt;&gt;&gt; updates are not yet in a public build.  One of our other engineers is 
+&gt;&gt;&gt; likely to respond to you on that topic.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; An eleveldb 2.0.18 is tagged and available via github if you want to build 
+&gt;&gt;&gt; it yourself.  Otherwise, Basho may be releasing prebuilt patches of 
+&gt;&gt;&gt; eleveldb 2.0.18 in the near future.  But no date is currently set.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Matthew
+&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; On May 3, 2016, at 10:50 AM, Luke Bakken &lt;lbak...@basho.com 
+&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="mailto:lbak...@basho.com">mailto:lbak...@basho.com</a>&gt;&gt; wrote:
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; Guillaume -
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; You said earlier &quot;My data are stored on an openstack volume that
+&gt;&gt;&gt;&gt; support up to 3000IOPS&quot;. There is a likelihood that your write load is
+&gt;&gt;&gt;&gt; exceeding the capacity of your virtual environment, especially if some
+&gt;&gt;&gt;&gt; Riak nodes are sharing physical disk or server infrastructure.
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; Some suggestions:
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; * If you're not using Riak Search, set &quot;search = off&quot; in riak.conf
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; * Be sure to carefully read and apply all tunings:
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.1.4/using/performance/">http://docs.basho.com/riak/kv/2.1.4/using/performance/</a> 
+&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.1.4/using/performance/">http://docs.basho.com/riak/kv/2.1.4/using/performance/</a>&gt;
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; * You may wish to increase the memory dedicated to leveldb:
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.1.4/configuring/backend/#leveldb">http://docs.basho.com/riak/kv/2.1.4/configuring/backend/#leveldb</a> 
+&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.1.4/configuring/backend/#leveldb">http://docs.basho.com/riak/kv/2.1.4/configuring/backend/#leveldb</a>&gt;
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt; Luke Bakken
+&gt;&gt;&gt;&gt; Engineer
+&gt;&gt;&gt;&gt; lbak...@basho.com &lt;<a  rel="nofollow" href="mailto:lbak...@basho.com">mailto:lbak...@basho.com</a>&gt;
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; On Tue, May 3, 2016 at 7:33 AM, Guillaume Boddaert
+&gt;&gt;&gt;&gt; &lt;guilla...@lighthouse-analytics.co&gt; 
+&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="mailto:guilla...@lighthouse-analytics.co">mailto:guilla...@lighthouse-analytics.co</a>&gt; wrote:
+&gt;&gt;&gt;&gt;&gt; Hi,
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; Sorry for the delay, I've spent a lot of time trying to understand if the
+&gt;&gt;&gt;&gt;&gt; problem was elsewhere.
+&gt;&gt;&gt;&gt;&gt; I've simplified my infrastructure and got a simple layout that don't rely
+&gt;&gt;&gt;&gt;&gt; anymore on loadbalancer and also corrected some minor performance issue on
+&gt;&gt;&gt;&gt;&gt; my workers.
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; At the moment, i have up to 32 workers that are calling riak for writes,
+&gt;&gt;&gt;&gt;&gt; each of them are set to :
+&gt;&gt;&gt;&gt;&gt; w=1
+&gt;&gt;&gt;&gt;&gt; dw=0
+&gt;&gt;&gt;&gt;&gt; timeout=1000
+&gt;&gt;&gt;&gt;&gt; using protobuf
+&gt;&gt;&gt;&gt;&gt; a timeouted attempt is rerun 180s later
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; From my application server perspective, 23% of the calls are rejected by
+&gt;&gt;&gt;&gt;&gt; timeout (75446 tries, 57564 success, 17578 timeout).
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; Here is a sample riak-admin stat for one of my 5 hosts:
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; node_put_fsm_time_100 : 999331
+&gt;&gt;&gt;&gt;&gt; node_put_fsm_time_95 : 773682
+&gt;&gt;&gt;&gt;&gt; node_put_fsm_time_99 : 959444
+&gt;&gt;&gt;&gt;&gt; node_put_fsm_time_mean : 156242
+&gt;&gt;&gt;&gt;&gt; node_put_fsm_time_median : 20235
+&gt;&gt;&gt;&gt;&gt; vnode_put_fsm_time_100 : 5267527
+&gt;&gt;&gt;&gt;&gt; vnode_put_fsm_time_95 : 2437457
+&gt;&gt;&gt;&gt;&gt; vnode_put_fsm_time_99 : 4819538
+&gt;&gt;&gt;&gt;&gt; vnode_put_fsm_time_mean : 175567
+&gt;&gt;&gt;&gt;&gt; vnode_put_fsm_time_median : 6928
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; I am using leveldb, so i can't tune bitcask backend as suggested.
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; I've changed the vmdirty settings and enabled them:
+&gt;&gt;&gt;&gt;&gt; admin@riak1:~$ sudo sysctl -a | grep dirtyvm.dirty_background_ratio = 0
+&gt;&gt;&gt;&gt;&gt; vm.dirty_background_bytes = 209715200
+&gt;&gt;&gt;&gt;&gt; vm.dirty_ratio = 40
+&gt;&gt;&gt;&gt;&gt; vm.dirty_bytes = 0
+&gt;&gt;&gt;&gt;&gt; vm.dirty_writeback_centisecs = 100
+&gt;&gt;&gt;&gt;&gt; vm.dirty_expire_centisecs = 200
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; I've seen less idle time between writes, iostat is showing near constant
+&gt;&gt;&gt;&gt;&gt; writes between 20 and 500 kb/s, with some surges around 4000 kb/s. That's
+&gt;&gt;&gt;&gt;&gt; better, but not that great.
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; Here is the current configuration for my &quot;activity_fr&quot; bucket type and
+&gt;&gt;&gt;&gt;&gt; &quot;tweet&quot; bucket:
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; admin@riak1:~$ http localhost:8098/types/activity_fr/props
+&gt;&gt;&gt;&gt;&gt; HTTP/1.1 200 OK
+&gt;&gt;&gt;&gt;&gt; Content-Encoding: gzip
+&gt;&gt;&gt;&gt;&gt; Content-Length: 314
+&gt;&gt;&gt;&gt;&gt; Content-Type: application/json
+&gt;&gt;&gt;&gt;&gt; Date: Tue, 03 May 2016 14:30:21 GMT
+&gt;&gt;&gt;&gt;&gt; Server: MochiWeb/1.1 WebMachine/1.10.8 (that head fake, tho)
+&gt;&gt;&gt;&gt;&gt; Vary: Accept-Encoding
+&gt;&gt;&gt;&gt;&gt; {
+&gt;&gt;&gt;&gt;&gt;    &quot;props&quot;: {
+&gt;&gt;&gt;&gt;&gt;        &quot;active&quot;: true,
+&gt;&gt;&gt;&gt;&gt;        &quot;allow_mult&quot;: false,
+&gt;&gt;&gt;&gt;&gt;        &quot;basic_quorum&quot;: false,
+&gt;&gt;&gt;&gt;&gt;        &quot;big_vclock&quot;: 50,
+&gt;&gt;&gt;&gt;&gt;        &quot;chash_keyfun&quot;: {
+&gt;&gt;&gt;&gt;&gt;            &quot;fun&quot;: &quot;chash_std_keyfun&quot;,
+&gt;&gt;&gt;&gt;&gt;            &quot;mod&quot;: &quot;riak_core_util&quot;
+&gt;&gt;&gt;&gt;&gt;        },
+&gt;&gt;&gt;&gt;&gt;        &quot;claimant&quot;: &quot;r...@riak2.lighthouse-analytics.co&quot; 
+&gt;&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="mailto:r...@riak2.lighthouse-analytics.co">mailto:r...@riak2.lighthouse-analytics.co</a>&gt;,
+&gt;&gt;&gt;&gt;&gt;        &quot;dvv_enabled&quot;: false,
+&gt;&gt;&gt;&gt;&gt;        &quot;dw&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;last_write_wins&quot;: true,
+&gt;&gt;&gt;&gt;&gt;        &quot;linkfun&quot;: {
+&gt;&gt;&gt;&gt;&gt;            &quot;fun&quot;: &quot;mapreduce_linkfun&quot;,
+&gt;&gt;&gt;&gt;&gt;            &quot;mod&quot;: &quot;riak_kv_wm_link_walker&quot;
+&gt;&gt;&gt;&gt;&gt;        },
+&gt;&gt;&gt;&gt;&gt;        &quot;n_val&quot;: 3,
+&gt;&gt;&gt;&gt;&gt;        &quot;notfound_ok&quot;: true,
+&gt;&gt;&gt;&gt;&gt;        &quot;old_vclock&quot;: 86400,
+&gt;&gt;&gt;&gt;&gt;        &quot;postcommit&quot;: [],
+&gt;&gt;&gt;&gt;&gt;        &quot;pr&quot;: 0,
+&gt;&gt;&gt;&gt;&gt;        &quot;precommit&quot;: [],
+&gt;&gt;&gt;&gt;&gt;        &quot;pw&quot;: 0,
+&gt;&gt;&gt;&gt;&gt;        &quot;r&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;rw&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;search_index&quot;: &quot;activity_fr.20160422104506&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;small_vclock&quot;: 50,
+&gt;&gt;&gt;&gt;&gt;        &quot;w&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;young_vclock&quot;: 20
+&gt;&gt;&gt;&gt;&gt;    }
+&gt;&gt;&gt;&gt;&gt; }
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; admin@riak1:~$ http localhost:8098/types/activity_fr/buckets/tweet/props
+&gt;&gt;&gt;&gt;&gt; HTTP/1.1 200 OK
+&gt;&gt;&gt;&gt;&gt; Content-Encoding: gzip
+&gt;&gt;&gt;&gt;&gt; Content-Length: 322
+&gt;&gt;&gt;&gt;&gt; Content-Type: application/json
+&gt;&gt;&gt;&gt;&gt; Date: Tue, 03 May 2016 14:30:02 GMT
+&gt;&gt;&gt;&gt;&gt; Server: MochiWeb/1.1 WebMachine/1.10.8 (that head fake, tho)
+&gt;&gt;&gt;&gt;&gt; Vary: Accept-Encoding
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; {
+&gt;&gt;&gt;&gt;&gt;    &quot;props&quot;: {
+&gt;&gt;&gt;&gt;&gt;        &quot;active&quot;: true,
+&gt;&gt;&gt;&gt;&gt;        &quot;allow_mult&quot;: false,
+&gt;&gt;&gt;&gt;&gt;        &quot;basic_quorum&quot;: false,
+&gt;&gt;&gt;&gt;&gt;        &quot;big_vclock&quot;: 50,
+&gt;&gt;&gt;&gt;&gt;        &quot;chash_keyfun&quot;: {
+&gt;&gt;&gt;&gt;&gt;            &quot;fun&quot;: &quot;chash_std_keyfun&quot;,
+&gt;&gt;&gt;&gt;&gt;            &quot;mod&quot;: &quot;riak_core_util&quot;
+&gt;&gt;&gt;&gt;&gt;        },
+&gt;&gt;&gt;&gt;&gt;        &quot;claimant&quot;: &quot;r...@riak2.lighthouse-analytics.co&quot; 
+&gt;&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="mailto:r...@riak2.lighthouse-analytics.co">mailto:r...@riak2.lighthouse-analytics.co</a>&gt;,
+&gt;&gt;&gt;&gt;&gt;        &quot;dvv_enabled&quot;: false,
+&gt;&gt;&gt;&gt;&gt;        &quot;dw&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;last_write_wins&quot;: true,
+&gt;&gt;&gt;&gt;&gt;        &quot;linkfun&quot;: {
+&gt;&gt;&gt;&gt;&gt;            &quot;fun&quot;: &quot;mapreduce_linkfun&quot;,
+&gt;&gt;&gt;&gt;&gt;            &quot;mod&quot;: &quot;riak_kv_wm_link_walker&quot;
+&gt;&gt;&gt;&gt;&gt;        },
+&gt;&gt;&gt;&gt;&gt;        &quot;n_val&quot;: 3,
+&gt;&gt;&gt;&gt;&gt;        &quot;name&quot;: &quot;tweet&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;notfound_ok&quot;: true,
+&gt;&gt;&gt;&gt;&gt;        &quot;old_vclock&quot;: 86400,
+&gt;&gt;&gt;&gt;&gt;        &quot;postcommit&quot;: [],
+&gt;&gt;&gt;&gt;&gt;        &quot;pr&quot;: 0,
+&gt;&gt;&gt;&gt;&gt;        &quot;precommit&quot;: [],
+&gt;&gt;&gt;&gt;&gt;        &quot;pw&quot;: 0,
+&gt;&gt;&gt;&gt;&gt;        &quot;r&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;rw&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;search_index&quot;: &quot;activity_fr.20160422104506&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;small_vclock&quot;: 50,
+&gt;&gt;&gt;&gt;&gt;        &quot;w&quot;: &quot;quorum&quot;,
+&gt;&gt;&gt;&gt;&gt;        &quot;young_vclock&quot;: 20
+&gt;&gt;&gt;&gt;&gt;    }
+&gt;&gt;&gt;&gt;&gt; }
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; I really don't know what to do. Can you help ?
+&gt;&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt;&gt; Guillaume
+&gt;&gt;&gt;&gt; 
+&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt;&gt;&gt;&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt;&gt;&gt; 
+&gt;&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17286.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17287">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17287">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17420.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17273.html">Re: Very slow acquisition time (99 percentile) while...</a></span> <span class="sender italic">Guillaume Boddaert</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17274.html">Re: Very slow acquisition time (99 percentile) ...</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17275.html">Re: Very slow acquisition time (99 percenti...</a></span> <span class="sender italic">Guillaume Boddaert</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17276.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17281.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Guillaume Boddaert</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17282.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17283.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17284.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Fred Dushin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17285.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17286.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Guillaume Boddaert</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Very slow acquisition time (99 perc...</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17420.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Guillaume Boddaert</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17421.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17277.html">Re: Very slow acquisition time (99 perc...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Very slow acquisition time (99 percentile) while fast median times">
+<input type="hidden" name="msgid" value="96DA9814-1571-4136-BFBF-AC74D757E209@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17287.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Very+slow+acquisition+time+%5C%2899+percentile%5C%29+while+fast+median+times%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17286.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17420.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">96DA9814-1571-4136-BFBF-AC74D757E209@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

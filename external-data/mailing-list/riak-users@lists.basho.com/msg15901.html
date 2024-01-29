@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Advice on making a Riak middleware easy to configure</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15901" id="c">
+<link rel="index" href="maillist.html#15901" id="i">
+<link rel="prev" href="msg15900.html" id="p">
+<link rel="next" href="msg15903.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15901.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Advice+on+making+a+Riak+middleware+easy+to+configure%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Advice on making a Riak middleware easy to configure</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dmitri+Zagidulin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dmitri Zagidulin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150317" rel="nofollow">Tue, 17 Mar 2015 06:18:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Marc,
+
+This sounds like a very cool project! I'd be very interested in hearing
+more about this, and answering any data modeling or setup questions.</pre><pre>
+
+In order to answer the setup questions specifically, we'd need to know more
+about what the project is intending to do. Will users be typically
+installing their own Riak clusters and then setting up apiman to help
+manage APIs? Or is this more of a multi-tenant kind of situation, where
+apiman would be spinning up nodes or clusters for users? To put it another
+way, how does apiman handle ElasticSearch?
+
+Couple of thoughts, from your questions.
+
+&gt; To be more concrete, should I, for example, expect the user to have
+&gt; already set up and joined together their Riak cluster a priori, with
+&gt; everything behind a load-balancer: just give me a single URI to connect
+&gt; to). [Or attempt to join them into a cluster].
+
+Ah, ok, if I understand your question correctly -- if you're not spinning
+up VMs or setting up the nodes yourself via ssh (using something like our
+Ansible playbook), then you can expect an already set up cluster. (FWIW,
+the various configuration management tools such as Ansible that install
+Riak clusters do provide idempotency). I can't really picture a situation
+where users would set up nodes but not join them and leave that up to
+apiman.
+
+&gt; As far as I can tell, there is no node discovery/sharing
+&gt; implementation
+
+If you know the IP of one node, you can definitely discover the other nodes
+via an HTTP call to /stats
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/nodes/inspecting/">http://docs.basho.com/riak/latest/ops/running/nodes/inspecting/</a> (via
+'ring_members'). But, unless apiman provides some sort of monitoring or
+keepalive-checking capability, I don't think there's any reason to do that.
+
+A load balancer is crucial (we recommend either a hardware based one, or
+something like HAProxy or Nginx). I know some users connect to a Riak
+cluster using the round-robin load balancing built into a Riak client, but
+that should be a last resort measure (if, for example, you're not allowed
+to spin up another machine for HAProxy). A dedicated load balancer (with a
+least-connection load balancing algorithm) is significantly faster. (Not to
+mention, provides logging and a rich ecosystem of tools and dashboards).
+
+&gt; Given the introduction of Riak
+&gt; Data Types on buckets, whom should I expect to set up the data types?
+
+There isn't currently an API to create bucket types remotely. So unless
+apiman has daemons that will be running on the individual Riak nodes and
+can make commandline calls, you will have to leave bucket type creation to
+the users.
+
+That said, I could easily see you requiring a certain set of bucket types
+of your users.
+
+For example, Strongly Consistent buckets are useful for atomic operations
+like user password management, security group management and so on. So, you
+could require that users would create a bucket type named 'sc' and enable
+Strong Consistency on it. (Any buckets under that bucket type would then
+also be strongly consistent, and usable by apiman or by the users' client
+code).
+
+Similarly, given that metering is a goal, you would also need bucket types
+for the various server-side Data Types. That is, require users to create a
+Maps bucket type named 'maps', a Counters type named 'counters', and a Sets
+type named 'sets', for example.
+
+Other things to keep on your radar, as far as bucket types:
+
+* You can attach a Solr Search index to a bucket type. However, given that
+you can only associate a single search index with a bucket type, this isn't
+as generic/reusable as Data Types. I could see setting up a Search index
+for something like API logging, though.
+
+* You probably want provisions for Riak Authentication &amp; Authorization (
+<a  rel="nofollow" href="http://docs.basho.com/riak/2.0.4/ops/running/authz/">http://docs.basho.com/riak/2.0.4/ops/running/authz/</a> ). (Specifically, for
+supporting user-created users &amp; passwords, since at the moment we don't
+have a remote API to manage these).
+
+&gt; I'm very interested to know to present a convenient set of options that
+&gt; will allow a typical development and deployment environment to be
+supported.
+
+In terms of options, do you mean like best-practice/recommended riak config
+files that you'd point your users to?
+
+Let me know if you have further questions.
+
+Dmitri
+
+
+
+
+On Sat, Mar 7, 2015 at 10:35 AM, Marc Savy &lt;ms...@redhat.com&gt; wrote:
+
+&gt; Hi All,
+&gt;
+&gt; I'm involved in a FOSS API management project (apiman), and I've been
+&gt; thinking about providing a Riak implementation of its gateway components
+&gt; in the community (where we already have ElasticSearch and Infinispan).
+&gt; These components provide the distributed storage for tasks like
+&gt; rate-limiting counters, IP white-listing, black-listing, etc and are
+&gt; applied by a horizontally scalable, async gateway (to vastly
+&gt; oversimplify!).
+&gt;
+&gt; I'm in need of advice principally in regards to configuration and
+&gt; set-up. Namely, what assumptions can I safely make about a Riak user's
+&gt; set-up, and which settings I should expose in the component's
+&gt; configuration. Note that many gateways can exist, and hence any set-up
+&gt; ideally needs to already in advance, or be idempotent in case multiple
+&gt; nodes attempt to do it at once (or otherwise for it to be
+&gt; lockable/exclusionary).
+&gt;
+&gt; To be more concrete, should I, for example, expect the user to have
+&gt; already set up and joined together their Riak cluster a priori, with
+&gt; everything behind a load-balancer: just give me a single URI to connect
+&gt; to). Or, should I expect a list of FQDNs/IPs and attempt to join them
+&gt; together into a cluster on the user's behalf - or will there be
+&gt; idempotence issues if I do that multiple times?
+&gt;
+&gt; As far as I can tell, there is no node discovery/sharing
+&gt; implementation[1], so I take it there's no way, for instance, to hit a
+&gt; single node (which has already been joined with other nodes), and
+&gt; thereby automatically gain knowledge of all cluster members?
+&gt;
+&gt; A couple of other configuration issues: Given the introduction of Riak
+&gt; Data Types on buckets, whom should I expect to set up the data types[2]?
+&gt; Should I create them automatically if they don't exist? Same for the
+&gt; bucket itself.
+&gt;
+&gt; I'm very interested to know to present a convenient set of options that
+&gt; will allow a typical development and deployment environment to be
+&gt; supported.
+&gt;
+&gt; Regards,
+&gt; Marc
+&gt;
+&gt; [0] With the usual consistency limitations
+&gt; [1] <a  rel="nofollow" href="https://github.com/basho/riak/issues/356">https://github.com/basho/riak/issues/356</a>
+&gt; [2] <a  rel="nofollow" href="http://docs.basho.com/riak/latest/dev/using/data-types/#">http://docs.basho.com/riak/latest/dev/using/data-types/#</a>
+&gt; Setting-Up-Buckets-to-Use-Riak-Data-Types
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15900.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15901">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15901">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15903.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15853.html">Advice on making a Riak middleware easy to configure</a></span> <span class="sender italic">Marc Savy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15900.html">Re: Advice on making a Riak middleware easy to confi...</a></span> <span class="sender italic">Matthew Brender</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Advice on making a Riak middleware easy to confi...</span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15903.html">Re: Advice on making a Riak middleware easy to c...</a></span> <span class="sender italic">Marc Savy</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Advice on making a Riak middleware easy to configure">
+<input type="hidden" name="msgid" value="CA+TO3kVc2C+BBRhtnimufeRxjhrpRgSh0y2sgf0OtAoWyVEnvw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15901.html">
+<input type="submit" value=" Dmitri Zagidulin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Advice+on+making+a+Riak+middleware+easy+to+configure%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15900.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15903.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+TO3kVc2C+BBRhtnimufeRxjhrpRgSh0y2sgf0OtAoWyVEnvw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: High number of Riak buckets</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17682" id="c">
+<link rel="index" href="maillist.html#17682" id="i">
+<link rel="prev" href="msg17680.html" id="p">
+<link rel="next" href="msg17678.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17682.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+number+of+Riak+buckets%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: High number of Riak buckets</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Vikram+Lalit%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Vikram Lalit</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160930" rel="nofollow">Fri, 30 Sep 2016 12:35:51 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hiya Alexander,
+
+Thanks much indeed for the detailed note... very interesting insights...</pre><pre>
+
+As you deduced, I actually omitted some pieces from my email for the sake
+of simplicity. I'm actually leveraging a transient / stateless chat server
+(ejabberd) wherein messages get delivered on live sessions / streams
+without the client having to do look-ups. So the storage in Riak is
+actually a post-facto delivery / archival rather than prior to the client
+receiving them. Hence determining the time key for the look-up isn't going
+to be an issue unless I run some analytics where I query all keys (which
+would be an issue as I now understand from your comments).
+
+There is of course the question of offline messages whose delivery would
+depend on look-ups, but ejabberd there uses the username (the offline
+storage is with the secondary index as well on leveldb) and hence the
+timestamp not being important. Riak TS sure looks promising there but I'll
+check further whether the change would be justified for only offline
+messages, or in case other use cases crop up...
+
+Makes sense on the listing all keys in a bucket being expensive though -
+let me see how I can model my data for that!!!
+
+Thanks again for your inputs... very informative...
+
+Cheers.
+Vikram
+
+
+On Fri, Sep 30, 2016 at 12:23 PM, Alexander Sicular &lt;sicul...@gmail.com&gt;
+wrote:
+
+&gt; Hi Vikram,
+&gt;
+&gt; Bucket maximums aside, why are you modeling in this fashion? How will you
+&gt; retrieve individual keys if you don't know the time stamp in advance? Do
+&gt; you have a lookup somewhere else? Doable as lookup keys or crdts or other
+&gt; systems. Are you relying on listing all keys in a bucket? Definitely don't
+&gt; do that.
+&gt;
+&gt; Yes, there is a better way. Use Riak TS. Create a table with a composite
+&gt; primary key of topic and time. You can then retrieve by topic equality and
+&gt; time range. You can then cache those results in deterministic keys as
+&gt; necessary.
+&gt;
+&gt; If you don't already know, Riak TS is basically (there are some notable
+&gt; differences) Riak KV plus the time series data model. Riak TS makes all
+&gt; sorts of time series oriented projects easier than modeling them against
+&gt; KV. Oh, and you can also leverage KV buckets alongside TS (resource
+&gt; limitations not withstanding.)
+&gt;
+&gt; Would love to hear more,
+&gt; Alexander
+&gt;
+&gt; @siculars
+&gt; <a  rel="nofollow" href="http://siculars.posthaven.com">http://siculars.posthaven.com</a>
+&gt;
+&gt; Sent from my iRotaryPhone
+&gt;
+&gt; &gt; On Sep 29, 2016, at 19:42, Vikram Lalit &lt;vikramla...@gmail.com&gt; wrote:
+&gt; &gt;
+&gt; &gt; Hi - I am creating a messaging platform wherein am modeling each topic
+&gt; to serve as a separate bucket. That means there can potentially be millions
+&gt; of buckets, with each message from a user becoming a value on a distinct
+&gt; timestamp key.
+&gt; &gt;
+&gt; &gt; My question is there any downside to modeling my data in such a manner?
+&gt; Or can folks advise a better way of storing the same in Riak?
+&gt; &gt;
+&gt; &gt; Secondly, I would like to modify the default bucket properties (n_val) -
+&gt; I understand that such 'custom' buckets have a higher performance overhead
+&gt; due to the extra load on the gossip protocol. Is there a way the default
+&gt; n_val of newly created buckets be changed so that even if I have the above
+&gt; said high number of buckets, there is no performance degrade? Believe there
+&gt; was such a config allowed in app.config but not sure that file is leveraged
+&gt; any more after riak.conf was introduced.
+&gt; &gt;
+&gt; &gt; Thanks much.
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17680.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17682">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17682">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17678.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17677.html">High number of Riak buckets</a></span> <span class="sender italic">Vikram Lalit</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17679.html">Re: High number of Riak buckets</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17681.html">Re: High number of Riak buckets</a></span> <span class="sender italic">Vikram Lalit</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg17680.html">Re: High number of Riak buckets</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: High number of Riak buckets</span> <span class="sender italic">Vikram Lalit</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: High number of Riak buckets">
+<input type="hidden" name="msgid" value="CANtuxZQ2Pvap48yxNyCQZU6RPx77gwK+wE5vXeCjK0YRQ9PJkg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17682.html">
+<input type="submit" value=" Vikram Lalit ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+High+number+of+Riak+buckets%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17680.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17678.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANtuxZQ2Pvap48yxNyCQZU6RPx77gwK+wE5vXeCjK0YRQ9PJkg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>[Sharing] Using riak for a very very(less then 2k) tiny objects?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16883" id="c">
+<link rel="index" href="maillist.html#16883" id="i">
+<link rel="prev" href="msg16873.html" id="p">
+<link rel="next" href="msg16884.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16883.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22%5C%5BSharing%5C%5D+Using+riak+for+a+very+very%5C%28less+then+2k%5C%29+tiny+objects%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">[Sharing] Using riak for a very very(less then 2k) tiny objects?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Eliezer+Croitoru%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Eliezer Croitoru</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151222" rel="nofollow">Tue, 22 Dec 2015 11:55:01 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+Hey List,
+
+I Wanted to share about a specific scenario which I have tested Riak for.</pre><pre>
+
+I was implementing a url-filtering engine and was looking for the right DB.
+</pre><tt>I started with defining my use case and eventually for version 1 of the 
+</tt><tt>engine I decided to use a key\value store which will be based on a a 
+</tt><tt>single byte value as a starter &quot;1&quot; or &quot;0&quot;, 1 = blacklisted, 0 = whitelisted.
+</tt><pre style="margin: 0em;">
+The sum of keys is standing on millions while for now it's about 4 million.
+</pre><tt>I then started to try to find the right DB for the task and I was 
+</tt><tt>conducting tests on all sorts of DB engines sql\nosql and couple others. 
+</tt><tt>The results was that on each and every DB there was some slowdown either 
+</tt><tt>for updates or for fetches.
+</tt><tt>Actually the last DB I have tested before I implemented my own engine 
+</tt><tt>was Riak which has lots of good features!
+</tt><tt>My tests showed that Riak does a great job but since my db lookup and 
+</tt><tt>update required a specific speed Riak was running too slow.
+</tt><tt>The logic was that each DB lookup can consist statistically in up to 8 
+</tt><tt>DB lookups and an update would be a batch of about 2 million objects(&quot;1&quot; 
+</tt><tt>or &quot;0&quot; as a value).
+</tt><tt>I tried to test the usage with the http interface and the protobuf with 
+</tt><tt>couple clients(Golang, ruby, python, couple others) and the results was 
+</tt><tt>unrealistic for me. It took about an hour to update\set\create 2 million 
+</tt><tt>objects and the fetch\lookups was also very slow compared to MySQL and 
+</tt><tt>PostgreSQL and couple others.
+</tt><tt>Then I was very confused since I do liked the pros of Riak which is a 
+</tt><tt>distributed DB but since my objects size is very small and my basic 
+</tt><tt>requirement was fast lookups and batch updates I decided to try my own 
+</tt><tt>coding skills and to see where it leads me.
+</tt><tt>After couple weeks of work I found myself with Golang+levelDB and a full 
+</tt><tt>blown DB + broadcast proxy + couple other tools.
+</tt><tt>The DB implements the lookup logic so I need to run only one query for a 
+</tt><tt>url and the DB runs couple lookups which then returns an answer.
+</tt><tt>The broadcast proxy have a list of DB servers which in turn replay the 
+</tt><tt>http message it was fed per DB server.
+</tt><tt>I have implemented a specific batch update DB interface which works with 
+</tt><tt>a PUT message and in turn sets\updates a list of keys with a value which 
+</tt><tt>was the fastest solution ever! It beats any other DB I have tried 
+</tt><tt>sql\nosql document\non-document. And it was not just a beat it was a 
+</tt><tt>knock-out.
+</tt><tt>The DB size eventually is very small and a full blacklist uses about 
+</tt><tt>12-50 MB of disk space.
+</tt><tt>The speed of the batch update interface is about 1 million sets\updates 
+</tt><tt>in about 10 seconds and the query speed of the DB is standing at about 
+</tt><tt>6k queries per second(6k*8 internal queries=40k queries per second) on a 
+</tt><tt>8 cores Intel Atom server.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>So it appears that has someone suggested to me here in the list or in 
+</tt><tt>the Riak irc channel, Riak might not fit to my use case which eventual I 
+</tt><tt>have found as the right path.
+</tt><pre style="margin: 0em;">
+
+All The Bests,
+Eliezer Croitoru
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16873.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16883">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16883">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16884.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="[Sharing] Using riak for a very very(less then 2k) tiny objects?">
+<input type="hidden" name="msgid" value="5679AA0D.3050803@ngtech.co.il">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16883.html">
+<input type="submit" value=" Eliezer Croitoru ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22%5C%5BSharing%5C%5D+Using+riak+for+a+very+very%5C%28less+then+2k%5C%29+tiny+objects%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16873.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16884.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">5679AA0D.3050803@ngtech.co.il</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Solr search response time spikes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18284" id="c">
+<link rel="index" href="maillist.html#18284" id="i">
+<link rel="prev" href="msg18280.html" id="p">
+<link rel="next" href="msg18308.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18284.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Solr+search+response+time+spikes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Solr search response time spikes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22sean+mcevoy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">sean mcevoy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170623" rel="nofollow">Fri, 23 Jun 2017 05:49:29 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Fred,
+
+Thanks for taking the time!
+Yes, I noticed that unbalance yesterday when writing, looked into it after
+sending and found our config is corrupt with one node ommitted and another
+in there twice.
+But, with such low traffic levels and the spikes being on the non-favoured
+node I'm not currently ranking that as a likely factor.</pre><pre>
+
+
+Another interesting case from last night, this sample was taken at
+2017-6-23 06:04:09
+
+Riak node 1
+&quot;search_query_throughput_one&quot;: 27
+&quot;search_query_latency_max&quot;: 10417
+
+Riak node 2
+&quot;search_query_throughput_one&quot;: 49
+&quot;search_query_latency_max&quot;: 8952
+
+Riak node 3
+&quot;search_query_throughput_one&quot;: 18
+&quot;search_query_throughput_count&quot;: 2507
+&quot;search_query_latency_min&quot;: 1757
+&quot;search_query_latency_median&quot;: 14775
+&quot;search_query_latency_mean&quot;: 5628361
+&quot;search_query_latency_max&quot;: 18298854
+&quot;search_query_latency_999&quot;: 18298854
+&quot;search_query_latency_99&quot;: 18298854
+&quot;search_query_latency_95&quot;: 16539782
+
+Riak node 4
+&quot;search_query_throughput_one&quot;: 25
+&quot;search_query_latency_max&quot;: 10217
+
+
+Brushing up my maths and focussing on node 3, from the 99 &amp; 95% figures we
+can tell the 2 slowest response times were 18,298 &amp; 16,539ms, 34,837 ms in
+total.
+And from the request count for the minute &amp; the mean we can tell that in
+total these 18 requests spent a total of 101,310 ms being processed.
+&gt;From the median &amp; min we know the 9 quickest took between 18 &amp; 265 ms in
+total.
+This leaves in the region of 66 sec for the other 7 requests, enough for
+all 7 to have timed out.
+
+
+Cross referencing with our application logs I can see:
+
+On application node 1 at 2017-06-23 06:03:17 we had 3 search request
+timeouts to index A with 3 different filters, one field of which, lets call
+it field X, had the same value.
+We immediately retried these and at 2017-06-23 06:03:19 2 of those timed
+out again and were retried again.
+They all succeeded on this retry, so this suggests that the same requests
+sent to other riak nodes was fine, but to this riak node at this time was a
+problem.
+
+On application node 2 at:
+2017-06-23 06:03:27
+2017-06-23 06:03:29
+2017-06-23 06:03:31
+2017-06-23 06:03:33
+
+we had 4 more timeouts on search requests to index A, these requests had 2
+different filters but in both cases field X had the same value as in the
+previous example.
+
+
+So these application logs show 9 riak timeouts, that must correlate with
+the riak stats.
+I can't definitively say that no other search requests went to this riak
+node between 06:03:15 &amp; 06:03:33 but the circumstantial evidence is that it
+had a problem for 18 seconds, which is quiet a big window.
+
+
+The index that all these requests were directed at currently has 490K
+entries with 8 different fields defined in each. The corresponding riak
+bucket has allow_mult = false, if that's relevant.
+
+We see a similar pattern on our test system, I'm going to setup a test to
+repeatedly do searches and see if I can trigger this consistently. Will let
+ye know if anything interesting comes out of it.
+
+I know it's relatively new to the product, do we know is riak solr used
+much in production systems?
+I assume no one else has seen these spikes?
+
+//Sean.
+
+
+On Thu, Jun 22, 2017 at 9:40 PM, Fred Dushin &lt;f...@dushin.net&gt; wrote:
+
+&gt; It's pretty strange that you are seeing no search latency measurements on
+&gt; node 5.  Are you sure your round robining is working?  Are you favoring
+&gt; node 1?
+&gt;
+&gt; In general, I don't think which node you hit for query should make a
+&gt; difference, but I'd have to stare at the code some to be sure.  In essence,
+&gt; all the node that services the query does is convert the query into a
+&gt; sharded Solr query based on a coverage plan, which changes every minute or
+&gt; so, and then runs the sharded query on the local Solr node.  The Solr node
+&gt; then distributes the query to the rest of the nodes in the cluster, but
+&gt; that's all Solr comms -- Riak is out of the picture, by then.
+&gt;
+&gt; Now, if you have a lot of sharded queries accumulating on one node, that
+&gt; might make a difference to Solr.  I am not a Solr expert, and I don't even
+&gt; play one on TV.  But maybe the fact that you are not hitting node 5 is
+&gt; relevant for that reason?
+&gt;
+&gt; Can you do more analysis on your client, to make sure you are not favoring
+&gt; node 1?
+&gt;
+&gt; -Fred
+&gt;
+&gt; &gt; On Jun 22, 2017, at 10:20 AM, sean mcevoy &lt;sean.mce...@gmail.com&gt; wrote:
+&gt; &gt;
+&gt; &gt; Hi List,
+&gt; &gt;
+&gt; &gt; We have a standard riak cluster with 5 nodes and at the minute the
+&gt; traffic levels are fairly low. Each of our application nodes has 25 client
+&gt; connections, 5 to each riak node which get selected in a round robin.
+&gt; &gt;
+&gt; &gt; Our application level requests involve multiple riak requests so our
+&gt; traffic tends to make requests in small bursts. Everything works fine for
+&gt; KV gets, puts &amp; deletes but we're seeing timeouts &amp; weird response time
+&gt; spikes on solr search operations.
+&gt; &gt;
+&gt; &gt; In the past 36 hours (the only period I have riak stats for) I see one
+&gt; response time of 38.8 seconds, 3 hours earlier a response time of 20.8
+&gt; seconds, and the third biggest spike is an acceptable 3.5 seconds.
+&gt; &gt;
+&gt; &gt; See below all search_query stats for the minute of the 38 sec sample. In
+&gt; the application request we made 5 riak search requests to the same index in
+&gt; parallel, which happens for each request of this type and normally doesn't
+&gt; have an issue. But in this case all 5 timed out, and one timed out again on
+&gt; retry with the other 4 succeeding.
+&gt; &gt;
+&gt; &gt; Anyone ever seen anything like this before? Is there any known deadlock
+&gt; in solr that I might hit if I make the same request on another connection
+&gt; before the first has completed? This is what we do when our riak client
+&gt; times out after 2 seconds and immediately retries.
+&gt; &gt;
+&gt; &gt; Any advice or pointers welcomed.
+&gt; &gt; Thanks,
+&gt; &gt; //Sean.
+&gt; &gt;
+&gt; &gt;
+&gt; &gt; Riak node 1
+&gt; &gt; search_query_throughput_one: 14
+&gt; &gt; search_query_throughput_count: 259
+&gt; &gt; search_query_latency_min: 2776
+&gt; &gt; search_query_latency_median: 69411
+&gt; &gt; search_query_latency_mean: 4900973
+&gt; &gt; search_query_latency_max: 38887902
+&gt; &gt; search_query_latency_999: 38887902
+&gt; &gt; search_query_latency_99: 38887902
+&gt; &gt; search_query_latency_95: 2046215
+&gt; &gt; search_query_fail_one: 0
+&gt; &gt; search_query_fail_count: 0
+&gt; &gt;
+&gt; &gt; Riak node 2
+&gt; &gt; search_query_throughput_one: 22
+&gt; &gt; search_query_throughput_count: 564
+&gt; &gt; search_query_latency_min: 4006
+&gt; &gt; search_query_latency_median: 8800
+&gt; &gt; search_query_latency_mean: 11834
+&gt; &gt; search_query_latency_max: 25509
+&gt; &gt; search_query_latency_999: 25509
+&gt; &gt; search_query_latency_99: 25509
+&gt; &gt; search_query_latency_95: 24035
+&gt; &gt; search_query_fail_one: 0
+&gt; &gt; search_query_fail_count: 0
+&gt; &gt;
+&gt; &gt; Riak node 3
+&gt; &gt; search_query_throughput_one: 6
+&gt; &gt; search_query_throughput_count: 298
+&gt; &gt; search_query_latency_min: 3200
+&gt; &gt; search_query_latency_median: 15391
+&gt; &gt; search_query_latency_mean: 18062
+&gt; &gt; search_query_latency_max: 31759
+&gt; &gt; search_query_latency_999: 31759
+&gt; &gt; search_query_latency_99: 31759
+&gt; &gt; search_query_latency_95: 31759
+&gt; &gt; search_query_fail_one: 0
+&gt; &gt; search_query_fail_count: 0
+&gt; &gt;
+&gt; &gt; Riak node 4
+&gt; &gt; search_query_throughput_one: 8
+&gt; &gt; search_query_throughput_count: 334
+&gt; &gt; search_query_latency_min: 2404
+&gt; &gt; search_query_latency_median: 7230
+&gt; &gt; search_query_latency_mean: 10211
+&gt; &gt; search_query_latency_max: 22502
+&gt; &gt; search_query_latency_999: 22502
+&gt; &gt; search_query_latency_99: 22502
+&gt; &gt; search_query_latency_95: 22502
+&gt; &gt; search_query_fail_one: 0
+&gt; &gt; search_query_fail_count: 0
+&gt; &gt;
+&gt; &gt; Riak node 5
+&gt; &gt; search_query_throughput_one: 0
+&gt; &gt; search_query_throughput_count: 0
+&gt; &gt; search_query_latency_min: 0
+&gt; &gt; search_query_latency_median: 0
+&gt; &gt; search_query_latency_mean: 0
+&gt; &gt; search_query_latency_max: 0
+&gt; &gt; search_query_latency_999: 0
+&gt; &gt; search_query_latency_99: 0
+&gt; &gt; search_query_latency_95: 0
+&gt; &gt; search_query_fail_one: 0
+&gt; &gt; search_query_fail_count: 0
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18280.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18284">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18284">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18308.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18277.html">Solr search response time spikes</a></span> <span class="sender italic">sean mcevoy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18280.html">Re: Solr search response time spikes</a></span> <span class="sender italic">Fred Dushin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Solr search response time spikes</span> <span class="sender italic">sean mcevoy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18308.html">Re: Solr search response time spikes</a></span> <span class="sender italic">sean mcevoy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Solr search response time spikes">
+<input type="hidden" name="msgid" value="CA+2KyrpvZLqqHcByZZaY8pMxwqbpaKSSoh+7GrCPje1714sPFg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18284.html">
+<input type="submit" value=" sean mcevoy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Solr+search+response+time+spikes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18280.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18308.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+2KyrpvZLqqHcByZZaY8pMxwqbpaKSSoh+7GrCPje1714sPFg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

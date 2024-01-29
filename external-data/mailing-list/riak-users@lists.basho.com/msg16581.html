@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Yokozuna indexes too slow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16581" id="c">
+<link rel="index" href="maillist.html#16581" id="i">
+<link rel="prev" href="msg16577.html" id="p">
+<link rel="next" href="msg16585.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16581.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Yokozuna+indexes+too+slow%22&amp;o=newest" rel="nofollow"><span itemprop="name">Yokozuna indexes too slow</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22ilyas%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">ilyas</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150930" rel="nofollow">Wed, 30 Sep 2015 23:20:08 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre style="margin: 0em;">
+
+Hello to the Riak community!
+</pre>I have a cluster of 5 nodes (hardware servers with SSDs, 8 CPU cores, 
+16GB of RAM, most of it is free). When I store data to the database (up 
+to 1 000 000 keys) without indexes, everything happens very quickly. If 
+I create an index for yokozuna and do the same, the store rate decreases 
+greatly (200 times). The process yokozuna takes up 100% of the time one 
+core of CPU, other cores are not loaded. Keys are short strings (16 
+symbols), values are json strings (length is about 200 characters).
+<pre style="margin: 0em;">
+How can I find out the reason of such performance and fix it?</pre><pre>
+
+*creation of bucket:*
+
+#!/bin/bash
+
+RIAK_HOST=&quot;127.0.0.1:8098&quot;
+
+#define search scheme
+</pre>curl -XPUT $RIAK_HOST/search/schema/dbsearch -H 
+'Content-Type:application/xml' --data-binary @dbSchema.xml
+<pre style="margin: 0em;">
+
+# create search index for scheme
+</pre>curl -XPUT $RIAK_HOST/search/index/user_idx_bin -H 'Content-Type: 
+application/json' -d '{&quot;schema&quot;:&quot;dbsearch&quot;}'
+<pre style="margin: 0em;">
+
+# create bucket type for leleldb backend
+</pre>sudo /usr/sbin/riak-admin bucket-type create leveldb 
+'{&quot;props&quot;:{&quot;backend&quot;:&quot;leveldb_mult&quot;}}'
+<pre style="margin: 0em;">
+sudo /usr/sbin/riak-admin bucket-type activate leveldb
+
+#create buckets with known backends and indexes
+</pre>curl -XPUT $RIAK_HOST/types/leveldb/buckets/SomeBucket/props -H 
+'Content-Type: application/json' -d 
+'{&quot;props&quot;:{&quot;search_index&quot;:&quot;user_idx_bin&quot;}}'
+<pre style="margin: 0em;">
+
+*index scheme:*
+
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;schema name=&quot;dbschema&quot; version=&quot;1.5&quot;&gt;
+
+ &lt;fields&gt;
+   &lt;field name=&quot;username&quot;   type=&quot;string&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+   &lt;field name=&quot;deviceid&quot;   type=&quot;string&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+   &lt;field name=&quot;appid&quot;      type=&quot;int&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+   &lt;field name=&quot;ip_address&quot; type=&quot;int&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+
+   &lt;!-- All of these fields are required by Riak Search --&gt;
+</pre>   &lt;field name=&quot;_yz_id&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  
+multiValued=&quot;false&quot; required=&quot;true&quot;/&gt;
+   &lt;field name=&quot;_yz_ed&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; 
+multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_pn&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; 
+multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_fpn&quot;  type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; 
+multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_vtag&quot; type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; 
+multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_rk&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  
+multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_rt&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  
+multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_rb&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  
+multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_err&quot;  type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; 
+multiValued=&quot;false&quot;/&gt;
+<pre style="margin: 0em;">
+
+   &lt;dynamicField name=&quot;*&quot; type=&quot;ignored&quot;  /&gt;
+ &lt;/fields&gt;
+
+&lt;types&gt;
+   &lt;!-- YZ String: Used for non-analyzed fields --&gt;
+</pre>   &lt;fieldType name=&quot;_yz_str&quot; class=&quot;solr.StrField&quot; 
+sortMissingLast=&quot;true&quot; /&gt;
+<pre style="margin: 0em;">
+   &lt;fieldType name=&quot;string&quot; class=&quot;solr.StrField&quot; sortMissingLast=&quot;true&quot; /&gt;
+</pre>   &lt;fieldType name=&quot;boolean&quot; class=&quot;solr.BoolField&quot; 
+sortMissingLast=&quot;true&quot;/&gt;
+   &lt;fieldType name=&quot;int&quot; class=&quot;solr.TrieIntField&quot; precisionStep=&quot;0&quot; 
+positionIncrementGap=&quot;0&quot;/&gt;
+   &lt;fieldtype name=&quot;ignored&quot; stored=&quot;false&quot; indexed=&quot;false&quot; 
+multiValued=&quot;true&quot; class=&quot;solr.StrField&quot; /&gt;
+<pre style="margin: 0em;">
+&lt;/types&gt;
+
+ &lt;uniqueKey&gt;_yz_id&lt;/uniqueKey&gt;
+
+&lt;/schema&gt;
+
+</pre><pre>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;schema name=&quot;dbschema&quot; version=&quot;1.5&quot;&gt;
+
+ &lt;fields&gt;
+   &lt;field name=&quot;username&quot;   type=&quot;string&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+   &lt;field name=&quot;deviceid&quot;   type=&quot;string&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+   &lt;field name=&quot;appid&quot;      type=&quot;int&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+   &lt;field name=&quot;ip_address&quot; type=&quot;int&quot;  indexed=&quot;true&quot; stored=&quot;true&quot; /&gt;
+
+   &lt;!-- All of these fields are required by Riak Search --&gt;
+   &lt;field name=&quot;_yz_id&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  multiValued=&quot;false&quot; required=&quot;true&quot;/&gt;
+   &lt;field name=&quot;_yz_ed&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_pn&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_fpn&quot;  type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_vtag&quot; type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_rk&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_rt&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_rb&quot;   type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;true&quot;  multiValued=&quot;false&quot;/&gt;
+   &lt;field name=&quot;_yz_err&quot;  type=&quot;_yz_str&quot; indexed=&quot;true&quot; stored=&quot;false&quot; multiValued=&quot;false&quot;/&gt;
+
+   &lt;dynamicField name=&quot;*&quot; type=&quot;ignored&quot;  /&gt;
+ &lt;/fields&gt;
+
+&lt;types&gt;
+   &lt;!-- YZ String: Used for non-analyzed fields --&gt;
+   &lt;fieldType name=&quot;_yz_str&quot; class=&quot;solr.StrField&quot; sortMissingLast=&quot;true&quot; /&gt;
+   &lt;fieldType name=&quot;string&quot; class=&quot;solr.StrField&quot; sortMissingLast=&quot;true&quot; /&gt;
+   &lt;fieldType name=&quot;boolean&quot; class=&quot;solr.BoolField&quot; sortMissingLast=&quot;true&quot;/&gt;
+   &lt;fieldType name=&quot;int&quot; class=&quot;solr.TrieIntField&quot; precisionStep=&quot;0&quot; positionIncrementGap=&quot;0&quot;/&gt;
+   &lt;fieldtype name=&quot;ignored&quot; stored=&quot;false&quot; indexed=&quot;false&quot; multiValued=&quot;true&quot; class=&quot;solr.StrField&quot; /&gt;
+&lt;/types&gt;
+
+ &lt;uniqueKey&gt;_yz_id&lt;/uniqueKey&gt;
+
+&lt;/schema&gt;
+
+</pre>
+<p><strong><a href="msg16581/make_db_idx.sh" ><img src="../attachment.png" alt="Attachment:" width=27 height=28></a>
+<a href="msg16581/make_db_idx.sh" >make_db_idx.sh</a></strong><br>
+<em>Description:</em> application/shellscript</p>
+<pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16577.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16581">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16581">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16585.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Yokozuna indexes too slow</span> <span class="sender italic">ilyas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16585.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Jason Voegele</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16591.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">ilyas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16592.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Jason Voegele</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16593.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Fred Dushin</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg16597.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16586.html">Yokozuna indexes too slow</a></span> <span class="sender italic">ilyas</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16595.html">Re: Re: Yokozuna indexes too slow</a></span> <span class="sender italic">ilyas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16596.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Fred Dushin</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Yokozuna indexes too slow">
+<input type="hidden" name="msgid" value="560CD03A.1060300@keepsolid.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16581.html">
+<input type="submit" value=" ilyas ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Yokozuna+indexes+too+slow%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16577.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16585.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">560CD03A.1060300@keepsolid.com</li>
+</ul>
+</div>
+</body>
+</html>

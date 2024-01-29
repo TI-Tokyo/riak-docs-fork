@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Deleted keys come back</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16617" id="c">
+<link rel="index" href="maillist.html#16617" id="i">
+<link rel="prev" href="msg16612.html" id="p">
+<link rel="next" href="msg16629.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16617.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleted+keys+come+back%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Deleted keys come back</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Dmitri+Zagidulin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Dmitri Zagidulin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151007" rel="nofollow">Wed, 07 Oct 2015 06:21:00 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hello,
+
+There are two things going on here: the W quorum value of the write and
+delete operations, and possibly the delete_mode setting.</pre><pre>
+
+Let's walk through the scenario.
+You're writing to a 2 node cluster, two copies of each object (n_val=2),
+with your write quorum of 1 (W=1).
+
+So that's possibility #1 -- there's no guarantee that your writes succeed
+with both replicas. (It could've just written one, and the other one is
+missing).
+
+Then you're doing a List Keys (to delete the objects), which runs with an
+implicit quorum of R=1. (Meaning, it only contacts half of the replicas,
+and lists them.) So (if possibility #1 happened, above) the list keys could
+have not returned some keys, the first time around. (Because it may have
+contacted the partitions that had missing replicas).  Then you deleted, ran
+another List Keys, and that one could have returned the keys that it missed
+the first time.
+
+Possibility #2 -- your deletes are using W=1, meaning, they're only waiting
+for the delete operation from 1 replica to respond, before returning
+success. So, it's possible that a delete operation removed just one
+replica, but the second one still exists. And the second List Keys can now
+pick up the not-deleted replica.
+
+Possibility #3 -- by default, the delete_mode is set to keep deleted
+objects for 3 seconds.  So, if you ran your deletes, and then re-ran a List
+Keys before the 3 seconds expired, you could pick up some keys.
+
+The upshot of all this is:
+- Use W=2 when writing and deleting. (That is, your W value should be the
+same as your N value).
+
+- If that doesn't work, set delete_mode to 'immediate' in the config.
+Specifically, delete_mode is set in the advanced.config file (
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/configs/configuration-files/#Advanced-Configuration">http://docs.basho.com/riak/latest/ops/advanced/configs/configuration-files/#Advanced-Configuration</a>
+). So, my advanced.config file looks like this:
+
+[
+  {riak_kv,
+    [
+      {delete_mode, immediate}
+    ]}
+  }
+].
+
+Also, if you're deleting things for unit tests, there's an easier way.
+Instead of deleting the bucket object-by-object, you can just stop the
+node, and clear the bitcask (or leveldb) data directory. (That's going to
+get rid of all the data in the cluster, which is what you want to do for
+unit tests anyways.)
+
+You can learn more about these topics on the following pages:
+* <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/deletion/">http://docs.basho.com/riak/latest/ops/advanced/deletion/</a>
+*
+<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2011-October/006048.html</a>
+(mailing list post introducing delete_mode)
+* <a  rel="nofollow" href="http://basho.com/posts/technical/riaks-config-behaviors-part-3/">http://basho.com/posts/technical/riaks-config-behaviors-part-3/</a>  (the
+Tombstones section)
+
+Dmitri
+
+
+
+
+On Wed, Oct 7, 2015 at 1:35 PM, mtakahashi-ivi &lt;mtakaha...@yourinventit.com&gt;
+wrote:
+
+&gt; Hello,
+&gt;
+&gt; I'm using riak KV in 2 nodes cluster.
+&gt; I inserted hundreds of key/value pair and deleted all keys in a bucket.
+&gt; After above process, I can get some keys if I get list of keys in the
+&gt; bucket.
+&gt; Why those keys remain? How do I delete keys reliably?
+&gt; If I increase number of nodes to 5 , I can delete all keys in the bucket as
+&gt; same way as I did.
+&gt; My bucket property is the following.
+&gt;
+&gt; ----------------------
+&gt; {
+&gt;   &quot;props&quot;: {
+&gt;     &quot;name&quot;: &quot;BUCKET_A&quot;,
+&gt;     &quot;active&quot;: true,
+&gt;     &quot;allow_mult&quot;: false,
+&gt;     &quot;basic_quorum&quot;: false,
+&gt;     &quot;big_vclock&quot;: 50,
+&gt;     &quot;chash_keyfun&quot;: {
+&gt;       &quot;mod&quot;: &quot;riak_core_util&quot;,
+&gt;       &quot;fun&quot;: &quot;chash_std_keyfun&quot;
+&gt;     },
+&gt;     &quot;claimant&quot;: &quot;riak@172.17.0.171&quot;,
+&gt;     &quot;dvv_enabled&quot;: true,
+&gt;     &quot;dw&quot;: &quot;quorum&quot;,
+&gt;     &quot;last_write_wins&quot;: false,
+&gt;     &quot;linkfun&quot;: {
+&gt;       &quot;mod&quot;: &quot;riak_kv_wm_link_walker&quot;,
+&gt;       &quot;fun&quot;: &quot;mapreduce_linkfun&quot;
+&gt;     },
+&gt;     &quot;n_val&quot;: 2,
+&gt;     &quot;notfound_ok&quot;: false,
+&gt;     &quot;old_vclock&quot;: 86400,
+&gt;     &quot;postcommit&quot;: [],
+&gt;     &quot;pr&quot;: 0,
+&gt;     &quot;precommit&quot;: [],
+&gt;     &quot;pw&quot;: 0,
+&gt;     &quot;r&quot;: 1,
+&gt;     &quot;rw&quot;: &quot;quorum&quot;,
+&gt;     &quot;search_index&quot;: &quot;BUCKET_A_INDEX&quot;,
+&gt;     &quot;small_vclock&quot;: 50,
+&gt;     &quot;w&quot;: 1,
+&gt;     &quot;young_vclock&quot;: 20
+&gt;   }
+&gt; }
+&gt;
+&gt;
+&gt; Masanori Takahashi
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; View this message in context:
+&gt; <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Deleted-keys-come-back-tp4033536.html">http://riak-users.197444.n3.nabble.com/Deleted-keys-come-back-tp4033536.html</a>
+&gt; Sent from the Riak Users mailing list archive at Nabble.com.
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16612.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16617">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16617">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16629.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16612.html">Deleted keys come back</a></span> <span class="sender italic">mtakahashi-ivi</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Deleted keys come back</span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16629.html">Re: Deleted keys come back</a></span> <span class="sender italic">Kota Uenishi</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16651.html">Re: Deleted keys come back</a></span> <span class="sender italic">mtakahashi-ivi</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16652.html">Re: Deleted keys come back</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16656.html">Re: Deleted keys come back</a></span> <span class="sender italic">mtakahashi-ivi</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg16632.html">Re: Deleted keys come back</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Deleted keys come back">
+<input type="hidden" name="msgid" value="CA+TO3kV0UJWqKj3pT4OQ+C99GVRny-KrhRozosG+EZ6q8BvFnQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16617.html">
+<input type="submit" value=" Dmitri Zagidulin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Deleted+keys+come+back%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16612.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16629.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+TO3kV0UJWqKj3pT4OQ+C99GVRny-KrhRozosG+EZ6q8BvFnQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

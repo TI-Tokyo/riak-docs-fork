@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Java Riak client can't handle a Riak node failure?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd3.html#17050" id="c">
+<link rel="index" href="maillist.html#17050" id="i">
+<link rel="prev" href="msg17045.html" id="p">
+<link rel="next" href="msg17052.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17050.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Riak+client+can%27t+handle+a+Riak+node+failure%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Java Riak client can't handle a Riak node failure?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Vanessa+Williams%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Vanessa Williams</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160222" rel="nofollow">Mon, 22 Feb 2016 07:49:54 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>See inline:
+
+On Mon, Feb 22, 2016 at 10:31 AM, Alex Moore &lt;amo...@basho.com&gt; wrote:</pre><pre>
+
+&gt; Hi Vanessa,
+&gt;
+&gt; You might have a problem with your delete function (depending on it's
+&gt; return value).
+&gt; What does the return value of the delete() function indicate?  Right now
+&gt; if an object existed, and was deleted, the function will return true, and
+&gt; will only return false if the object didn't exist or only consisted of
+&gt; tombstones.
+&gt;
+
+
+That's the correct behaviour: it should return true iff a value was
+actually deleted.
+
+
+&gt; If you never look at the object value returned by your fetchValue(key) 
+&gt; function, another potential optimization you could make is to only return the 
+&gt; HEAD / metadata:
+&gt;
+&gt; FetchValue fv = new FetchValue.Builder(new Location(new Namespace(
+&gt; &quot;some_bucket&quot;), key))
+&gt;
+&gt;                               .withOption(FetchValue.Option.HEAD, true)
+&gt;                               .build();
+&gt;
+&gt; This would be more efficient because Riak won't have to send you the
+&gt; values over the wire, if you only need the metadata.
+&gt;
+&gt;
+Thanks, I'll clean that up.
+
+
+&gt; If you do write this up somewhere, share the link! :)
+&gt;
+
+Will do!
+
+Regards,
+Vanessa
+
+
+&gt;
+&gt; Thanks,
+&gt; Alex
+&gt;
+&gt;
+&gt; On Mon, Feb 22, 2016 at 6:23 AM, Vanessa Williams &lt;
+&gt; vanessa.willi...@thoughtwire.ca&gt; wrote:
+&gt;
+&gt;&gt; Hi Dmitri, this thread is old, but I read this part of your answer
+&gt;&gt; carefully:
+&gt;&gt;
+&gt;&gt; You can use the following strategies to prevent stale values, in
+&gt;&gt;&gt; increasing order of security/preference:
+&gt;&gt;&gt; 1) Use timestamps (and not pass in vector clocks/causal context). This
+&gt;&gt;&gt; is ok if you're not editing objects, or you're ok with a bit of risk of
+&gt;&gt;&gt; stale values.
+&gt;&gt;&gt; 2) Use causal context correctly (which means, read-before-you-write --
+&gt;&gt;&gt; in fact, the Update operation in the java client does this for you, I
+&gt;&gt;&gt; think). And if Riak can't determine which version is correct, it will fall
+&gt;&gt;&gt; back on timestamps.
+&gt;&gt;&gt; 3) Turn on siblings, for that bucket or bucket type.  That way, Riak
+&gt;&gt;&gt; will still try to use causal context to decide the right value. But if it
+&gt;&gt;&gt; can't decide, it will store BOTH values, and give them back to you on the
+&gt;&gt;&gt; next read, so that your application can decide which is the correct one.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I decided on strategy #2. What I am hoping for is some validation that
+&gt;&gt; the code we use to &quot;get&quot;, &quot;put&quot;, and &quot;delete&quot; is correct in that context,
+&gt;&gt; or if it could be simplified in some cases. Not we are using delete-mode
+&gt;&gt; &quot;immediate&quot; and no duplicates.
+&gt;&gt;
+&gt;&gt; In their shortest possible forms, here are the three methods I'd like
+&gt;&gt; some feedback on (note, they're being used in production and haven't caused
+&gt;&gt; any problems yet, however we have very few writes in production so the lack
+&gt;&gt; of problems doesn't support the conclusion that the implementation is
+&gt;&gt; correct.) Note all argument-checking, exception-handling, and logging
+&gt;&gt; removed for clarity. *I'm mostly concerned about correct use of causal
+&gt;&gt; context and response.isNotFound and response.hasValues. *Is there
+&gt;&gt; anything I could/should have left out?
+&gt;&gt;
+&gt;&gt;     public RiakClient(String name, com.basho.riak.client.api.RiakClient
+&gt;&gt; client)
+&gt;&gt;     {
+&gt;&gt;         this.name = name;
+&gt;&gt;         this.namespace = new Namespace(name);
+&gt;&gt;         this.client = client;
+&gt;&gt;     }
+&gt;&gt;
+&gt;&gt;     public byte[] get(String key) throws ExecutionException,
+&gt;&gt; InterruptedException {
+&gt;&gt;
+&gt;&gt;         FetchValue.Response response = fetchValue(key);
+&gt;&gt;         if (!response.isNotFound())
+&gt;&gt;         {
+&gt;&gt;             RiakObject riakObject = response.getValue(RiakObject.class);
+&gt;&gt;             return riakObject.getValue().getValue();
+&gt;&gt;         }
+&gt;&gt;         return null;
+&gt;&gt;     }
+&gt;&gt;
+&gt;&gt;     public void put(String key, byte[] value) throws ExecutionException,
+&gt;&gt; InterruptedException {
+&gt;&gt;
+&gt;&gt;         // fetch in order to get the causal context
+&gt;&gt;         FetchValue.Response response = fetchValue(key);
+&gt;&gt;         RiakObject storeObject = new
+&gt;&gt;
+&gt;&gt; RiakObject().setValue(BinaryValue.create(value)).setContentType(&quot;binary/octet-stream&quot;);
+&gt;&gt;         StoreValue.Builder builder =
+&gt;&gt;             new StoreValue.Builder(storeObject).withLocation(new
+&gt;&gt; Location(namespace, key));
+&gt;&gt;         if (response.getVectorClock() != null) {
+&gt;&gt;             builder = builder.withVectorClock(response.getVectorClock());
+&gt;&gt;         }
+&gt;&gt;         StoreValue storeValue = builder.build();
+&gt;&gt;         client.execute(storeValue);
+&gt;&gt;     }
+&gt;&gt;
+&gt;&gt;     public boolean delete(String key) throws ExecutionException,
+&gt;&gt; InterruptedException {
+&gt;&gt;
+&gt;&gt;         // fetch in order to get the causal context
+&gt;&gt;         FetchValue.Response response = fetchValue(key);
+&gt;&gt;         if (!response.isNotFound())
+&gt;&gt;         {
+&gt;&gt;             DeleteValue deleteValue = new DeleteValue.Builder(new
+&gt;&gt; Location(namespace, key)).build();
+&gt;&gt;             client.execute(deleteValue);
+&gt;&gt;         }
+&gt;&gt;         return !response.isNotFound() || !response.hasValues();
+&gt;&gt;     }
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Any comments much appreciated. I want to provide a minimally correct
+&gt;&gt; example of simple client code somewhere (GitHub, blog post, something...)
+&gt;&gt; so I don't want to post this without review.
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; Vanessa
+&gt;&gt;
+&gt;&gt; ThoughtWire Corporation
+&gt;&gt; <a  rel="nofollow" href="http://www.thoughtwire.com">http://www.thoughtwire.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Thu, Oct 8, 2015 at 8:45 AM, Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;
+&gt;&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Hi Vanessa,
+&gt;&gt;&gt;
+&gt;&gt;&gt; The thing to keep in mind about read repair is -- it happens
+&gt;&gt;&gt; asynchronously on every GET, but /after/ the results are returned to the
+&gt;&gt;&gt; client.
+&gt;&gt;&gt;
+&gt;&gt;&gt; So, when you issue a GET with r=1, the coordinating node only waits for
+&gt;&gt;&gt; 1 of the replicas before responding to the client with a success, and only
+&gt;&gt;&gt; afterwards triggers read-repair.
+&gt;&gt;&gt;
+&gt;&gt;&gt; It's true that with notfound_ok=false, it'll wait for the first
+&gt;&gt;&gt; non-missing replica before responding. But if you edit or update your
+&gt;&gt;&gt; objects at all, an R=1 still gives you a risk of stale values being
+&gt;&gt;&gt; returned.
+&gt;&gt;&gt;
+&gt;&gt;&gt; For example, say you write an object with value A.  And let's say your 3
+&gt;&gt;&gt; replicas now look like this:
+&gt;&gt;&gt;
+&gt;&gt;&gt; replica 1: A,  replica 2: A, replica 3: notfound/missing
+&gt;&gt;&gt;
+&gt;&gt;&gt; A read with an R=1 and notfound_ok=false is just fine, here. (Chances
+&gt;&gt;&gt; are, the notfound replica will arrive first, but the notfound_ok setting
+&gt;&gt;&gt; will force the coordinator to wait for the first non-empty value, A, and
+&gt;&gt;&gt; return it to the client. And then trigger read-repair).
+&gt;&gt;&gt;
+&gt;&gt;&gt; But what happens if you edit that same object, and give it a new value,
+&gt;&gt;&gt; B?  So, now, there's a chance that your replicas will look like this:
+&gt;&gt;&gt;
+&gt;&gt;&gt; replica 1: A, replica 2: B, replica 3: B.
+&gt;&gt;&gt;
+&gt;&gt;&gt; So now if you do a read with an R=1, there's a chance that replica 1,
+&gt;&gt;&gt; with the old value of A, will arrive first, and that's the response that
+&gt;&gt;&gt; will be returned to the client.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Whereas, using R=2 eliminates that risk -- well, at least decreases it.
+&gt;&gt;&gt; You still have the issue of -- how does Riak decide whether A or B is the
+&gt;&gt;&gt; correct value? Are you using causal context/vclocks correctly? (That is,
+&gt;&gt;&gt; reading the object before you update, to get the correct causal context?)
+&gt;&gt;&gt; Or are you relying on timestamps? (This is an ok strategy, provided that
+&gt;&gt;&gt; the edits are sufficiently far apart in time, and you don't have many
+&gt;&gt;&gt; concurrent edits, AND you're ok with the small risk of occasionally the
+&gt;&gt;&gt; timestamp being wrong). You can use the following strategies to prevent
+&gt;&gt;&gt; stale values, in increasing order of security/preference:
+&gt;&gt;&gt;
+&gt;&gt;&gt; 1) Use timestamps (and not pass in vector clocks/causal context). This
+&gt;&gt;&gt; is ok if you're not editing objects, or you're ok with a bit of risk of
+&gt;&gt;&gt; stale values.
+&gt;&gt;&gt;
+&gt;&gt;&gt; 2) Use causal context correctly (which means, read-before-you-write --
+&gt;&gt;&gt; in fact, the Update operation in the java client does this for you, I
+&gt;&gt;&gt; think). And if Riak can't determine which version is correct, it will fall
+&gt;&gt;&gt; back on timestamps.
+&gt;&gt;&gt;
+&gt;&gt;&gt; 3) Turn on siblings, for that bucket or bucket type.  That way, Riak
+&gt;&gt;&gt; will still try to use causal context to decide the right value. But if it
+&gt;&gt;&gt; can't decide, it will store BOTH values, and give them back to you on the
+&gt;&gt;&gt; next read, so that your application can decide which is the correct one.
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Thu, Oct 8, 2015 at 1:56 AM, Vanessa Williams &lt;
+&gt;&gt;&gt; vanessa.willi...@thoughtwire.ca&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Hi Dmitri, what would be the benefit of r=2, exactly? It isn't
+&gt;&gt;&gt;&gt; necessary to trigger read-repair, is it? If it's important I'd rather try
+&gt;&gt;&gt;&gt; it sooner than later...
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Regards,
+&gt;&gt;&gt;&gt; Vanessa
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; On Wed, Oct 7, 2015 at 4:02 PM, Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;
+&gt;&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Glad you sorted it out!
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; (I do want to encourage you to bump your R setting to at least 2,
+&gt;&gt;&gt;&gt;&gt; though. Run some tests -- I think you'll find that the difference in speed
+&gt;&gt;&gt;&gt;&gt; will not be noticeable, but you do get a lot more data resilience with 2.)
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; On Wed, Oct 7, 2015 at 6:24 PM, Vanessa Williams &lt;
+&gt;&gt;&gt;&gt;&gt; vanessa.willi...@thoughtwire.ca&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Hi Dmitri, well...we solved our problem to our satisfaction but it
+&gt;&gt;&gt;&gt;&gt;&gt; turned out to be something unexpected.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; The keys were two properties mentioned in a blog post on &quot;configuring
+&gt;&gt;&gt;&gt;&gt;&gt; Riak’s oft-subtle behavioral characteristics&quot;:
+&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://basho.com/posts/technical/riaks-config-behaviors-part-4/">http://basho.com/posts/technical/riaks-config-behaviors-part-4/</a>
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; notfound_ok= false
+&gt;&gt;&gt;&gt;&gt;&gt; basic_quorum=true
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; The 2nd one just makes things a little faster, but the first one is
+&gt;&gt;&gt;&gt;&gt;&gt; the one whose default value of true was killing us.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; With r=1 and notfound_ok=true (default) the first node to respond, if
+&gt;&gt;&gt;&gt;&gt;&gt; it didn't find the requested key, the authoritative answer was &quot;this key 
+&gt;&gt;&gt;&gt;&gt;&gt; is
+&gt;&gt;&gt;&gt;&gt;&gt; not found&quot;. Not what we were expecting at all.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; With the changed settings, it will wait for a quorum of responses and
+&gt;&gt;&gt;&gt;&gt;&gt; only if *no one* finds the key will &quot;not found&quot; be returned. Perfect.
+&gt;&gt;&gt;&gt;&gt;&gt; (Without this setting it would wait for all responses, not ideal.)
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Now there is only one snag, which is that if the Riak node the client
+&gt;&gt;&gt;&gt;&gt;&gt; connects to goes down, there will be no communication and we have a
+&gt;&gt;&gt;&gt;&gt;&gt; problem. This is easily solvable with a load-balancer, though for
+&gt;&gt;&gt;&gt;&gt;&gt; complicated reasons we actually don't need to do that right now. It's 
+&gt;&gt;&gt;&gt;&gt;&gt; just
+&gt;&gt;&gt;&gt;&gt;&gt; acceptable for us temporarily. Later, we'll get the load-balancer working
+&gt;&gt;&gt;&gt;&gt;&gt; and even that won't be a problem.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; I *think* we're ok now. Thanks for your help!
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Regards,
+&gt;&gt;&gt;&gt;&gt;&gt; Vanessa
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; On Wed, Oct 7, 2015 at 9:33 AM, Dmitri Zagidulin &lt;
+&gt;&gt;&gt;&gt;&gt;&gt; dzagidu...@basho.com&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Yeah, definitely find out what the sysadmin's experience was, with
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; the load balancer. It could have just been a wrong configuration or
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; something.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; And yes, that's the documentation page I recommend -
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/configs/load-balancing-proxy/">http://docs.basho.com/riak/latest/ops/advanced/configs/load-balancing-proxy/</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Just set up HAProxy, and point your Java clients to its IP.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; The drawbacks to load-balancing on the java client side (yes, the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; cluster object) instead of a standalone load balancer like HAProxy, are 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; following:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 1) Adding node means code changes (or at very least, config file
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; changes) rolled out to all your clients. Which turns out to be a pretty
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; serious hassle. Instead, HAProxy allows you to add or remove nodes 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; without
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; changing any java code or config files.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 2) Performance. We've ran many tests to compare performance, and
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; client-side load balancing results in significantly lower throughput 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; than
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; you'd have using haproxy (or nginx). (Specifically, you actually want to
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; use the 'leastconn' load balancing algorithm with HAProxy, instead of 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; round
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; robin).
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; 3) The health check on the client side (so that the java load
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; balancer can tell when a remote node is down) is much less intelligent 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; than
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; a dedicated load balancer would provide. With something like HAProxy, 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; you
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; should be able to take down nodes with no ill effects for the client 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; code.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Now, if you load balance on the client side and you take a node
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; down, it's not supposed to stop working completely. (I'm not sure why 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; it's
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; failing for you, we can investigate, but it'll be easier to just use a 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; load
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; balancer). It should throw an error or two, but then start working again
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; (on the retry).
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Dmitri
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; On Wed, Oct 7, 2015 at 2:45 PM, Vanessa Williams &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; vanessa.willi...@thoughtwire.ca&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Hi Dmitri, thanks for the quick reply.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; It was actually our sysadmin who tried the load balancer approach
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; and had no success, late last evening. However I haven't discussed the 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; gory
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; details with him yet. The failure he saw was at the application level 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; (i.e.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; failure to read a key), but I don't know a) how he set up the LB or b) 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; what
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; the Java exception was, if any. I'll find that out in an hour or two 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; and
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; report back.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; I did find this article just now:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/configs/load-balancing-proxy/">http://docs.basho.com/riak/latest/ops/advanced/configs/load-balancing-proxy/</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; So I suppose we'll give those suggestions a try this morning.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; What is the drawback to having the client connect to all 4 nodes
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; (the cluster client, I assume you mean?) My understanding from reading
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; articles I've found is that one of the nodes going away causes that 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; client
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; to fail as well. Is that what you mean, or are there other drawbacks as
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; well?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; If there's anything else you can recommend, or links other than the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; one above you can point me to, it would be much appreciated. We expect 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; both
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; node failure and deliberate node removal for upgrade, repair, 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; replacement,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; etc.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Regards,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Vanessa
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; On Wed, Oct 7, 2015 at 8:29 AM, Dmitri Zagidulin &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; dzagidu...@basho.com&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Hi Vanessa,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Riak is definitely meant to run behind a load balancer. (Or, at
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; the worst case, to be load-balanced on the client side. That is, all
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; clients connect to all 4 nodes).
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; When you say &quot;we did try putting all 4 Riak nodes behind a
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; load-balancer and pointing the clients at it, but it didn't help.&quot; -- 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; what
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; do you mean exactly, by &quot;it didn't help&quot;? What happened when you tried
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; using the load balancer?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; On Wed, Oct 7, 2015 at 1:57 PM, Vanessa Williams &lt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; vanessa.willi...@thoughtwire.ca&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Hi all, we are still (for a while longer) using Riak 1.4 and the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; matching Java client. The client(s) connect to one node in the 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; cluster
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; (since that's all it can do in this client version). The cluster 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; itself has
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; 4 nodes (sorry, we can't use 5 in this scenario). There are 2 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; separate
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; clients.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; We've tried both n_val = 3 and n_val=4. We achieve
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; consistency-by-writes by setting w=all. Therefore, we only require 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; one
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; successful read (r=1).
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; When all nodes are up, everything is fine. If one node fails, the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; clients can no longer read any keys at all. There's an exception 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; like this:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; com.basho.riak.client.RiakRetryFailedException:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; java.net.ConnectException: Connection refused
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Now, it isn't possible that Riak can't operate when one node
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; fails, so we're clearly missing something here.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Note: we did try putting all 4 Riak nodes behind a load-balancer
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; and pointing the clients at it, but it didn't help.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Riak is a high-availability key-value store, so... why are we
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; failing to achieve high-availability? Any suggestions greatly 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; appreciated,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; and if more info is required I'll do my best to provide it.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Thanks in advance,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Vanessa
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Vanessa Williams
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; ThoughtWire Corporation
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://www.thoughtwire.com">http://www.thoughtwire.com</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17045.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd3.html#17050">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17050">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17052.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16615.html">Re: Java Riak client can't handle a Riak node failure?</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16616.html">Re: Java Riak client can't handle a Riak node failu...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16618.html">Re: Java Riak client can't handle a Riak node f...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16626.html">Re: Java Riak client can't handle a Riak no...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16627.html">Re: Java Riak client can't handle a Ria...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16628.html">Re: Java Riak client can't handle ...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16633.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16662.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17043.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17045.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Alex Moore</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Java Riak client can't han...</span> <span class="sender italic">Vanessa Williams</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17052.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Alex Moore</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17054.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17055.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Alex Moore</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17056.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17063.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16636.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16661.html">Re: Java Riak client can't han...</a></span> <span class="sender italic">Vanessa Williams</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Java Riak client can't handle a Riak node failure?">
+<input type="hidden" name="msgid" value="CAGwwO-h8yCEwt68jRE3qq79OKAS8DSM0W6uf1F5JeUYXS8cr=g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17050.html">
+<input type="submit" value=" Vanessa Williams ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Java+Riak+client+can%27t+handle+a+Riak+node+failure%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17045.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17052.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGwwO-h8yCEwt68jRE3qq79OKAS8DSM0W6uf1F5JeUYXS8cr=g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

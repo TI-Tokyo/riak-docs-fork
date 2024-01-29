@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Riak search 2 returning multiple stale results for single record</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17023" id="c">
+<link rel="index" href="maillist.html#17023" id="i">
+<link rel="prev" href="msg17016.html" id="p">
+<link rel="next" href="msg17024.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17023.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+search+2+returning+multiple+stale+results+for+single+record%22&amp;o=newest" rel="nofollow"><span itemprop="name">Riak search 2 returning multiple stale results for single record</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Peter+Roberts%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Peter Roberts</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160215" rel="nofollow">Mon, 15 Feb 2016 02:35:40 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We’re currently evaluating whether Riak is suitable for our system and have an 
+issue with multiple/stale results being returned from Riak search. We’re 
+reliably seeing this occur when a record is  deleted and a new one created 
+under the same key shortly afterwards – which, based on the _yz_id, causes 
+siblings to be created.</pre><pre>
+
+Accessing the record through the map datatype only gives us the expected 
+record.  We’ve considered de-duplicating the result by ID but this could still 
+result in search results where the query matches the old but not the new data. 
+The obsolete records in Riak search/Solr never get cleaned up.
+
+Is this a known issue? Are we missing something on inserting/querying the data? 
+Is it possible to tie the version of data in the Riak search result to the 
+version retrieved from Riak by key?
+
+Below is an example of the Riak search query/result (using Node 
+basho-riak-client) and datatype data. The date.value is set to the 
+creation/update time.
+
+ var searchOptions = {
+    indexName: 'minimals_index',
+    q: 'name_register:foo',
+    presort: ‘score'
+}
+
+riakClient.search(searchOptions, function(err, result) {
+  console.log('Search result', err, result);
+  callback(err, result);
+}
+
+Results:
+{ numFound: 6,
+  maxScore: 0.35434481501579285,
+  docs:
+   [ { score: 0.35434482,
+       _yz_rb: 'minimals',
+       _yz_rt: 'maps',
+       _yz_rk: 'test:foo',
+       _yz_id: '1*maps*minimals*test:foo*13*2EB6xtIHCicwmARKDJ81tS',
+       'date_map._type_register': '_date',
+       'date_map._value_register': '2016-02-12T11:39:22.942Z',
+       name_register: 'foo',
+       owner_register: 'test' },
+…
+     { score: 0.35434482,
+       _yz_rb: 'minimals',
+       _yz_rt: 'maps',
+       _yz_rk: 'test:foo',
+       _yz_id: '1*maps*minimals*test:foo*13*4hNPnHzeJpTc7S6nEW8vNb',
+       'date_map._type_register': '_date',
+       'date_map._value_register': '2016-02-12T13:28:11.785Z',
+       name_register: 'foo',
+       owner_register: 'test' } ]
+}
+
+Riak get by ID:
+$ curl -XGET 
+&quot;<a  rel="nofollow" href="http://localhost:11098/types/maps/buckets/minimals/datatypes/test:foo&quot">http://localhost:11098/types/maps/buckets/minimals/datatypes/test:foo&quot</a>;
+{&quot;type&quot;:&quot;map&quot;,&quot;value&quot;:{&quot;date_map&quot;:{&quot;_type_register&quot;:&quot;_date&quot;,&quot;_value_register&quot;:&quot;2016-02-12T13:28:11.785Z&quot;},&quot;name_register&quot;:&quot;foo&quot;,&quot;owner_register&quot;:&quot;test&quot;},&quot;context&quot;:&quot;g2wAAAABaAJtAAAADMHSXwlPAZAxAAAAQmEDag==“}
+
+
+Thanks,
+Peter
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17016.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17023">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17023">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17024.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Riak search 2 returning multiple stale results for single ...</span> <span class="sender italic">Peter Roberts</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17024.html">Re: Riak search 2 returning multiple stale results fo...</a></span> <span class="sender italic">Zeeshan Lakhani</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17029.html">Re: Riak search 2 returning multiple stale result...</a></span> <span class="sender italic">Peter Roberts</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17030.html">Re: Riak search 2 returning multiple stale re...</a></span> <span class="sender italic">Zeeshan Lakhani</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Riak search 2 returning multiple stale results for single record">
+<input type="hidden" name="msgid" value="D2E75A01.1B1C%peter.roberts@piksel.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17023.html">
+<input type="submit" value=" Peter Roberts ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Riak+search+2+returning+multiple+stale+results+for+single+record%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17016.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17024.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">D2E75A01.1B1C%peter.roberts@piksel.com</li>
+</ul>
+</div>
+</body>
+</html>

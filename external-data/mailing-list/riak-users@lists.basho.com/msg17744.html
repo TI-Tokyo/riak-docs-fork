@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>AW: Query data with Riak TS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17744" id="c">
+<link rel="index" href="maillist.html#17744" id="i">
+<link rel="prev" href="msg17743.html" id="p">
+<link rel="next" href="msg17745.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17744.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22AW%5C%3A+Query+data+with+Riak+TS%22&amp;o=newest" rel="nofollow"><span itemprop="name">AW: Query data with Riak TS</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jan+Paulus%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jan Paulus</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20161114" rel="nofollow">Mon, 14 Nov 2016 07:45:30 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hello Andrei,
+
+thanks for the answer. It is good news that 1.5 will get the ODER BY and LIMIT 
+functionality.
+Unfortunately the current AVG implementation is not exactly what we are looking 
+for. The current implementation will sum up all points in the time range and 
+will it divide by the number of points. Currently Riak TS return 4.5 for my 
+example. We are looking for an average which takes into account how long a 
+value was persistent.</pre><pre>
+
+Kind Regards,
+Jan Paulus
+
+Von: Andrei Zavada [<a  rel="nofollow" href="mailto:azav...@contractor.basho.com">mailto:azav...@contractor.basho.com</a>]
+Gesendet: Montag, 14. November 2016 16:19
+An: Jan Paulus
+Cc: riak-users@lists.basho.com
+Betreff: Re: Query data with Riak TS
+
+Hello Jan,
+
+R​eplying to your questions inline:​​
+​
+ Hi,
+we are testing Riak TS for our Application right now. I have a couple of 
+question how to query the data. We are measuring electric power which comes in 
+in odd time intervals.
+
+1. Is it possible to query the value which has been received bevor at a given 
+time? In other words: Get the current / last value of a series.
+
+In Riak TS 1.4 (the latest release), you still have to specify the exact range 
+​in the WHERE clause.  Because of that, if you are only interested in a single 
+record that was added last before a certain time, you have to do some guesswork 
+to arrive at the suitable boundaries.  Depending on the rate of data ingress, 
+the selection returned may contain one, a few, too many, or no results at all.  
+One workaround is to issue a sequence of SELECTs, starting from a small range, 
+with the lower boundary of the range progressively moved back until you have 
+the last record included (and hopefully not many previous records which you are 
+going to discard anyway).
+
+In 1.5, we will support ORDER BY and LIMIT clauses which will allow a much 
+simpler solution, e.g.:
+
+ SELECT value FROM table
+ WHERE time &gt; 0 AND time &lt; $now
+ ORDER BY value DESC LIMIT 1
+
+2. Is it possible to query the average in respect to time?
+For instance you have such a measurement reading:
+time    | value
+-----------------
+09:31   |  4
+10:02   |  6
+10:05   |  3
+And you want to query the average from 10:00 to 10:10. I would expect a value 
+of 4.1
+4 * 20% + 6 * 30% + 3 * 50% = 4.1
+
+​It is definitely possible:​
+
+ ﻿⁠⁠⁠⁠SELECT AVG(val
+​ue​
+) FROM
+​table
+​
+ WHERE time &gt;
+​=​
+​'​2016-11-22
+10
+​:00'​
+AND time &lt;
+​'2016-11-22 ​
+​10:10'​
+
+​Note that you can specify timestamp values in ISO8601 format: 
+<a  rel="nofollow" href="http://docs.basho.com/riak/ts/1.4.0/using/timerepresentations">http://docs.basho.com/riak/ts/1.4.0/using/timerepresentations</a>
+
+​
+3. Is it possible to query 15 minutes average values for the last day? I would 
+expect 96 values with the average as described in question 2.
+
+No, you will have to issue 96 separate queries, each similar to the one in (2) 
+but with a different 15-min range.​
+
+
+Thanks a lot.
+Jan Paulus
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17743.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17744">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17744">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17745.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17742.html">Query data with Riak TS</a></span> <span class="sender italic">Jan Paulus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17743.html">Re: Query data with Riak TS</a></span> <span class="sender italic">Andrei Zavada</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">AW: Query data with Riak TS</span> <span class="sender italic">Jan Paulus</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17745.html">Re: Query data with Riak TS</a></span> <span class="sender italic">Andrei Zavada</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17794.html">Re: Query data with Riak TS</a></span> <span class="sender italic">Stephen Etheridge</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="AW: Query data with Riak TS">
+<input type="hidden" name="msgid" value="1EF7BB4D8E2863419991CC03B9EE85011760ACA0@vsexch1.domain.next-kraftwerke.de">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17744.html">
+<input type="submit" value=" Jan Paulus ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22AW%5C%3A+Query+data+with+Riak+TS%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17743.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17745.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1EF7BB4D8E2863419991CC03B9EE85011760ACA0@vsexch1.domain.next-kraftwerke.de</li>
+</ul>
+</div>
+</body>
+</html>

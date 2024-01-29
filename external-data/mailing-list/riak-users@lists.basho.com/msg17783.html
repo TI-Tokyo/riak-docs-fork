@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak CS: avoiding RAM overflow and OOM killer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17783" id="c">
+<link rel="index" href="maillist.html#17783" id="i">
+<link rel="prev" href="msg17782.html" id="p">
+<link rel="next" href="msg17786.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17783.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS%5C%3A+avoiding+RAM+overflow+and+OOM+killer%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak CS: avoiding RAM overflow and OOM killer</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20161123" rel="nofollow">Wed, 23 Nov 2016 12:17:02 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hello DeadZen,
+
+Yes, networking interconnect becomes a bigger issue with more nodes in the 
+cluster. A Riak cluster is actually a fully meshed network of erlang virtual 
+machines. Multiple 1/10 gig nics dedicated to inter/intra networking are your 
+friends. That said, we have many customers running many 50+ node clusters. </pre><pre>
+
+Happy thanksgiving ppl! 
+-Alexander 
+
+
+@siculars
+<a  rel="nofollow" href="http://siculars.posthaven.com">http://siculars.posthaven.com</a>
+
+Sent from my iRotaryPhone
+
+&gt; On Nov 23, 2016, at 10:59, DeadZen &lt;dead...@deadzen.com&gt; wrote:
+&gt; 
+&gt; ok I loled at this. then got worries trump could win a node election.  
+&gt; 
+&gt; anyways. 24gigs per riak server is not a bad safe bet. 
+&gt; Erlang in general is ram heavy. It uses it more effectively then most 
+&gt; languages wrt concurrency, but  ram is the fuel for concurrency and buffer 
+&gt; for operations, especially dumb operations involving large orange loud-mouth 
+&gt; objects.. as pointed out you can increase cumulative resources by adding more 
+&gt; physical nodes. and there is a trade off for adding more virtual nodes. 
+&gt; theres also an IPC trade off adding more then a few dozen physical nodes in 
+&gt; the same cluster. Theres also possiby a trade off using riak ts and riak kv 
+&gt; in the same cluster. Nothing but tradeoffs. 
+&gt; 
+&gt;&gt; On Tue, Nov 22, 2016 at 12:29 PM Alexander Sicular &lt;sicul...@basho.com&gt; 
+&gt;&gt; wrote:
+&gt;&gt; Hi Daniel,
+&gt;&gt; 
+&gt;&gt; Ya, I'm not surprised you're having issues. 4GB ram is woefully underspecd. 😔
+&gt;&gt; 
+&gt;&gt; 🤓Stupid math:
+&gt;&gt; 
+&gt;&gt; 3e7 x 3 (replication) / 9 = 1e7 minimum objects per node ( absolutely more 
+&gt;&gt; due to obj &gt; 1MB size )
+&gt;&gt; 
+&gt;&gt; 1e7 x ~400 bytes per obj in ram = 4e9 ram per node just for bitcask. Aka 4 
+&gt;&gt; GB. 
+&gt;&gt; 
+&gt;&gt; You already hit your limit. We can stop here. Done. End of. ☠️
+&gt;&gt; 
+&gt;&gt; 🤔But let's continue for funzies😋. 
+&gt;&gt; 
+&gt;&gt; Assuming defaults:
+&gt;&gt; 
+&gt;&gt; Default ring_size = 64 / 9 nodes ~ 7 virtual nodes per physical node. 
+&gt;&gt; 
+&gt;&gt; Default leveldb ram allocation = 70%
+&gt;&gt; 
+&gt;&gt; Leveldb operates, aka consumes resources including ram, on a vnode basis. It 
+&gt;&gt; likes to consume ram on the order of 300MB through 2.5GB per vnode, 
+&gt;&gt; increasing in performance till it caps. Even if you did switch everything to 
+&gt;&gt; level you'd still be redlined. 
+&gt;&gt; 
+&gt;&gt; Bottom line is that bitcask, leveldb and your OS are fighting for ram all 
+&gt;&gt; day 'ery day😡. Why you hate them and make them fight like that?😩 Not nice! 
+&gt;&gt; (Trumpisms!)🤓
+&gt;&gt; 
+&gt;&gt; -Alexander
+&gt;&gt; 
+&gt;&gt; ps. You probably want to bump to 128 ring size. More vnodes equals more 
+&gt;&gt; parallelism, but also means more resource consumption. You prob want min 8 
+&gt;&gt; (v)CPU and 16GB min ram. YMMV, check my math. 
+&gt;&gt; 
+&gt;&gt; pps. If you don't want to double your per VM cost (aws ec2, etc) you could 
+&gt;&gt; add nodes to the cluster. Because Riak uniformly distributes data around the 
+&gt;&gt; cluster adding nodes increase total resources to the cluster, reduces number 
+&gt;&gt; of objects allocated to each node. The converse is also true, if you double 
+&gt;&gt; your node size you could halve your node count. That said, systems like Riak 
+&gt;&gt; like prefer more nodes. It's just a math game. 
+&gt;&gt; 
+&gt;&gt; @siculars
+&gt;&gt; <a  rel="nofollow" href="http://siculars.posthaven.com">http://siculars.posthaven.com</a>
+&gt;&gt; 
+&gt;&gt; Sent from my iRotaryPhone
+&gt;&gt; 
+&gt;&gt;&gt; On Nov 22, 2016, at 08:51, Daniel Miller &lt;dmil...@dimagi.com&gt; wrote:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Hi Alexander,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Thanks for responding.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; &gt; How many nodes?
+&gt;&gt;&gt; 
+&gt;&gt;&gt; We currently have 9 nodes in our cluster.
+&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; &gt; How much ram per node?
+&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Each node has 4GB of ram and 4GB of swap. The memory levels (ram + swap) on 
+&gt;&gt;&gt; each node are currently between 4GB and 5.5GB.
+&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; &gt; How many objects (files)? What is the average file size?
+&gt;&gt;&gt; 
+&gt;&gt; 
+&gt;&gt;&gt; We currently have &gt;30 million objects, and I analyzed the average object 
+&gt;&gt;&gt; size before we migrated data into the cluster it was about 4KB/object, with 
+&gt;&gt;&gt; some objects being much larger (multiple MB). Is there an easy way to get 
+&gt;&gt;&gt; this information from a running cluster so I can give you more accurate 
+&gt;&gt;&gt; information?
+&gt;&gt;&gt; 
+&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; On Tue, Nov 22, 2016 at 2:42 AM, Alexander Sicular &lt;sicul...@gmail.com&gt; 
+&gt;&gt;&gt; wrote:
+&gt;&gt;&gt; Hi Daniel,
+&gt;&gt;&gt; 
+&gt;&gt;&gt; How many nodes?
+&gt;&gt;&gt; -You should be using 5 minimum if you using the default config. There
+&gt;&gt;&gt; are reasons.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; How much ram per node?
+&gt;&gt;&gt; -As you noted, in Riak CS, 1MB file chunks are stored in bitcask.
+&gt;&gt;&gt; Their key names and some overhead consume memory.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; How many objects (files)? What is the average file size?
+&gt;&gt;&gt; -If your size distribution significantly skews &lt; 1MB that means you
+&gt;&gt;&gt; will have a bunch of files in bitcask eating up ram.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Kota was a former Basho engineer who worked on CS... That said, Basho
+&gt;&gt;&gt; may not support a non standard deployment.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; -Alexander
+&gt;&gt;&gt; 
+&gt;&gt;&gt; On Mon, Nov 21, 2016 at 2:45 PM, Daniel Miller &lt;dmil...@dimagi.com&gt; wrote:
+&gt;&gt;&gt; &gt; I found a similar question from over a year ago
+&gt;&gt;&gt; &gt; (<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2015-July/017327.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2015-July/017327.html</a>),
+&gt;&gt;&gt; &gt; and it sounds like leveldb is the way to go, although possibly not well
+&gt;&gt;&gt; &gt; tested. Has anything changed with regard to Basho's (or anyone else)
+&gt;&gt;&gt; &gt; experience with using leveldb backend instead of the mutli backend for CS?
+&gt;&gt;&gt; &gt;
+&gt;&gt;&gt; &gt; On Fri, Nov 4, 2016 at 11:48 AM, Daniel Miller &lt;dmil...@dimagi.com&gt; wrote:
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;&gt; Hi,
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;&gt; I have a Riak CS cluster up and running, and am anticipating exponential
+&gt;&gt;&gt; &gt;&gt; growth in the number of key/value pairs over the next few years. From
+&gt;&gt;&gt; &gt;&gt; reading the documentation and experience, I've concluded that the default
+&gt;&gt;&gt; &gt;&gt; configuration of CS (with riak_cs_kv_multi_backend) keeps all keys in 
+&gt;&gt;&gt; &gt;&gt; RAM.
+&gt;&gt;&gt; &gt;&gt; The OOM killer strikes when Riak uses too much RAM, which is not good 
+&gt;&gt;&gt; &gt;&gt; for my
+&gt;&gt;&gt; &gt;&gt; sanity or sleep. Because of the amount of growth I am anticipating, it 
+&gt;&gt;&gt; &gt;&gt; seems
+&gt;&gt;&gt; &gt;&gt; unlikely that I can allocate enough RAM to keep up with the load. Disk, 
+&gt;&gt;&gt; &gt;&gt; on
+&gt;&gt;&gt; &gt;&gt; the other hand, is less constrained.
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;&gt; A little background on the data set: I have a sparsely accessed key set.
+&gt;&gt;&gt; &gt;&gt; By that I mean after a key is written, the more time passes with that key
+&gt;&gt;&gt; &gt;&gt; not being accessed, the less likely it is to be accessed any time soon. 
+&gt;&gt;&gt; &gt;&gt; At
+&gt;&gt;&gt; &gt;&gt; any given time, most keys will be dormant. However, any given key 
+&gt;&gt;&gt; &gt;&gt; _could_ be
+&gt;&gt;&gt; &gt;&gt; accessed at any time, so should be possible to retrieve it.
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;&gt; I am currently running a smaller cluster (with smaller nodes: less RAM,
+&gt;&gt;&gt; &gt;&gt; smaller disks) than I expect to use eventually. I am starting to hit some
+&gt;&gt;&gt; &gt;&gt; growth-related issues that are prompting me to explore more options 
+&gt;&gt;&gt; &gt;&gt; before
+&gt;&gt;&gt; &gt;&gt; it becomes a dire situation.
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;&gt; My question: Are there ways to tune Riak (CS) to support this scenario
+&gt;&gt;&gt; &gt;&gt; gracefully? That is, are there ways to make Riak not load all keys into 
+&gt;&gt;&gt; &gt;&gt; RAM?
+&gt;&gt;&gt; &gt;&gt; It looks like leveldb is just what I want, but I'm a little nervous
+&gt;&gt;&gt; &gt;&gt; switching over to only leveldb when the default/recommended config uses 
+&gt;&gt;&gt; &gt;&gt; the
+&gt;&gt;&gt; &gt;&gt; multi backend.
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;&gt; As a stop-gap measure, I enabled swap (with swappiness = 0), which I
+&gt;&gt;&gt; &gt;&gt; anticipated would kill performance, but was pleasantly surprised to see 
+&gt;&gt;&gt; &gt;&gt; it
+&gt;&gt;&gt; &gt;&gt; return to effectively no-swap performance levels after a short period of
+&gt;&gt;&gt; &gt;&gt; lower performance. I'm guessing this is not a good long-term solution as 
+&gt;&gt;&gt; &gt;&gt; my
+&gt;&gt;&gt; &gt;&gt; dataset grows. The problem with using large amounts of swap is that each
+&gt;&gt;&gt; &gt;&gt; time Riak starts it needs to read all keys into RAM. Long term, as our
+&gt;&gt;&gt; &gt;&gt; dataset grows, the amount of time needed to read keys into RAM will 
+&gt;&gt;&gt; &gt;&gt; cause a
+&gt;&gt;&gt; &gt;&gt; very long restart time (and thus period of unavailability), which could
+&gt;&gt;&gt; &gt;&gt; endanger availability for a prolonged period if multiple nodes go down at
+&gt;&gt;&gt; &gt;&gt; once.
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;&gt; Thanks!
+&gt;&gt;&gt; &gt;&gt; Daniel Miller
+&gt;&gt;&gt; &gt;&gt; Dimagi, Inc.
+&gt;&gt;&gt; &gt;&gt;
+&gt;&gt;&gt; &gt;
+&gt;&gt;&gt; &gt;
+&gt;&gt;&gt; &gt; _______________________________________________
+&gt;&gt;&gt; &gt; riak-users mailing list
+&gt;&gt;&gt; &gt; riak-users@lists.basho.com
+&gt;&gt;&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt; &gt;
+&gt;&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17782.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17783">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17783">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17786.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17733.html">Riak CS: avoiding RAM overflow and OOM killer</a></span> <span class="sender italic">Daniel Miller</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17775.html">Re: Riak CS: avoiding RAM overflow and OOM killer</a></span> <span class="sender italic">Daniel Miller</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17776.html">Re: Riak CS: avoiding RAM overflow and OOM kill...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17778.html">Re: Riak CS: avoiding RAM overflow and OOM ...</a></span> <span class="sender italic">Daniel Miller</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17777.html">Re: Riak CS: avoiding RAM overflow and ...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17782.html">Re: Riak CS: avoiding RAM overflow...</a></span> <span class="sender italic">DeadZen</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak CS: avoiding RAM over...</span> <span class="sender italic">Alexander Sicular</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg17786.html">Re: Riak CS: avoiding RAM overflow...</a></span> <span class="sender italic">Daniel Miller</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak CS: avoiding RAM overflow and OOM killer">
+<input type="hidden" name="msgid" value="2B82F5FF-A4BF-4DDE-A4D0-00817B585DFC@gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17783.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS%5C%3A+avoiding+RAM+overflow+and+OOM+killer%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17782.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17786.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">2B82F5FF-A4BF-4DDE-A4D0-00817B585DFC@gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

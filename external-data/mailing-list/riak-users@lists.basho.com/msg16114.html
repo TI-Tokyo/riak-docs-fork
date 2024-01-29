@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Feedback for GSoC project - RIak Destination for Syslog-ng</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16114" id="c">
+<link rel="index" href="maillist.html#16114" id="i">
+<link rel="prev" href="msg16111.html" id="p">
+<link rel="next" href="msg16094.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16114.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Feedback+for+GSoC+project+%5C-+RIak+Destination+for+Syslog%5C-ng%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Feedback for GSoC project - RIak Destination for Syslog-ng</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Gergely+Nagy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Gergely Nagy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150506" rel="nofollow">Wed, 06 May 2015 06:00:08 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi!
+
+I'm the mentor for the Riak destination for syslog-ng project, please
+allow me to answer the questions below:</pre><pre>
+
+&gt;&gt;&gt;&gt;&gt; &quot;Fred&quot; == Fred Dushin &lt;fdus...@basho.com&gt; writes:
+
+    Fred&gt; As far as I understand, you're talking about a mapping from keys to
+    Fred&gt; sets, but I'm unclear on a few things.
+
+The idea is to map a set of log messages to a Riak Set. Where both the
+key used for the set, and its contents are configurable by the
+user. There are no plans for a default at this time.
+
+There are many ways to configure a syslog-ng=&gt;Riak setup with a
+destination like the one planned. One is to turn each log message (after
+parsing) to a Riak Map, and push those maps into a Riak Set. Another way
+is to format the parsed log messages (with all the extracted fiels, if
+any) into JSON, and push those into a set.
+
+So, for example, given the following syslog line:
+
+May  6 14:42:18 eowyn avahi-daemon[27812]: Invalid response packet from host 
+fe80::5d0f:d53a:7b6:3680.
+
+We'd end up with a JSON like this:
+
+{&quot;timestamp&quot;: &quot;2015-05-06T14:42:18+02:00&quot;,
+ &quot;host&quot;: &quot;eowyn&quot;,
+ &quot;program&quot;: &quot;avahi-daemon&quot;,
+ &quot;pid&quot;: 27812,
+ &quot;message&quot;: &quot;Invalid response packet from host fe80::5d0f:d53a:7b6:3680.&quot;,
+ &quot;avahi-daemon&quot;: {
+   &quot;type&quot;: &quot;warning&quot;,
+   &quot;message&quot;: &quot;Invalid response packet&quot;,
+   &quot;host&quot;: &quot;fe80::5d0f:d53a:7b6:3680&quot;
+ }
+}
+
+We could either add that to a Riak set as-is, or turn it into a Riak map
+first.
+
+    Fred&gt; What are the keys you are thinking about? Time stamps? If
+    Fred&gt; timestamps, these are presumably the timestamps of the syslog
+    Fred&gt; event?
+
+Whatever the user configures. They may be time stamps (rounded, for
+predictable keys), or a combination of program name + current date (day
+granuality).
+
+    Fred&gt; Just a word of warning, if so. You might find a lot of
+    Fred&gt; variation in timestamp formats and granularity. Perhaps you
+    Fred&gt; can get something reliable out of syslog-ng,
+
+We get something sensible out of syslog-ng. But in the end, it is up to
+the user to configure the template used for keys. There may - and
+probably will - be examples, but no default.
+
+    Fred&gt; but that won't help you in the case where syslog-ng is
+    Fred&gt; functioning as a syslog relay, and you want to preserve the
+    Fred&gt; timestamp of the originator, which you should, if you want to
+    Fred&gt; preserve integrity of the logs (e.g, for compliance).
+
+In case of syslog-ng, we actually have access to a few kinds of
+timestamps: the timestamp from the log message (if any), the timestamp
+of receipt, and the current time. The granularity of timestamps is
+configurable to some extent.
+
+    Fred&gt; Or are you talking about a key being a (course grained)
+    Fred&gt; timestamp, say, an integral value in UTC seconds, for example?
+    Fred&gt; And the value(s) being all logs in that interval? Is that your
+    Fred&gt; motivation for sets?
+
+That's one way, yes. One could also use something like
+$PROGRAM/$YEAR-$MONTH-$DAY as key, if the program doesn't produce more
+than a megabyte of logs a day. So with the example above, our key in
+case of that log would be avahi-daemon/2015-05-06, and the message would
+be an element of the set underneath the key.
+
+    Fred&gt; How much of the syslog payload are you planning to parse?
+
+The destination itself is not going to do any parsing. Other parts of
+syslog-ng do that, and it is up to the user to set up a pipeline that
+feeds the destination. The source may be syslog, HTTP logs, the Journal,
+or any of the other sources syslog-ng supports. How much parsing is
+done, and what gets extracted, is no concern to the destination plugin.
+
+    Fred&gt; Another interesting problem is that the STRUCTURED-DATA element of
+    Fred&gt; 5424 uses OIDs to discriminate different data types that are encoded
+    Fred&gt; in the header. And while there is a kind of loosely coupled authority
+    Fred&gt; for OIDs, there is no infrastructure for determining a parsing
+    Fred&gt; strategy for these fields. They could really be anything, in the worst
+    Fred&gt; case.
+
+As far as I remember, syslog-ng treats all STRUCTURED-DATA elements as
+strings. But there are tools within syslog-ng to allow converting to
+other data types, but that must be done explicitly.
+
+    Fred&gt; But regardless of the deeply structured data, you could get some very
+    Fred&gt; interesting traction by just taking standard headers and indexing them
+    Fred&gt; through Yokozuna. Certainly, indexing the body of a syslog message is
+    Fred&gt; a great idea, as these messages are generally unstructured and fodder
+    Fred&gt; for lucene. This is something that Logstash/ElasticSearch can do
+    Fred&gt; pretty effectively today, and it would be cool to see the same in Riak
+    Fred&gt; + some syslog provider.
+
+Yep! When I proposed the idea, using Yokozuna is something I had in
+mind. Combine the parsing abilities of syslog-ng, Riak for archival
+purposes, and Yokozuna for searching. That sounds like a match made in heaven.
+
+    Fred&gt; Finally, it would be really nice if you could structure your plugin in
+    Fred&gt; such a way that they could eventually be ported to rsyslog [2]. The
+    Fred&gt; rsyslogd daemon is deployed by default on certain Linux favors and
+    Fred&gt; enjoys fairly widespread distribution. You might be able to get it
+    Fred&gt; supported in that community, as well.
+
+Part of the project is writing a small library to send data to Riak,
+From C. Just enough for syslog-ng's needs. That library could be used by
+rsyslog, too (like the MongoDB library originally written for
+syslog-ng's purposes is used by rsyslog too). But sharing more code than
+that is not practical, the two daemons work in widely different ways.
+
+-- 
+|8]
+</pre>
+<p><strong><a href="msg16114/signature.asc" ><img src="../attachment.png" alt="Attachment:" width=27 height=28></a>
+<a href="msg16114/signature.asc" >signature.asc</a></strong><br>
+<em>Description:</em> PGP signature</p>
+<pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16111.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16114">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16114">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16094.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16093.html">Feedback for GSoC project - RIak Destination for Sy...</a></span> <span class="sender italic">Parth Oberoi</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16096.html">Re: Feedback for GSoC project - RIak Destinati...</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16107.html">Re: Feedback for GSoC project - RIak Desti...</a></span> <span class="sender italic">Gergely Nagy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16109.html">Re: Feedback for GSoC project - RIak D...</a></span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16110.html">Re: Feedback for GSoC project - RI...</a></span> <span class="sender italic">Gergely Nagy</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16111.html">Re: Feedback for GSoC project - RI...</a></span> <span class="sender italic">Fred Dushin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Feedback for GSoC project...</span> <span class="sender italic">Gergely Nagy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Feedback for GSoC project - RIak Destination for Syslog-ng">
+<input type="hidden" name="msgid" value="877fslaml0.fsf@madhouse-project.org">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16114.html">
+<input type="submit" value=" Gergely Nagy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Feedback+for+GSoC+project+%5C-+RIak+Destination+for+Syslog%5C-ng%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16111.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16094.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">877fslaml0.fsf@madhouse-project.org</li>
+</ul>
+</div>
+</body>
+</html>

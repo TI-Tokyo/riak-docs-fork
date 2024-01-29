@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: WARNING: Not all replicas will be on distinct nodes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18498" id="c">
+<link rel="index" href="maillist.html#18498" id="i">
+<link rel="prev" href="msg18495.html" id="p">
+<link rel="next" href="msg18499.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18498.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+WARNING%5C%3A+Not+all+replicas+will+be+on+distinct+nodes%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: WARNING: Not all replicas will be on distinct nodes</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Daniel+Miller%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Daniel Miller</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20171214" rel="nofollow">Thu, 14 Dec 2017 15:06:02 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Thank you, Martin! With that information plus output of `riak-admin cluster
+partitions --node=...` I was able to determine which nodes have
+preflist/replica problems.</pre><pre>
+
+Two nodes in my cluster appear to have problems. Here are the partition
+mappings prior to adding the 7th node. I think things will improve after
+the 7th node (riak29) has joined the cluster (more on that below).
+
+Partitions owned by 'riak@riak20.internal':
++---------+-------------------------------------------------+---+
+|  type   |                      index                      |id |
++---------+-------------------------------------------------+---+
+| primary |                        0                        | 0 |
+| primary | 68507889249886074290797726533575766546371837952 | 6 |
+| primary |137015778499772148581595453067151533092743675904 |12 |
+...
+| primary |1370157784997721485815954530671515330927436759040|120|
+| primary |1438665674247607560106752257205091097473808596992|126|
+|secondary|                       --                        |-- |
+| stopped |                       --                        |-- |
++---------+-------------------------------------------------+---+
+
+Partitions owned by 'riak@riak21.internal':
++---------+-------------------------------------------------+---+
+|  type   |                      index                      |id |
++---------+-------------------------------------------------+---+
+| primary | 11417981541647679048466287755595961091061972992 | 1 |
+| primary | 79925870791533753339264014289171727637433810944 | 7 |
+...
+| primary |1381575766539369164864420818427111292018498732032|121|
+| primary |1450083655789255239155218544960687058564870569984|127|
+|secondary|                       --                        |-- |
+| stopped |                       --                        |-- |
++---------+-------------------------------------------------+---+
+
+Partitions owned by 'riak@riak29.internal':
++---------+-------------------------------------------------+---+
+|  type   |                      index                      |id |
++---------+-------------------------------------------------+---+
+| primary |                       --                        |-- |
+|secondary| 22835963083295358096932575511191922182123945984 | 2 |
+|secondary| 68507889249886074290797726533575766546371837952 | 6 |
+...
+|secondary|765004763290394496247241279624929393101152190464 |67 |
+|secondary|1438665674247607560106752257205091097473808596992|126|
+| stopped |                       --                        |-- |
++---------+-------------------------------------------------+---+
+
+
+Here's my understanding of how the preflists work:
+riak20 has vnode 126 -&gt; preflist: 126, 127, 0 -&gt; (riak20, riak21, riak20)
+two distinct nodes = bad
+riak21 has vnode 127 -&gt; preflist: 127, 0, 1 -&gt; (riak21, riak20, riak21) two
+distinct nodes = bad
+
+After adding one new node I believe the problem on riak20 will go away
+because riak29 will become the new primary for 126, so the new preflist
+will be
+
+riak29: vnode 126 -&gt; preflist: 126, 127, 0 -&gt; (riak29, riak21, riak20)
+three distinct nodes = good
+
+However, vnodes 1 and 127 will remain on riak21, so that's still a problem.
+Hopefully adding another node to the cluster will resolve that issue. If
+that does not do it I'll try switching to claim v3.
+
+If my logic is correct, then you are also correct: it appears this problem
+has been present since a previous cluster transition. I reviewed the logs
+from the previous transition and I did not get &quot;WARNING: Not all replicas
+will be on distinct nodes&quot; after the final set of transfers, which
+incidentally involved riak21 (although it did appear earlier in the plan).
+Is it true that if that warning appears anywhere in the plan then it's a
+bad plan?
+
+Thank you again for the quick response!
+Daniel
+
+
+On Thu, Dec 14, 2017 at 4:27 PM, Martin Sumner &lt;
+martin.sum...@infinityworks.com&gt; wrote:
+
+&gt; Daniel,
+&gt;
+&gt; See this post (<a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists">http://lists.basho.com/pipermail/riak-users_lists</a>.
+&gt; basho.com/2017-August/019488.html) and the links in it for some more
+&gt; details on issues with the core claim algorithm.  The fix is in the pending
+&gt; release 2.2.5 which Russell is adding the finishing touches to at the
+&gt; moment.
+&gt;
+&gt; However, the fix may not immediately resolve your problem - the fix is
+&gt; about preventing this situation, not necessarily about resolving it once it
+&gt; has been created.  Also the issue we saw that would lead to this, would not
+&gt; (I think) be triggered by adding a single node - unless the cluster already
+&gt; had the problem.  So it is possible, although you are seeing the warning
+&gt; now, you had the issue when your originally created the cluster, and the
+&gt; change is just persisting the issue.  For instance going from nothing
+&gt; straight to a 6-node with a ring-size of 128 would create this problem.
+&gt;
+&gt; As a workaround there is the core claim v3 algorithm which can be turned
+&gt; on, and you can see if this offers a better cluster plan without
+&gt; violations.  I can't right now remember how to trigger v3 claim algorithm
+&gt; though - google letting me down.
+&gt;
+&gt; Ultimately, this may not be such a crisis.  The error is through whenever
+&gt; the cluster cannot guarantee a &quot;target_n_val&quot; of 4.  So if you have an
+&gt; n_val of 3 - you're not necessarily at risk of data loss.    To know you
+&gt; will have to look at your ring via riak attach (see bullet point 2 in
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.3/using/running-a-clust">http://docs.basho.com/riak/kv/2.2.3/using/running-a-clust</a>
+&gt; er/#add-a-second-node-to-your-cluster).
+&gt;
+&gt; If you can figure out the violations from your ring, you may be able to
+&gt; resolve by leaving the node that has the violations, and then re-adding it.
+&gt;
+&gt; Sorry, I'm a bit rushed - but I hope this helps get you started.
+&gt;
+&gt; Martin
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; On 14 December 2017 at 19:49, Daniel Miller &lt;dmil...@dimagi.com&gt; wrote:
+&gt;
+&gt;&gt; I have a 6 node cluster (now 7) with ring size 128. On adding the most
+&gt;&gt; recent node I got the WARNING: Not all replicas will be on distinct nodes.
+&gt;&gt; After the initial plan I ran the following sequence many times, but always
+&gt;&gt; got the same plan output:
+&gt;&gt;
+&gt;&gt; sudo riak-admin cluster clear &amp;&amp; \
+&gt;&gt; sleep 10 &amp;&amp; \
+&gt;&gt; sudo service riak start &amp;&amp; \
+&gt;&gt; sudo riak-admin wait-for-service riak_kv &amp;&amp; \
+&gt;&gt; sudo riak-admin cluster join riak@hqriak20.internal &amp;&amp; \
+&gt;&gt; sudo riak-admin cluster plan
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; The plan looked the same every time, and I eventually committed it
+&gt;&gt; because the cluster capacity is running low:
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; Success: staged join request for 'riak@riak29.internal' to
+&gt;&gt; 'riak@riak20.internal'
+&gt;&gt; =============================== Staged Changes
+&gt;&gt; ================================
+&gt;&gt; Action         Details(s)
+&gt;&gt; ------------------------------------------------------------
+&gt;&gt; -------------------
+&gt;&gt; join           'riak@riak29.internal'
+&gt;&gt; ------------------------------------------------------------
+&gt;&gt; -------------------
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; NOTE: Applying these changes will result in 1 cluster transition
+&gt;&gt;
+&gt;&gt; ############################################################
+&gt;&gt; ###################
+&gt;&gt;                          After cluster transition 1/1
+&gt;&gt; ############################################################
+&gt;&gt; ###################
+&gt;&gt;
+&gt;&gt; ================================= Membership
+&gt;&gt; ==================================
+&gt;&gt; Status     Ring    Pending    Node
+&gt;&gt; ------------------------------------------------------------
+&gt;&gt; -------------------
+&gt;&gt; valid      17.2%     14.1%    'riak@riak20.internal'
+&gt;&gt; valid      17.2%     14.8%    'riak@riak21.internal'
+&gt;&gt; valid      16.4%     14.1%    'riak@riak22.internal'
+&gt;&gt; valid      16.4%     14.1%    'riak@riak23.internal'
+&gt;&gt; valid      16.4%     14.1%    'riak@riak24.internal'
+&gt;&gt; valid      16.4%     14.8%    'riak@riak28.internal'
+&gt;&gt; valid       0.0%     14.1%    'riak@riak29.internal'
+&gt;&gt; ------------------------------------------------------------
+&gt;&gt; -------------------
+&gt;&gt; Valid:7 / Leaving:0 / Exiting:0 / Joining:0 / Down:0
+&gt;&gt;
+&gt;&gt; WARNING: Not all replicas will be on distinct nodes
+&gt;&gt;
+&gt;&gt; Transfers resulting from cluster changes: 18
+&gt;&gt;   2 transfers from 'riak@riak28.internal' to 'riak@riak29.internal'
+&gt;&gt;   3 transfers from 'riak@riak21.internal' to 'riak@riak29.internal'
+&gt;&gt;   3 transfers from 'riak@riak23.internal' to 'riak@riak29.internal'
+&gt;&gt;   3 transfers from 'riak@riak24.internal' to 'riak@riak29.internal'
+&gt;&gt;   4 transfers from 'riak@riak20.internal' to 'riak@riak29.internal'
+&gt;&gt;   3 transfers from 'riak@riak22.internal' to 'riak@riak29.internal'
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; My understanding is that if some replicas are not on distinct nodes then
+&gt;&gt; I may have permanent data loss if a single physical node is lost (please
+&gt;&gt; let me know if that is not correct). Questions:
+&gt;&gt;
+&gt;&gt; How do I diagnose which node(s) have duplicate replicas?
+&gt;&gt; What can I do to fix this situation?
+&gt;&gt;
+&gt;&gt; Thanks!
+&gt;&gt; Daniel
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; P.S. I am unable to get anything useful out of `riak-admin diag`. It
+&gt;&gt; appears to be broken on the version of Riak I'm using (2.2.1). Here's the
+&gt;&gt; output I get:
+&gt;&gt;
+&gt;&gt; $ sudo riak-admin diag
+&gt;&gt; RPC to 'riak@hqriak20.internal' failed: {'EXIT',
+&gt;&gt;                                                            {undef,
+&gt;&gt;                                                             [{lager,
+&gt;&gt;
+&gt;&gt; get_loglevels,
+&gt;&gt;                                                               [],[]},
+&gt;&gt;
+&gt;&gt; {riaknostic,run,
+&gt;&gt;                                                               1,
+&gt;&gt;                                                               [{file,
+&gt;&gt;
+&gt;&gt; &quot;src/riaknostic.erl&quot;},
+&gt;&gt;
+&gt;&gt; {line,118}]},
+&gt;&gt;                                                              {rpc,
+&gt;&gt;
+&gt;&gt; '-handle_call_call/6-fun-0-',
+&gt;&gt;                                                               5,
+&gt;&gt;                                                               [{file,
+&gt;&gt;
+&gt;&gt; &quot;rpc.erl&quot;},
+&gt;&gt;
+&gt;&gt; {line,205}]}]}}
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;&gt;
+&gt;
+&gt; ***** Email confidentiality notice *****
+&gt; This message is private and confidential.  If you have received this
+&gt; message in error, please let us know and remove it from your system.
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18495.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18498">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18498">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18499.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18494.html">WARNING: Not all replicas will be on distinct nodes</a></span> <span class="sender italic">Daniel Miller</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18495.html">Re: WARNING: Not all replicas will be on distinct nodes</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: WARNING: Not all replicas will be on distinct n...</span> <span class="sender italic">Daniel Miller</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18499.html">Re: WARNING: Not all replicas will be on distin...</a></span> <span class="sender italic">Martin Sumner</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: WARNING: Not all replicas will be on distinct nodes">
+<input type="hidden" name="msgid" value="CADigEi5QYKnMoMDNUNm0-TvAHJWo9KCii=adqypRTRWpJQhvgw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18498.html">
+<input type="submit" value=" Daniel Miller ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+WARNING%5C%3A+Not+all+replicas+will+be+on+distinct+nodes%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18495.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18499.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CADigEi5QYKnMoMDNUNm0-TvAHJWo9KCii=adqypRTRWpJQhvgw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

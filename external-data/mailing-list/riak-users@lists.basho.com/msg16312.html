@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>fresh riak 2.1.1 install systematically slowing down and crashing in ~1day</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16312" id="c">
+<link rel="index" href="maillist.html#16312" id="i">
+<link rel="prev" href="msg16311.html" id="p">
+<link rel="next" href="msg16314.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16312.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22fresh+riak+2.1.1+install+systematically+slowing+down+and+crashing+in+%5C%7E1day%22&amp;o=newest" rel="nofollow"><span itemprop="name">fresh riak 2.1.1 install systematically slowing down and crashing in ~1day</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22%E3%82%B8%E3%83%A7%E3%83%8F%E3%83%B3%E3%82%AC%E3%83%AB%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">ジョハンガル</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150727" rel="nofollow">Mon, 27 Jul 2015 03:01:01 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hello,
+
+I would really appreciate help about our authentication problem.</pre><pre>
+
+We
+ have developed an orchestration platform for internal cloud needs using
+ RIAK KV 2.1.1 (our first deployment of the technology).
+Up to now we
+ were only using raw HTTP but for security purposes we have been 
+switching to TLS v1.2 with Protocol Buffer clients (standard riak java 
+client).
+
+At first everything works smoothly.
+
+Then 
+eventually (a few hours), with a load of about 10-15 authentications by 
+second our cluster CPU usage starts to slowly ramp up to saturation 
+until the the data-store turns unresponsive. (Since we cannot 
+authenticate there are no other requests). 
+ 
+Our cluster is
+ currently composed of 2 24 cores xeon machines with 64GB of RAM each, 
+and bonded 2b1Gbps NICS. Running on standard updated Centos6.6. RAM 
+consumption doesn't go over 10%.
+We are currently storing a few megabytes of data at most.
+
+At first:
+curl -vvv -u **:** <a  rel="nofollow" href="https://****">https://****</a>
+will
+ do the 2 first steps of SSL authentication, CLIENT HELLO and SERVER 
+HELLO and the 3rd message (client receiving CERTIFICATE from server will
+ get slower and slower and slower).
+Then the ssl handshake in the riak java client will simply timeout.
+
+Reading the logs and combining with:
+<a  rel="nofollow" href="https://github.com/basho/riak_api/blob/develop/src/riak_api_pb_server.erl">https://github.com/basho/riak_api/blob/develop/src/riak_api_pb_server.erl</a>
+tells
+ me than ssl:ssl_accept never returns (well, it eventually returns with 
+Reason as the atom closed, seemingly the client timeout-ing and closing 
+the connection).
+ 
+supervisor:which_children(whereis(riak_api_pb_sup)) gives me a count of ~7000 
+processes.
+etop refuses to start.
+ 
+Have you experienced anything similar?
+
+As for our riak.conf configuration:
+## Acceptable values:
+##   - an integer
+erlang.async_threads = 64
+ring_size = 32
+.. ssl things setup ..
+storage_backend = multi
+###
+multi_backend.default = bitcask_99
+### 1h - ephemeral - no safety
+multi_backend.bitcask_1h.storage_backend = bitcask
+multi_backend.bitcask_1h.bitcask.expiry = 1h
+multi_backend.bitcask_1h.bitcask.expiry.grace_time = 1h
+multi_backend.bitcask_1h.bitcask.data_root = $(platform_data_dir)/bitcask_1h
+multi_backend.bitcask_1h.bitcask.max_file_size = 2GB
+multi_backend.bitcask_1h.bitcask.merge.thresholds.fragmentation = 99
+### 3d - ephemeral - a weekend to restart data generator before auto expiry
+multi_backend.bitcask_3d.storage_backend = bitcask
+multi_backend.bitcask_3d.bitcask.expiry = 3d
+multi_backend.bitcask_3d.bitcask.expiry.grace_time = 1h
+multi_backend.bitcask_3d.bitcask.data_root = $(platform_data_dir)/bitcask_3d
+multi_backend.bitcask_3d.bitcask.max_file_size = 2GB
+multi_backend.bitcask_3d.bitcask.merge.thresholds.fragmentation = 99
+### 3m - long term logs
+multi_backend.bitcask_3m.storage_backend = bitcask
+multi_backend.bitcask_3m.bitcask.expiry = 3m
+multi_backend.bitcask_3m.bitcask.expiry.grace_time = 1h
+multi_backend.bitcask_3m.bitcask.data_root = $(platform_data_dir)/bitcask_3m
+multi_backend.bitcask_3m.bitcask.max_file_size = 2GB
+multi_backend.bitcask_3m.bitcask.merge.thresholds.fragmentation = 45
+### persistent - low amount of data
+multi_backend.bitcask_99.storage_backend = bitcask
+multi_backend.bitcask_99.bitcask.expiry = off
+multi_backend.bitcask_99.bitcask.data_root = $(platform_data_dir)/bitcask_99
+multi_backend.bitcask_99.bitcask.max_file_size = 128MB
+multi_backend.bitcask_99.bitcask.merge.thresholds.fragmentation = 20
+
+### SECURITY RELATED CUSTOM CONF ###
+
+tls_protocols.sslv3 = off
+tls_protocols.tlsv1 = off
+tls_protocols.tlsv1.1 = on
+tls_protocols.tlsv1.2 = on
+
+secure_referer_check = on
+
+honor_cipher_order = on
+-----------------------------------------
+riak-admin
+ security ciphers 
+ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA256:ECDH-RSA-AES256-SHA384:ECDH-ECDSA-AES256-SHA384:AES256-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:DHE-RSA-AES128-SHA256:DHE-DSS-AES128-SHA256:ECDH-RSA-AES128-SHA256:ECDH-ECDSA-AES128-SHA256:AES128-SHA256
+ 
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16311.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16312">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16312">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16314.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">fresh riak 2.1.1 install systematically slowing down an...</span> <span class="sender italic">ジョハンガル</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16314.html">Re: fresh riak 2.1.1 install systematically slowin...</a></span> <span class="sender italic">Ted Burghart</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16315.html">Re: fresh riak 2.1.1 install systematically slowin...</a></span> <span class="sender italic">Nick Marino</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16318.html">Re: fresh riak 2.1.1 install systematically sl...</a></span> <span class="sender italic">Nick Marino</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16320.html">Re: fresh riak 2.1.1 install systematicall...</a></span> <span class="sender italic">ジョハンガル</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="fresh riak 2.1.1 install systematically slowing down and crashing in ~1day">
+<input type="hidden" name="msgid" value="1f944b988b623f61644f4a35fc7eb66@cweb03.nmdf.nhnsystem.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16312.html">
+<input type="submit" value=" ジョハンガル ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22fresh+riak+2.1.1+install+systematically+slowing+down+and+crashing+in+%5C%7E1day%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16311.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16314.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1f944b988b623f61644f4a35fc7eb66@cweb03.nmdf.nhnsystem.com</li>
+</ul>
+</div>
+</body>
+</html>

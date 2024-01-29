@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: RiakTS Query Question</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18108" id="c">
+<link rel="index" href="maillist.html#18108" id="i">
+<link rel="prev" href="msg18107.html" id="p">
+<link rel="next" href="msg18110.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18108.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RiakTS+Query+Question%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: RiakTS Query Question</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Andrei+Zavada%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Andrei Zavada</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170329" rel="nofollow">Wed, 29 Mar 2017 13:16:04 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Joe,
+
+TS records in a given table all have the same structure and are stored
+and retrieved as single objects (in Riak KV sense); the backend cannot
+introspect them and only extract some fields.</pre><pre>
+
+Full records are read from backend and these are delivered, in chunks,
+to the coordinator node (the node your client has connected to). On
+receipt, columns not appearing in the SELECT clause are dropped; thus,
+only the relevant columns are kept while the coordinator collects the
+remaining chunks. From there, records are shipped to the client (via
+temp tables if the query had an ORDER BY or LIMIT clause).
+
+So no, the 1M blobs will be read from the leveldb backend, and they
+will hog the bandwidth between storage and coordinator nodes. They
+will not appear in the traffic going from the coordinator to the
+client, though.
+
+Andrei
+
+On Wed, Mar 29, 2017 at 10:17 PM, Alexander Sicular &lt;sicul...@gmail.com&gt; wrote:
+&gt; I'm not 100% certain but I do not believe that is the case. Part of the
+&gt; reason for structured data is efficient retrieval. I believe the data is
+&gt; read but only the data selected leaves the leveldb backend, unselected data
+&gt; never leaves leveldb so there's no overhead when passing data from level to
+&gt; Riak or on the network.
+&gt;
+&gt; I defer to the engineering folks working on TS tho.
+&gt;
+&gt; -Alexander
+&gt;
+&gt; @siculars
+&gt; <a  rel="nofollow" href="http://siculars.posthaven.com">http://siculars.posthaven.com</a>
+&gt;
+&gt; Sent from my iRotaryPhone
+&gt;
+&gt; On Mar 29, 2017, at 15:08, Joe Olson &lt;jo4...@outlook.com&gt; wrote:
+&gt;
+&gt; Suppose I have the following table in RiakTS:
+&gt;
+&gt;
+&gt; CREATE TABLE T1 (
+&gt;
+&gt; id                VARCHAR NOT NULL,
+&gt;
+&gt; eventtime TIMESTAMP NOT NULL,
+&gt;
+&gt; field2         SINT64,
+&gt;
+&gt; data           BLOB NOT NULL,
+&gt;
+&gt; primary key (id, QUANTUM(eventtime, 365, 'd')),id)
+&gt;
+&gt; )
+&gt;
+&gt;
+&gt; Assume the BLOB field is close to the max size for a RiakTS BLOB value
+&gt; (~1MB)
+&gt;
+&gt;
+&gt; Suppose I want to execute the following query:
+&gt;
+&gt;
+&gt; Select id, eventtime, field2 from T1 where ((id = ID1) and (eventtime &gt;= T1
+&gt; and eventtime &lt; T2))
+&gt;
+&gt;
+&gt; I only want the SINT64 field, not the 1MB BLOB.
+&gt;
+&gt;
+&gt; Am I paying for the bandwidth for the RiakTS cluster to pass around
+&gt; (internally) the 1MB BLOB field just to get the SINT64 field?
+&gt;
+&gt;
+&gt; If so, is there a way to avoid this, besides creating a second table without
+&gt; the BLOB field?
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18107.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18108">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18108">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18110.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18106.html">RiakTS Query Question</a></span> <span class="sender italic">Joe Olson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18107.html">Re: RiakTS Query Question</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: RiakTS Query Question</span> <span class="sender italic">Andrei Zavada</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18110.html">Re: RiakTS Query Question</a></span> <span class="sender italic">Joe Olson</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18112.html">Re: RiakTS Query Question</a></span> <span class="sender italic">Andrei Zavada</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: RiakTS Query Question">
+<input type="hidden" name="msgid" value="CANkxB92-u_AqeWP0=j-WP4bLfasrdOX8-Wo9h+W7FBNWFFKznA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18108.html">
+<input type="submit" value=" Andrei Zavada ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+RiakTS+Query+Question%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18107.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18110.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANkxB92-u_AqeWP0=j-WP4bLfasrdOX8-Wo9h+W7FBNWFFKznA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

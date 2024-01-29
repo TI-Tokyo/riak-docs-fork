@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Node Recovery Questions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18566" id="c">
+<link rel="index" href="maillist.html#18566" id="i">
+<link rel="prev" href="msg18565.html" id="p">
+<link rel="next" href="msg18567.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18566.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Node+Recovery+Questions%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Node Recovery Questions</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22sean+mcevoy%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">sean mcevoy</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20180914" rel="nofollow">Fri, 14 Sep 2018 08:32:28 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Martin, List,
+
+Just an update to let ye know how things went and what we learned.</pre><pre>
+
+We did the force-replace procedure to bring the new node into the cluster
+in place of the old one. I attached to the riak erlang shell and with a
+little hacking was able to get all the bitcask handles and then do a
+bitcask:fold/3 to count keys. This showed that only a small percentage of
+all keys were present on the new node, even after the handoffs and
+transfers had completed.
+
+Following the instructions at the bottom of this page:
+<a  rel="nofollow" href="https://docs.basho.com/riak/kv/2.2.0/using/repair-recovery/repairs/">https://docs.basho.com/riak/kv/2.2.0/using/repair-recovery/repairs/</a>
+I attached to the erlang shell again and ran these commands (replacing the
+IP with our actual IP) to force repairs on all vnodes:
+
+{ok, Ring} = riak_core_ring_manager:get_my_ring().
+Partitions = [P || {P, 'dev1@127.0.0.1'} &lt;-
+riak_core_ring:all_owners(Ring)].
+[riak_kv_vnode:repair(P) || P &lt;- Partitions].
+
+The progress was most easily monitored with: riak-admin handoff summary
+and once complete the new node had the expected number of keys.
+
+Counting the keys is more than a bit hacky and occasionally caused a seg
+fault if there was background traffic, so I don't recommend it in general.
+But it did allow us to verify where the data was in our test env and then
+we could trust the procedure without counting keys in production.
+Monitoring the size of the bitcask directory is a lot lower resolution but
+it is at least safe, the results were similar in test &amp; production so it
+was sufficient to verify the above procedure.
+
+So in short, when replacing a node the force-replace procedure doesn't
+actually cause data to be synched to the new node. The above erlang shell
+commands do force a sync.
+
+Thanks for the support!
+//Sean.
+
+On Thu, Aug 9, 2018 at 11:25 PM sean mcevoy &lt;sean.mce...@gmail.com&gt; wrote:
+
+&gt; Hi Martin,
+&gt; Thanks for taking the time.
+&gt; Yes, by &quot;size of the bitcask directory&quot; I mean I did a &quot;du -h
+&gt; --max-depth=1 bitcask&quot;, so I think that would cover all the vnodes. We
+&gt; don't use any other backends.
+&gt; Those answers are helpful, will get back to this in a few days and see
+&gt; what I can determine about where our data physically lies. Might have more
+&gt; questions then.
+&gt; Cheers,
+&gt; //Sean.
+&gt;
+&gt; On Wed, Aug 8, 2018 at 6:05 PM, Martin Sumner &lt;martin.sum...@adaptip.co.uk
+&gt; &gt; wrote:
+&gt;
+&gt;&gt; Based on a quick read of the code, compaction in bitcask is performed
+&gt;&gt; only on &quot;readable&quot; files, and the current active file for writing is
+&gt;&gt; excluded from that list.  With default settings, that active file can grow
+&gt;&gt; to 2GB.  So it is possible that if objects had been replaced/deleted many
+&gt;&gt; times within the active file, that space will not be recovered if all the
+&gt;&gt; replacements amount to &lt; 2GB per vnode.  So at these small data sizes - you
+&gt;&gt; may get a relatively significant discrepancy between an old and recovered
+&gt;&gt; node in terms of disk space usage.
+&gt;&gt;
+&gt;&gt; On 8 August 2018 at 17:37, Martin Sumner &lt;martin.sum...@adaptip.co.uk&gt;
+&gt;&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Sean,
+&gt;&gt;&gt;
+&gt;&gt;&gt; Some partial answers to your questions.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I don't believe force-replace itself will sync anything up - it just
+&gt;&gt;&gt; reassigns ownership (hence handoff happens very quickly).
+&gt;&gt;&gt;
+&gt;&gt;&gt; Read repair would synchronise a portion of the data.  So if 10% of you
+&gt;&gt;&gt; data is read regularly, this might explain some of what you see.
+&gt;&gt;&gt;
+&gt;&gt;&gt; AAE should also repair your data.  But if nothing has happened for 4
+&gt;&gt;&gt; days, then that doesn't seem to be the case.  It would be worth checking
+&gt;&gt;&gt; the aae-status page (
+&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.3/using/admin/riak-admin/#aae-status">http://docs.basho.com/riak/kv/2.2.3/using/admin/riak-admin/#aae-status</a>)
+&gt;&gt;&gt; to confirm things are happening.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I don't know if there are any minimum levels of data before bitcask will
+&gt;&gt;&gt; perform compaction.  There's nothing obvious in the code that wouldn't be
+&gt;&gt;&gt; triggered way before 90%.  I don't know if it will merge on the active file
+&gt;&gt;&gt; (the one currently being written to), but that is 2GB max size (configured
+&gt;&gt;&gt; through bitcask.max_file_size).
+&gt;&gt;&gt;
+&gt;&gt;&gt; When you say the size of the bitcask directory - is this the size shared
+&gt;&gt;&gt; across all vnodes on the node?  I guess if each vnode has a single file
+&gt;&gt;&gt; &lt;2GB, and there are multiple vnodes - something unexpected might happen
+&gt;&gt;&gt; here?  If bitcask does indeed not merge the file active for writing.
+&gt;&gt;&gt;
+&gt;&gt;&gt; In terms of distribution around the cluster, if you have an n_val of 3
+&gt;&gt;&gt; you should normally expect to see a relatively even distribution of the
+&gt;&gt;&gt; data on failure (certainly not it all going to one).  Worst case scenario
+&gt;&gt;&gt; is that 3 nodes get all the load from that one failed node.
+&gt;&gt;&gt;
+&gt;&gt;&gt; When a vnode is inaccessible, 3 (assuming n=3) fallback vnodes are
+&gt;&gt;&gt; selected to handle the load for that 1 vnode (as that vnode would normally
+&gt;&gt;&gt; be in 3 preflists, and commonly a different node will be asked to start a
+&gt;&gt;&gt; vnode for each preflist).
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; I will try and dig later into bitcask merge/compaction code, to see if I
+&gt;&gt;&gt; spot anything else.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Martin
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18565.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18566">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18566">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18567.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18562.html">Node Recovery Questions</a></span> <span class="sender italic">sean mcevoy</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18563.html">RE: Node Recovery Questions</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18564.html">Re: Node Recovery Questions</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18565.html">Re: Node Recovery Questions</a></span> <span class="sender italic">sean mcevoy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Node Recovery Questions</span> <span class="sender italic">sean mcevoy</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Node Recovery Questions">
+<input type="hidden" name="msgid" value="CA+2KyrrWNpzuua30yu7agBxg18ysEVERcD=JofuEmA+JMaU-+w@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18566.html">
+<input type="submit" value=" sean mcevoy ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Node+Recovery+Questions%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18565.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18567.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CA+2KyrrWNpzuua30yu7agBxg18ysEVERcD=JofuEmA+JMaU-+w@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

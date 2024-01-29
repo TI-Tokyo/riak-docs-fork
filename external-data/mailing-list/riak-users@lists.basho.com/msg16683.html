@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using Bucket Data Types slowed insert performance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16683" id="c">
+<link rel="index" href="maillist.html#16683" id="i">
+<link rel="prev" href="msg16681.html" id="p">
+<link rel="next" href="msg16693.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16683.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Bucket+Data+Types+slowed+insert+performance%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using Bucket Data Types slowed insert performance</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alex+Moore%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alex Moore</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151020" rel="nofollow">Tue, 20 Oct 2015 20:22:39 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Dennis &amp; Mark,
+
+I noticed some timing code in your snippets:</pre><pre>
+
+ long beforeProcessing = DateTime.Now.Ticks;
+
+Do you have any numbers on what an individual operation for KV vs CRDTs
+looks like on your system? (Mean, percentiles if possible)
+Also, how big are your KV objects?
+
+CRDTs will take extra processing on Riak's side, so I'm wondering if you're
+getting limited by a longer RTT + your 20 threads.  One easy thing to try
+would be to double the thread pool (and connections) and see if that shaves
+off any overall time by overlapping the time we're waiting for Riak to
+respond.
+
+If it doesn't, then we can look in other directions :)
+
+Thanks,
+Alex
+
+
+On Tue, Oct 20, 2015 at 3:25 PM, Dennis Nicolay &lt;dnico...@orcawave.net&gt;
+wrote:
+
+&gt;
+&gt;
+&gt;   ResultObject cdr;
+&gt;
+&gt;                     while (queued.TryDequeue(out cdr))
+&gt;
+&gt;                     {
+&gt;
+&gt;                         long beforeProcessing = DateTime.Now.Ticks;
+&gt;
+&gt;                         UpdateMap.Builder builder = BuildMapObject(bucket,
+&gt; cdr);
+&gt;
+&gt;                         UpdateMap cmd = builder.Build();
+&gt;
+&gt;                         RiakResult rslt = client.Execute(cmd);
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; *private static UpdateMap.Builder BuildMapObject(string bucketname,
+&gt; ResultObject cdr )*
+&gt;
+&gt; *        {*
+&gt;
+&gt;
+&gt;
+&gt; *            var builder = new UpdateMap.Builder()*
+&gt;
+&gt; *               .WithBucketType(&quot;maps&quot;)*
+&gt;
+&gt; *               .WithBucket(bucketname)*
+&gt;
+&gt; *               .WithKey(cdr.CdrKey);       *
+&gt;
+&gt; *            var mapOperation = new UpdateMap.MapOperation();*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;FileTimeStamp&quot;,
+&gt; cdr.CdrValue.FileTimeStamp.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;AuditId&quot;,
+&gt; cdr.CdrValue.AuditId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CdrId&quot;,
+&gt; cdr.CdrValue.CdrId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;IsBillable&quot;,
+&gt; cdr.CdrValue.IsBillable.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SwitchId&quot;,
+&gt; cdr.CdrValue.SwitchId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SwitchDescription&quot;,
+&gt; cdr.CdrValue.SwitchDescription.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SequenceNumber&quot;,
+&gt; cdr.CdrValue.SequenceNumber.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CallDirection&quot;,
+&gt; cdr.CdrValue.CallDirection.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CallTypeId&quot;,
+&gt; cdr.CdrValue.CallTypeId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;Partition&quot;,
+&gt; cdr.CdrValue.Partition.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CustomerTrunkId&quot;,
+&gt; cdr.CdrValue.CustomerTrunkId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;OrigIpAddress&quot;,
+&gt; cdr.CdrValue.OrigIpAddress.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;OrigPort&quot;,
+&gt; cdr.CdrValue.OrigPort.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SupplierTrunkId&quot;,
+&gt; cdr.CdrValue.SupplierTrunkId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;TermIpAddress&quot;,
+&gt; cdr.CdrValue.TermIpAddress.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;TermPort&quot;,
+&gt; cdr.CdrValue.TermPort.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;Ani&quot;, cdr.CdrValue.Ani.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;OutpulseNumber&quot;,
+&gt; cdr.CdrValue.OutpulseNumber.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SubscriberNumber&quot;,
+&gt; cdr.CdrValue.SupplierTrunkId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CallingNoa&quot;,
+&gt; cdr.CdrValue.CallingNoa.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;DialedNoa&quot;,
+&gt; cdr.CdrValue.DialedNoa.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;OutpulseNoa&quot;,
+&gt; cdr.CdrValue.OutpulseNumber.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;TreatmentCode&quot;,
+&gt; cdr.CdrValue.TreatmentCode.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CompletionCode&quot;,
+&gt; cdr.CdrValue.CompletionCode.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CustomerName&quot;,
+&gt; cdr.CdrValue.CustomerName.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CustId&quot;,
+&gt; cdr.CdrValue.CustId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CustContractId&quot;,
+&gt; cdr.CdrValue.CustContractId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CustCountryCode&quot;,
+&gt; cdr.CdrValue.CustCountryCode.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CustDuration&quot;,
+&gt; cdr.CdrValue.CustDuration.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;Price&quot;,
+&gt; cdr.CdrValue.Price.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;BasePrice&quot;,
+&gt; cdr.CdrValue.BasePrice.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;BillingDestinationName&quot;,
+&gt; cdr.CdrValue.BillingDestinationName.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;BillingGroupId&quot;,
+&gt; cdr.CdrValue.BillingGroupId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SupplierName&quot;,
+&gt; cdr.CdrValue.SupplierName.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SuppId&quot;,
+&gt; cdr.CdrValue.SuppId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SuppContractId&quot;,
+&gt; cdr.CdrValue.SuppContractId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SuppCountryCode&quot;,
+&gt; cdr.CdrValue.SuppCountryCode.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SuppDuration&quot;,
+&gt; cdr.CdrValue.SuppDuration.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;Cost&quot;,
+&gt; cdr.CdrValue.Cost.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;BaseCost&quot;,
+&gt; cdr.CdrValue.BaseCost.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;RoutingDestinationName&quot;,
+&gt; cdr.CdrValue.RoutingDestinationName.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;RoutingGroupId&quot;,
+&gt; cdr.CdrValue.RoutingGroupId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;RouteToCountryCode&quot;,
+&gt; cdr.CdrValue.RouteToCountryCode.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;Pdd&quot;, cdr.CdrValue.Pdd.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;RealDuration&quot;,
+&gt; cdr.CdrValue.RealDuration.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;StartTime&quot;,
+&gt; cdr.CdrValue.StartTime.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;EndTime&quot;,
+&gt; cdr.CdrValue.EndTime.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;NumberCalled&quot;,
+&gt; cdr.CdrValue.NumberCalled.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CallingLataOcn&quot;,
+&gt; cdr.CdrValue.CallingLataOcn.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;DialedLataOcn&quot;,
+&gt; cdr.CdrValue.DialedLataOcn.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;LrnLataOcn&quot;,
+&gt; cdr.CdrValue.LrnLataOcn.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;CustomerPrefix&quot;,
+&gt; cdr.CdrValue.CustomerPrefix.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;SupplierPrefix&quot;,
+&gt; cdr.CdrValue.SupplierPrefix.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;OriginationCountryCode&quot;,
+&gt; cdr.CdrValue.OriginationCountryCode.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;OriginationCost&quot;,
+&gt; cdr.CdrValue.OriginationCost.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;FixedPricePerCall&quot;,
+&gt; cdr.CdrValue.FixedPricePerCall.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;FixedCostPerCall&quot;,
+&gt; cdr.CdrValue.FixedCostPerCall.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;InvoiceId&quot;,
+&gt; cdr.CdrValue.InvoiceId.ToString());*
+&gt;
+&gt; *            mapOperation.SetRegister(&quot;BusinessId&quot;,
+&gt; cdr.CdrValue.BusinessId.ToString());*
+&gt;
+&gt;
+&gt;
+&gt; *            builder.WithMapOperation(mapOperation);*
+&gt;
+&gt; *            return builder;*
+&gt;
+&gt; *        }*
+&gt;
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; *From:* Christopher Mancini [<a  rel="nofollow" href="mailto:cmanc...@basho.com">mailto:cmanc...@basho.com</a>]
+&gt; *Sent:* Tuesday, October 20, 2015 11:52 AM
+&gt; *To:* Mark Schmidt; Alexander Sicular; Dennis Nicolay
+&gt; *Cc:* riak-users@lists.basho.com
+&gt;
+&gt; *Subject:* Re: Using Bucket Data Types slowed insert performance
+&gt;
+&gt;
+&gt;
+&gt; Hi Mark / Dennis,
+&gt;
+&gt; Can you provide the snippet of the code that puts a 5k record onto Riak as
+&gt; a map?
+&gt;
+&gt; Chris
+&gt;
+&gt;
+&gt;
+&gt; On Tue, Oct 20, 2015 at 11:30 AM Mark Schmidt &lt;mschm...@orcawave.net&gt;
+&gt; wrote:
+&gt;
+&gt; Hi folks, sorry for the confusion.
+&gt;
+&gt;
+&gt;
+&gt; Our scenario is as follows:
+&gt;
+&gt;
+&gt;
+&gt; We have a 6 node development cluster running on its own network segment
+&gt; using HAProxy to facilitate load-balancing across the nodes. A single
+&gt; Riak-dot-NET client service is performing the insert operations from
+&gt; dedicated hardware located within the same network segment. We have basic
+&gt; network throughput capabilities of 100 Mbit with an average speed
+&gt; achievable of 75 Mbit.
+&gt;
+&gt;
+&gt;
+&gt; The data we are attempting to insert is composed of phone call record
+&gt; receipts from telephone carriers. These records are batched and written to
+&gt; a flat file for incorporation into our reporting engine. 1) Our Riak client
+&gt; process takes a flat file (In this case, a 40MB collection of records, each
+&gt; record being approximately 5k in size) and parses the entire file so each
+&gt; record can be added to a local .NET queue.
+&gt;
+&gt; 2) Once the entire file has been parsed and each record loaded into the
+&gt; local queue, 20 threads are spawned and connections are opened to our Riak
+&gt; nodes via the HAProxy.
+&gt;
+&gt; 3) Each thread will pull a 5k record from the queue on a first come first
+&gt; served basis and perform a put to the Riak environment.
+&gt;
+&gt;
+&gt;
+&gt; When first testing our client insert process, we were pushing the 5K
+&gt; records as whole strings into the Riak environment. Network throughput
+&gt; topped out at around 80 Mbits with a total load time of 90 seconds for 149k
+&gt; records. When the client process was modified (same queuing and de-queuing
+&gt; methods) so that a map datatype bucket would be created and keys stored as
+&gt; registers, we saw network throughput drop to around 10 Mbit with total
+&gt; upload time increase to around 270 seconds for the 149k records.
+&gt;
+&gt;
+&gt;
+&gt; It appears as though we’ve either encountered a potential bottleneck
+&gt; unrelated to network throughput, or we’re just seeing an expected
+&gt; processing penalty for our use of Riak datatypes. Please note, we’re
+&gt; configuring Zabbix so we can monitor disk IO on each node as processor and
+&gt; memory resources don’t appear to be the culprit either.
+&gt;
+&gt;
+&gt;
+&gt; If the reduction in processing speed is a natural consequence to utilizing
+&gt; Riak data types, is the inter-node network the optimum place to increase
+&gt; resources? Our eventual datacenter implementation will support speeds of
+&gt; over 40 Gbit for inter-node communication. We’re just trying to identify
+&gt; which levers from an operational standpoint we can throw to boost
+&gt; performance, or if our client implementation is suspect.
+&gt;
+&gt;
+&gt;
+&gt; You bring up some excellent points regarding our use of CRDTs. In our
+&gt; case, the call data records are mutable as they are subject to changes by
+&gt; phone carriers for billing error corrections, incorrect data and a host of
+&gt; other reasons. We may be better served by treating the records as immutable
+&gt; and performing wide scale record removal and “reprocessing” in the event
+&gt; changes to existing records are received/requested.
+&gt;
+&gt;
+&gt;
+&gt; Thank you,
+&gt;
+&gt;
+&gt;
+&gt; Mark Schmidt
+&gt;
+&gt;
+&gt;
+&gt; *From:* Alexander Sicular [<a  rel="nofollow" href="mailto:sicul...@gmail.com">mailto:sicul...@gmail.com</a>]
+&gt; *Sent:* Tuesday, October 20, 2015 10:55 AM
+&gt; *To:* Dennis Nicolay &lt;dnico...@orcawave.net&gt;
+&gt; *Cc:* Christopher Mancini &lt;cmanc...@basho.com&gt;; riak-users@lists.basho.com;
+&gt; Mark Schmidt &lt;mschm...@orcawave.net&gt;
+&gt;
+&gt;
+&gt; *Subject:* Re: Using Bucket Data Types slowed insert performance
+&gt;
+&gt;
+&gt;
+&gt; Let's talk about Riak data types for a moment. Riak data types are
+&gt; collectively implementations of what academia refer to as CRDT's
+&gt; (convergent or conflict free replicated data types.) The key benefit a CRDT
+&gt; offers, over a traditional KV by contrast, is in automatic conflict
+&gt; resolution. The various CRDT's provided in Riak have specific conflict
+&gt; resolution strategies. This does not come for free. There is a
+&gt; computational cost associated with CRDT's. If your use case requires
+&gt; automated conflict resolution strategies than CRDT's are a good fit.
+&gt; Internally CRDT's rely on vector clocks (see DVV's in the documentation) to
+&gt; resolve conflict.
+&gt;
+&gt;
+&gt;
+&gt; Considering your ETL use case I'm going to presume that your data is
+&gt; immutable (I could very well be wrong here.) If your data is immutable I
+&gt; would consider simply using a KV and not paying the CRDT computational
+&gt; penalty (and possibly even the write once bucket.) The CRDT penalty you pay
+&gt; is obviously subjective to your use case, configuration, hw deployment etc.
+&gt;
+&gt;
+&gt;
+&gt; Hope that helps!
+&gt; -Alexander
+&gt;
+&gt;
+&gt;
+&gt; @siculars
+&gt;
+&gt; <a  rel="nofollow" href="http://siculars.posthaven.com">http://siculars.posthaven.com</a>
+&gt;
+&gt;
+&gt;
+&gt; Sent from my iRotaryPhone
+&gt;
+&gt;
+&gt; On Oct 20, 2015, at 12:39, Dennis Nicolay &lt;dnico...@orcawave.net&gt; wrote:
+&gt;
+&gt; Hi Alexander,
+&gt;
+&gt;
+&gt;
+&gt; I’m parsing the file and storing each row with own key in a map datatype
+&gt; bucket and each column is a register.
+&gt;
+&gt;
+&gt;
+&gt; Thanks,
+&gt;
+&gt; Dennis
+&gt;
+&gt;
+&gt;
+&gt; *From:* Alexander Sicular [<a  rel="nofollow" href="mailto:sicul...@gmail.com">mailto:sicul...@gmail.com</a> &lt;sicul...@gmail.com&gt;]
+&gt;
+&gt; *Sent:* Tuesday, October 20, 2015 10:34 AM
+&gt; *To:* Dennis Nicolay
+&gt; *Cc:* Christopher Mancini; riak-users@lists.basho.com
+&gt; *Subject:* Re: Using Bucket Data Types slowed insert performance
+&gt;
+&gt;
+&gt;
+&gt; Hi Dennis,
+&gt;
+&gt;
+&gt;
+&gt; It's a bit unclear what you are trying to do here. Are you 1. uploading
+&gt; the entire file and saving it to one key with the value being the file? Or
+&gt; are you 2. parsing the file and storing each row as a register in a map?
+&gt;
+&gt;
+&gt;
+&gt; Either of those approaches are not appropriate in Riak KV. For the first
+&gt; case I would point you to Riak S2 which is designed to manage large binary
+&gt; object storage. You can keep the large file as a single addressable entity
+&gt; and access it via Amazon S3 or Swift protocol. For the second case I would
+&gt; consider maintaining one key (map) per row in the file and have a register
+&gt; per column in the row. Or not use Riak data types (maps, sets, registers,
+&gt; flags and counters) and simply keep each row in the file as a KV in Riak
+&gt; either as a raw string or as a serialized json string. ETL'ing out of
+&gt; relational databases and into Riak is a very common use case and often
+&gt; implemented in the fashion I described.
+&gt;
+&gt;
+&gt;
+&gt; As Chris mentioned, soft upper bound on value size should be 1MB. I say
+&gt; soft because we won't enforce it although there are settings in the config
+&gt; that can be changed to enforce it (default 5MB warning, 50MB reject I
+&gt; believe.)
+&gt;
+&gt; Best,
+&gt;
+&gt; Alexander
+&gt;
+&gt;
+&gt;
+&gt; @siculars
+&gt;
+&gt; <a  rel="nofollow" href="http://siculars.posthaven.com">http://siculars.posthaven.com</a>
+&gt;
+&gt;
+&gt;
+&gt; Sent from my iRotaryPhone
+&gt;
+&gt;
+&gt; On Oct 20, 2015, at 10:22, Christopher Mancini &lt;cmanc...@basho.com&gt; wrote:
+&gt;
+&gt; Hi Dennis,
+&gt;
+&gt; I am not the most experienced, but what I do know is that a file that size
+&gt; causes a great deal of network chatter because it has to handoff that data
+&gt; to the other nodes in the network and will cause delays in Riak's ability
+&gt; to send and confirm consistency across the ring. Typically we recommend
+&gt; that you try to structure your objects to around 1mb or less to ensure
+&gt; consistent performance. That max object size can vary of course based on
+&gt; your network / server specs and configuration.
+&gt;
+&gt; I hope this helps.
+&gt;
+&gt; Chris
+&gt;
+&gt;
+&gt;
+&gt; On Tue, Oct 20, 2015 at 8:18 AM Dennis Nicolay &lt;dnico...@orcawave.net&gt;
+&gt; wrote:
+&gt;
+&gt; Hi,
+&gt;
+&gt;
+&gt;
+&gt; I’m using .net RiakClient 2.0 to insert a 44mb delimited file with 139k
+&gt; rows of data into riak.  I switched to a map bucket data type with
+&gt; registers.   It is taking about 3 times longer to insert into this bucket
+&gt; vs non data typed bucket.  Any suggestions?
+&gt;
+&gt;
+&gt;
+&gt; Thanks in advance,
+&gt;
+&gt; Dennis
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16681.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16683">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16683">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16693.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16673.html">Using Bucket Data Types slowed insert performance</a></span> <span class="sender italic">Dennis Nicolay</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16674.html">Re: Using Bucket Data Types slowed insert perform...</a></span> <span class="sender italic">Christopher Mancini</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16676.html">Re: Using Bucket Data Types slowed insert per...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16677.html">RE: Using Bucket Data Types slowed insert...</a></span> <span class="sender italic">Dennis Nicolay</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16678.html">Re: Using Bucket Data Types slowed in...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16679.html">RE: Using Bucket Data Types slow...</a></span> <span class="sender italic">Mark Schmidt</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16680.html">Re: Using Bucket Data Types ...</a></span> <span class="sender italic">Christopher Mancini</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16681.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Dennis Nicolay</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using Bucket Data Ty...</span> <span class="sender italic">Alex Moore</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16693.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Mark Schmidt</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16731.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Dennis Nicolay</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16690.html">Re: Using Bucket Data Ty...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16691.html">Re: Using Bucket Data Ty...</a></span> <span class="sender italic">Torben Hoffmann</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16694.html">RE: Using Bucket Data Ty...</a></span> <span class="sender italic">Mark Schmidt</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using Bucket Data Types slowed insert performance">
+<input type="hidden" name="msgid" value="CADjd2TcK9gcFCjAptDzg+dozotcJDjkQTQEHGLchRmzRWtDdBg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16683.html">
+<input type="submit" value=" Alex Moore ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+Bucket+Data+Types+slowed+insert+performance%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16681.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16693.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CADjd2TcK9gcFCjAptDzg+dozotcJDjkQTQEHGLchRmzRWtDdBg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

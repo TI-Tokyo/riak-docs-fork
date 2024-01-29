@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Mecking riakc_pb_socket:get/3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16774" id="c">
+<link rel="index" href="maillist.html#16774" id="i">
+<link rel="prev" href="msg16725.html" id="p">
+<link rel="next" href="msg16726.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16774.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Mecking+riakc_pb_socket%5C%3Aget%5C%2F3%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Mecking riakc_pb_socket:get/3</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Shunichi+Shinohara%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Shunichi Shinohara</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151116" rel="nofollow">Mon, 16 Nov 2015 18:42:52 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Michael,
+
+Sorry for very late response.
+I tried mecking the module in erl shell.
+In list passing style for expected arguments, Pid in call should
+be the same term you passed in expect call, unless function_clause
+is thrown.</pre><pre>
+
+&gt; Pid = self().
+&lt;0.43.0&gt;
+&gt; meck:expect(riakc_pb_socket, get, [Pid, {&lt;&lt;&quot;t&quot;&gt;&gt;, &lt;&lt;&quot;b&quot;&gt;&gt;}, &lt;&lt;&quot;k&quot;&gt;&gt;], {ok, 
+&gt; dummy}).
+&gt; riakc_pb_socket:get(Pid, {&lt;&lt;&quot;t&quot;&gt;&gt;, &lt;&lt;&quot;b&quot;&gt;&gt;}, &lt;&lt;&quot;k&quot;&gt;&gt;).
+{ok,dummy}
+&gt; Pid2 = spawn(fun() -&gt; receive forever -&gt; ok end end).
+&lt;0.57.0&gt;
+&gt; riakc_pb_socket:get(Pid2, {&lt;&lt;&quot;t&quot;&gt;&gt;, &lt;&lt;&quot;b&quot;&gt;&gt;}, &lt;&lt;&quot;k&quot;&gt;&gt;).
+** exception error: function_clause
+
+If you do not want to match the first argument, fun style can be used.
+
+9&gt; meck:expect(riakc_pb_socket, get, fun(_Pid, {&lt;&lt;&quot;t&quot;&gt;&gt;, &lt;&lt;&quot;b&quot;&gt;&gt;},
+&lt;&lt;&quot;k&quot;&gt;&gt;) -&gt; {ok, dummy} end).
+10&gt; riakc_pb_socket:get(Pid2, {&lt;&lt;&quot;t&quot;&gt;&gt;, &lt;&lt;&quot;b&quot;&gt;&gt;}, &lt;&lt;&quot;k&quot;&gt;&gt;).
+{ok,dummy}
+11&gt; riakc_pb_socket:get(not_actually_pid, {&lt;&lt;&quot;t&quot;&gt;&gt;, &lt;&lt;&quot;b&quot;&gt;&gt;}, &lt;&lt;&quot;k&quot;&gt;&gt;).
+{ok,dummy}
+
+Thanks,
+Shino
+
+2015-11-03 0:22 GMT+09:00 Michael Martin &lt;mmartin4...@gmail.com&gt;:
+&gt; Hi all,
+&gt;
+&gt; I'm trying to meck riakc_pb_socket:get/3 in my eunit tests, and consistently
+&gt; get a function_clause error.
+&gt;
+&gt; The meck:expect looks like:
+&gt;
+&gt; meck:expect(riakc_pb_socket, get, [Pid, ?RIAK_TYPE_AND_BUCKET, ?TestOid],
+&gt; {ok, ?TestRiakObject}),
+&gt;
+&gt; where Pid is a pid, the macro ?RIAK_TYPE_AND_BUCKET evaluates to
+&gt; {&lt;&lt;&quot;buckettype&quot;&gt;&gt;, &lt;&lt;&quot;bucketname&quot;&gt;&gt;},
+&gt; and ?TestOid evalutes to
+&gt; &lt;&lt;&quot;809876fd89ac405680b7251c2e57faa30004524100486220&quot;&gt;&gt;).
+&gt;
+&gt; With the exception of the Pid, the other arguments, as well as the expected
+&gt; response, are taken from a live,
+&gt; running system, where the call to riakc_pb_socket:get/3 works as expected.
+&gt;
+&gt; Looking at the source for riakc_pb_socket:get/3, I see that the -spec looks
+&gt; like:
+&gt;
+&gt; -spec get(pid(), bucket(), key()) -&gt; {ok, riakc_obj()} | {error, term()}.
+&gt;
+&gt; and the types bucket() and key() are defined as:
+&gt; -type bucket() :: binary(). %% A bucket name.
+&gt; -type key() :: binary(). %% A key name.
+&gt;
+&gt; In reality, when using bucket types, shouldn't the bucket() type be a tuple?
+&gt; At any rate, changing it
+&gt; to tuple() didn't help my case any.
+&gt;
+&gt; Can anyone show me an example of a working meck:expect for
+&gt; riakc_pb_socket:get/3?
+&gt;
+&gt; Thanks,
+&gt; Michael
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16725.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16774">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16774">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16726.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16725.html">Mecking riakc_pb_socket:get/3</a></span> <span class="sender italic">Michael Martin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Mecking riakc_pb_socket:get/3</span> <span class="sender italic">Shunichi Shinohara</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Mecking riakc_pb_socket:get/3">
+<input type="hidden" name="msgid" value="CAMe3p=R_N4WBbj7c8p3ZRvn3KjQODUAcaQbCzJTox0F09CZ5WA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16774.html">
+<input type="submit" value=" Shunichi Shinohara ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Mecking+riakc_pb_socket%5C%3Aget%5C%2F3%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16725.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16726.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMe3p=R_N4WBbj7c8p3ZRvn3KjQODUAcaQbCzJTox0F09CZ5WA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

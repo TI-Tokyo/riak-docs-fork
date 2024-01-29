@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Reindexing solr after backup restore</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16091" id="c">
+<link rel="index" href="maillist.html#16091" id="i">
+<link rel="prev" href="msg16076.html" id="p">
+<link rel="next" href="msg16077.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16091.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Reindexing+solr+after+backup+restore%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Reindexing solr after backup restore</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Jason+Campbell%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Jason Campbell</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150501" rel="nofollow">Fri, 01 May 2015 20:45:06 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi guys,
+
+We ended up prototyping DynamoDB for a variety of reasons, so I didn't get to 
+test this during the workweek, but it's still interesting as I use Riak for my 
+personal projects (although not YZ yet).</pre><pre>
+
+So here is the rough process I followed (mainly from 
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/nodes/renaming/#Clusters-from-Backups">http://docs.basho.com/riak/latest/ops/running/nodes/renaming/#Clusters-from-Backups</a>):
+
+1. Stop Riak process on all nodes (on freshly restored nodes, Riak refuses to 
+start)
+2. Restore Riak nodes (via any filesystem-level backup)
+3. Change the Riak nodename in all configs
+4. ReIP a single node
+5. Start riak on the reip'd node
+6. Bring &quot;down&quot; all nodes that will be replaced
+
+So far the YZ directories are intact on all nodes, so this is where the fun 
+starts.  Fetching a YZ doc count returns an error right now (since there is 
+only one node up).
+
+7. For each remaining node, remove the /var/lib/riak/ring directory (but not on 
+the running node)
+8. Start all remaining nodes
+
+After this, we have 5 running Riak nodes, all with full YZ indexes still.  Only 
+one node knows it's supposed to be in a cluster, the other 4 are standalone 
+nodes right now.
+
+9. Join the nodes to the cluster.
+
+This is where the YZ indexes are removed.  This isn't immediate, and takes a 
+few minutes to take effect, but this happens before ANY node is force-replaced, 
+and also before the cluster plan is commited.
+Another interesting behaviour pops up here.  If you run 'riak-admin cluster 
+clear' on the &quot;primary&quot; node, the cluster status on that node updates, but all 
+the other nodes still see the full cluster plan.  For a while at least, until 
+all the other nodes eventually realise and crash.  If someone wants more detail 
+on this crash, let me know what I can include.
+
+10. So with the YZ indexes gone, let's heal the cluster.  force-replace the 
+nodes as applicable and commit the new cluster plan.
+
+So we now have a working cluster, with some of the original YZ documents (from 
+the starting node).  Querying for all documents for me returns 35-39 million 
+docs (depends on how many vnodes hit that working YZ node I think).  So let's 
+try to get things restored properly.
+
+11. Stop a node.
+12. Replace it's /var/lib/yz and yz_anti_entropy directories from the backup.
+13. Start the node. (49-53 million docs)
+14. Repeat 11-13 for node 3. (73-39 million docs)
+15. Repeat 11-13 for node 4. (97-103 million docs)
+16. Repeat 11-13 for node 5. (126 million docs +- ~40,000 docs)
+
+So overall, it works really well with some extra hackery.  The docs mentioned 
+at the start can be followed fairly closely.  Before step 4 of &quot;Bringing up the 
+remaining nodes&quot;, the yz directory needs to be moved out of the way, or Riak 
+will nuke it on cluster join.  After the cluster is fully reformed and stable, 
+adding the yz directories back in seems to work fine (on stopped nodes at 
+least), and I would imagine AAE would repair anything that's still inconsistent.
+
+Hope that helps someone else, or gets the docs updated a bit.  It's a fairly 
+big gotcha that if you don't do things exactly the YZ indexes get dropped, 
+maybe Riak could do this on it's own?  Maybe during a cluster join, it could 
+stop YZ and move the directory to a backup location, and during the cluster 
+join being commited, delete it if it isn't needed (eg. not a force-replaced 
+node).
+
+Either way, it's not too hard to do in a shell script or any type of 
+configuration management, and only affects restores.  The backup procedure of 
+stop riak node, filesystem snapshot, start riak node works fine.
+
+I still have the cluster available if there is anything else you want me to 
+test.
+
+Jason Campbell
+
+
+&gt; On 1 May 2015, at 22:51, Matthew Brender &lt;mbren...@basho.com&gt; wrote:
+&gt; 
+&gt; Hi Jason, 
+&gt; 
+&gt; Did you and Zeeshan have time to follow up on your experiments? I'm curious 
+&gt; to hear the conclusion. Please reply to the riak-user thread so others can 
+&gt; learn as well! 
+&gt; 
+&gt; Best, 
+&gt; Matt
+&gt; 
+&gt; Matt Brender | Developer Advocacy Lead
+&gt; Basho Technologies
+&gt; t: @mjbrender
+&gt; 
+&gt; 
+&gt; On Fri, Apr 24, 2015 at 8:56 PM, Jason Campbell &lt;xia...@xiaclo.net&gt; wrote:
+&gt; This may be a case of force-replace vs replace vs reip.  I'm happy to see if 
+&gt; I can get new cluster from backup to keep the Solr indexes.
+&gt; 
+&gt; The disk backup was all of /var/lib/riak, so definitely included the YZ 
+&gt; indexes before the force-replace, and they were kept on the first node that 
+&gt; was changed with reip.  I stopped each node before the snapshot to ensure 
+&gt; consistency.  So I would expect the final restored cluster to be somewhere 
+&gt; between the first and last node snapshot in terms of data, and AAE to repair 
+&gt; things to a consistent state for that few minute gap.
+&gt; 
+&gt; I'll experiment with different methods of rebuilding the cluster on Monday 
+&gt; and see if I can get it to keep the Solr indexes.  Maybe moving the YZ 
+&gt; indexes out of the way during the force-replace, then stopping the node and 
+&gt; putting them back could help as well.  I'll let you know the results of the 
+&gt; experiments either way.
+&gt; 
+&gt; Thanks,
+&gt; Jason
+&gt; 
+&gt; &gt; On 25 Apr 2015, at 09:25, Zeeshan Lakhani &lt;zlakh...@basho.com&gt; wrote:
+&gt; &gt;
+&gt; &gt; Hey Jason,
+&gt; &gt;
+&gt; &gt; Yeah, nodes can normally be joined without a cluster dropping its Solr 
+&gt; &gt; Index and AAE normally rebuilds the missing KV bits.
+&gt; &gt;
+&gt; &gt; In the case of restoring from a backup and having missing data, we can only 
+&gt; &gt; recommend a reindex (the indexes that have the issue) with aggressive AAE 
+&gt; &gt; settings to speed things up. It can be pretty fast. Recreating indexes are 
+&gt; &gt; cheap in Yokozuna, but are the `data/yz` directories missing from the nodes 
+&gt; &gt; that were force-replaced? Unless someone else wants to chime in, I’ll 
+&gt; &gt; gather more info on what occurred from the reip vs the force-replace.
+&gt; &gt;
+&gt; &gt; Zeeshan Lakhani
+&gt; &gt; programmer |
+&gt; &gt; software engineer at @basho |
+&gt; &gt; org. member/founder of @papers_we_love | paperswelove.org
+&gt; &gt; twitter =&gt; @zeeshanlakhani
+&gt; &gt;
+&gt; &gt;&gt; On Apr 24, 2015, at 7:02 PM, Jason Campbell &lt;xia...@xiaclo.net&gt; wrote:
+&gt; &gt;&gt;
+&gt; &gt;&gt; Is there a way to do a restore without rebuilding these indexes though?  
+&gt; &gt;&gt; Obviously this could take a long time depending on the amount of indexed 
+&gt; &gt;&gt; data in the cluster.  It's a fairly big gotcha to say that Yokozuna fixes 
+&gt; &gt;&gt; a lot of the data access issues that Riak has, but if you restore from a 
+&gt; &gt;&gt; backup, it could be useless for days or weeks.
+&gt; &gt;&gt;
+&gt; &gt;&gt; As far as disk consistency, the nodes were stopped during the snapshot, so 
+&gt; &gt;&gt; I'm assuming on-disk it would be consistent within a single node.  And 
+&gt; &gt;&gt; cluster wide, I would expect the overall data to fall somewhere between 
+&gt; &gt;&gt; the first and last node snapshot.  AAE should still repair the bits left 
+&gt; &gt;&gt; over, but it shouldn't have to rebuild the entire Solr index.
+&gt; &gt;&gt;
+&gt; &gt;&gt; So the heart of the question can I join a node to a cluster without 
+&gt; &gt;&gt; dropping it's Solr index?  force-replace obviously doesn't work, what is 
+&gt; &gt;&gt; the harm in running reip on every node instead of just the first?
+&gt; &gt;&gt;
+&gt; &gt;&gt; Thanks for the help,
+&gt; &gt;&gt; Jason
+&gt; &gt;&gt;
+&gt; &gt;&gt;&gt; On 25 Apr 2015, at 00:36, Zeeshan Lakhani &lt;zlakh...@basho.com&gt; wrote:
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Hey Jason,
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Here’s a little more discussion on Yokozuna backup strategies: 
+&gt; &gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2014-January/014514.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2014-January/014514.html</a>.
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Nonetheless, I wouldn’t say the behavior’s expected, but we’re going to 
+&gt; &gt;&gt;&gt; be adding more to the docs on how to rebuild indexes.
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; To do so, you could just remove the yz_anti_entropy directory, and make 
+&gt; &gt;&gt;&gt; AAE more aggressive, via
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; ```
+&gt; &gt;&gt;&gt; rpc:multicall([node() | nodes()], application, set_env, [yokozuna, 
+&gt; &gt;&gt;&gt; anti_entropy_build_limit, {100, 1000}]).
+&gt; &gt;&gt;&gt; rpc:multicall([node() | nodes()], application, set_env, [yokozuna, 
+&gt; &gt;&gt;&gt; anti_entropy_concurrency, 4])
+&gt; &gt;&gt;&gt; ```
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; and the indexes will rebuild. You can try to initialize the building of 
+&gt; &gt;&gt;&gt; trees with `yz_entropy_mgr:init([])` via `riak attach`, but a restart 
+&gt; &gt;&gt;&gt; would also kick AAE into gear. There’s a bit more related info on this 
+&gt; &gt;&gt;&gt; thread: 
+&gt; &gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2015-March/016929.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2015-March/016929.html</a>.
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Thanks.
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; Zeeshan Lakhani
+&gt; &gt;&gt;&gt; programmer |
+&gt; &gt;&gt;&gt; software engineer at @basho |
+&gt; &gt;&gt;&gt; org. member/founder of @papers_we_love | paperswelove.org
+&gt; &gt;&gt;&gt; twitter =&gt; @zeeshanlakhani
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; On Apr 24, 2015, at 1:34 AM, Jason Campbell &lt;xia...@xiaclo.net&gt; wrote:
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; I think I figured it out.
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; I followed this guide: 
+&gt; &gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/nodes/renaming/#Clusters-from-Backups">http://docs.basho.com/riak/latest/ops/running/nodes/renaming/#Clusters-from-Backups</a>
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; The first Riak node (changed with riak-admin reip) kept it's Solr index. 
+&gt; &gt;&gt;&gt;&gt;  However, the other nodes when joined via riak-admin cluster 
+&gt; &gt;&gt;&gt;&gt; force-replace, dropped their Solr indexes.
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; Is this expected?  If so, it should really be in the docs, and there 
+&gt; &gt;&gt;&gt;&gt; should be another way to restore a cluster keeping Solr intact.
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; Also, is there a way to rebuild a Solr index?
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; Thanks,
+&gt; &gt;&gt;&gt;&gt; Jason
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; On 24 Apr 2015, at 15:16, Jason Campbell &lt;xia...@xiaclo.net&gt; wrote:
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; I've just done a backup and restore of our production Riak cluster, and 
+&gt; &gt;&gt;&gt;&gt;&gt; Yokozuna has dropped from around 125 million records to 25million.  
+&gt; &gt;&gt;&gt;&gt;&gt; Obviously the IPs have changed, and although the Riak cluster is 
+&gt; &gt;&gt;&gt;&gt;&gt; stable, I'm not sure Solr handled the transition as nicely.
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; Is there a way to force Solr to rebuild the indexes, or at least get 
+&gt; &gt;&gt;&gt;&gt;&gt; back to the state it was in before the backup?
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; Also, is this expected behaviour?
+&gt; &gt;&gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;&gt; Thanks,
+&gt; &gt;&gt;&gt;&gt;&gt; Jason
+&gt; &gt;&gt;&gt;&gt;&gt; _______________________________________________
+&gt; &gt;&gt;&gt;&gt;&gt; riak-users mailing list
+&gt; &gt;&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt;
+&gt; &gt;&gt;&gt;&gt; _______________________________________________
+&gt; &gt;&gt;&gt;&gt; riak-users mailing list
+&gt; &gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;&gt;&gt;
+&gt; &gt;&gt;&gt; _______________________________________________
+&gt; &gt;&gt;&gt; riak-users mailing list
+&gt; &gt;&gt;&gt; riak-users@lists.basho.com
+&gt; &gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;&gt;
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; 
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16076.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16091">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16091">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16077.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16069.html">[riak]compile riak error</a></span> <span class="sender italic">????</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16070.html">Reindexing solr after backup restore</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16071.html">Re: Reindexing solr after backup restore</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16072.html">Re: Reindexing solr after backup restore</a></span> <span class="sender italic">Zeeshan Lakhani</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16073.html">Re: Reindexing solr after backup restore</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16074.html">Re: Reindexing solr after backup res...</a></span> <span class="sender italic">Zeeshan Lakhani</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16075.html">Re: Reindexing solr after backup...</a></span> <span class="sender italic">Jason Campbell</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16076.html">Re: Reindexing solr after ba...</a></span> <span class="sender italic">Zeeshan Lakhani</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Reindexing solr after ba...</span> <span class="sender italic">Jason Campbell</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Reindexing solr after backup restore">
+<input type="hidden" name="msgid" value="BE36B2F5-07C3-41A2-808E-67C695676852@xiaclo.net">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16091.html">
+<input type="submit" value=" Jason Campbell ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Reindexing+solr+after+backup+restore%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16076.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16077.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">BE36B2F5-07C3-41A2-808E-67C695676852@xiaclo.net</li>
+</ul>
+</div>
+</body>
+</html>

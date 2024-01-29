@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Pre-commit hook debug</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16837" id="c">
+<link rel="index" href="maillist.html#16837" id="i">
+<link rel="prev" href="msg16834.html" id="p">
+<link rel="next" href="msg16838.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16837.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Pre%5C-commit+hook+debug%22&amp;o=newest" rel="nofollow"><span itemprop="name">Pre-commit hook debug</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Geoff+Simonds%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Geoff Simonds</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151201" rel="nofollow">Tue, 01 Dec 2015 10:54:12 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Good afternoon,
+
+I am writing to ask for some help regarding a pre-commit hook in Riak
+2.1.1.  I am locally running a 5 node Riak dev cluster (
+<a  rel="nofollow" href="https://github.com/xing/riak-dev-cluster">https://github.com/xing/riak-dev-cluster</a>) on a Mac and am having trouble
+with a pre-commit hook.  I have added the &quot;add_paths&quot; to my advanced.config:
+[
+ Riak KV config
+{riak_kv,
+  [
+    %% Paths to custom erlang modules.
+    {add_paths, [&quot;/tmp/ls/custom_modules&quot;]}
+  ]}
+].</pre><pre>
+
+and then copied the compiled beam to this directory.  I then issued a curl
+PUT to add the pre-commit to the bucket props:
+
+curl -XPUT -H &quot;Content-Type: application/json&quot; -d
+'{&quot;props&quot;:{&quot;precommit&quot;:[{&quot;mod&quot;:&quot;rr_pre_commit&quot;,&quot;fun&quot;:&quot;set_process_datetime_index&quot;}]}}'
+<a  rel="nofollow" href="http://127.0.0.1:11098/buckets/LS\~News/props">http://127.0.0.1:11098/buckets/LS\~News/props</a>
+
+and am able to confirm it worked when I do a GET on the bucket properties.
+The bucket already had a single key stored in it and when I do another PUT
+on that object (hoping to get the pre-commit to fire), I get the following
+error:
+
+{error,badarg,
+        [{erlang,iolist_to_binary,
+             [{hook_crashed,
+                  {rr_pre_commit,set_process_datetime_index,error,
+                      function_clause}}],
+             []},
+         {wrq,append_to_response_body,2,[{file,&quot;src/wrq.erl&quot;},{line,215}]},
+         {riak_kv_wm_object,handle_common_error,3,
+             [{file,&quot;src/riak_kv_wm_object.erl&quot;},{line,1178}]},
+         {webmachine_resource,resource_call,3,
+             [{file,&quot;src/webmachine_resource.erl&quot;},{line,186}]},
+         {webmachine_resource,do,3,
+             [{file,&quot;src/webmachine_resource.erl&quot;},{line,142}]},
+         {webmachine_decision_core,resource_call,1,
+             [{file,&quot;src/webmachine_decision_core.erl&quot;},{line,48}]},
+         {webmachine_decision_core,accept_helper,1,
+             [{file,&quot;src/webmachine_decision_core.erl&quot;},{line,616}]},
+         {webmachine_decision_core,decision,1,
+             [{file,&quot;src/webmachine_decision_core.erl&quot;},{line,521}]}]}}
+
+
+I am able to run the pre-commit function when I attach to the Riak
+shell and add the paths manually (code:add_patha) but not when it
+triggers via a PUT.  Also, in my pre-commit hook module/function I am
+using the riak erlang client to access the object metadata.  Is this
+module compiled into Riak or do I also need to add a path for this?
+
+
+The pre-commit module/function is below:
+
+
+set_process_datetime_index(Obj) -&gt;
+    case is_deleted(Obj) of
+        true -&gt;
+          Obj;
+        _ -&gt;
+          MD = riakc_obj:get_update_metadata(Obj),
+          case riakc_obj:get_user_metadata_entry(MD,
+&lt;&lt;&quot;process_messagedate&quot;&gt;&gt;) of
+            %% if user &quot;process messagedate&quot; metadata is not found
+            notfound -&gt;
+              %% add it
+              MD2 =
+riakc_obj:set_user_metadata_entry(MD,{&lt;&lt;&quot;process_messagedate&quot;&gt;&gt;,format_date_index(calendar:local_time())}),
+              %% and modify the message_date 2i index
+              MD3 = riakc_obj:set_secondary_index(MD2,{{binary_index,
+&lt;&lt;&quot;messagedate&quot;&gt;&gt;}, [format_date_index(calendar:local_time())]}),
+              riakc_obj:update_metadata(Obj,MD3);
+            _ -&gt;
+              %% otherwise, don't do anything as we have already
+stored the process time
+              Obj
+          end
+
+    end.
+
+is_deleted(Obj)-&gt;
+    case dict:find(&lt;&lt;&quot;X-Riak-Deleted&quot;&gt;&gt;,riakc_obj:get_metadata(Obj)) of
+        {ok,_} -&gt;
+            true;
+        _ -&gt;
+            false
+    end.
+
+
+Any help or advice is appreciated.
+
+
+Geoff
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16834.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16837">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16837">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16838.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">Pre-commit hook debug</span> <span class="sender italic">Geoff Simonds</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16838.html">Re: Pre-commit hook debug</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16839.html">Re: Pre-commit hook debug</a></span> <span class="sender italic">Geoff Simonds</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Pre-commit hook debug">
+<input type="hidden" name="msgid" value="CAOqe=w0F5SwgZGL89Zk-N75ViBS3RFkOw58UL6EaeXY6zbwJAw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16837.html">
+<input type="submit" value=" Geoff Simonds ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Pre%5C-commit+hook+debug%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16834.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16838.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAOqe=w0F5SwgZGL89Zk-N75ViBS3RFkOw58UL6EaeXY6zbwJAw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

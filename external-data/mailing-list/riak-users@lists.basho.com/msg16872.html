@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Leveldb segfault during Riak startup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16872" id="c">
+<link rel="index" href="maillist.html#16872" id="i">
+<link rel="prev" href="msg16871.html" id="p">
+<link rel="next" href="msg16907.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16872.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Leveldb+segfault+during+Riak+startup%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Leveldb segfault during Riak startup</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Luke+Bakken%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Luke Bakken</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151218" rel="nofollow">Fri, 18 Dec 2015 06:47:46 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Antti,
+
+Riak is not tested on btrfs and the file system is not officially
+supported. We recommend ext4 or xfs for Linux. ZFS is an option on
+Solaris derivatives and FreeBSD.</pre><pre>
+
+--
+Luke Bakken
+Engineer
+lbak...@basho.com
+
+
+On Fri, Dec 18, 2015 at 6:14 AM, Antti Kuusela
+&lt;antti.kuus...@firstbeat.fi&gt; wrote:
+&gt; Hi,
+&gt;
+&gt; I have been testing Riak and Riak CS as a possible solution for our future
+&gt; storage needs. I have a five server cluster running Centos 7. Riak version
+&gt; is 2.1.3 (first installed as 2.1.1, updated twice via Basho repo) and Riak
+&gt; CS version is 2.1.0. The servers each have 64GB RAM and six 4TB disks in
+&gt; raid 6 using btrfs.
+&gt;
+&gt; I have been pushing random data into Riak-CS via s3cmd to see how the system
+&gt; behaves. Smallest objects have been 2000 bytes, largest 100MB. I have also
+&gt; been making btrfs snapshots of the entire platform data dir nightly for
+&gt; backup purposes. Stop Riak CS, wait 10 seconds, stop Riak, wait 10, make
+&gt; snapshot, start Riak, wait 180 seconds, start Riak CS. This is performed on
+&gt; each of the servers in turn with a five minute wait in between. I have added
+&gt; the waits to try spread the startup load and allow the system time to get
+&gt; things running. New data is constantly pushed to the S3 API but restarting
+&gt; the nodes in rotation causes by far the highest stress on the system.
+&gt;
+&gt; I have encountered one problem in particular. Quite often one of the Riak
+&gt; nodes starts up but after a couple of minutes it just drops, all processes
+&gt; exited except for epmd.
+&gt;
+&gt; Following is from /var/log/riak/console, most of the lines skipped for sake
+&gt; of brevity. Normal startup stuff, as far as I can see:
+&gt;
+&gt; 2015-12-16 00:26:04.446 [info] &lt;0.7.0&gt; Application lager started on node
+&gt; 'riak@192.168.50.32'
+&gt; ...
+&gt; 2015-12-16 00:26:04.490 [info] &lt;0.72.0&gt; alarm_handler:
+&gt; {set,{system_memory_high_watermark,[]}}
+&gt; ...
+&gt; 2015-12-16 00:26:04.781 [info]
+&gt; &lt;0.206.0&gt;@riak_core_capability:process_capability_changes:555 New
+&gt; capability: {riak_core,vnode_routing} = proxy
+&gt; ...
+&gt; 2015-12-16 00:26:04.869 [info] &lt;0.7.0&gt; Application riak_core started on node
+&gt; 'riak@192.168.50.32'
+&gt; ...
+&gt; 2015-12-16 00:26:04.969 [info] &lt;0.407.0&gt;@riak_kv_env:doc_env:46 Environment
+&gt; and OS variables:
+&gt; 2015-12-16 00:26:05.124 [warning] &lt;0.6.0&gt; lager_error_logger_h dropped 9
+&gt; messages in the last second that exceeded the limit of 100 messages/sec
+&gt; 2015-12-16 00:26:05.124 [info] &lt;0.407.0&gt; riak_kv_env: Open file limit: 65536
+&gt; 2015-12-16 00:26:05.124 [warning] &lt;0.407.0&gt; riak_kv_env: Cores are disabled,
+&gt; this may hinder debugging
+&gt; 2015-12-16 00:26:05.124 [info] &lt;0.407.0&gt; riak_kv_env: Erlang process limit:
+&gt; 262144
+&gt; 2015-12-16 00:26:05.125 [info] &lt;0.407.0&gt; riak_kv_env: Erlang ports limit:
+&gt; 65536
+&gt; 2015-12-16 00:26:05.125 [info] &lt;0.407.0&gt; riak_kv_env: ETS table count limit:
+&gt; 256000
+&gt; 2015-12-16 00:26:05.125 [info] &lt;0.407.0&gt; riak_kv_env: Thread pool size: 64
+&gt; 2015-12-16 00:26:05.125 [info] &lt;0.407.0&gt; riak_kv_env: Generations before
+&gt; full sweep: 0
+&gt; 2015-12-16 00:26:05.125 [info] &lt;0.407.0&gt; riak_kv_env: Schedulers: 12 for 12
+&gt; cores
+&gt; 2015-12-16 00:26:05.125 [info] &lt;0.407.0&gt; riak_kv_env: sysctl vm.swappiness
+&gt; is 0 greater than or equal to 0)
+&gt; 2015-12-16 00:26:05.125 [info] &lt;0.407.0&gt; riak_kv_env: sysctl
+&gt; net.core.wmem_default is 8388608 lesser than or equal to 8388608)
+&gt; ...
+&gt; 2015-12-16 00:26:05.139 [info] &lt;0.478.0&gt;@riak_core:wait_for_service:504
+&gt; Waiting for service riak_kv to start (0 seconds)
+&gt; 2015-12-16 00:26:05.158 [info]
+&gt; &lt;0.495.0&gt;@riak_kv_entropy_manager:set_aae_throttle_limits:790 Setting AAE
+&gt; throttle limits: [{-1,0},{200,10},{500,50},{750,250},{900,1000},{1100,5000}]
+&gt; ...
+&gt; 2015-12-16 00:26:30.160 [info]
+&gt; &lt;0.495.0&gt;@riak_kv_entropy_manager:perhaps_log_throttle_change:853 Changing
+&gt; AAE throttle from undefined -&gt; 5000 msec/key, based on maximum vnode mailbox
+&gt; size {unknown_mailbox_sizes,node_list,['riak@192.168.50.32']} from
+&gt; ['riak@192.168.50.32']
+&gt; 2015-12-16 00:27:12.053 [info] &lt;0.478.0&gt;@riak_core:wait_for_service:504
+&gt; Waiting for service riak_kv to start (60 seconds)
+&gt; 2015-12-16 00:28:25.057 [info] &lt;0.478.0&gt;@riak_core:wait_for_service:504
+&gt; Waiting for service riak_kv to start (120 seconds)
+&gt;
+&gt; And then nothing
+&gt;
+&gt; From /var/log/messages:
+&gt;
+&gt; Dec 16 00:26:02 storage2 su: (to riak) root on none
+&gt; Dec 16 00:26:04 storage2 riak[48174]: Starting up
+&gt; Dec 16 00:28:59 storage2 kernel: traps: beam.smp[48492] general protection
+&gt; ip:7fcaf9402f16 sp:7fca6affcdd0 error:0 in eleveldb.so[7fcaf93b5000+93000]
+&gt; Dec 16 00:28:59 storage2 run_erl[48172]: Erlang closed the connection.
+&gt;
+&gt; On another node at a different time /var/log/riak/console.log had similar
+&gt; messages, and also some warnings about invalid hint files, such as:
+&gt;
+&gt; 2015-12-13 00:15:41.232 [warning] &lt;0.815.0&gt; Hintfile
+&gt; '/data/riak/bitcask/570899077082383952423314387779798054553098649600/56.bitcask.hint'
+&gt; invalid
+&gt;
+&gt; In this latter example riak was started with &quot;systemctl start riak&quot; rather
+&gt; than &quot;riak start&quot;. From /var/log/messages:
+&gt;
+&gt; Dec 13 00:15:29 storage1 riak: Starting riak: [  OK  ]
+&gt; Dec 13 00:15:29 storage1 systemd: Started SYSV: Riak is a distributed data
+&gt; store.
+&gt; Dec 13 00:15:56 storage1 kernel: beam.smp[131820]: segfault at 160 ip
+&gt; 00007f24c0902ce6 sp 00007f24337fddd0 error 4 in
+&gt; eleveldb.so[7f24c08b5000+93000]
+&gt; Dec 13 00:15:56 storage1 run_erl[131501]: Erlang closed the connection.
+&gt;
+&gt; Of reported Riak bugs, this is similar to
+&gt; <a  rel="nofollow" href="https://github.com/basho/riak/issues/790">https://github.com/basho/riak/issues/790</a> . However, the poster of that issue
+&gt; reported that his problem was fixed by repairing leveldb partitions. I
+&gt; looked at this following
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/recovery/repairing-leveldb/">http://docs.basho.com/riak/latest/ops/running/recovery/repairing-leveldb/</a>
+&gt; but didn't find any errors.
+&gt;
+&gt; Incidentally, I started having problems with btrfs as well. On one node
+&gt; btrfs caused a kernel crash and on another kernel killed beam.smp process
+&gt; after it stopped responding for over 120 seconds while syncing to btrfs. The
+&gt; kernel in Centos 7 probably isn't best suited for working with btrfs.
+&gt; Advertised version is 3.10.0.
+&gt;
+&gt; So, my question is what is your take on this? Is this a bug in the leveldb
+&gt; library? The same one already reported? What log data would help debug or
+&gt; reproduce it? Or is there potentially some problem with my setup? Or could
+&gt; this be caused by a bug in btrfs? What is your take on using Riak with
+&gt; btrfs?
+&gt;
+&gt; --
+&gt; Antti Kuusela, M.Sc
+&gt; Senior Software Developer
+&gt; Firstbeat Technologies Ltd.
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16871.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16872">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16872">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16907.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16871.html">Leveldb segfault during Riak startup</a></span> <span class="sender italic">Antti Kuusela</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Leveldb segfault during Riak startup</span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16907.html">Re: Leveldb segfault during Riak startup</a></span> <span class="sender italic">Antti Kuusela</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16908.html">Re: Leveldb segfault during Riak startu...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16910.html">Re: Leveldb segfault during Riak startu...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16914.html">Re: Leveldb segfault during Riak st...</a></span> <span class="sender italic">Antti Kuusela</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16979.html">Re: Leveldb segfault during Ri...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Leveldb segfault during Riak startup">
+<input type="hidden" name="msgid" value="CAJJ0J9PW6jf5G3ORqLwsUrwQbbrqbGat7WsRnU6hPh_sSxwBJQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16872.html">
+<input type="submit" value=" Luke Bakken ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Leveldb+segfault+during+Riak+startup%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16871.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16907.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAJJ0J9PW6jf5G3ORqLwsUrwQbbrqbGat7WsRnU6hPh_sSxwBJQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

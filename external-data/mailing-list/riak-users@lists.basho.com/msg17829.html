@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak-CS issues when Riak endpoint fails-over to new server</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17829" id="c">
+<link rel="index" href="maillist.html#17829" id="i">
+<link rel="prev" href="msg17828.html" id="p">
+<link rel="next" href="msg17830.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17829.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak%5C-CS+issues+when+Riak+endpoint+fails%5C-over+to+new+server%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak-CS issues when Riak endpoint fails-over to new server</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Toby+Corkindale%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Toby Corkindale</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170104" rel="nofollow">Wed, 04 Jan 2017 15:28:46 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Magnus,
+I thought that it was recommended AGAINST talking to a co-located Riak on
+the same host?
+The reason being, the local Riak will take longer to start up than Riak CS,
+once you have a sizeable amount of data. This means Riak CS starts up,
+fails to connect to Riak, and exits.
+You also end up in a situation where you must always restart Riak CS if you
+restart the co-located Riak. (Otherwise the Riak CS PBC connections suffer
+the same problem as I described in my earlier email, where Riak CS doesn't
+realise it needs to reconnect them and returns errors).</pre><pre>
+
+Putting haproxy between Riak CS and Riak solved the problem of needing the
+local Riak to be started first.
+But it seems we just were putting the core problem off, rather than solving
+it. ie. That Riak CS doesn't understand it needs to re-connect and retry.
+
+I'm surprised more people with highly-available Riak CS installations
+haven't hit the same issues.
+
+Toby
+
+On Wed, 4 Jan 2017 at 21:42 Magnus Kessler &lt;mkess...@basho.com&gt; wrote:
+
+&gt; Hi Toby,
+&gt;
+&gt; As far as I know Riak CS has none of the more advanced retry capabilities
+&gt; that Riak KV has. However, in the design of CS there seems to be an
+&gt; assumption that a CS instance will talk to a co-located KV node on the same
+&gt; host. To achieve high availability, in CS deployments HAProxy is often
+&gt; deployed in front of the CS nodes. Could you please let me know if this is
+&gt; an option for your setup?
+&gt;
+&gt; Kind Regards,
+&gt;
+&gt; Magnus
+&gt;
+&gt;
+&gt; On 4 January 2017 at 01:04, Toby Corkindale &lt;t...@dryft.net&gt; wrote:
+&gt;
+&gt; Hello all,
+&gt; Now that we're all back from the end-of-year holidays, I'd like to bump
+&gt; this question up.
+&gt; I feel like this has been a long-standing problem with Riak CS not
+&gt; handling dropped TCP connections.
+&gt; Last time the cause was haproxy dropping idle TCP connections after too
+&gt; long, but we solved that at the haproxy end.
+&gt;
+&gt; This time, it's harder -- we're failing over to a different Riak backend,
+&gt; so the TCP connections between Riak CS and Riak PBC *have* to go down, but
+&gt; Riak CS just doesn't handle it well at all.
+&gt;
+&gt; Is there a trick to configuring it better?
+&gt;
+&gt; Thanks
+&gt; Toby
+&gt;
+&gt;
+&gt; On Thu, 22 Dec 2016 at 16:48 Toby Corkindale &lt;t...@dryft.net&gt; wrote:
+&gt;
+&gt; Hi,
+&gt; We've been seeing some issues with Riak CS for a while in a specific
+&gt; situation. Maybe you can advise if we're doing something wrong?
+&gt;
+&gt; Our setup has redundant haproxy instances in front of a cluster of riak
+&gt; nodes, for both HTTP and PBC. The haproxy instances share a floating IP
+&gt; address.
+&gt; Only one node holds the IP, but if it goes down, another takes it up.
+&gt;
+&gt; Our Riak CS nodes are configured to talk to the haproxy on that floating
+&gt; IP.
+&gt;
+&gt; The problem occurs if the floating IP moves from one haproxy to another.
+&gt;
+&gt; Suddenly we see a flurry of errors in riak-cs log files.
+&gt;
+&gt; This is presumably because it was holding open TCP connections, and the
+&gt; new haproxy instance doesn't know anything about them, so they get TCP
+&gt; RESET and shutdown.
+&gt;
+&gt; The problem is that riak-cs doesn't try to reconnect and retry
+&gt; immediately, instead it just throws a 503 error back to the client. Who
+&gt; then retries, but Riak-CS has a pool of a couple of hundred connections to
+&gt; cycle through, all of which throw the error!
+&gt;
+&gt; Does this sound like it is a likely description of the fault?
+&gt; Do you have any ways to mitigate this issue in Riak CS when using TCP load
+&gt; balancing above Riak PBC?
+&gt;
+&gt; Toby
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Magnus Kessler
+&gt; Client Services Engineer
+&gt; Basho Technologies Limited
+&gt;
+&gt; Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg 07970431
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17828.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17829">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17829">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17830.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17818.html">Riak-CS issues when Riak endpoint fails-over to new server</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17827.html">Re: Riak-CS issues when Riak endpoint fails-over to n...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17828.html">Re: Riak-CS issues when Riak endpoint fails-over ...</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak-CS issues when Riak endpoint fails-o...</span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17830.html">Re: Riak-CS issues when Riak endpoint fai...</a></span> <span class="sender italic">Shaun McVey</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17834.html">Re: Riak-CS issues when Riak endpoin...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17872.html">Riak CS race condition at start-...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17873.html">Re: Riak CS race condition a...</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17874.html">Re: Riak CS race condition a...</a></span> <span class="sender italic">Toby Corkindale</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak-CS issues when Riak endpoint fails-over to new server">
+<input type="hidden" name="msgid" value="CABEgq940sabCxGB0sc+L+7reL1dhHWmLkm4GQ6A28eD8c5cFag@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17829.html">
+<input type="submit" value=" Toby Corkindale ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak%5C-CS+issues+when+Riak+endpoint+fails%5C-over+to+new+server%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17828.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17830.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABEgq940sabCxGB0sc+L+7reL1dhHWmLkm4GQ6A28eD8c5cFag@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

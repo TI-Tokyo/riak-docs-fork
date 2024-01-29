@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Retrieving objects from Riak</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17480" id="c">
+<link rel="index" href="maillist.html#17480" id="i">
+<link rel="prev" href="msg17478.html" id="p">
+<link rel="next" href="msg17481.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17480.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Retrieving+objects+from+Riak%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Retrieving objects from Riak</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Alexander+Sicular%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Alexander Sicular</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160615" rel="nofollow">Wed, 15 Jun 2016 21:21:38 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Gianluca, I'll answer inline. My question to you is what is your
+use case? In general, the methods you mention could all work but there
+are pros and cons with each. -Alexander</pre><pre>
+
+On Wed, Jun 15, 2016 at 12:46 PM, Gianluca Padovani &lt;gpadov...@gmail.com&gt; wrote:
+&gt; Hi all,
+&gt; I'm exploring RiakKV and RiakTS and I have some questions:
+&gt;
+&gt; If I need to find a group of objects based on some properties, are there any
+&gt; way to search it on RiakKV?
+&gt;
+&gt; For example suppose to have some user and create a key as &lt;state&gt;_&lt;name&gt; so
+&gt; I have something as:
+&gt; - TX_John
+&gt; - TX_May
+&gt; - CA_Susan
+&gt; - CA_Martin
+&gt;
+&gt; Can I find all the people of TX? Can I do something as
+&gt; users_bucket.get(&quot;TX_*&quot;) ? I think no.
+
+No, Riak KV is key value and by default keys have no relationship to
+one another.
+
+&gt;
+&gt; To manage this scenario one possible way is to use a Crdt::Set. I can create
+&gt; for every state a set and when I add a new user to users_bucket I add also
+&gt; in this list. So If I want all users of TX, I get the set of TX, retrieve
+&gt; all the keys and then get all the objects with a mulit_get.
+
+CRDT's may be used. However, performance degrades as you add more
+elements to a set. Also, you should be aware of the total key size.
+Generally, you don't want keys/values larger than 1MB in Riak. Or more
+precisely, you don't want a large discrepancy in the distribution of
+your key/value sizes. One 10MB key/value floating around the cluster
+may cause thousands of 1KB key/values to get &quot;stuck&quot; behind it in
+internal message queues. This ends up introducing a non-deterministic
+performance profile.
+
+&gt;
+&gt; Another solution is to use 2i, tag every user object with the state, get the
+&gt; list of the keys and then retrieve the objects always with a multi_get.
+&gt;
+&gt; Another options is to use riak search that is based on Solr.
+&gt;
+
+2i and Solr may be used here. However Solr is a much better approach
+in cases where you may have complex queries going forward. When using
+Solr you need to make accommodations for its resource consumption.
+Solr like lots of memory.
+
+&gt; Are there any other options? What is the &quot;best options&quot;. Some concerns about
+&gt; that:
+&gt;
+&gt; In first solution (set) I need to do 2 write for every write and to get the
+&gt; objects I need to do a get and a multi_get, that I think it's a lot of get,
+&gt; If I want list it in another way (regarding age for example) I don't have
+&gt; any options.
+&gt; Using the 2i I should remember to add the 2i to every objects, If I had
+&gt; already stored some Object and I want to use a 2i I need to do a map reduce
+&gt; to retag every obejcts. Probably riak search is the best solution?
+&gt;
+
+If you just use Sole to index and not to store data, Solr will return
+a list of keys and you will need to fetch them yourself. The output of
+a Solr query is a json object which itself may be cached as a k/v in
+Riak for later retrieval. Of course, this all depends on your use case
+and whether or not caching is appropriate.
+
+&gt; If I'll user RiakTS, is this search more simple?
+&gt;
+&gt; If I use state as Partition Key, I can write
+&gt;
+&gt; select * from users where state=&quot;TX&quot;
+&gt;
+&gt; but,  when I want search something I always filter for partition key,
+&gt; correct?
+
+SQL queries in Riak TS require that all columns in a primary key be
+queried as equalities. The exception to this is the timestamp column,
+if you have one, that may be queried as a range. The reason for this
+is because the primary key, with the quantum if part of the PK, is
+hashed in order to determined where that data has been distributed in
+the cluster. You can think of queries against a PK as an index look
+up. Other columns in the schema may be queried as well, it is those
+columns that are scanned and filtered. You can think of filters
+applied against those additional columns as table scans.
+
+If you look at the PK statement in the documentation, you'll notice
+there are two lines. The first line is the partition key. The second
+line is the local key. The partition key is what gets hashed to
+determine distribution in the cluster. The local key is what is used
+to sort data on disk and insure uniqueness. So, you may simply use
+&quot;state&quot; as your partition key and &quot;state, time&quot; as your local key. So
+although you don't need to, in most cases you'd probably want to use a
+quantum in your partition key.
+
+&gt; I think that RiakTS doesn't support RiakSearch and 2i. Are there some plans
+&gt; for it?
+
+Correct, Riak TS does not support 2i or Solr. Solr is not fast enough.
+I believe the roadmap revolves around improving our SQL feature set at
+this point.
+
+&gt;
+&gt; Is correct use RiakTS without a time series ? :-)
+
+The timestamp data type in Riak TS is an int. You could just push
+sequence ints into that column if you wanted.
+
+&gt;
+&gt; A long mail I know ...
+&gt;
+&gt; thanks and bye
+&gt; Gianluca
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17478.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17480">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17480">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17481.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17478.html">Retrieving objects from Riak</a></span> <span class="sender italic">Gianluca Padovani</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Retrieving objects from Riak</span> <span class="sender italic">Alexander Sicular</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17481.html">Re: Retrieving objects from Riak</a></span> <span class="sender italic">Gianluca Padovani</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17482.html">Re: Retrieving objects from Riak</a></span> <span class="sender italic">DeadZen</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Retrieving objects from Riak">
+<input type="hidden" name="msgid" value="CALKhwhVn2tZ37DMctQ40CsXd406_C4B9RmS9g8etgcYpYhR-Xw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17480.html">
+<input type="submit" value=" Alexander Sicular ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Retrieving+objects+from+Riak%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17478.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17481.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CALKhwhVn2tZ37DMctQ40CsXd406_C4B9RmS9g8etgcYpYhR-Xw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

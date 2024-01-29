@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak CS expiration</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15667" id="c">
+<link rel="index" href="maillist.html#15667" id="i">
+<link rel="prev" href="msg15659.html" id="p">
+<link rel="next" href="msg15656.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15667.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS+expiration%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak CS expiration</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Toby+Corkindale%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Toby Corkindale</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150208" rel="nofollow">Sun, 08 Feb 2015 21:40:29 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On 7 February 2015 at 06:21, Kota Uenishi &lt;k...@basho.com&gt; wrote:
+&gt; Bitcask doesn't have such interface like hooking anything. As of
+&gt; internal data structure of Riak CS built on top of Riak, bitcask keys
+&gt; don't correspond simply to leveldb key. Say, things like this cannot
+&gt; happen: &quot;all tombstones of blocks of this object were collected and
+&gt; space were reclaimed by merged, so I'm gonna officially hit S3
+&gt; interface to delete that object&quot;. This is because blocks are
+&gt; distributed all across the cluster.
+&gt;
+&gt; I'd rather recommend to make up a simple cron job that walks over
+&gt; objects and see timestamp and hit CS API to delete them when they're
+&gt; old, or wait for lifecycle API gets implemented.</pre><pre>
+
+Definitely. And it's seriously only a few lines of code -- mine is
+implemented like this, in Scala:
+
+    val allFiles = s3.listObjects(sys.env(&quot;S3_BUCKET&quot;))
+
+    allFiles filter(_.getLastModifiedDate.before(expiryDate)) foreach { f =&gt;
+      logger.info(s&quot;Expiring file=${f.getKey}&quot;)
+      s3.deleteObject(bucket, f.getKey)
+    }
+
+
+&gt; On Fri, Feb 6, 2015 at 12:24 AM, Damien Krotkine &lt;dkrotk...@gmail.com&gt; wrote:
+&gt;&gt;
+&gt;&gt; Hi,
+&gt;&gt;
+&gt;&gt; As far as I understand, Riak CS uses bitcask for data storage and
+&gt;&gt; leveldb for metadata.
+&gt;&gt;
+&gt;&gt; Trying to implement expiration of data in riak cs, bitcask expiration
+&gt;&gt; works fine, but of course metadata are still in the leveldb backend. Is
+&gt;&gt; there any way to expire metadata from riak cs automatically ?
+&gt;&gt;
+&gt;&gt; Ideally, I'd like to be able to install a hook or callback on the
+&gt;&gt; bitcask compaction. Is that possible ?
+&gt;&gt;
+&gt;&gt; Thanks,
+&gt;&gt; dams
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; --
+&gt; Kota UENISHI / @kuenishi
+&gt; Basho Japan KK
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+
+-- 
+Turning and turning in the widening gyre
+The falcon cannot hear the falconer
+Things fall apart; the center cannot hold
+Mere anarchy is loosed upon the world
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15659.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15667">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15667">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15656.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15655.html">Riak CS expiration</a></span> <span class="sender italic">Damien Krotkine</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg15659.html">Re: Riak CS expiration</a></span> <span class="sender italic">Kota Uenishi</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak CS expiration</span> <span class="sender italic">Toby Corkindale</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak CS expiration">
+<input type="hidden" name="msgid" value="CABEgq97JzZFdBaaC8ybL+Zi+_eYGhvDO+_M04EPsN3U5OEYj4g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15667.html">
+<input type="submit" value=" Toby Corkindale ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS+expiration%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15659.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15656.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABEgq97JzZFdBaaC8ybL+Zi+_eYGhvDO+_M04EPsN3U5OEYj4g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

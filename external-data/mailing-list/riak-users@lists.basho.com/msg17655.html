@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Solr search performance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17655" id="c">
+<link rel="index" href="maillist.html#17655" id="i">
+<link rel="prev" href="msg17654.html" id="p">
+<link rel="next" href="msg17661.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17655.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Solr+search+performance%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Solr search performance</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Fred+Dushin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Fred Dushin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160919" rel="nofollow">Mon, 19 Sep 2016 14:02:06 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>All great questions, Sean.
+
+A few things.  First off, for result sets that are that large, you are probably 
+going to want to use Solr cursor marks [1], which are supported in the current 
+version of Solr we ship.  Riak allows queries using cursor marks through the 
+HTTP interface.  At present, it does not support cursors using the protobuf 
+API, due to some internal limitations of the server-side protobuf library, but 
+we do hope to fix that in the future.</pre><pre>
+
+Secondly, we have found sorting with distributed queries to be far more 
+performant using Solr 4.10.4.  Currently released versions of Riak use Solr 
+4.7, but as you can see on github [2], Solr 4.10.4 support has been merged into 
+the develop-2.2 branch, and is in the pipeline for release.  I can't say when 
+the next version of Riak is that will ship with this version because of 
+indeterminacy around bug triage, but it should not be too long.
+
+I would start to look at using cursor marks and measure their relative 
+performance in your scenario.  My guess is that you should see some improvement 
+there.
+
+-Fred
+
+[1] <a  rel="nofollow" href="https://cwiki.apache.org/confluence/display/solr/Pagination+of+Results">https://cwiki.apache.org/confluence/display/solr/Pagination+of+Results</a>
+[2] 
+<a  rel="nofollow" href="https://github.com/basho/yokozuna/commit/f64e19cef107d982082f5b95ed598da96fb419b0">https://github.com/basho/yokozuna/commit/f64e19cef107d982082f5b95ed598da96fb419b0</a>
+
+
+&gt; On Sep 19, 2016, at 4:48 PM, sean mcevoy &lt;sean.mce...@gmail.com&gt; wrote:
+&gt; 
+&gt; Hi All,
+&gt; 
+&gt; We have an index with ~548,000 entries, ~14,000 of which match one of our 
+&gt; queries.
+&gt; We read these in a paginated search and the first page (of 100 hits) returns 
+&gt; quickly in ~70ms.
+&gt; This response time seems to increase exponentially as we walk through the 
+&gt; pages:
+&gt; the 4th page takes ~200ms,
+&gt; the 8th page takes ~1200ms
+&gt; the 12th page takes ~2100ms
+&gt; the 16th page takes ~6100ms
+&gt; the 20th page takes ~24000ms
+&gt; 
+&gt; And by the time we're searching for the 22nd page it regularly times out at 
+&gt; the default 60 seconds.
+&gt; 
+&gt; I have a good unsderstanding of riak KV internals but absolutely nothing of 
+&gt; Lucene which I think is what's most relevant here. If anyone in the know can 
+&gt; point me towards any relevant resource or can explain what's happening I'd be 
+&gt; much obliged :-)
+&gt; As I would also be if anyone with experience of using Riak/Lucene can tell me:
+&gt; - Is 500K a crazy number of entries to put into one index?
+&gt; - Is 14K a crazy number of entries to expect to be returned?
+&gt; - Are there any methods we can use to make the search time more constant 
+&gt; across the full search?
+&gt; I read one blog post on inlining but it was a bit old &amp; not very obvious how 
+&gt; to implement using riakc_pb_socket calls.
+&gt; 
+&gt; And out of curiosity, do we not traverse the full range of hits for each 
+&gt; page? I naively thought that because I'm sorting the returned values we'd 
+&gt; have to get them all first and then sort, but the response times suggests 
+&gt; otherwise. Does Lucene store the data sorted by each field just in case a 
+&gt; query asks for it? Or what other magic is going on?
+&gt; 
+&gt; 
+&gt; For the technical details, we use the &quot;_yz_default&quot; schema and all the fields 
+&gt; stored are strings:
+&gt; - entry_id_s: unique within the DB, the aim of the query is to gather a list 
+&gt; of these
+&gt; - type_s: has one of 2 values
+&gt; - sub_category_id_s: in the query described above all 14K hits will match on 
+&gt; this, in the DB of ~500K entries there are ~43K different values for this 
+&gt; field, withe each category typically having 2-6 sub categories
+&gt; - category_id_s: not matched in this query, in the DB of ~500K entries there 
+&gt; are ~13K different values for this field
+&gt; - status_s: has one of 2 values, in the query described baove all hits will 
+&gt; have the value &quot;active&quot;
+&gt; - user_id_s: unique within the DB but not matched in this query
+&gt; - first_name_s: almost unique within the DB, this query will sort by this 
+&gt; field
+&gt; - last_name_s: almost unique within the DB, this query will sort by this field
+&gt; 
+&gt; This search query looks like:
+&gt; &lt;&lt;&quot;sub_category_id_s:test_1 AND status_s:active AND type_s:sub_category&quot;&gt;&gt;
+&gt; 
+&gt; Our options parameter has the sort directive:
+&gt; {sort, &lt;&lt;&quot;first_name_s asc, last_name_s asc&quot;&gt;&gt;}
+&gt; 
+&gt; The query was run on a 5-node cluster with n_val of 3.
+&gt; 
+&gt; Thanks in advance fo rany pointers!
+&gt; //Sean.
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17654.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17655">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17655">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17661.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17654.html">Solr search performance</a></span> <span class="sender italic">sean mcevoy</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Solr search performance</span> <span class="sender italic">Fred Dushin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17661.html">Re: Solr search performance</a></span> <span class="sender italic">sean mcevoy</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Solr search performance">
+<input type="hidden" name="msgid" value="574B1C65-1EC7-4CD3-8F6F-AA314116CDA9@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17655.html">
+<input type="submit" value=" Fred Dushin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Solr+search+performance%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17654.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17661.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">574B1C65-1EC7-4CD3-8F6F-AA314116CDA9@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

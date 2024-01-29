@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: I2 queries fail when few nodes are down</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17832" id="c">
+<link rel="index" href="maillist.html#17832" id="i">
+<link rel="prev" href="msg17831.html" id="p">
+<link rel="next" href="msg17833.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17832.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+I2+queries+fail+when+few+nodes+are+down%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: I2 queries fail when few nodes are down</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Magnus+Kessler%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Magnus Kessler</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170105" rel="nofollow">Thu, 05 Jan 2017 03:23:57 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On 4 January 2017 at 23:22, Tomi Takussaari &lt;tomi.takussa...@gmail.com&gt;
+wrote:</pre><pre>
+
+&gt; Hello Riak-users
+&gt;
+&gt; We have 9 node Riak-cluster, that we use to store user accounts.
+&gt;
+&gt; Some of the crucial data fields of user account are indexed using I2, so
+&gt; that we can do secondary index queries based on them.
+&gt;
+&gt; Today, we tested how our cluster performs when few nodes go down, and
+&gt; results were not very good.
+&gt;
+&gt; If more than 2 nodes go down, all I2 queries will start failing, returning
+&gt; HTTP 500, with &quot;insufficient vnodes available&quot; error. After nodes are up
+&gt; again, things start working again.
+&gt; Normal object CRUD operations worked fine.
+&gt;
+&gt; Is this to be expected behaviour ?
+&gt;
+&gt; Funny thing is, that we have other cluster, with same configuration but
+&gt; with 6 nodes, for other environment, and that also experiences same
+&gt; problems when more than 2 nodes go down, so it does not seem to have
+&gt; anything to do with percentage of nodes being down..
+&gt;
+&gt; Our ring size is 256, and current Riak version is 2.2.
+&gt;
+&gt; Both clusters were first created years ago, with Riak 1.4, if memory
+&gt; serves, and I believe we tested this same thing back then, and I2 queries
+&gt; did not stop working this easily then..
+&gt;
+&gt; Any help would be appreciated!
+&gt;
+&gt;
+Hi Tomi,
+
+For a cluster that uses the default replication factor (`n_val`) of 3, the
+behaviour you observed is expected. Secondary index queries work on a
+covering set of VNodes, that include 1 replica for each KV object. With
+`n_val=3` the covering set can only be guaranteed if no more than 2 nodes
+are offline at any given time. This behaviour has not changed since the 1.4
+release.
+
+As our documentation [0] states:
+
+&quot;Riak stores 3 replicas of all objects by default, although this can be
+changed using bucket types, which manage buckets’ replication properties.
+The system is capable of generating a full set of results from one third of
+the system’s partitions as long as it chooses the right set of partitions.
+The query is sent to each partition, the index data is read, and a list of
+keys is generated and then sent back to the requesting node.&quot;
+
+Other operations working fine is due to Riak's ability to spin up fallback
+partitions (VNodes on one of the remaining nodes), that will accept and
+temporarily store data while the Node that should own the data is down.
+
+Kind Regards,
+
+Magnus
+
+[0]:
+<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.0/using/reference/secondary-indexes/#how-it-works">http://docs.basho.com/riak/kv/2.2.0/using/reference/secondary-indexes/#how-it-works</a>
+
+-- 
+Magnus Kessler
+Client Services Engineer
+Basho Technologies Limited
+
+Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg 07970431
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17831.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17832">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17832">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17833.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17831.html">I2 queries fail when few nodes are down</a></span> <span class="sender italic">Tomi Takussaari</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: I2 queries fail when few nodes are down</span> <span class="sender italic">Magnus Kessler</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: I2 queries fail when few nodes are down">
+<input type="hidden" name="msgid" value="CAL3YJWY3_Jo_pRHGRenVQSGKxMXtBk97t3Khrpg2TbDYjiNQ-A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17832.html">
+<input type="submit" value=" Magnus Kessler ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+I2+queries+fail+when+few+nodes+are+down%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17831.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17833.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAL3YJWY3_Jo_pRHGRenVQSGKxMXtBk97t3Khrpg2TbDYjiNQ-A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

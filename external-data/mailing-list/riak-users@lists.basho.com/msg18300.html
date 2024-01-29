@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak getting very slow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18300" id="c">
+<link rel="index" href="maillist.html#18300" id="i">
+<link rel="prev" href="msg18267.html" id="p">
+<link rel="next" href="msg18268.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18300.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+getting+very+slow%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak getting very slow</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Fred+Dushin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Fred Dushin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170628" rel="nofollow">Wed, 28 Jun 2017 08:52:43 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>When you say &quot;All not have solr on&quot;, do you mean not all nodes have search 
+enabled?   If you are measuring Solr index latencies, then you definitely have 
+Solr on at least one node.  Or is this just a typo?</pre><pre>
+
+Going on the assumption you have search enabled on all nodes (you should, if 
+you are using search at all), you are seeing mean latencies on puts on the 
+order of almost 16 seconds, and 99th percentile latencies reaching almost a 
+minute.  Yes, that is slow!
+
+Do you have any other metrics on what is going on with the Solr process?  It is 
+a separate VM, and in general you can probe it using JMX, or even by scraping 
+the proc file system.  I don't have anything handy out of the box, but I have 
+written some collected python modules you should feel free to use and pilfer, 
+if that helps:
+
+<a  rel="nofollow" href="https://github.com/fadushin/riak_puppet_stuff/tree/master/modules/riak_node/files/collectd">https://github.com/fadushin/riak_puppet_stuff/tree/master/modules/riak_node/files/collectd</a>
+
+I am not enough of a Solr expert to say that having 100+ dynamic fields is the 
+root cause of your issues with write latency.  It could be, so you should try 
+to see if Solr is impacted if you write to a different Riak search index (i.e., 
+Solr core).  That would of course require a new bucket, but those are cheap for 
+the purposes of experimentation.  You may need to re-architect your application 
+to use more Riak indices and bucket types, and to use statically defined Solr 
+fields, in order to get over this hump.
+
+Another thing you should consider doing is upgrading to Riak 2.0.9.  This 
+includes very significant improvement to the write/index path into Solr, with 
+support for batching and asynchronous delivery into Solr.  This won't 
+necessarily fix your problem -- you should get to the bottom of why you are 
+getting 16 seconds average write latencies into Solr for a single Solr document 
+first, but it may give you some headroom in the future.
+
+One other thing we have found leading up to the 2.0.8 release, and which was 
+fixed in 2.0.8 and later, is that Solr does slow to a creep if you have a high 
+number of siblings, almost linearly in the number of siblings.  This happens 
+because Riak used to use the deleteByQuery Solr operation when indexing a 
+document, which would cause Solr memory consumption to go through the roof, as 
+well as CPU utilization.  We fixed this in 2.0.8 and later to delete previously 
+existing documents by id, which is far less resource consumptive on the Solr 
+side.  Do you have a handle on how many siblings you have in your Riak objects?
+
+And BTW, if you upgrade to Riak 2.2.0, then you will also get an upgrade to 
+Solr 4.10.
+
+-Fred
+
+&gt; On Jun 16, 2017, at 4:49 PM, amol.zamb...@bookmypacket.com wrote:
+&gt; 
+&gt; Hi All,
+&gt; 
+&gt; We are running riak kv 2.0.1 on 5 node, all are high end conf i.e it does
+&gt; not have any load. All not have solr on.
+&gt; 
+&gt; Still, We getting very high latency
+&gt; 
+&gt; After Some investigation, i have found what will be a possible issue,
+&gt; We have one bucket with solr index, solr index's each document has about
+&gt; 100+ dynamic fields in the Solr schema 
+&gt; 
+&gt; I have read two issue related to the same problem as below
+&gt; <a  rel="nofollow" href="https://github.com/basho/yokozuna/issues/719">https://github.com/basho/yokozuna/issues/719</a>
+&gt; <a  rel="nofollow" href="https://github.com/basho/yokozuna/issues/330">https://github.com/basho/yokozuna/issues/330</a>
+&gt; 
+&gt; This specify that you should not have more than 60 dynamic fields else riak
+&gt; will get slow because of solr index creation will be very slow
+&gt; 
+&gt; Below is riak-admin status related to solr
+&gt; rings_reconciled_total : 80
+&gt; search_index_fail_count : 1011
+&gt; search_index_fail_one : 5
+&gt; search_index_latency_95 : 36450099
+&gt; search_index_latency_99 : 54188877
+&gt; search_index_latency_999 : 54188877
+&gt; search_index_latency_max : 54188877
+&gt; search_index_latency_mean : 15818891
+&gt; search_index_latency_median : 17226576
+&gt; search_index_latency_min : 1919
+&gt; search_index_throughput_count : 36125
+&gt; search_index_throughput_one : 19
+&gt; search_query_fail_count : 29
+&gt; search_query_fail_one : 0
+&gt; search_query_latency_95 : 0
+&gt; search_query_latency_99 : 0
+&gt; search_query_latency_999 : 0
+&gt; search_query_latency_max : 0
+&gt; search_query_latency_mean : 0
+&gt; search_query_latency_median : 0
+&gt; search_query_latency_min : 0
+&gt; search_query_throughput_count : 3455
+&gt; 
+&gt; Also related to port time waiting as below
+&gt; netstat -anp | grep :8093 | grep EST | wc -l
+&gt; 20
+&gt; netstat -anp | grep :8093 | grep TIME_WAIT | wc -l
+&gt; 21
+&gt; 
+&gt; Please help us find out issue and what will be possible solution
+&gt; 
+&gt; Thanks,
+&gt; Amol
+&gt; 
+&gt; 
+&gt; 
+&gt; 
+&gt; --
+&gt; View this message in context: 
+&gt; <a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/Riak-getting-very-slow-tp4035209.html">http://riak-users.197444.n3.nabble.com/Riak-getting-very-slow-tp4035209.html</a>
+&gt; Sent from the Riak Users mailing list archive at Nabble.com.
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18267.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18300">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18300">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18268.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18266.html">Riak getting very slow</a></span> <span class="sender italic">amol.zamb...@bookmypacket.com</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18267.html">Re: Riak getting very slow</a></span> <span class="sender italic">Fred Dushin</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak getting very slow</span> <span class="sender italic">Fred Dushin</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak getting very slow">
+<input type="hidden" name="msgid" value="19B2DCA4-B577-42A1-B626-E0C9BD22E040@icloud.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18300.html">
+<input type="submit" value=" Fred Dushin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+getting+very+slow%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18267.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18268.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">19B2DCA4-B577-42A1-B626-E0C9BD22E040@icloud.com</li>
+</ul>
+</div>
+</body>
+</html>

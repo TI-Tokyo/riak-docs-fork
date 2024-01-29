@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Product Advisory - Riak 2.0.0 - 2.1.1: Incompatibility between Dotted	Version Vectors and Last Write Wins</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16276" id="c">
+<link rel="index" href="maillist.html#16276" id="i">
+<link rel="prev" href="msg16271.html" id="p">
+<link rel="next" href="msg16279.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16276.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Product+Advisory+%5C-+Riak+2.0.0+%5C-+2.1.1%5C%3A+Incompatibility+between+Dotted%09Version+Vectors+and+Last+Write+Wins%22&amp;o=newest" rel="nofollow"><span itemprop="name">Product Advisory - Riak 2.0.0 - 2.1.1: Incompatibility between Dotted	Version Vectors and Last Write Wins</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Tyler+Hannan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Tyler Hannan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150706" rel="nofollow">Mon, 06 Jul 2015 16:26:22 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>-Description-
+
+In Riak 2.0.0 through Riak 2.1.1, enabling dotted version vectors and
+`last_write_wins` at the same time has been found to cause unexpected
+behavior on object updates (PUT or POST with causal context), including
+both passive and active anti-entropy.</pre><pre>
+
+-Affected Users-
+
+This issue will affect you if:
+
+You are using the default bucket type, and have explicitly set both
+dvv_enabled and last_write_wins to true. The default value for dvv_enabled
+is false for the default bucket type.
+ OR
+You are using a custom bucket type, and have explicitly set last_write_wins
+to true. The default value for dvv_enabled is true on custom bucket types.
+ AND
+You are doing _updates_ to keys. That is GET-mutate-PUT passing the vclock
+back to Riak. PUTs without a causal context are safe.
+
+-Impact-
+
+The issue manifests itself as failure to read a key or keys that are
+affected. The issue may only show in logs. The issue may be short-lived if
+the affected keys are overwritten.
+
+-Mitigation-
+
+In all bucket types where last_write_wins is being used, this issue can be
+avoided by setting dvv_enabled to false. Setting `dvv_enabled=false` will
+enable AAE or read repair to fix those affected keys. In order to make this
+process as easy as possible, we have provided a pre-compiled Erlang module
+called dvv_lww_buckets.beam that can be used to scan for and fix affected
+buckets. This is available at
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/community/product-advisories/dvv-lastwritewins/">http://docs.basho.com/riak/latest/community/product-advisories/dvv-lastwritewins/</a>
+
+Place the beam file in your basho_patches directory
+(»riak_install_dir&gt;/lib/basho_patches« ) and execute the following commands
+from the bin directory of your Riak installation. Note that this only needs
+to be done on one node per Riak cluster, as the beam file provides a
+utility to fix buckets across the cluster:
+
+  cd &lt;riak_install_dir&gt;/bin
+  ./riak attach
+  l(dvv_lww_buckets).
+  dvv_lww_buckets:fix_buckets().
+
+If you see any output of the form:
+
+  !! Fixing &lt;&lt;&quot;foo&quot;&gt;&gt;: - resetting dvv_enabled=false
+
+Then you have one or more affected buckets. The fix_buckets function will
+automatically fix the bucket properties for both untyped buckets with
+properties different from default properties, and also any bucket types
+that have these settings. If you have set these properties for your default
+bucket in an advanced.config setting, it will warn you that your default
+bucket is configured incorrectly, so you will have to edit your
+advanced.config and make sure that you set “dvv_enabled” to false.
+
+DO NOT set `last_write_wins=false` as AAE or Read Repair may remove all
+conflicting values for affected keys.
+
+When AAE is enabled, the next AAE run will repair any keys with the issue.
+Also, once the bucket properties are fixed, issuing a GET (for example,
+your application reading the key) will result in both a successful read and
+will repair that particular object.
+
+If AAE is disabled in your cluster, infrequently accessed data affected by
+this issue, will be in a damaged state until the next request. More
+information about AAE, and the risks associated with disabling it, is
+available at <a  rel="nofollow" href="https://docs.basho.com/riak/2.1.1/theory/concepts/aae/">https://docs.basho.com/riak/2.1.1/theory/concepts/aae/</a>
+
+In a future release we will ensure that dotted version vectors and
+`last_write_wins` cannot be enabled simultaneously.
+
+Questions?
+
+Please open a ticket with Basho if you have any questions about the above
+issue.
+
+Cheers,
+
+Tyler Hannan  |  Director of Technical Marketing
+Basho Technologies
+t: @tylerhannan
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16271.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16276">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16276">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16279.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Product Advisory - Riak 2.0.0 - 2.1.1: Incompatibility between Dotted	Version Vectors and Last Write Wins">
+<input type="hidden" name="msgid" value="CAGWeSyCgeauabf-XOEgM=1LXddRHGa3LjZy86AXXBJJVLRhVmQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16276.html">
+<input type="submit" value=" Tyler Hannan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Product+Advisory+%5C-+Riak+2.0.0+%5C-+2.1.1%5C%3A+Incompatibility+between+Dotted%09Version+Vectors+and+Last+Write+Wins%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16271.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16279.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGWeSyCgeauabf-XOEgM=1LXddRHGa3LjZy86AXXBJJVLRhVmQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

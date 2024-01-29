@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Docker support</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17535" id="c">
+<link rel="index" href="maillist.html#17535" id="i">
+<link rel="prev" href="msg17534.html" id="p">
+<link rel="next" href="msg17539.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17535.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Docker+support%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Docker support</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Christopher+Meiklejohn%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Christopher Meiklejohn</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160713" rel="nofollow">Wed, 13 Jul 2016 13:24:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>On Wed, Jul 13, 2016 at 10:08 PM, Jon Brisbin &lt;jbris...@basho.com&gt; wrote:
+&gt; I guess to answer at least one part of your question on whether it's
+&gt; &quot;encouraged&quot; or not: it depends on what you want to do with it.
+&gt;
+&gt; I can't speak for the support side of things but on the engineering side
+&gt; anyway we're using Docker containers fairly happily to do things like create
+&gt; ephemeral clusters for doing adhoc testing. It makes for a very nice way to
+&gt; run a small cluster on a laptop or on a Mesos slave in a Jenkins build with
+&gt; very similar expectations (I won't say identical because networking issues
+&gt; can rear their head). I created images based on the latest TS and KV
+&gt; packages. There are docs in the READMEs:
+&gt;
+&gt; <a  rel="nofollow" href="https://hub.docker.com/r/basho/riak-ts/">https://hub.docker.com/r/basho/riak-ts/</a>
+&gt; <a  rel="nofollow" href="https://hub.docker.com/r/basho/riak-kv/">https://hub.docker.com/r/basho/riak-kv/</a>
+&gt;
+&gt; Running a production Riak cluster, however, raises some concerns that I'm
+&gt; pretty sure no one really has a good handle on. Networking issues can become
+&gt; difficult unless you use something like Weave. Volumes could also be an
+&gt; issue. docker-compose and Docker Swarm should help with some of this but we
+&gt; don't have any docs that demonstrate how to use them.</pre><pre>
+
+I'd say there's two classes of issues here:
+
+Most of the networking issues arise from the use of distributed
+Erlang: the Erlang port mapper deamon requires that you operate in
+host networking mode, on a known port visible to all other nodes,
+because of the way node discovery and clustering works in Erlang.
+Outside of that, if you're running multiple containers on the same
+machine, you'll also need to modify Riak to listen on different ports
+for the Protocol Buffer and HTTP interfaces, because under host
+networking only one server is going to be able to bind.
+
+The second is the lifecycle around the containers: where is the
+persistent storage going to be for the cluster?  How will cluster
+orchestrations in Riak be handled?  Mesos, in it's current iteration
+does not have a mechanism for issuing a callback when a container
+terminates, so an explicit operator command is still required to force
+remove a node from the cluster if a container is to die.  How will
+nodes be added to the cluster when a new container is launched?  Will
+an orchestration framework such as Mesos or Kubernetes be used?  The
+operational side is very unclear at this point.
+
+&gt; I'd say we also don't have a comprehensive picture of performance
+&gt; characteristics of running a Dockerized Riak cluster since there's several
+&gt; moving parts to consider. We need to investigate bridged vs host networking
+&gt; mode and using different volume drivers, etc... There is some valid concern
+&gt; that the key reasons you'd want to use Riak to begin with are somewhat
+&gt; ameliorated by a Docker container's ephemeral nature; e.g. it's really easy
+&gt; to kill off containers which might lead to accidental data loss.
+
+As someone who's been doing a significant amount of Erlang in Docker,
+I'd also be worried about the oom-killer and cgroups with Docker
+containers if one is considering Mesos: you don't want to lose a node
+and risk data loss if your node happens to have a memory fluctuation.
+
+I've personally made some headway in this for my own research when
+migrating some of our application off of Riak Core and it's involved
+finding solutions for many of these things: it's lead us down the path
+of completely disabling distributed Erlang and doing explicit TCP
+connection handling between nodes; using a custom membership protocol;
+and writing a system for container lifecycle management tied into
+membership information being exported from Kubernetes/Mesos (and, I'm
+sure similar could be done for swarm, weave, etc.)
+
+Thanks,
+- Christopher
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17534.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17535">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17535">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17539.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17531.html">Docker support</a></span> <span class="sender italic">Adam Winter</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17533.html">Re: Docker support</a></span> <span class="sender italic">Sargun Dhillon</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17534.html">Re: Docker support</a></span> <span class="sender italic">Jon Brisbin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Docker support</span> <span class="sender italic">Christopher Meiklejohn</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17539.html">Re: Docker support</a></span> <span class="sender italic">Adam Winter</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17540.html">Re: Docker support</a></span> <span class="sender italic">Justin Pease</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Docker support">
+<input type="hidden" name="msgid" value="CAGVmt0V88-ebq2XdZWtXuJgBp=Gw6RFn3s=7kcV9DKjFj7fAZw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17535.html">
+<input type="submit" value=" Christopher Meiklejohn ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Docker+support%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17534.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17539.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAGVmt0V88-ebq2XdZWtXuJgBp=Gw6RFn3s=7kcV9DKjFj7fAZw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

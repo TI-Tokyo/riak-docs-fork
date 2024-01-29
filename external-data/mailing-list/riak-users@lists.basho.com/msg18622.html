@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak 2.9.0 - Update Available</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18622" id="c">
+<link rel="index" href="maillist.html#18622" id="i">
+<link rel="prev" href="msg18621.html" id="p">
+<link rel="next" href="msg18623.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18622.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+2.9.0+%5C-+Update+Available%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak 2.9.0 - Update Available</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Martin+Sumner%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Martin Sumner</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20190628" rel="nofollow">Fri, 28 Jun 2019 02:25:27 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Bryan,
+
+We saw that Riak was using much more memory than was expected at the end of
+the handoffs.  Using `riak-admin top` we could see that this wasn't process
+memory, but binaries.  Firstly did some work via attach looping over
+processes and running GC to confirm that this wasn't a failure to collect
+garbage - the references to memory were real.  Then did a bit of work in
+attach writing some functions to analyse process_info/2 for each process
+(looking at binary and memory), and discovered that there were penciller
+processes that had lots of references to lots of large binaries (and this
+accounted for all the unexpected memory use), and where the penciller was
+the only process with a reference to the binary.  This made no sense
+initially as the penciller should only have small binaries (metadata).
+Then looked at the running state of the penciller processes and could see
+no large binaries in the state, but could see that a lot of the active keys
+in the penciller were keys that were known to have large object values (but
+small amounts of metadata) - and that the size of the object values were
+the same as the size of the binary references found on the penciller
+process via process_info/2..</pre><pre>
+
+I then recalled the first part of this:
+<a  rel="nofollow" href="https://dieswaytoofast.blogspot.com/2012/12/erlang-binaries-and-garbage-collection.html">https://dieswaytoofast.blogspot.com/2012/12/erlang-binaries-and-garbage-collection.html</a>.
+It was obvious that in extracting the metadata the beam was naturally
+retaining a reference to the whole binary, as long as the sub-binary was
+retained by the a process (the Penciller).  Forcing a binary copy resolved
+this referencing issue.  It was nice that the same tools used to detect the
+issue, made it quite easy to write a test to confirm resolution -
+<a  rel="nofollow" href="https://github.com/martinsumner/leveled/blob/master/test/end_to_end/riak_SUITE.erl#L1214-L1239">https://github.com/martinsumner/leveled/blob/master/test/end_to_end/riak_SUITE.erl#L1214-L1239</a>
+.
+
+The memory leak section of Fred Herbert's <a  rel="nofollow" href="http://www.erlang-in-anger.com/">http://www.erlang-in-anger.com/</a> is
+great reading for helping with these types of issues.
+
+Thanks
+
+Martin
+
+
+On Fri, 28 Jun 2019 at 09:46, b h &lt;bryanhuntwit...@gmail.com&gt; wrote:
+
+&gt; Nice work - I've read issue / PR - how did you discover / track it down -
+&gt; tools or just reading the code ?
+&gt;
+&gt; On Fri, 28 Jun 2019 at 09:35, Martin Sumner &lt;martin.sum...@adaptip.co.uk&gt;
+&gt; wrote:
+&gt;
+&gt;&gt; There is now a second update available for 2.9.0:
+&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak/tree/riak-2.9.0p2">https://github.com/basho/riak/tree/riak-2.9.0p2</a>.
+&gt;&gt;
+&gt;&gt; This patch, like the patch before, resolves a memory management issue in
+&gt;&gt; leveled, which this time could be triggered by sending many large objects
+&gt;&gt; in a short period of time.  The underlying problem is described a bit
+&gt;&gt; further here <a  rel="nofollow" href="https://github.com/martinsumner/leveled/issues/285">https://github.com/martinsumner/leveled/issues/285</a>, and is
+&gt;&gt; resolved by leveled working more sympathetically with the beam binary
+&gt;&gt; memory management.
+&gt;&gt;
+&gt;&gt; Switching to the patched version is not urgent unless you are using the
+&gt;&gt; leveled backend, and may send a large number of large objects in a burst.
+&gt;&gt;
+&gt;&gt; Updated packages are available (thanks to Nick Adams at TI Tokyo) -
+&gt;&gt; <a  rel="nofollow" href="https://files.tiot.jp/riak/kv/2.9/2.9.0p2/">https://files.tiot.jp/riak/kv/2.9/2.9.0p2/</a>
+&gt;&gt;
+&gt;&gt; Thanks again to the testing team at the NHS Spine project, Aaron Gibbon
+&gt;&gt; (BJSS) and Ramen Sen, who discovered the problem.  The issue was discovered
+&gt;&gt; in a handoff scenario where there were a tens of thousands of 2MB objects
+&gt;&gt; stored in a portion of the keyspace at the end of the handoff - which led
+&gt;&gt; to memory issues until either more PUTs were received (to force a persist
+&gt;&gt; to disk) or a restart occurred..
+&gt;&gt;
+&gt;&gt; Regards
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Sat, 25 May 2019 at 09:35, Martin Sumner &lt;martin.sum...@adaptip.co.uk&gt;
+&gt;&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Unfortunately, Riak 2.9.0 was released with an issue whereby a race
+&gt;&gt;&gt; condition in heavy-PUT scenarios (e.g. handoffs), could cause a leak of
+&gt;&gt;&gt; file descriptors.
+&gt;&gt;&gt;
+&gt;&gt;&gt; The issue is described here -
+&gt;&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak_kv/issues/1699">https://github.com/basho/riak_kv/issues/1699</a>, and the underlying issue
+&gt;&gt;&gt; here - <a  rel="nofollow" href="https://github.com/martinsumner/leveled/issues/278">https://github.com/martinsumner/leveled/issues/278</a>.
+&gt;&gt;&gt;
+&gt;&gt;&gt; There is a new patched version of the release available (2.9.0p1) at
+&gt;&gt;&gt; <a  rel="nofollow" href="https://github.com/basho/riak/tree/riak-2.9.0p1">https://github.com/basho/riak/tree/riak-2.9.0p1</a>.  This should be used
+&gt;&gt;&gt; in preference to the original release of 2.9.0.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Updated packages are available (thanks to Nick Adams at TI Tokyo) -
+&gt;&gt;&gt; <a  rel="nofollow" href="https://files.tiot.jp/riak/kv/2.9/2.9.0p1/">https://files.tiot.jp/riak/kv/2.9/2.9.0p1/</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thanks also to the testing team at the NHS Spine project, Aaron Gibbon
+&gt;&gt;&gt; (BJSS) and Ramen Sen, who discovered the problem.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Regards
+&gt;&gt;&gt;
+&gt;&gt;&gt; Martin
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18621.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18622">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18622">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18623.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18620.html">Riak 2.9.0 - Update Available</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18621.html">Re: Riak 2.9.0 - Update Available</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak 2.9.0 - Update Available</span> <span class="sender italic">Martin Sumner</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18623.html">Re: Riak 2.9.0 - Update Availabl...</a></span> <span class="sender italic">Russell Brown via riak-users</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18624.html">Re: Riak 2.9.0 - Update Availabl...</a></span> <span class="sender italic">Bryan Hunt</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg18627.html">Re: Riak 2.9.0 - Update Available</a></span> <span class="sender italic">Martin Sumner</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18628.html">Re: Riak 2.9.0 - Update Available</a></span> <span class="sender italic">Martin Sumner</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak 2.9.0 - Update Available">
+<input type="hidden" name="msgid" value="CANzjUxAYQdimTt9EFj23=4kkAB2Pdgf3hF4e9_heS-sh30sD0g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18622.html">
+<input type="submit" value=" Martin Sumner ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+2.9.0+%5C-+Update+Available%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18621.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18623.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANzjUxAYQdimTt9EFj23=4kkAB2Pdgf3hF4e9_heS-sh30sD0g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

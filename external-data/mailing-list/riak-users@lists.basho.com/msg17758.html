@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Associating Riak CRDT Sets to Buckets / Keys via Erlang Client</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17758" id="c">
+<link rel="index" href="maillist.html#17758" id="i">
+<link rel="prev" href="msg17757.html" id="p">
+<link rel="next" href="msg17756.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17758.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Associating+Riak+CRDT+Sets+to+Buckets+%5C%2F+Keys+via+Erlang+Client%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Associating Riak CRDT Sets to Buckets / Keys via Erlang Client</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Vikram+Lalit%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Vikram Lalit</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20161117" rel="nofollow">Thu, 17 Nov 2016 07:42:55 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>This is awesome...! Many thanks Magnus - much appreciated...
+
+Must have overlooked some of these details in my initial analysis but am
+sure I have a very good starting point / details now!</pre><pre>
+
+Thanks again!
+
+On Thu, Nov 17, 2016 at 7:48 AM, Magnus Kessler &lt;mkess...@basho.com&gt; wrote:
+
+&gt; On 16 November 2016 at 17:40, Vikram Lalit &lt;vikramla...@gmail.com&gt; wrote:
+&gt;
+&gt;&gt; Hi - I am trying to leveraging CRDT sets to store chat messages that my
+&gt;&gt; distributed Riak infrastructure would store. Given the intrinsic
+&gt;&gt; conflict-resolution, I thought this might be more beneficial than me
+&gt;&gt; putting together a merge implementation based on the causal context.
+&gt;&gt;
+&gt;&gt; However, my data model requires each chat message to be associated to
+&gt;&gt; something like a post, hence I was thinking of having the post reference as
+&gt;&gt; the bucket, and chat references as keys in that bucket. With of course the
+&gt;&gt; bucket-type datasource equated to 'set'. Unfortunately though, from the
+&gt;&gt; documentation, I'm not able to ascertain how to associate a created set
+&gt;&gt; with an existing bucket and a new key reference if I use the Erlang client.
+&gt;&gt; This seems possible for other languages but not for Erlang, with the Basho
+&gt;&gt; doc mentioning  &quot;%% Sets in the Erlang client are opaque data structures
+&gt;&gt; that collect operations as you mutate them. We will associate the data  
+&gt;&gt; structure
+&gt;&gt; with a bucket type, bucket, and key later on.&quot;.
+&gt;&gt;
+&gt;&gt; Subsequent code only seems to fetch the set from the bucket / key but
+&gt;&gt; where exactly is the allocation happening?
+&gt;&gt;
+&gt;&gt; {ok, SetX} = riakc_pb_socket:fetch_type(Pid, {&lt;&lt;&quot;sets&quot;&gt;&gt;,&lt;&lt;&quot;travel&quot;&gt;&gt;},
+&gt;&gt; &lt;&lt;&quot;cities&quot;&gt;&gt;).
+&gt;&gt;
+&gt;&gt; Perhaps I'm missing something, or is there a code snippet that I can
+&gt;&gt; leverage?
+&gt;&gt;
+&gt;&gt; Thanks!
+&gt;&gt;
+&gt;&gt;
+&gt; Hi Vikram,
+&gt;
+&gt; Please have a look at the following snippet, that shows the complete set
+&gt; of operations used to update a CRDT set with the Erlang client:
+&gt;
+&gt; update_crdt_set(Server, BType, Bucket, Key, Val) -&gt;
+&gt;         T = unicode:characters_to_binary(BType),
+&gt;         B = unicode:characters_to_binary(Bucket),
+&gt;         K = unicode:characters_to_binary(Key),
+&gt;
+&gt;         {ok, Pid} = riakc_pb_socket:start_link(Server, 8087),
+&gt;
+&gt;         Set = case
+&gt;                 riakc_pb_socket:fetch_type(Pid, {T, B}, K)
+&gt;         of
+&gt;                 {ok, O} -&gt; O;
+&gt;                 {error, {notfound, set}} -&gt; riakc_set:new()
+&gt;         end,
+&gt;
+&gt;         Set1 = riakc_set:add_element(unicode:characters_to_binary(Val),
+&gt; Set),
+&gt;
+&gt;         {ok, {set, Vals, _Adds, _Dels, _Ctx}} =
+&gt; riakc_pb_socket:update_type(
+&gt;                 Pid, {T, B}, K, riakc_set:to_op(Set1), [return_body]),
+&gt;         Vals.
+&gt;
+&gt; The set is updated with riakc_set:add_element/2, and sent back to the
+&gt; server with riakc_pb_socket:update_type/5, which in turn takes an
+&gt; argument returned from riakc_set:to_op/1.
+&gt;
+&gt; More information and samples can be found in the Riak documentation [0]
+&gt; and the Riak Erlang client API docs [1][2].
+&gt;
+&gt; Please let me know if this answered your question.
+&gt;
+&gt; Kind Regards,
+&gt;
+&gt; Magnus
+&gt;
+&gt; [0]: <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.1.4/developing/data-types/sets/">http://docs.basho.com/riak/kv/2.1.4/developing/data-types/sets/</a>
+&gt; [1]: <a  rel="nofollow" href="https://basho.github.io/riak-erlang-client/riakc_set.html">https://basho.github.io/riak-erlang-client/riakc_set.html</a>
+&gt; [2]: <a  rel="nofollow" href="https://basho.github.io/riak-erlang-client/riakc_pb_">https://basho.github.io/riak-erlang-client/riakc_pb_</a>
+&gt; socket.html#update_type-5
+&gt;
+&gt; --
+&gt; Magnus Kessler
+&gt; Client Services Engineer
+&gt; Basho Technologies Limited
+&gt;
+&gt; Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg 07970431
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17757.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17758">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17758">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17756.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17755.html">Associating Riak CRDT Sets to Buckets / Keys via Erlang Cli...</a></span> <span class="sender italic">Vikram Lalit</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17757.html">Re: Associating Riak CRDT Sets to Buckets / Keys via E...</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Associating Riak CRDT Sets to Buckets / Keys v...</span> <span class="sender italic">Vikram Lalit</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Associating Riak CRDT Sets to Buckets / Keys via Erlang Client">
+<input type="hidden" name="msgid" value="CANtuxZQQbbcf-1tvWbjirv9zG_eJH7EomtzwL-CQLfwkPgPRkQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17758.html">
+<input type="submit" value=" Vikram Lalit ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Associating+Riak+CRDT+Sets+to+Buckets+%5C%2F+Keys+via+Erlang+Client%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17757.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17756.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CANtuxZQQbbcf-1tvWbjirv9zG_eJH7EomtzwL-CQLfwkPgPRkQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

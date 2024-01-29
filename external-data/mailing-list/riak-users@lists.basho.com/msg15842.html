@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Fwd: Query on Riak Search in a cluster of 3 nodes behind ELB is	giving different result everytime</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#15842" id="c">
+<link rel="index" href="maillist.html#15842" id="i">
+<link rel="prev" href="msg15836.html" id="p">
+<link rel="next" href="msg15850.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg15842.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+Query+on+Riak+Search+in+a+cluster+of+3+nodes+behind+ELB+is%09giving+different+result+everytime%22&amp;o=newest" rel="nofollow"><span itemprop="name">Fwd: Query on Riak Search in a cluster of 3 nodes behind ELB is	giving different result everytime</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Zeeshan+Lakhani%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Zeeshan Lakhani</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150305" rel="nofollow">Thu, 05 Mar 2015 08:54:26 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hello Baskar, Santi.
+
+I’d definitely like to know what your AAE status is like, as per my last email. 
+The fix here may just be clearing the AAE trees and rebuilding them.</pre><pre>
+
+Yes, index creation is currently async and you have to wait for it to be 
+created before sending data. You can poll to check for the index, similar to 
+this function used in the search java-client tests, 
+<a  rel="nofollow" href="https://github.com/basho/riak-java-client/blob/89778ae5a2274ce8693709bcc4c5ea3558d72971/src/test/java/com/basho/riak/client/core/operations/itest/ITestBase.java#L264">https://github.com/basho/riak-java-client/blob/89778ae5a2274ce8693709bcc4c5ea3558d72971/src/test/java/com/basho/riak/client/core/operations/itest/ITestBase.java#L264</a>
+ 
+&lt;<a  rel="nofollow" href="https://github.com/basho/riak-java-client/blob/89778ae5a2274ce8693709bcc4c5ea3558d72971/src/test/java/com/basho/riak/client/core/operations/itest/ITestBase.java#L264">https://github.com/basho/riak-java-client/blob/89778ae5a2274ce8693709bcc4c5ea3558d72971/src/test/java/com/basho/riak/client/core/operations/itest/ITestBase.java#L264</a>&gt;.
+ We do something similarly in our erlang tests for search. 
+
+I’m not aware of a better way right now. Currently, I’m actually working on 
+making index creation synchronous before returning a response (within a 
+timeout), which could solve your issues.
+
+Thanks.
+
+
+&gt; Begin forwarded message:
+&gt; 
+&gt; Date: March 5, 2015 at 11:21:59 AM EST
+&gt; Subject: Re: Query on Riak Search in a cluster of 3 nodes behind ELB is 
+&gt; giving different result everytime
+&gt; From: Baskar Srinivasan &lt;bas...@veradocs.com&gt;
+&gt; To: Santi Kumar &lt;sa...@veradocs.com&gt;
+&gt; Cc: Zeeshan Lakhani &lt;zlakh...@basho.com&gt;
+&gt; 
+&gt; Hello Zeeshan,
+&gt; 
+&gt; I work with Santi on the same server backend component. Our primary issue 
+&gt; seems to be that Index creation and Bucket association with the indices is 
+&gt; being done via load balancer. After we do that, we move onto actually 
+&gt; creating data. When data is created is getting into Riak fine. However not 
+&gt; all data make it to the indices. 
+&gt; 
+&gt; It appears that depending when a node gets the Riak data persist call it may 
+&gt; not have completed index creation and bucket to index association for that 
+&gt; node which in turns means that particular data doesn't get indexed anywhere.
+&gt; 
+&gt; Is it possible to ensure that the call to create indices and associate 
+&gt; buckets with indices guarantees that this action has been completed on all 
+&gt; nodes of a cluster?
+&gt; 
+&gt; The API we are using are as follows:
+&gt; 
+&gt; 1. Index creation
+&gt; YokozunaSchema yschema = getSchema();
+&gt; 
+&gt; YokozunaIndex vdIndex = new YokozunaIndex(indexName,yschema.getName());
+&gt; 
+&gt;               
+&gt;         StoreIndex storeIndex =new StoreIndex.Builder(vdIndex).build();
+&gt; 
+&gt;         RiakFuture&lt;Void, YokozunaIndex&gt; storeIndexFuture = 
+&gt; client.executeAsync(storeIndex);
+&gt; 
+&gt;         storeIndexFuture.await();
+&gt; 
+&gt;          if(!storeIndexFuture.isSuccess()){
+&gt; 
+&gt;         throw new Exception(&quot;....&quot;);
+&gt; 
+&gt; 
+&gt;               }
+&gt; 
+&gt; 
+&gt; 
+&gt; 2. Bucket association
+&gt; 
+&gt; 
+&gt; 
+&gt; StoreBucketProperties storeBucketProps = new 
+&gt; StoreBucketProperties.Builder(bucket)
+&gt; 
+&gt;         .withSearchIndex(indexName)
+&gt; 
+&gt;         .build();
+&gt; 
+&gt;               
+&gt;         RiakFuture&lt;Void,Namespace&gt; storeBucketPropsFuture = 
+&gt; client.executeAsync(storeBucketProps);
+&gt; 
+&gt;         try{
+&gt; 
+&gt;         storeBucketPropsFuture.await();
+&gt; 
+&gt;         if(storeBucketPropsFuture.isDone() &amp;&amp; 
+&gt; storeBucketPropsFuture.isSuccess()){
+&gt; 
+&gt;         logger.info(&quot; Associated index &quot;+indexName+&quot; With bucket 
+&gt; &quot;+bucketName);
+&gt; 
+&gt;         }else{
+&gt; 
+&gt;         logger.warn(&quot; Unable to associate bucket &quot;+bucketName);
+&gt; 
+&gt;         }
+&gt; 
+&gt;         }catch(Exception e){
+&gt; 
+&gt;         logger.warn(&quot;Issues with &quot;);
+&gt; 
+&gt; 
+&gt;       }
+&gt; 
+&gt; 
+&gt; 
+&gt; Regards,
+&gt; 
+&gt; Baskar
+&gt; 
+&gt; 
+&gt; On Thu, Mar 5, 2015 at 8:06 AM, Santi Kumar &lt;sa...@veradocs.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:sa...@veradocs.com">mailto:sa...@veradocs.com</a>&gt;&gt; wrote:
+&gt; This issue is happening for *:* query only. It doesn't have lot of objects so 
+&gt; we are doing *:* query. Ever time it fetches different number when I switched 
+&gt; to list all keys and do a multi get its returning all objects
+&gt; 
+&gt; Another thing what we do is we create indexes on the fly and wait for index 
+&gt; creation by checking Listindex operation. Once it found the index then we are 
+&gt; associating the Bucket with index. After that we write some entries into that 
+&gt; bucket.
+&gt; 
+&gt; I fetched the key and tried searching again but it's the same again. So read 
+&gt; repair would have happened so that wouldn't be the issue I can check AAE
+&gt; 
+&gt; Can you suggest any better way for these index creations and bucket 
+&gt; association? I suspect that might be the reason
+&gt; Is there any way to check what's the data each shard has? I tried solr query 
+&gt; with shards param 
+&gt; 
+&gt; Thanks 
+&gt; Santi
+&gt; 
+&gt; On Mar 5, 2015 8:05 PM, &quot;Zeeshan Lakhani&quot; &lt;zlakh...@basho.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:zlakh...@basho.com">mailto:zlakh...@basho.com</a>&gt;&gt; wrote:
+&gt; Hello Santi, 
+&gt; 
+&gt; Have you deleted an object in that bucket/index at some point? 
+&gt; 
+&gt; Please make sure AAE is running by checking search’s AAE status, `riak-admin 
+&gt; search aae-status`, and that data exists in the correct directory, 
+&gt; `./data/yz_anti_entropy` 
+&gt; (<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/configs/search/">http://docs.basho.com/riak/latest/ops/advanced/configs/search/</a> 
+&gt; &lt;<a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/advanced/configs/search/">http://docs.basho.com/riak/latest/ops/advanced/configs/search/</a>&gt;). 
+&gt; 
+&gt; You may just need to perform a read-repair by performing a fetch of the 
+&gt; object itself first, before performing search queries again.
+&gt; 
+&gt; Thanks.
+&gt; 
+&gt; Zeeshan Lakhani
+&gt; programmer | 
+&gt; software engineer at @basho | 
+&gt; org. member/founder of @papers_we_love | paperswelove.org 
+&gt; &lt;<a  rel="nofollow" href="http://paperswelove.org/">http://paperswelove.org/</a>&gt;
+&gt; twitter =&gt; @zeeshanlakhani
+&gt; 
+&gt;&gt; On Mar 4, 2015, at 9:06 PM, Santi Kumar &lt;sa...@veradocs.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:sa...@veradocs.com">mailto:sa...@veradocs.com</a>&gt;&gt; wrote:
+&gt;&gt; 
+&gt;&gt; But in our case we didnt have spaces in keys. All our keys are UUID's so I 
+&gt;&gt; wouldn't suspect that. AAE I haven't verified .
+&gt;&gt; 
+&gt;&gt; On Thu, Mar 5, 2015 at 7:16 AM, John O'Brien &lt;boar...@gmail.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:boar...@gmail.com">mailto:boar...@gmail.com</a>&gt;&gt; wrote:
+&gt;&gt; I'd lean towards AAE issues on Yokozuna... Same problems we were having with 
+&gt;&gt; our 'spaces-in-keys' issue... Once we cleaned those up, things were great 
+&gt;&gt; again.
+&gt;&gt; 
+&gt;&gt; On Wed, Mar 4, 2015 at 8:36 PM, Santi Kumar &lt;sa...@veradocs.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:sa...@veradocs.com">mailto:sa...@veradocs.com</a>&gt;&gt; wrote:
+&gt;&gt; Raik 2.0.0
+&gt;&gt; 
+&gt;&gt; On Mar 5, 2015 12:31 AM, &quot;Christopher Meiklejohn&quot; &lt;cmeiklej...@basho.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:cmeiklej...@basho.com">mailto:cmeiklej...@basho.com</a>&gt;&gt; wrote:
+&gt;&gt; 
+&gt;&gt; &gt; On Mar 4, 2015, at 1:15 PM, Santi Kumar &lt;sa...@veradocs.com 
+&gt;&gt; &gt; &lt;<a  rel="nofollow" href="mailto:sa...@veradocs.com">mailto:sa...@veradocs.com</a>&gt;&gt; wrote:
+&gt;&gt; &gt;
+&gt;&gt; &gt; Hi,
+&gt;&gt; &gt; We are running into a strange issue with Riak Search. Our setup is with 3 
+&gt;&gt; &gt; nodes of Riak (with search enabled) in 3 different  ec2 instances behind 
+&gt;&gt; &gt; ELB. App server talks to the cluster through ELB. We are querying for list 
+&gt;&gt; &gt; of objects through *:* query instead of list bucket keys and every time 
+&gt;&gt; &gt; the result is different. We have only 4 objects in that bucket / index, 
+&gt;&gt; &gt; only few times it's giving all 4 but ofther it returns 2 or 3.
+&gt;&gt; &gt;
+&gt;&gt; &gt; This wasn't happening when we have one instance of Riak. Any insight?
+&gt;&gt; 
+&gt;&gt; Hi Santi,
+&gt;&gt; 
+&gt;&gt; Can you provide information regarding what versions of Riak you are running?
+&gt;&gt; 
+&gt;&gt; - Chris
+&gt;&gt; 
+&gt;&gt; Christopher Meiklejohn
+&gt;&gt; Senior Software Engineer
+&gt;&gt; Basho Technologies, Inc.
+&gt;&gt; cmeiklej...@basho.com &lt;<a  rel="nofollow" href="mailto:cmeiklej...@basho.com">mailto:cmeiklej...@basho.com</a>&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt;&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt;&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15836.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#15842">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#15842">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15850.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Fwd: Query on Riak Search in a cluster of 3 nodes behind ELB is	giving different result everytime">
+<input type="hidden" name="msgid" value="A7BC2053-DF55-4ECB-9667-D3756429414F@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg15842.html">
+<input type="submit" value=" Zeeshan Lakhani ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Fwd%5C%3A+Query+on+Riak+Search+in+a+cluster+of+3+nodes+behind+ELB+is%09giving+different+result+everytime%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15836.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15850.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">A7BC2053-DF55-4ECB-9667-D3756429414F@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

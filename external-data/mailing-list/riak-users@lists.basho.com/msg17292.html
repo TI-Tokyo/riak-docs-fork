@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: How to increase Riak write performance for sequential	alpha-numeric keys</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17292" id="c">
+<link rel="index" href="maillist.html#17292" id="i">
+<link rel="prev" href="msg17291.html" id="p">
+<link rel="next" href="msg17293.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17292.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+increase+Riak+write+performance+for+sequential%09alpha%5C-numeric+keys%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: How to increase Riak write performance for sequential	alpha-numeric keys</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Sanket+Agrawal%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Sanket Agrawal</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160505" rel="nofollow">Thu, 05 May 2016 06:16:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Two questions about write-once bucket:
+- is it useful from performance-perspective for immutable CRDTs as well?
+- If the objects are immutable, is map CRDT generally performant, compared
+to equivalent JSON with write-once property? Let us say map has 1-9
+registers with about 2KB size total in string/number.</pre><pre>
+
+It seems to me there is no way to enforce key check before writing CRDTs
+(to enforce true immutability by making sure the new key doesn't exist
+already) as it is for key-value. We could tell Riak not to insert a key if
+it already exists for key-value objects. I don't know of any such mechanism
+for CRDTs.
+
+I have immutable CRDTs with map type, allow_mult true, and lww false. I
+looked into &quot;write-once&quot; property before but couldn't figure out how to
+truly enforce it for CRDT.
+
+
+
+
+On Thu, May 5, 2016 at 8:51 AM, Matthew Von-Maszewski &lt;matth...@basho.com&gt;
+wrote:
+
+&gt; Alex,
+&gt;
+&gt; The successor to &quot;last_write_wins&quot; is the &quot;write_once&quot; bucket type.  You
+&gt; can read about its characteristics and limitations here:
+&gt;
+&gt;    <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.1.4/developing/app-guide/write-once/">http://docs.basho.com/riak/kv/2.1.4/developing/app-guide/write-once/</a>
+&gt;
+&gt; This bucket type eliminates the Riak's typical read-before-write
+&gt; operation.  Your experience with better performance by reversing the keys
+&gt; suggests to me that this bucket type might be what you need.
+&gt;
+&gt; Also, I would be willing to review your general environment and
+&gt; particularly leveldb's actions.  I would need you to run &quot;riak-debug&quot; on
+&gt; one of the servers then post the tar file someplace private such as
+&gt; dropbox.  There might be other insights I can share based upon leveldb's
+&gt; actions and your physical server configuration.
+&gt;
+&gt; Matthew
+&gt;
+&gt;
+&gt;
+&gt; On May 5, 2016, at 8:32 AM, alexc155 &lt;ahcl...@gmail.com&gt; wrote:
+&gt;
+&gt; We're using Riak as a simple key value store and we're having write
+&gt; performance problems which we think is due to the format of our keys which
+&gt; we can't easily change because they're tied into different parts of the
+&gt; business and systems.
+&gt;
+&gt; We're not trying to do anything complicated with Riak: No solr, secondary
+&gt; indexes or map reducing - just simple keys to strings of around 10Kb of
+&gt; JSON.
+&gt;
+&gt; We've got upwards of 3 billion records to store so we've opted for LevelDb
+&gt; as the backend.
+&gt;
+&gt; It's a 3 node cluster running on 3 dedicated Ubuntu VMs each with 16 cpu
+&gt; cores and 12GB memory backed by SSDs on a 10Gb network.
+&gt;
+&gt; Using basho bench we know that it's capable of speeds upwards of ​*5000
+&gt; rows per sec* when using randomised keys, but the problem comes when we
+&gt; use our actual data.
+&gt;
+&gt; The keys are formatted using the following pattern:
+&gt;
+&gt; USC~1930~100000000~10000~001
+&gt; USC~1930~100000000~10000~002
+&gt; USC~1930~100000000~10000~003
+&gt; USC~1930~100000000~10000~004
+&gt;
+&gt;
+&gt; Most of the long key stays the same with numbers at the end going up. (The
+&gt; &quot;~&quot; are changeable - we can set them to whatever character. They're just
+&gt; delimiters in the keys)
+&gt;
+&gt; Using these keys, write performance is a tenth of the speed at *400 rows
+&gt; per sec*.
+&gt;
+&gt; We don't need to worry about different versions of the data so we've set
+&gt; the following in our bucket type:
+&gt;
+&gt; &quot;allow_mult&quot;: false
+&gt; &quot;last_write_wins&quot;: true
+&gt; &quot;DW&quot;: 0
+&gt; &quot;n_val&quot;: 2
+&gt; &quot;w&quot;: 1
+&gt; &quot;r&quot;: 1
+&gt; &quot;basic_quorum&quot;: false
+&gt;
+&gt;
+&gt; On the riak servers we've set the ulimit to:
+&gt;
+&gt; riak soft nofile 32768
+&gt; riak hard nofile 65536
+&gt;
+&gt;
+&gt; and other settings like this:
+&gt;
+&gt; ring_size = 128
+&gt; protobuf.backlog = 1024
+&gt; anti_entropy = passive
+&gt;
+&gt;
+&gt; We're using the v2 .net client from basho to do the putting which runs in
+&gt; an API on 3 machines.
+&gt;
+&gt; We've checked all the usual bottlenecks: CPU, memory, network IO, disk IO
+&gt; and throttles on the Riak servers and windows API servers.
+&gt;
+&gt; As a kicker, if we reverse the keys e.g.
+&gt;
+&gt; 100~00001~000000001~0391~CSU
+&gt;
+&gt; speed goes up to over ​*3000 rows*, but that's a dirty kludge.
+&gt;
+&gt; Can anyone explain why Riak doesn't like sequential alpha-numeric keys and
+&gt; what we can change to improve performance?
+&gt;
+&gt; Thanks!
+&gt;
+&gt; ------------------------------
+&gt; View this message in context: How to increase Riak write performance for
+&gt; sequential alpha-numeric keys
+&gt; &lt;<a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/How-to-increase-Riak-write-performance-for-sequential-alpha-numeric-keys-tp4034219.html">http://riak-users.197444.n3.nabble.com/How-to-increase-Riak-write-performance-for-sequential-alpha-numeric-keys-tp4034219.html</a>&gt;
+&gt; Sent from the Riak Users mailing list archive
+&gt; &lt;<a  rel="nofollow" href="http://riak-users.197444.n3.nabble.com/">http://riak-users.197444.n3.nabble.com/</a>&gt; at Nabble.com.
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17291.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17292">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17292">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17293.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17290.html">How to increase Riak write performance for sequentia...</a></span> <span class="sender italic">alexc155</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17291.html">Re: How to increase Riak write performance for ...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: How to increase Riak write performance ...</span> <span class="sender italic">Sanket Agrawal</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17293.html">Re: How to increase Riak write performa...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17294.html">Re: How to increase Riak write perf...</a></span> <span class="sender italic">Sanket Agrawal</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17295.html">Re: How to increase Riak write...</a></span> <span class="sender italic">Russell Brown</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg17296.html">Re: How to increase Riak write performance ...</a></span> <span class="sender italic">alexc155</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17298.html">Re: How to increase Riak write performa...</a></span> <span class="sender italic">Russell Brown</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17297.html">Re: How to increase Riak write perf...</a></span> <span class="sender italic">alexc155</span></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg17299.html">Re: How to increase Riak write performa...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg17302.html">Re: How to increase Riak write performa...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17303.html">Re: How to increase Riak write perf...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg17300.html">Re: How to increase Riak write performance for ...</a></span> <span class="sender italic">Alexander Sicular</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: How to increase Riak write performance for sequential	alpha-numeric keys">
+<input type="hidden" name="msgid" value="CALyR41qaYPFifqGh3aLCYvyMwrbL0d0jP_dZU2FJvPveDJr-7g@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17292.html">
+<input type="submit" value=" Sanket Agrawal ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+How+to+increase+Riak+write+performance+for+sequential%09alpha%5C-numeric+keys%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17291.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17293.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CALyR41qaYPFifqGh3aLCYvyMwrbL0d0jP_dZU2FJvPveDJr-7g@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

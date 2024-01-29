@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: anti_entropy and solr taking up suspiciously large amounts of	space</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18119" id="c">
+<link rel="index" href="maillist.html#18119" id="i">
+<link rel="prev" href="msg18096.html" id="p">
+<link rel="next" href="msg18120.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18119.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+anti_entropy+and+solr+taking+up+suspiciously+large+amounts+of%09space%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: anti_entropy and solr taking up suspiciously large amounts of	space</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170403" rel="nofollow">Mon, 03 Apr 2017 13:21:21 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Rohit,
+
+My apologies for the delayed reply.  Too many conflicting demands on my time 
+the past two weeks.</pre><pre>
+
+I reviewed the riak-debug package you shared.  I also discussed its contents 
+with other Riak developers.
+
+There does not appear to be anything unexpected.  The anti_entropy bloat is due 
+to the bitcask backend not actively communicating TTL expirations to AAE.  This 
+is a known issue.  Similarly, bitcask is not communicating TTL expirations to 
+solr.  (The leveldb backend recently added expiry / TTL.  And it fails the same 
+way in this scenario as bitcask.)
+
+We have engineering designs in the works that will eventually correct this 
+situation.  But the designs do not translate to code that you can use today.  
+My apologies.
+
+--&gt; The 100% accurate approach today is to disable bitcask's TTL and create 
+external jobs that prune your data via Delete operations.  Yes, this is going 
+to create a bunch of extra disk operations.  But I am being honest.
+
+--&gt; You could reduce only the anti_entropy disk usage by changing the 
+&quot;anti_entropy&quot; setting in riak.conf from &quot;active&quot; to &quot;passive&quot;.  But this does 
+nothing for solr.
+
+Matthew
+
+&gt; On Mar 22, 2017, at 10:56 AM, Matthew Von-Maszewski &lt;matth...@basho.com&gt; 
+&gt; wrote:
+&gt; 
+&gt; Rohit,
+&gt; 
+&gt; Would you please run “riak-debug” on one server from the command line and 
+&gt; send the tar.gz file it creates directly to me.  Do not copy the email list.
+&gt; 
+&gt; Notes on its usage are here:  
+&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.1/using/cluster-operations/inspecting-node/#riak-debug">http://docs.basho.com/riak/kv/2.2.1/using/cluster-operations/inspecting-node/#riak-debug</a>
+&gt;  
+&gt; &lt;<a  rel="nofollow" href="http://docs.basho.com/riak/kv/2.2.1/using/cluster-operations/inspecting-node/#riak-debug">http://docs.basho.com/riak/kv/2.2.1/using/cluster-operations/inspecting-node/#riak-debug</a>&gt;
+&gt; 
+&gt; The resulting debug package will give me and others at Basho a better picture 
+&gt; of the problem.  The alternative is a about twenty rounds of “what about 
+&gt; this, oh, then what about that”.
+&gt; 
+&gt; Thanks,
+&gt; Matthew
+&gt; 
+&gt; 
+&gt; 
+&gt;&gt; On Mar 21, 2017, at 9:53 PM, Rohit Sanbhadti &lt;sanbhadtiro...@vmware.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:sanbhadtiro...@vmware.com">mailto:sanbhadtiro...@vmware.com</a>&gt;&gt; wrote:
+&gt;&gt; 
+&gt;&gt; Matthew,
+&gt;&gt; 
+&gt;&gt; To clarify, this happens on all nodes in our cluster (10+ nodes) although 
+&gt;&gt; the exact size varies by 10s of GB. I’ve rolling restarted the cluster the 
+&gt;&gt; last time this happened (last week) with no significant change in size, 
+&gt;&gt; although the output from riak-admin aae-status and riak-admin search 
+&gt;&gt; aae-status shows empty after the restart.  
+&gt;&gt; 
+&gt;&gt; -- 
+&gt;&gt; Rohit S.
+&gt;&gt; 
+&gt;&gt; On 3/21/17, 5:25 PM, &quot;Matthew Von-Maszewski&quot; &lt;matth...@basho.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:matth...@basho.com">mailto:matth...@basho.com</a>&gt;&gt; wrote:
+&gt;&gt; 
+&gt;&gt;    Rohit,
+&gt;&gt; 
+&gt;&gt;    If you restart the node does the elevated anti_entropy size decline after 
+&gt;&gt; the restart?
+&gt;&gt; 
+&gt;&gt;    Matthew
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt;&gt; On Mar 21, 2017, at 8:00 PM, Rohit Sanbhadti &lt;sanbhadtiro...@vmware.com 
+&gt;&gt;&gt; &lt;<a  rel="nofollow" href="mailto:sanbhadtiro...@vmware.com">mailto:sanbhadtiro...@vmware.com</a>&gt;&gt; wrote:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Running Riak 2.2.0 on Ubuntu 16.04.1, we’ve noticed that anti_entropy is 
+&gt;&gt;&gt; taking up way too much space on all of our nodes. We use multi_backend with 
+&gt;&gt;&gt; mostly bitcask backends (relevant part of config pasted below). Has anyone 
+&gt;&gt;&gt; seen this before, or does anyone have an idea what might be causing this? 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; storage_backend = multi
+&gt;&gt;&gt; multi_backend.bitcask_1day.storage_backend = bitcask
+&gt;&gt;&gt; multi_backend.bitcask_1day.bitcask.data_root = /var/lib/riak/bitcask_1day
+&gt;&gt;&gt; multi_backend.bitcask_1day.bitcask.expiry = 1d
+&gt;&gt;&gt; multi_backend.bitcask_1day.bitcask.expiry.grace_time = 1h
+&gt;&gt;&gt; multi_backend.bitcask_2day.storage_backend = bitcask
+&gt;&gt;&gt; multi_backend.bitcask_2day.bitcask.data_root = /var/lib/riak/bitcask_2day
+&gt;&gt;&gt; multi_backend.bitcask_2day.bitcask.expiry = 2d
+&gt;&gt;&gt; multi_backend.bitcask_2day.bitcask.expiry.grace_time = 1h
+&gt;&gt;&gt; multi_backend.bitcask_4day.storage_backend = bitcask
+&gt;&gt;&gt; multi_backend.bitcask_4day.bitcask.data_root = /var/lib/riak/bitcask_4day
+&gt;&gt;&gt; multi_backend.bitcask_4day.bitcask.expiry = 4d
+&gt;&gt;&gt; multi_backend.bitcask_4day.bitcask.expiry.grace_time = 1h
+&gt;&gt;&gt; multi_backend.bitcask_8day.storage_backend = bitcask
+&gt;&gt;&gt; multi_backend.bitcask_8day.bitcask.data_root = /var/lib/riak/bitcask_8day
+&gt;&gt;&gt; multi_backend.bitcask_8day.bitcask.expiry = 8d
+&gt;&gt;&gt; multi_backend.bitcask_8day.bitcask.expiry.grace_time = 1h
+&gt;&gt;&gt; multi_backend.leveldb_mult.storage_backend = leveldb
+&gt;&gt;&gt; multi_backend.leveldb_mult.leveldb.maximum_memory.percent = 30
+&gt;&gt;&gt; multi_backend.leveldb_mult.leveldb.data_root = /var/lib/riak/leveldb_mult
+&gt;&gt;&gt; multi_backend.bitcask_mult.storage_backend = bitcask
+&gt;&gt;&gt; multi_backend.bitcask_mult.bitcask.data_root = /var/lib/riak/bitcask_mult
+&gt;&gt;&gt; multi_backend.default = leveldb_mult
+&gt;&gt;&gt; 
+&gt;&gt;&gt; $ du –h –d 1 /var/lib/riak
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 4.0K    /var/lib/riak/riak_kv_exchange_fsm
+&gt;&gt;&gt; 52K     /var/lib/riak/generated.configs
+&gt;&gt;&gt; 224K    /var/lib/riak/cluster_meta
+&gt;&gt;&gt; 424K    /var/lib/riak/ring
+&gt;&gt;&gt; 1.1M    /var/lib/riak/kv_vnode
+&gt;&gt;&gt; 2.1M    /var/lib/riak/bitcask_1day
+&gt;&gt;&gt; 3.6M    /var/lib/riak/bitcask_4day
+&gt;&gt;&gt; 33M     /var/lib/riak/yz_temp
+&gt;&gt;&gt; 1.1G    /var/lib/riak/bitcask_2day
+&gt;&gt;&gt; 5.9G    /var/lib/riak/yz_anti_entropy
+&gt;&gt;&gt; 20G     /var/lib/riak/yz
+&gt;&gt;&gt; 24G     /var/lib/riak/leveldb_mult
+&gt;&gt;&gt; 25G     /var/lib/riak/bitcask_mult
+&gt;&gt;&gt; 27G     /var/lib/riak/bitcask_8day
+&gt;&gt;&gt; 139G    /var/lib/riak/anti_entropy
+&gt;&gt;&gt; 240G    /var/lib/riak
+&gt;&gt;&gt; 
+&gt;&gt;&gt; 
+&gt;&gt;&gt; -- 
+&gt;&gt;&gt; Rohit S.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt;&gt; <a  rel="nofollow" href="https://urldefense.proofpoint.com/v2/url?u=http-3A__lists.basho.com_mailman_listinfo_riak-2Dusers-5Flists.basho.com&amp;d=DwIFaQ&amp;c=uilaK90D4TOVoH58JNXRgQ&amp;r=qO7g3ZLnCDJ2Kp8qz13HpzC2NAX5qNCtEhoWeGshuEI&amp;m=zcfqvyFJVK17vAft30Cv9abkK5P_f2JtRonrl0CRYnM&amp;s=wSNoX28DcQ-CCfWp9vRUA-70z3LeWFNGHG3-LPKzAtQ&amp;e=">https://urldefense.proofpoint.com/v2/url?u=http-3A__lists.basho.com_mailman_listinfo_riak-2Dusers-5Flists.basho.com&amp;d=DwIFaQ&amp;c=uilaK90D4TOVoH58JNXRgQ&amp;r=qO7g3ZLnCDJ2Kp8qz13HpzC2NAX5qNCtEhoWeGshuEI&amp;m=zcfqvyFJVK17vAft30Cv9abkK5P_f2JtRonrl0CRYnM&amp;s=wSNoX28DcQ-CCfWp9vRUA-70z3LeWFNGHG3-LPKzAtQ&amp;e=</a>
+&gt;&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18096.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18119">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18119">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18120.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18092.html">anti_entropy and solr taking up suspiciously large a...</a></span> <span class="sender italic">Rohit Sanbhadti</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18093.html">Re: anti_entropy and solr taking up suspiciousl...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18094.html">Re: anti_entropy and solr taking up suspici...</a></span> <span class="sender italic">Rohit Sanbhadti</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18096.html">Re: anti_entropy and solr taking up sus...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: anti_entropy and solr taking up...</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18120.html">Re: anti_entropy and solr taki...</a></span> <span class="sender italic">Rohit Sanbhadti</span></li>
+<li class="icons-email"><span class="subject"><a href="msg18121.html">Re: anti_entropy and solr taki...</a></span> <span class="sender italic">Damien Krotkine</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18122.html">Re: anti_entropy and solr ...</a></span> <span class="sender italic">Fred Dushin</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: anti_entropy and solr taking up suspiciously large amounts of	space">
+<input type="hidden" name="msgid" value="C77AD551-EEA2-47D3-B198-A5B511754B40@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18119.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+anti_entropy+and+solr+taking+up+suspiciously+large+amounts+of%09space%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18096.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18120.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">C77AD551-EEA2-47D3-B198-A5B511754B40@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

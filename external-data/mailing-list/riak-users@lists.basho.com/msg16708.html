@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Ownership handoff timed out</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16708" id="c">
+<link rel="index" href="maillist.html#16708" id="i">
+<link rel="prev" href="msg16705.html" id="p">
+<link rel="next" href="msg16706.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16708.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Ownership+handoff+timed+out%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Ownership handoff timed out</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Vladyslav+Zakhozhai%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Vladyslav Zakhozhai</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151027" rel="nofollow">Tue, 27 Oct 2015 08:36:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+Jon thank you for the answer. During approval of my mail to this list I've
+troubleshoot my issue more deep. And yes, your are right. Neither {error,
+enotconn} nor max_concurrency is my problem.</pre><pre>
+
+I'm going to migrate my cluster entierly to eleveldb only, i.e. I need to
+refuse using bitcask. I have a talk with basho support and they said that
+it is tricky to tune bitcask on servers with 32 GB RAM (and I guess that it
+is not tricky, but it is impossible, because bitcask loads all keys in
+memory regardless of free available RAM). With LevelDB I have opportunity
+to tune using RAM on servers.
+
+So I have 15 nodes with multibackend (bitcask for data and leveldb for
+metadata). 2 additional servers are without multibackend - only with
+leveldb. Now I'm not sure do I need still use mutibackend with levedb-only
+backend.
+
+And my problem is (as I mentioned earlier) the following. On leveldb-only
+nodes I see handoffs timedout and no further progress.
+
+On multibackend hosts I have configuration:
+
+{riak_kv, [
+       {add_paths, [&quot;/usr/lib/riak-cs/lib/riak_cs-1.5.0/ebin&quot;]},
+       {storage_backend, riak_cs_kv_multi_backend},
+       {multi_backend_prefix_list, [{&lt;&lt;&quot;0b:&quot;&gt;&gt;, be_blocks}]},
+       {multi_backend_default, be_default},
+       {multi_backend, [
+           {be_default, riak_kv_eleveldb_backend, [
+               {max_open_files, 50},
+               {data_root, &quot;/var/lib/riak/leveldb&quot;}
+           ]},
+           {be_blocks, riak_kv_bitcask_backend, [
+               {data_root, &quot;/var/lib/riak/bitcask&quot;}
+           ]}
+       ]},
+
+And for hosts with leveldb-only backend:
+
+{riak_kv, [
+            {storage_backend, riak_kv_eleveldb_backend},
+...
+{eleveldb, [
+            {data_root, &quot;/var/lib/riak/leveldb&quot;}
+(default values for leveldb)
+
+In leveldb logs I see nothing that could help me (no errors in logs).
+
+
+On Mon, Oct 26, 2015 at 3:57 PM Jon Meredith &lt;jmered...@basho.com&gt; wrote:
+
+&gt; Hi,
+&gt;
+&gt; I suspect your {error,enotconn} messages are unrelated - that's likely to
+&gt; be caused by an HTTP client closing the connection while Riak looks up
+&gt;  some networking information about the requestor.
+&gt;
+&gt; The max_concurrency message you are seeing is related to the handoff
+&gt; transfer limit - it should be labelled as informational. When a node has
+&gt; data to handoff it starts the handoff sender process and if there are
+&gt; either too many local handoff processes or too many on the remote side it
+&gt; exits with max_concurrency.  You could increase with riak-admin
+&gt; transfer-limit but that probably won't help if you're timing out.
+&gt;
+&gt; As you're using the multi-backend you're transferring data from bitcask
+&gt; and leveldb.  The next place I would look is in the leveldb LOG files to
+&gt; see if there are any leveldb vnodes that are having problems that's
+&gt; preventing repair.
+&gt;
+&gt; Jon
+&gt;
+&gt; On Mon, Oct 26, 2015 at 7:15 AM Vladyslav Zakhozhai &lt;
+&gt; v.zakhoz...@smartweb.com.ua&gt; wrote:
+&gt;
+&gt;&gt; Hello,
+&gt;&gt;
+&gt;&gt; I have a problem with persistent timeouts during ownership handoffs. I've
+&gt;&gt; tried to surf over Internet and current mail list but no success.
+&gt;&gt;
+&gt;&gt; I have Riak 1.4.12 cluster with 17 nodes. Almost all nodes use
+&gt;&gt; multibackend with bitcask and eleveldb as storage backends (we need
+&gt;&gt; multiple backend for Riak CS 1.5.0 integration).
+&gt;&gt;
+&gt;&gt; Now I'm working to migrate Riak cluster to eleveldb as primary and only
+&gt;&gt; backend. For now I have 2 nodes with eleveldb backend in the same cluster.
+&gt;&gt;
+&gt;&gt; During ownership handoff process I permanently see errors of timed out
+&gt;&gt; handoff receivers and sender.
+&gt;&gt;
+&gt;&gt; Here is partial output of riak-admin transfers:
+&gt;&gt; ...
+&gt;&gt; transfer type: ownership_transfer
+&gt;&gt; vnode type: riak_kv_vnode
+&gt;&gt; partition: 331121464707782692405522344912282871640797216768
+&gt;&gt; started: 2015-10-21 08:32:55 [46.66 min ago]
+&gt;&gt; last update: no updates seen
+&gt;&gt; total size: unknown
+&gt;&gt; objects transferred: unknown
+&gt;&gt;
+&gt;&gt;                            unknown
+&gt;&gt; riak@taipan.pleiad.uaprom  =======&gt;  r...@eggeater.pleiad.uapr
+&gt;&gt;                                      om
+&gt;&gt;         |                                           |   0%
+&gt;&gt;                            unknown
+&gt;&gt;
+&gt;&gt; transfer type: ownership_transfer
+&gt;&gt; vnode type: riak_kv_vnode
+&gt;&gt; partition: 336830455478606531929755488790080852186328203264
+&gt;&gt; started: 2015-10-21 08:32:54 [46.68 min ago]
+&gt;&gt; last update: no updates seen
+&gt;&gt; total size: unknown
+&gt;&gt; objects transferred: unknown
+&gt;&gt; ...
+&gt;&gt;
+&gt;&gt; Some of partition handoffs state never updates, some of them terminates
+&gt;&gt; after partial handoff objects and never starts again.
+&gt;&gt;
+&gt;&gt; I see nothing in logs but following:
+&gt;&gt;
+&gt;&gt; On receiver side:
+&gt;&gt;
+&gt;&gt; 2015-10-21 11:33:55.131 [error]
+&gt;&gt; &lt;0.25390.1266&gt;@riak_core_handoff_receiver:handle_info:105 Handoff receiver
+&gt;&gt; for partition 331121464707782692405522344912282871640797216768 timed out
+&gt;&gt; after processing 0 objects.
+&gt;&gt;
+&gt;&gt; On sender side:
+&gt;&gt;
+&gt;&gt; 2015-10-21 11:01:58.879 [error] &lt;0.13177.1401&gt; CRASH REPORT Process
+&gt;&gt; &lt;0.13177.1401&gt; with 0 neighbours crashed with reason: no function clause
+&gt;&gt; matching webmachine_request:peer_from_peername({error,enotconn},
+&gt;&gt; {webmachine_request,{wm_reqstate,#Port&lt;0.50978116&gt;,[],undefined,undefined,undefined,{wm_reqdata,...},...}})
+&gt;&gt; line 150
+&gt;&gt; 2015-10-21 11:32:50.055 [error] &lt;0.207.0&gt; Supervisor
+&gt;&gt; riak_core_handoff_sender_sup had child riak_core_handoff_sender started
+&gt;&gt; with {riak_core_handoff_sender,start_link,undefined} at &lt;0.22312.1090&gt; exit
+&gt;&gt; with reason max_concurrency in context child_terminated
+&gt;&gt;
+&gt;&gt; {error, enotconn} - seems to be network issue. But I have no any problems
+&gt;&gt; with network. All hosts resolve their neighbors correctly and /etc/hosts on
+&gt;&gt; each node are correct.
+&gt;&gt;
+&gt;&gt; I've tried to increase handoff_timeout and handoff_receive_timeout. But
+&gt;&gt; no success.
+&gt;&gt;
+&gt;&gt; Forcing handoff helped me but for short period of time:
+&gt;&gt;
+&gt;&gt; rpc:multicall([node() | nodes()], riak_core_vnode_manager, force_handoffs, 
+&gt;&gt; []).
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I see progress of handoffs (riak-admin transfers) but then I see handoff 
+&gt;&gt; timed out again.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; A week ago I've joined 4 nodes with bitcask. And there was no such problems.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I'm confused a little bit and need to understand my next steps in 
+&gt;&gt; troubleshooting this issue.
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16705.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16708">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16708">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16706.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16704.html">Ownership handoff timed out</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16705.html">Re: Ownership handoff timed out</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Ownership handoff timed out</span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16706.html">Re: Ownership handoff timed out</a></span> <span class="sender italic">Jon Meredith</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16716.html">Re: Ownership handoff timed out</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16715.html">Re: Ownership handoff timed ou...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16718.html">Re: Ownership handoff time...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16721.html">Re: Ownership handoff ...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16722.html">Re: Ownership handoff ...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16723.html">Re: Ownership handoff ...</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16724.html">Re: Ownership handoff ...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Ownership handoff timed out">
+<input type="hidden" name="msgid" value="CAArBN7GqUD39igxaYNREkXxesD__38iDbs6oFi-QiZut2-q=jQ@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16708.html">
+<input type="submit" value=" Vladyslav Zakhozhai ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Ownership+handoff+timed+out%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16705.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16706.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAArBN7GqUD39igxaYNREkXxesD__38iDbs6oFi-QiZut2-q=jQ@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Truncated bit-cask files</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17982" id="c">
+<link rel="index" href="maillist.html#17982" id="i">
+<link rel="prev" href="msg17980.html" id="p">
+<link rel="next" href="msg17983.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17982.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Truncated+bit%5C-cask+files%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Truncated bit-cask files</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170214" rel="nofollow">Tue, 14 Feb 2017 12:53:15 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Arun,
+
+You are running out of RAM for the leveldb AAE.  There are several ways to fix 
+that:</pre><pre>
+
+- reduce memory allocated to bitcask
+- more memory per server
+- more servers of same memory
+- reduce the ring size from 64 to 8, and rebuild data within the cluster from 
+scratch
+- lie to leveldb and give it a big than real memory setting in riak.conf:
+        leveldb.maximum_memory=8G
+
+
+The key LOG lines are:
+
+Options.total_leveldb_mem: 2,901,766,963    &lt;-- this is the total memory 
+assigned to ALL of leveldb, but
+    only 20% of it goes to AAE vnodes
+
+File cache size: 5833527     &lt;-- the first vnode says, cool enough memory for me
+Block cache size: 7930679  &lt;-- ditto
+
+  ... but as more vnodes start:
+
+ File cache size: 0                &lt;-- things are just not going to work well
+Block cache size: 0
+
+There are no actual file system error messages in your LOG files.  That 
+supports that the real problem is memory unhappiness.
+
+Matthew
+
+
+&gt; On Feb 14, 2017, at 3:34 PM, Arun Rajagopalan &lt;arun.v.rajagopa...@gmail.com&gt; 
+&gt; wrote:
+&gt; 
+&gt; Hi Matthew, Magnus
+&gt; 
+&gt; I have attached the log files for your review
+&gt; 
+&gt; Thanks
+&gt; Arun
+&gt; 
+&gt; 
+&gt; On Tue, Feb 14, 2017 at 11:55 AM, Matthew Von-Maszewski &lt;matth...@basho.com 
+&gt; &lt;<a  rel="nofollow" href="mailto:matth...@basho.com">mailto:matth...@basho.com</a>&gt;&gt; wrote:
+&gt; Arun,
+&gt; 
+&gt; The AAE code uses leveldb for its storage of anti-entropy data, no matter 
+&gt; which backend holds the user data.  Therefore the error below suggests 
+&gt; corruption within leveldb files (which is not impossible, but becoming really 
+&gt; rare except with bad hardware or full disks).
+&gt; 
+&gt; Before wiping out the AAE directory, you should copy the LOG file within it.  
+&gt; There are likely more useful error messages within that file ... maybe put 
+&gt; the file in drop box or zip attach to a reply for us to review.
+&gt; 
+&gt; Matthew
+&gt; 
+&gt;&gt; On Feb 14, 2017, at 10:42 AM, Magnus Kessler &lt;mkess...@basho.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:mkess...@basho.com">mailto:mkess...@basho.com</a>&gt;&gt; wrote:
+&gt;&gt; 
+&gt;&gt; On 14 February 2017 at 14:46, Arun Rajagopalan &lt;arun.v.rajagopa...@gmail.com 
+&gt;&gt; &lt;<a  rel="nofollow" href="mailto:arun.v.rajagopa...@gmail.com">mailto:arun.v.rajagopa...@gmail.com</a>&gt;&gt; wrote:
+&gt;&gt; Hi Magnus
+&gt;&gt; 
+&gt;&gt; RIAK crashes on startup when I have trucated bitcask file
+&gt;&gt; 
+&gt;&gt; It also crashes when the AAE files are bad too I think. Example below
+&gt;&gt; 
+&gt;&gt; 2017-02-13 21:18:30 =CRASH REPORT====
+&gt;&gt;   crasher:
+&gt;&gt;     initial call: riak_kv_index_hashtree:init/1
+&gt;&gt;     pid: &lt;0.6037.0&gt;
+&gt;&gt;     registered_name: []
+&gt;&gt;     exception exit: {{{badmatch,{error,{db_open,&quot;Corruption: truncated 
+&gt;&gt; record at end of file&quot;}}},[{hashtree,new_segment_
+&gt;&gt; store,2,[{file,&quot;src/hashtree.erl&quot;},{line,675}]},{hashtree,new,2,[{file,&quot;src/hashtree.erl&quot;},{line,246}]},{riak_kv_index_h
+&gt;&gt; ashtree,do_new_tree,3,[{file,&quot;src/riak_kv_index_hashtree.erl&quot;},{line,610}]},{lists,foldl,3,[{file,&quot;lists.erl&quot;},{line,124
+&gt;&gt; 8}]},{riak_kv_index_hashtree,init_trees,3,[{file,&quot;src/riak_kv_index_hashtree.erl&quot;},{line,474}]},{riak_kv_index_hashtree,
+&gt;&gt; init,1,[{file,&quot;src/riak_kv_index_hashtree.erl&quot;},{line,268}]},{gen_server,init_it,6,[{file,&quot;gen_server.erl&quot;},{line,304}]}
+&gt;&gt; ,{proc_lib,init_p_do_apply,3,[{file,&quot;proc_lib.erl&quot;},{line,239}]}]},[{gen_server,init_it,6,[{file,&quot;gen_server.erl&quot;},{line
+&gt;&gt; ,328}]},{proc_lib,init_p_do_apply,3,[{file,&quot;proc_lib.erl&quot;},{line,239}]}]}
+&gt;&gt;     ancestors: [&lt;0.715.0&gt;,riak_core_vnode_sup,riak_core_sup,&lt;0.160.0&gt;]
+&gt;&gt;     messages: []
+&gt;&gt;     links: []
+&gt;&gt;     dictionary: []
+&gt;&gt;     trap_exit: false
+&gt;&gt;     status: running
+&gt;&gt;     heap_size: 1598
+&gt;&gt;     stack_size: 27
+&gt;&gt;     reductions: 889
+&gt;&gt;   neighbours:
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; Regards
+&gt;&gt; Arun
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; Hi Arun,
+&gt;&gt; 
+&gt;&gt; The crash log you provided shows that there is a corrupted file in the AAE 
+&gt;&gt; (anti_entropy) backend. Entries in console.log should have more information 
+&gt;&gt; about which partition is affected. Please post output from the affected node 
+&gt;&gt; at around 2017-02-13T21:18:30. As this is AAE data, it is safe to remove the 
+&gt;&gt; directory named after the affected partition from the active_entropy 
+&gt;&gt; directory before restarting the node. You may find that there is more than 
+&gt;&gt; one affected partition, the next of which will be encountered after the 
+&gt;&gt; attempted restart only. If this is the case, simply identify the next 
+&gt;&gt; partition in the same way and remove it, too, until the node starts up 
+&gt;&gt; successfully again.
+&gt;&gt; 
+&gt;&gt; Is there a reason why the nodes aren't shut down in the regular way?
+&gt;&gt; 
+&gt;&gt; Kind Regards,
+&gt;&gt; 
+&gt;&gt; Magnus
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; -- 
+&gt;&gt; Magnus Kessler
+&gt;&gt; Client Services Engineer
+&gt;&gt; Basho Technologies Limited
+&gt;&gt; 
+&gt;&gt; Registered Office - 8 Lincoln’s Inn Fields London WC2A 3BP Reg 07970431
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt;&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt; 
+&gt; 
+&gt; &lt;aaeLOG.tar&gt;
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17980.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17982">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17982">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17983.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17974.html">Truncated bit-cask files</a></span> <span class="sender italic">Arun Rajagopalan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17975.html">Re: Truncated bit-cask files</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17978.html">Re: Truncated bit-cask files</a></span> <span class="sender italic">Arun Rajagopalan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17979.html">Re: Truncated bit-cask files</a></span> <span class="sender italic">Magnus Kessler</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17980.html">Re: Truncated bit-cask files</a></span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Truncated bit-cask files</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17983.html">Re: Truncated bit-cask fil...</a></span> <span class="sender italic">Arun Rajagopalan</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Truncated bit-cask files">
+<input type="hidden" name="msgid" value="A0855CAB-2E25-4207-9D96-363AC64C4C7B@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17982.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Truncated+bit%5C-cask+files%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17980.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17983.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">A0855CAB-2E25-4207-9D96-363AC64C4C7B@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

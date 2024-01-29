@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: why leaving riak cluster so slowly and how to accelerate the speed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16402" id="c">
+<link rel="index" href="maillist.html#16402" id="i">
+<link rel="prev" href="msg16401.html" id="p">
+<link rel="next" href="msg16414.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16402.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+why+leaving+riak+cluster+so+slowly+and+how+to+accelerate+the+speed%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: why leaving riak cluster so slowly and how to accelerate the speed</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22changmao+wang%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">changmao wang</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150811" rel="nofollow">Tue, 11 Aug 2015 04:55:03 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>1. About backuping new nodes of four and then using 'riak-admin
+force-replace'. what's the status of new added nodes?
+as you know, we want to replace one of leaving nodes.</pre><pre>
+
+2. what's the risk of 'riak-admin force-remove' 'riak@10.21.136.91' without
+backup?
+As you know, now the node(riak@10.21.136.91) is a member of the cluster,
+and keeping almost 2.5TB data, maybe 10 percent of the whole cluster.
+
+
+
+On Tue, Aug 11, 2015 at 7:32 PM, Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;
+wrote:
+
+&gt; 1. How to force leave &quot;leaving&quot;'s nodes without data loss?
+&gt;
+&gt; This depends on - did you back up the data directory of the 4 new nodes,
+&gt; before you reformatted them?
+&gt; If you backed them up (and then restored the data directory once you
+&gt; reformatted them), you can try:
+&gt;
+&gt; riak-admin force-replace 'riak@10.21.136.91' 'riak@&lt;whatever your new ip
+&gt; address is for that node&gt;'
+&gt; (same for the other 3)
+&gt;
+&gt; If you did not back up those nodes, the only thing you can do is force
+&gt; them to leave, and then join the new ones. So, for each of the 4:
+&gt;
+&gt; riak-admin force-remove 'riak@10.21.136.91' 'riak@10.21.136.66'
+&gt; (same for the other 3)
+&gt;
+&gt; In either case, after force-replacing or force-removing, you have to join
+&gt; the new nodes to the cluster, before you commit.
+&gt;
+&gt; riak-admin join 'riak@new node' 'riak@10.21.136.66'
+&gt; (same for the other 3)
+&gt; and finally:
+&gt; riak-cluster plan
+&gt; riak-cluster commit
+&gt;
+&gt; As for the error, the reason you're seeing it, is because the other nodes
+&gt; can't contact the 4 that are supposed to be leaving. (Since you wiped them).
+&gt; The amount of time that passed doesn't matter, the cluster will be waiting
+&gt; for those nodes to leave indefinitely, unless you force-remove or
+&gt; force-replace.
+&gt;
+&gt;
+&gt;
+&gt; On Tue, Aug 11, 2015 at 1:32 AM, changmao wang &lt;wang.chang...@gmail.com&gt;
+&gt; wrote:
+&gt;
+&gt;&gt; HI Dmitri,
+&gt;&gt;
+&gt;&gt; For your question,
+&gt;&gt; 3) Re-formatted those four nodes and re-installed Riak. Here is where it
+&gt;&gt; gets tricky though. Several questions for you:
+&gt;&gt; - Did you attempt to re-join those 4 reinstalled nodes into the cluster?
+&gt;&gt; What was the output of the cluster join and cluster plan commands?
+&gt;&gt; - Did the IP address change, after they were reformatted? If so, you
+&gt;&gt; probably need to use something like 'reip' at this point:
+&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/tools/riak-admin/#reip">http://docs.basho.com/riak/latest/ops/running/tools/riak-admin/#reip</a>
+&gt;&gt;
+&gt;&gt; I did  NOT try to re-join those 4 re-join those 4 reinstalled nodes into
+&gt;&gt; the cluster. As you know, member-status shows 'they're leaving&quot; as below:
+&gt;&gt; riak-admin member-status
+&gt;&gt; ================================= Membership
+&gt;&gt; ==================================
+&gt;&gt; Status     Ring    Pending    Node
+&gt;&gt;
+&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt; leaving    10.9%     10.9%    'riak@10.21.136.91'
+&gt;&gt; leaving     9.4%     10.9%    'riak@10.21.136.92'
+&gt;&gt; leaving     7.8%     10.9%    'riak@10.21.136.93'
+&gt;&gt; leaving     7.8%     10.9%    'riak@10.21.136.94'
+&gt;&gt; valid      10.9%     10.9%    'riak@10.21.136.66'
+&gt;&gt; valid      10.9%     10.9%    'riak@10.21.136.71'
+&gt;&gt; valid      14.1%     10.9%    'riak@10.21.136.76'
+&gt;&gt; valid      17.2%     12.5%    'riak@10.21.136.81'
+&gt;&gt; valid      10.9%     10.9%    'riak@10.21.136.86'
+&gt;&gt;
+&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt; Valid:5 / Leaving:4 / Exiting:0 / Joining:0 / Down:0
+&gt;&gt;
+&gt;&gt; two weeks elapsed, 'riak-admin member-status' shows same result. I don't
+&gt;&gt; know which step ring hand off?
+&gt;&gt;
+&gt;&gt; I did not changed the IP address of four newly adding nodes.
+&gt;&gt;
+&gt;&gt; My questions:
+&gt;&gt;
+&gt;&gt; 1. How to force leave &quot;leaving&quot;'s nodes without data loss?
+&gt;&gt; 2. I have found some errors related to handoff of partition in
+&gt;&gt; /etc/riak/log/errors.
+&gt;&gt; Details are as below:
+&gt;&gt;
+&gt;&gt; 2015-07-30 16:04:33.643 [error]
+&gt;&gt; &lt;0.12872.15&gt;@riak_core_handoff_sender:start_fold:262 ownership_transfer
+&gt;&gt; transfer of riak_kv_vnode from 'riak@10.21.136.76'
+&gt;&gt; 45671926166590716193865151022383844364247891968 to 'riak@10.21.136.93'
+&gt;&gt; 45671926166590716193865151022383844364247891968 failed because of enotconn
+&gt;&gt; 2015-07-30 16:04:33.643 [error]
+&gt;&gt; &lt;0.197.0&gt;@riak_core_handoff_manager:handle_info:289 An outbound handoff of
+&gt;&gt; partition riak_kv_vnode 45671926166590716193865151022383844364247891968 was
+&gt;&gt; terminated for reason: {shutdown,{error,enotconn}}
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; I have searched it with google and found related articles. However,
+&gt;&gt; there's no solution.
+&gt;&gt;
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/pipermail/riak-users_lists.basho.com/2014-October/016052.html">http://lists.basho.com/pipermail/riak-users_lists.basho.com/2014-October/016052.html</a>
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Mon, Aug 10, 2015 at 10:09 PM, Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;
+&gt;&gt; wrote:
+&gt;&gt;
+&gt;&gt;&gt; Hi Changmao,
+&gt;&gt;&gt;
+&gt;&gt;&gt; The state of the cluster can be determined from running 'riak-admin
+&gt;&gt;&gt; member-status' and 'riak-admin ring-status'.
+&gt;&gt;&gt; If I understand the sequence of events, you:
+&gt;&gt;&gt; 1) Joined four new nodes to the cluster. (Which crashed due to not
+&gt;&gt;&gt; enough disk space)
+&gt;&gt;&gt; 2) Removed them from the cluster via 'riak-admin cluster leave'.  This
+&gt;&gt;&gt; is a &quot;planned remove&quot; command, and expects for the nodes to gradually hand
+&gt;&gt;&gt; off their partitions (to transfer ownership) before actually leaving.  So
+&gt;&gt;&gt; this is probably the main problem - the ring is stuck waiting for those
+&gt;&gt;&gt; nodes to properly hand off.
+&gt;&gt;&gt;
+&gt;&gt;&gt; 3) Re-formatted those four nodes and re-installed Riak. Here is where it
+&gt;&gt;&gt; gets tricky though. Several questions for you:
+&gt;&gt;&gt; - Did you attempt to re-join those 4 reinstalled nodes into the cluster?
+&gt;&gt;&gt; What was the output of the cluster join and cluster plan commands?
+&gt;&gt;&gt; - Did the IP address change, after they were reformatted? If so, you
+&gt;&gt;&gt; probably need to use something like 'reip' at this point:
+&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/tools/riak-admin/#reip">http://docs.basho.com/riak/latest/ops/running/tools/riak-admin/#reip</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt; The 'failed because of enotconn' error message is happening because the
+&gt;&gt;&gt; cluster is waiting to hand off partitions to .94, but cannot connect to it.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Anyways, here's what I recommend. If you can lose the data, it's
+&gt;&gt;&gt; probably easier to format and reinstall the whole cluster.
+&gt;&gt;&gt; If not, you can 'force-remove' those four nodes, one by one (see
+&gt;&gt;&gt; <a  rel="nofollow" href="http://docs.basho.com/riak/latest/ops/running/cluster-admin/#force-remove">http://docs.basho.com/riak/latest/ops/running/cluster-admin/#force-remove</a>
+&gt;&gt;&gt; )
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; On Thu, Aug 6, 2015 at 11:55 PM, changmao wang &lt;wang.chang...@gmail.com&gt;
+&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Dmitri,
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; Thanks for your quick reply.
+&gt;&gt;&gt;&gt; my question are as below:
+&gt;&gt;&gt;&gt; 1. what's the current status of the whole cluster? Is't doing data
+&gt;&gt;&gt;&gt; balance?
+&gt;&gt;&gt;&gt; 2. there's so many errors during one of the node error log. how to
+&gt;&gt;&gt;&gt; handle it?
+&gt;&gt;&gt;&gt; 2015-08-05 01:38:59.717 [error]
+&gt;&gt;&gt;&gt; &lt;0.23000.298&gt;@riak_core_handoff_sender:start_fold:262 ownership_transfer
+&gt;&gt;&gt;&gt; transfer of riak_kv_vnode from 'riak@10.21.136.81'
+&gt;&gt;&gt;&gt; 525227150915793236229449236757414210188850757632 to 'riak@10.21.136.94'
+&gt;&gt;&gt;&gt; 525227150915793236229449236757414210188850757632 failed because of enotconn
+&gt;&gt;&gt;&gt; 2015-08-05 01:38:59.718 [error]
+&gt;&gt;&gt;&gt; &lt;0.195.0&gt;@riak_core_handoff_manager:handle_info:289 An outbound handoff of
+&gt;&gt;&gt;&gt; partition riak_kv_vnode 525227150915793236229449236757414210188850757632
+&gt;&gt;&gt;&gt; was terminated for reason: {shutdown,{error,enotconn}}
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; During the last 5 days, there's no changes of the &quot;riak-admin member
+&gt;&gt;&gt;&gt; status&quot; output.
+&gt;&gt;&gt;&gt; 3. how to accelerate the data balance?
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; On Fri, Aug 7, 2015 at 6:41 AM, Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;
+&gt;&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; Ok, I think I understand so far. So what's the question?
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; On Thursday, August 6, 2015, Changmao.Wang &lt;changmao.w...@datayes.com&gt;
+&gt;&gt;&gt;&gt;&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Hi Riak users,
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Before adding new nodes, the cluster only have five nodes. The member
+&gt;&gt;&gt;&gt;&gt;&gt; list are as below:
+&gt;&gt;&gt;&gt;&gt;&gt; 10.21.136.66,10.21.136.71,10.21.136.76,10.21.136.81,10.21.136.86.
+&gt;&gt;&gt;&gt;&gt;&gt; We did not setup http proxy for the cluster, only one node of the
+&gt;&gt;&gt;&gt;&gt;&gt; cluster provide the http service.  so the CPU load is always high on this
+&gt;&gt;&gt;&gt;&gt;&gt; node.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; After that, I added four nodes (10.21.136.[91-94]) to those cluster.
+&gt;&gt;&gt;&gt;&gt;&gt; During the ring/data balance progress, each node failed(riak stopped)
+&gt;&gt;&gt;&gt;&gt;&gt; because of disk 100% full.
+&gt;&gt;&gt;&gt;&gt;&gt; I used multi-disk path to &quot;data_root&quot; parameter in
+&gt;&gt;&gt;&gt;&gt;&gt; '/etc/riak/app.config'. Each disk is only 580MB size.
+&gt;&gt;&gt;&gt;&gt;&gt; As you know, bitcask storage engine did not support multi-disk path.
+&gt;&gt;&gt;&gt;&gt;&gt; After one of the disks is 100% full, it can not switch next idle disk. So
+&gt;&gt;&gt;&gt;&gt;&gt; the &quot;riak&quot; service is down.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; After that, I removed the new add four nodes at active nodes with
+&gt;&gt;&gt;&gt;&gt;&gt; &quot;riak-admin cluster leave riak@'10.21.136.91'&quot;.
+&gt;&gt;&gt;&gt;&gt;&gt; and then stop &quot;riak&quot; service on other active new nodes, reformat the
+&gt;&gt;&gt;&gt;&gt;&gt; above new nodes with LVM disk management (bind 6 disk with virtual disk
+&gt;&gt;&gt;&gt;&gt;&gt; group).
+&gt;&gt;&gt;&gt;&gt;&gt; Replace the &quot;data-root&quot; parameter with one folder, and then start
+&gt;&gt;&gt;&gt;&gt;&gt; &quot;riak&quot; service again. After that, the cluster began the data balance 
+&gt;&gt;&gt;&gt;&gt;&gt; again.
+&gt;&gt;&gt;&gt;&gt;&gt; That's the whole story.
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Amao
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; ------------------------------
+&gt;&gt;&gt;&gt;&gt;&gt; *From: *&quot;Dmitri Zagidulin&quot; &lt;dzagidu...@basho.com&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; *To: *&quot;Changmao.Wang&quot; &lt;changmao.w...@datayes.com&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; *Sent: *Thursday, August 6, 2015 10:46:59 PM
+&gt;&gt;&gt;&gt;&gt;&gt; *Subject: *Re: why leaving riak cluster so slowly and how to
+&gt;&gt;&gt;&gt;&gt;&gt; accelerate the speed
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Hi Amao,
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Can you explain a bit more which steps you've taken, and what the
+&gt;&gt;&gt;&gt;&gt;&gt; problem is?
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; Which nodes have been added, and which nodes are leaving the cluster?
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt; On Tue, Jul 28, 2015 at 11:03 PM, Changmao.Wang &lt;
+&gt;&gt;&gt;&gt;&gt;&gt; changmao.w...@datayes.com&gt; wrote:
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Hi Raik user group,
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;  I'm using riak and riak-cs 1.4.2. Last weekend, I added four nodes
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; to cluster with 5 nodes. However, it's failed with one of disks 100% 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; full.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; As you know bitcask storage engine can not support multifolders.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; After that, I restarted the &quot;riak&quot; and leave the cluster with the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; command &quot;riak-admin cluster leave&quot; and &quot;riak-admin cluster plan&quot;, and 
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; the
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; commit.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; However, riak is always doing KV balance after my submit leaving
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; command. I guess that it's doing join cluster progress.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Could you show us how to accelerate the leaving progress? I have
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; tuned the &quot;transfer-limit&quot; parameters on 9 nodes.
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; below is some commands output:
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; riak-admin member-status
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; ================================= Membership
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; ==================================
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Status     Ring    Pending    Node
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; leaving     6.3%     10.9%    'riak@10.21.136.91'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; leaving     9.4%     10.9%    'riak@10.21.136.92'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; leaving     6.3%     10.9%    'riak@10.21.136.93'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; leaving     6.3%     10.9%    'riak@10.21.136.94'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; valid      10.9%     10.9%    'riak@10.21.136.66'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; valid      12.5%     10.9%    'riak@10.21.136.71'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; valid      18.8%     10.9%    'riak@10.21.136.76'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; valid      18.8%     12.5%    'riak@10.21.136.81'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; valid      10.9%     10.9%    'riak@10.21.136.86'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;  riak-admin transfer_limit
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; =============================== Transfer Limit
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; ================================
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Limit        Node
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; -------------------------------------------------------------------------------
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   200        'riak@10.21.136.66'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   200        'riak@10.21.136.71'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   100        'riak@10.21.136.76'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   100        'riak@10.21.136.81'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   200        'riak@10.21.136.86'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   500        'riak@10.21.136.91'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   500        'riak@10.21.136.92'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   500        'riak@10.21.136.93'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;   500        'riak@10.21.136.94'
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Any more details for your diagnosing the problem?
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; Amao
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;&gt; --
+&gt;&gt;&gt;&gt; Amao Wang
+&gt;&gt;&gt;&gt; Best &amp; Regards
+&gt;&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; --
+&gt;&gt; Amao Wang
+&gt;&gt; Best &amp; Regards
+&gt;&gt;
+&gt;
+&gt;
+
+
+-- 
+Amao Wang
+Best &amp; Regards
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16401.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16402">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16402">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16414.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16346.html">why leaving riak cluster so slowly and how to accelerate ...</a></span> <span class="sender italic">Changmao.Wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16374.html">Fwd: why leaving riak cluster so slowly and how to a...</a></span> <span class="sender italic">Changmao.Wang</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16375.html">Re: why leaving riak cluster so slowly and how to ac...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16411.html">Re: why leaving riak cluster so slowly and how to ac...</a></span> <span class="sender italic">Changmao.Wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16378.html">Re: why leaving riak cluster so slowly and how t...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16390.html">Re: why leaving riak cluster so slowly and h...</a></span> <span class="sender italic">changmao wang</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16394.html">Re: why leaving riak cluster so slowly and h...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16401.html">Re: why leaving riak cluster so slowly a...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: why leaving riak cluster so slo...</span> <span class="sender italic">changmao wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16414.html">Re: why leaving riak cluster so...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16424.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">changmao wang</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16425.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16428.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">Amao</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16427.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16431.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">changmao wang</span></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg16410.html">why leaving riak cluster so slowly and how to accele...</a></span> <span class="sender italic">Changmao.Wang</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: why leaving riak cluster so slowly and how to accelerate the speed">
+<input type="hidden" name="msgid" value="CAEY0-R+DhzuYnjrNuVeHrQ430R66bmD8Pzh65TX2jh=fCW4W+Q@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16402.html">
+<input type="submit" value=" changmao wang ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+why+leaving+riak+cluster+so+slowly+and+how+to+accelerate+the+speed%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16401.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16414.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAEY0-R+DhzuYnjrNuVeHrQ430R66bmD8Pzh65TX2jh=fCW4W+Q@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

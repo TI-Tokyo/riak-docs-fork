@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak CS/Stanchion troubleshooting (Retrieval of user record)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16770" id="c">
+<link rel="index" href="maillist.html#16770" id="i">
+<link rel="prev" href="msg16767.html" id="p">
+<link rel="next" href="msg16792.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16770.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS%5C%2FStanchion+troubleshooting+%5C%28Retrieval+of+user+record%5C%29%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak CS/Stanchion troubleshooting (Retrieval of user record)</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Kazuhiro+Suzuki%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Kazuhiro Suzuki</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151115" rel="nofollow">Sun, 15 Nov 2015 18:03:13 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi,
+
+ha_proxy's timeout settings often causes disconnected errors on a Riak
+CS deployment by high work load. termination_stat [1] in tcplog [2]
+lets you know if timeout happens or not.</pre><pre>
+
+&gt; 2015-11-13 13:13:09.514 [error] 
+&gt; &lt;0.11264.1387&gt;@riak_cs_wm_common:maybe_create_user:222 Retrieval of user 
+&gt; record for s3 failed. Reason: disconnected
+
+This means Riak CS failed to read a user data from Riak for
+authentication due to a disconnected error.
+
+&gt; Riak CS adds, removes, gets properties through Stanchion service. Am I right? 
+&gt; I can't exactly understand where is my bottleneck - Riak, Riak CS or 
+&gt; Stanchion.
+
+Mainly Stanchion is only used to update/delete data of users and
+buckets. To inspect a node, Riak S2/CS 2.1 introduced new metrics
+including various latencies and counters, which help to identify
+bottleneck.
+
+&gt; When we need authenticated access for reading object from bucket do we need 
+&gt; Stanchion? If not I can't understand why I had a lot of error during getting 
+&gt; objects from Riak CS.
+
+Authenticated access is always necessary but a read request of user
+data for auth is issued from Riak CS to Riak directly, not through
+Stanchion.
+
+&gt; P. S. Sometimes when there is some issues with Riak CS - Stanchion 
+&gt; connectivity I need to restart Riak CS.
+
+Riak CS 1.5.0 has connection pool leak problem [3]. You might hit the issue...
+
+[1]: <a  rel="nofollow" href="https://cbonte.github.io/haproxy-dconv/configuration-1.5.html#8.5">https://cbonte.github.io/haproxy-dconv/configuration-1.5.html#8.5</a>
+[2]: <a  rel="nofollow" href="https://cbonte.github.io/haproxy-dconv/configuration-1.5.html#8.2.2">https://cbonte.github.io/haproxy-dconv/configuration-1.5.html#8.2.2</a>
+[3]: 
+<a  rel="nofollow" href="http://docs.basho.com/riakcs/latest/cookbooks/Riak-CS-Release-Notes/#Riak-CS-1-5-2">http://docs.basho.com/riakcs/latest/cookbooks/Riak-CS-Release-Notes/#Riak-CS-1-5-2</a>
+
+On Sat, Nov 14, 2015 at 2:04 AM, Vladyslav Zakhozhai
+&lt;v.zakhoz...@smartweb.com.ua&gt; wrote:
+&gt;
+&gt; Hello.
+&gt;
+&gt; I have Riak CS cluster with 18 nodes. On each node there is Riak CS and Riak
+&gt; service and one Stanchion node.
+&gt;
+&gt; Versions:
+&gt; Riak 1.4.12
+&gt; Riak CS 1.5.0
+&gt; Stanchion 1.5.0
+&gt;
+&gt; Riak CS and Riak allocated behind HAProxy balancers:
+&gt;
+&gt; WAN -&gt; HAProxy -&gt; Riak CS nodes -&gt; HAProxy -&gt; Riak nodes.
+&gt; ans
+&gt; Stanchion -&gt; HAProxy -&gt; Riak
+&gt;
+&gt; Today due a spike of traffic load (about 1000 rps) on the cluster 50% of
+&gt; Riak CS returned HTTP 500 and 503 (querying /riak-cs/ping resource also was
+&gt; not successful).
+&gt;
+&gt; In Riak CS logs I've seen the following messages:
+&gt;
+&gt; 2015-11-13 13:13:09.514 [error]
+&gt; &lt;0.11264.1387&gt;@riak_cs_wm_common:maybe_create_user:222 Retrieval of user
+&gt; record for s3 failed. Reason: disconnected
+&gt;
+&gt; In Riak CS logs I see the following:
+&gt; 2015-11-13 17:31:52.995 [error] &lt;0.11254.6534&gt; Lager event handler
+&gt; error_logger_lager_h exited with reason
+&gt; {'EXIT',{{badmatch,[&quot;/buckets/uaprom-image/objects/272547384_cid1322007_pid183135512-26a7c1f3.jpg&quot;,{error,{error,{badmatch,{error,closed}},[{webmachine_request,recv_unchunked_body,3,[{file,&quot;src/webmachine_request.erl&quot;},{line,471}]},{webmachine_request,call,2,[{file,&quot;src/webmachine_request.erl&quot;},{line,193}]},{wrq,stream_req_body,2,[{file,&quot;src/wrq.erl&quot;},{line,121}]},{riak_cs_wm_object,handle_normal_put,2,[{file,&quot;src/riak_cs_wm_object.erl&quot;},{line,341}]},{riak_cs_wm_common,accept_body,2,[{file,...},...]},...]}},...]},...}}
+&gt;
+&gt; I suspect that there were problem between Riak CS - Stanhion or Stanhion -
+&gt; Riak. I have no clear idea in Stanchion troubleshooting. The main reason is
+&gt; the following. Stanhion works fine, service is up (answers on ping command).
+&gt; But it is very laconic: there is almost nothing in console and error logs
+&gt; (even with debug log level).
+&gt;
+&gt; Riak CS adds, removes, gets properties through Stanchion service. Am I
+&gt; right? I can't exactly understand where is my bottleneck - Riak, Riak CS or
+&gt; Stanhion.
+&gt;
+&gt; When we need authenticated access for reading object from bucket do we need
+&gt; Stanchion? If not I can't understand why I had a lot of error during getting
+&gt; objects from Riak CS.
+&gt;
+&gt; Thank you in advance.
+&gt;
+&gt; P. S. Sometimes when there is some issues with Riak CS - Stanchion
+&gt; connectivity I need to restart Riak CS.
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+
+
+-- 
+Kazuhiro Suzuki | Basho Japan KK
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16767.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16770">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16770">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16792.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16767.html">Riak CS/Stanchion troubleshooting (Retrieval of user r...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak CS/Stanchion troubleshooting (Retrieval ...</span> <span class="sender italic">Kazuhiro Suzuki</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16792.html">Re: Riak CS/Stanchion troubleshooting (Retrie...</a></span> <span class="sender italic">Vladyslav Zakhozhai</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16811.html">Re: Riak CS/Stanchion troubleshooting (Re...</a></span> <span class="sender italic">Kazuhiro Suzuki</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak CS/Stanchion troubleshooting (Retrieval of user record)">
+<input type="hidden" name="msgid" value="CAKPjYYdhVvcbX6KV6XHPiHQSyLgaz52aBApJDpf4-rjP8KHPiA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16770.html">
+<input type="submit" value=" Kazuhiro Suzuki ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+CS%5C%2FStanchion+troubleshooting+%5C%28Retrieval+of+user+record%5C%29%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16767.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16792.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAKPjYYdhVvcbX6KV6XHPiHQSyLgaz52aBApJDpf4-rjP8KHPiA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

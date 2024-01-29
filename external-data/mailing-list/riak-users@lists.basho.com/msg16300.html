@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Riak 2.0.2 leveldb uses more disk space than Riak 1.4.x?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="thrd5.html#16300" id="c">
+<link rel="index" href="maillist.html#16300" id="i">
+<link rel="prev" href="msg15468.html" id="p">
+<link rel="next" href="msg15469.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16300.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+2.0.2+leveldb+uses+more+disk+space+than+Riak+1.4.x%5C%3F%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Riak 2.0.2 leveldb uses more disk space than Riak 1.4.x?</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Matthew+Von%5C-Maszewski%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Matthew Von-Maszewski</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150716" rel="nofollow">Thu, 16 Jul 2015 11:44:40 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Wes,
+
+I was away from Basho for five months.  I suspect there was confusion as who 
+should respond and how to respond.</pre><pre>
+
+I have two guesses as to your 5% growth:
+
+Guess 1 … more metadata at the block level
+
+2.0 Riak contains a new leveldb feature called dynamic block size.  This is 
+where leveldb starts constructing .sst table files differently to optimize 
+memory usage for overall performance.  Each file has overall index and a per 
+block index.  This new feature begins to adjust more index information into the 
+blocks to intentionally reduce the size of file’s overall index.  The overall 
+index must reside completely in memory while the file is open.  Shifting index 
+data to the blocks allows a greater number of files to be opened simultaneously 
+for a given amount of computer memory.  This helps performance because opening 
+a file is huge time cost.
+
+The content changes of both the file level index and the block level indexes 
+typically create a net increase in file size, though the changes to your 
+compression ratio can go either way.  We would have to look at sample .sst 
+files from levels 3 and 4 with the sst_scan tool to make a valid assessment 
+(<a  rel="nofollow" href="https://github.com/basho/leveldb/blob/develop/tools/sst_scan.cc">https://github.com/basho/leveldb/blob/develop/tools/sst_scan.cc</a>).
+
+Technical details of dynamic block sizing are here:
+
+     <a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/mv-dynamic-block-size">https://github.com/basho/leveldb/wiki/mv-dynamic-block-size</a>
+
+
+Guess 2 … weaker than Guess 1, but possible
+
+I am going to guess that you are getting more, smaller .sst table files than 
+before at levels 0 and 1.  More files means more disk space lost to due to the 
+difference between space needed and whole blocks allocated by the file system.  
+There can be a slight reduction in compression of file metadata too, but that 
+is a questionable contributor.  The impact is limited to levels 0 and 1, but 
+that still adds up.
+
+A bug was discovered mid December 2014 and a fix placed on a branch for 
+subsequent releases.  The fix too was lost in the above confusion and is just 
+now making its way into the 2.0.x and 2.1.x releases.
+
+The missing fix is here:
+
+   <a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/mv-sequential-tuning">https://github.com/basho/leveldb/wiki/mv-sequential-tuning</a> 
+&lt;<a  rel="nofollow" href="https://github.com/basho/leveldb/wiki/mv-sequential-tuning">https://github.com/basho/leveldb/wiki/mv-sequential-tuning</a>&gt;
+
+
+Matthew
+
+
+&gt; On Jul 16, 2015, at 2:06 PM, Wes Jossey &lt;weston.jos...@gmail.com&gt; wrote:
+&gt; 
+&gt; Nope. Never did. 
+&gt; 
+&gt; 
+&gt; 
+&gt;&gt; On Jul 16, 2015, at 13:32, Matthew Von-Maszewski &lt;matth...@basho.com&gt; wrote:
+&gt;&gt; 
+&gt;&gt; Did you ever get a reply to this query?
+&gt;&gt; 
+&gt;&gt; Matthew
+&gt;&gt; 
+&gt;&gt;&gt; On Jan 11, 2015, at 5:48 PM, Weston Jossey &lt;weston.jos...@gmail.com&gt; wrote:
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Hi All,
+&gt;&gt;&gt; Just wanted to put out an observation and see if it's either just me, or 
+&gt;&gt;&gt; something expected.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; I've begun updating our large Riak 1.4 cluster to Riak 2.0.  Each cluster 
+&gt;&gt;&gt; has 43TB spread evenly over 32 nodes.  The riak 2.0 test nodes, after 
+&gt;&gt;&gt; running for 14 days, have on average around 5% more disk usage (in terms of 
+&gt;&gt;&gt; size, not IOPS) than the riak 1.4 cluster. Given that the cluster is evenly 
+&gt;&gt;&gt; balanced, I'd expect all nodes to be roughly the same size (or at least 
+&gt;&gt;&gt; within a point or two).  
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Is this expected?  Does this have something to do with the dynamic settings 
+&gt;&gt;&gt; for the leveldb configuration parameters that is built into Riak 2?
+&gt;&gt;&gt; 
+&gt;&gt;&gt; The issue isn't a big one.  I'm just curious if this is expected / 
+&gt;&gt;&gt; anticipated, as it'll probably be worth noting in the Riak documentation as 
+&gt;&gt;&gt; part of the upgrade process.
+&gt;&gt;&gt; 
+&gt;&gt;&gt; Thanks!
+&gt;&gt;&gt; -Wes
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt; 
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg15468.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="thrd5.html#16300">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16300">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg15469.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg15468.html">Riak 2.0.2 leveldb uses more disk space than Riak 1....</a></span> <span class="sender italic">Weston Jossey</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Riak 2.0.2 leveldb uses more disk space tha...</span> <span class="sender italic">Matthew Von-Maszewski</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Riak 2.0.2 leveldb uses more disk space than Riak 1.4.x?">
+<input type="hidden" name="msgid" value="7B5BA58A-66B1-42E5-83F3-762C1FB7C454@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16300.html">
+<input type="submit" value=" Matthew Von-Maszewski ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Riak+2.0.2+leveldb+uses+more+disk+space+than+Riak+1.4.x%5C%3F%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg15468.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg15469.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">7B5BA58A-66B1-42E5-83F3-762C1FB7C454@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

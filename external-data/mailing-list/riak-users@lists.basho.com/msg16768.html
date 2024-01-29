@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>simpler implementation of RiakMap</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16768" id="c">
+<link rel="index" href="maillist.html#16768" id="i">
+<link rel="prev" href="msg16767.html" id="p">
+<link rel="next" href="msg16776.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16768.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22simpler+implementation+of+RiakMap%22&amp;o=newest" rel="nofollow"><span itemprop="name">simpler implementation of RiakMap</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22David+Byron%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">David Byron</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151113" rel="nofollow">Fri, 13 Nov 2015 16:50:42 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<tt>As I stare at the code for RiakMap in the riak-java-client 
+</tt><tt>(<a  rel="nofollow" href="https://github.com/basho/riak-java-client/blob/develop/src/main/java/com/basho/riak/client/core/query/crdt/types/RiakMap.java">https://github.com/basho/riak-java-client/blob/develop/src/main/java/com/basho/riak/client/core/query/crdt/types/RiakMap.java</a>), 
+</tt><tt>I have the urge for a simpler implementation.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If I'm reading the code right, it looks like it handles a value of each 
+</tt><tt>RiakDatatype for each key.  As in, it's possible for the same key in a 
+</tt><tt>map to have all of a counter, map, flag, register and set value.
+</tt><pre style="margin: 0em;"></pre><pre>
+
+</pre><tt>If it turns out that the underlying data has only one of those, or 
+</tt><tt>perhaps that I only care about one of those, it feels like
+</tt><pre style="margin: 0em;">
+
+    private final Map&lt;BinaryValue, List&lt;RiakDatatype&gt;&gt; entries =
+        new HashMap&lt;BinaryValue, List&lt;RiakDatatype&gt;&gt;();
+
+could become
+
+   private final Map&lt;BinaryValue, RiakDatatype&gt; entries =
+        new HashMap&lt;BinaryValue, RiakDatatype&gt;();
+
+</pre><tt>What I'm getting at is that the code I'm writing to iterate over the 
+</tt><tt>elements in a map is doing way more than I'd like.  For a map whose 
+</tt><tt>values are all registers, I've got something like:
+</tt><pre style="margin: 0em;">
+
+  RiakMap myMap;
+  for (BinaryValue key : myMap.view().keySet()) {
+    RiakRegister register = myMap.getRegister(key);
+  }
+
+</pre><tt>which looks clean enough, but is busy under the covers.  I'm really 
+</tt><tt>whining about the implementation of getRegister and friends:
+</tt><pre style="margin: 0em;">
+
+public RiakRegister getRegister(BinaryValue key)
+{
+  if (entries.containsKey(key)) {
+    for (RiakDatatype dt : entries.get(key)) {
+      if (dt.isRegister()) {
+        return dt.getAsRegister();
+      }
+    }
+  }
+  return null;
+}
+
+</pre><tt>Because I'm iterating I already know the key is one of the entries, so 
+</tt><tt>would you consider a patch with an unsafe* (or any other name) set of 
+</tt><tt>accessors that assumes the key is present?  I could of course call view 
+</tt><tt>and implement my own method, but I can't see how to take out the loop 
+</tt><tt>without changing the underlying data structure for entries.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>If I'm iterating over lots and lots of keys (i.e. myMap.view().keySet() 
+</tt><tt>contains lots and lots of elements), it might actually be enough savings 
+</tt><tt>to notice.  In addition though, I think it's simpler enough to be 
+</tt><tt>helpful when trying to read/understand the code.
+</tt><pre style="margin: 0em;">
+
+</pre><tt>It is of course possible that the underlying data isn't what I expect, 
+</tt><tt>and contains other data types too.  So a full implementation might need 
+</tt><tt>hints from the caller about whether to use the more general/existing 
+</tt><tt>data structure, or the simplified one...and then whether to fail in the 
+</tt><tt>face of data that doesn't fit in the simplified one, or silently ignore 
+</tt><tt>it...or ignore it but notify the caller that it's present...and probably 
+</tt><tt>other stuff I haven't considered yet.
+</tt><pre style="margin: 0em;">
+
+I'd love to hear what you think about all of this.
+
+Thanks much for your help.
+
+-DB
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16767.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16768">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16768">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16776.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">simpler implementation of RiakMap</span> <span class="sender italic">David Byron</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16776.html">Re: simpler implementation of RiakMap</a></span> <span class="sender italic">Alex Moore</span></li>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="simpler implementation of RiakMap">
+<input type="hidden" name="msgid" value="56468501.9080507@dbyron.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16768.html">
+<input type="submit" value=" David Byron ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22simpler+implementation+of+RiakMap%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16767.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16776.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">56468501.9080507@dbyron.com</li>
+</ul>
+</div>
+</body>
+</html>

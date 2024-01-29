@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Yokozuna indexes too slow</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16596" id="c">
+<link rel="index" href="maillist.html#16596" id="i">
+<link rel="prev" href="msg16595.html" id="p">
+<link rel="next" href="msg16584.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16596.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Yokozuna+indexes+too+slow%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Yokozuna indexes too slow</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Fred+Dushin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Fred Dushin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151002" rel="nofollow">Fri, 02 Oct 2015 07:20:37 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Ilyas,
+
+So, from those stats it's looking like it's taking around 3 seconds on average 
+to write a message into Solr (search_index_latency_mean, in microseconds), 
+though the max value is almost 27 seconds.  So there is definitely something 
+wrong with the way Solr is behaving, or possibly with the way you are indexing 
+you data, though from your description everything looks fine -- 200 bytes of 
+JSON, which I assume contains fields like username, device id, ip address etc, 
+looking at your schema.  You should definitely be able to get better 
+performance out of Solr, though those stats are being taken in Yokozuna, so I 
+wouldn't rule out what might be going on in Riak, at least not without knowing 
+more.</pre><pre>
+
+One thing you might start looking at are the JVM stats via JConsole, for 
+example, to see if there is anything suspicious going on with the JVM.  You 
+should at least be able to get things like stats from the garbage collector, 
+heap size, etc.
+
+I would also recommend using tools on your debian machine like top, vmstat, 
+iotsat, to get a picture of how much time is being spent in Solr vs Riak.  It 
+would be interesting to see what the CPU and I/O behavior of Riak and Java are, 
+in this case.
+
+While you don't necessarily need collectd to tract stats, I have some 
+collectd/python scripts for gathering data about Riak and the JVM.  Please feel 
+free to pilfer/use at your discretion (The proc man page on most lines is 
+helpful).  All they do is scrape the /proc file system to get stats about CPU 
+time, io, etc.  There is also some collectd config for collecting stats via JMX 
+from the JVM, in case you are interested in that.
+
+<a  rel="nofollow" href="https://github.com/fadushin/riak_puppet_stuff/tree/master/modules/riak_node/files/collectd">https://github.com/fadushin/riak_puppet_stuff/tree/master/modules/riak_node/files/collectd</a>
+
+Yokozuna uses ibrowse to connect (via HTTP) to the Solr, and there is a way to 
+set the browse connection pool to something larger than 10.  You might be able 
+to get better throughput that way, but I would first try to sort out why the 
+latency is so bad.
+
+To change the size of the ibrowse connection pool, attach to Riak, and set the 
+ibrowse default_max_sessions environment variable to something greater than 10, 
+e.g., 100.
+
+prompt$ riak attach
+Remote Shell: Use &quot;Ctrl-C a&quot; to quit. q() or init:stop() will terminate the 
+riak node.
+Erlang R16B02_basho8 (erts-5.10.3) [source] [64-bit] [async-threads:10] 
+[kernel-poll:false] [frame-pointer]
+
+Eshell V5.10.3  (abort with ^G)
+(riak@192.168.1.202)1&gt; rpc:multicall(application, get_env, [ibrowse, 
+default_max_sessions]).
+{[undefined,undefined,undefined,undefined,undefined],[]}
+(riak@192.168.1.202)2&gt; rpc:multicall(application, set_env, [ibrowse, 
+default_max_sessions, 100]).
+{[ok,ok,ok,ok,ok],[]}
+(riak@192.168.1.202)3&gt; rpc:multicall(application, get_env, [ibrowse, 
+default_max_sessions]).     
+{[{ok,100},{ok,100},{ok,100},{ok,100},{ok,100}],[]}
+
+One other thought -- does any of your JSON contain internationalized data, and 
+if so, how is it encoded, e.g., UTF-8 or UTF-16, ISO-8859, etc?  Your etop 
+listing didn't suggest anything out of sorts with extractors, but we might want 
+to get a handle on what is going on there, as well.
+
+Since your quoted issue 320, are the Java errors in your logs associated with 
+broken pipes on the Solr server?  That would suggest that we might be getting 
+timeouts on the client (yokozuna) side, and connections are getting closed 
+before the server can write a response, but I think the default timeout is 60 
+seconds, so you shouldn't be hitting that (looking at your stats), though those 
+stats are taken from a relatively small time window.
+
+I hope that helps you diagnose where the bottleneck is.  Keep us posted.
+
+-Fred
+
+&gt; On Oct 2, 2015, at 2:23 AM, ilyas &lt;i.serg...@keepsolid.com&gt; wrote:
+&gt; 
+&gt; 
+&gt; It looks like this issues
+&gt; 
+&gt; <a  rel="nofollow" href="https://github.com/basho/yokozuna/issues/320">https://github.com/basho/yokozuna/issues/320</a> 
+&gt; &lt;<a  rel="nofollow" href="https://github.com/basho/yokozuna/issues/320">https://github.com/basho/yokozuna/issues/320</a>&gt;
+&gt; 
+&gt; I try to set 
+&gt; maxThreads to 150
+&gt; Acceptors to 10
+&gt; lowResourcesMaxIdleTime to 50000
+&gt; in /usr/lib/riak/lib/yokozuna/priv/solr/etc/jetty.xml as recommended in 
+&gt; <a  rel="nofollow" href="https://github.com/basho/yokozuna/issues/330">https://github.com/basho/yokozuna/issues/330</a> 
+&gt; &lt;<a  rel="nofollow" href="https://github.com/basho/yokozuna/issues/330">https://github.com/basho/yokozuna/issues/330</a>&gt; 
+&gt; 
+&gt; but it has no effect
+&gt; 
+&gt; On 10/01/2015 11:53 PM, Fred Dushin wrote:
+&gt;&gt; Is there any more information in these logs that you can share?  For 
+&gt;&gt; example, is this the only entry with this exception?  Or are there more?  
+&gt;&gt; Are there any associated stack traces?  An EOF exception can come from many 
+&gt;&gt; different scenarios.
+&gt;&gt; 
+&gt;&gt; Is there anything in the Riak console.log that looks suspicious?
+&gt;&gt; 
+&gt;&gt; Finally, you might want to take a look at what is going on inside of riak 
+&gt;&gt; when you get into this state (slow writes to Solr), by looking at Riak stats.
+&gt;&gt; 
+&gt;&gt; You get get to Riak stats via curl, e.g.,
+&gt;&gt; 
+&gt;&gt;      curl <a  rel="nofollow" href="http://localhost:8098/stats">http://localhost:8098/stats</a> &lt;<a  rel="nofollow" href="http://localhost:8098/stats">http://localhost:8098/stats</a>&gt; | python 
+&gt;&gt; -m json.tool
+&gt; ok, output is attached
+&gt; 
+&gt;&gt; Stats you might want to pay special attention to:
+&gt;&gt; 
+&gt;&gt; riak_kv_vnodeq (min, max, median, etc)  -- the aggregate length of the vnode 
+&gt;&gt; queues.  Long vnode queues may mean your vnode is locked waiting on Solr
+&gt;&gt; vnode_put_fsm_time (mean, media, percentile, etc) The amount of time spent 
+&gt;&gt; on average waiting for a vnode put to complete.  Long times may also be 
+&gt;&gt; indicative of waits writing into Solr.
+&gt; &quot;riak_kv_vnodeq_max&quot;: 0,
+&gt; &quot;riak_kv_vnodeq_mean&quot;: 0.0,
+&gt; &quot;riak_kv_vnodeq_median&quot;: 0,
+&gt; &quot;riak_kv_vnodeq_min&quot;: 0,
+&gt; &quot;riak_kv_vnodeq_total&quot;: 0,
+&gt; 
+&gt; 
+&gt; &lt;riak_stats.txt&gt;_______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16595.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16596">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16596">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16584.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16581.html">Yokozuna indexes too slow</a></span> <span class="sender italic">ilyas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16585.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Jason Voegele</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16591.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">ilyas</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16592.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Jason Voegele</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16593.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Fred Dushin</span></li>
+</ul></li>
+</ul></li>
+<li class="icons-email"><span class="subject"><a href="msg16597.html">Re: Yokozuna indexes too slow</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16586.html">Yokozuna indexes too slow</a></span> <span class="sender italic">ilyas</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16595.html">Re: Re: Yokozuna indexes too slow</a></span> <span class="sender italic">ilyas</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Yokozuna indexes too slow</span> <span class="sender italic">Fred Dushin</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Yokozuna indexes too slow">
+<input type="hidden" name="msgid" value="CE3C54EA-5652-4912-8ADE-99B04BA6CCD8@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16596.html">
+<input type="submit" value=" Fred Dushin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Yokozuna+indexes+too+slow%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16595.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16584.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CE3C54EA-5652-4912-8ADE-99B04BA6CCD8@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

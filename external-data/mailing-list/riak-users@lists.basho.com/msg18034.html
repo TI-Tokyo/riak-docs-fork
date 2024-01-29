@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Update metadata of entries in bucket</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#18034" id="c">
+<link rel="index" href="maillist.html#18034" id="i">
+<link rel="prev" href="msg18033.html" id="p">
+<link rel="next" href="msg18021.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg18034.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Update+metadata+of+entries+in+bucket%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Update metadata of entries in bucket</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Grigory+Fateyev%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Grigory Fateyev</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20170225" rel="nofollow">Sat, 25 Feb 2017 01:18:36 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Luke, thank you for the answer!
+
+I did this, my code is:</pre><pre>
+
+```
+update_users(Item) -&gt;
+    Value = binary_to_term(riak_object:get_value(Item)),
+    [{_Key, Value}] = statebox:value(Item),
+    Record = project_schema_user:new(Value),
+    NewMetadata = project_schema_user:riak_metadata(Record),
+    NewItem = riak_object:update_metadata(Item, NewMetadata),
+    AItem = riak_object:apply_updates(NewItem),
+    RiakcObj = to_riakc_obj(AItem),
+    %% lager:info(&quot;Item ~p&quot;, [RiakcObj]),
+    ok = redgage_riak_client:put(RiakcObj),
+    [].
+
+to_riakc_obj(Object) when element(1, Object) =:= r_object -&gt;
+    #riakc_obj{
+       bucket = riak_object:bucket(Object),
+       key = riak_object:key(Object),
+       vclock = riak_object:encode_vclock(riak_object:vclock(Object)),
+       contents = riak_object:get_contents(Object)
+       %% updatemetadata = riak_object:get_update_metadata(Object),
+       %% updatevalue = riak_object:get_update_value(Object)
+      }.
+
+```
+
+It works! I had a problem with vclock. I got vclock from r_object, but it's
+vclock:vclock()
+type. Now I encode it. As you can see commented out two record's fields:
+updatemetadata
+and updatevalue. How do these fields work?
+
+
+2017-02-25 0:40 GMT+03:00 Luke Bakken &lt;lbak...@basho.com&gt;:
+
+&gt; Hi Grigory,
+&gt;
+&gt; Check out this article:
+&gt; <a  rel="nofollow" href="http://basho.com/posts/technical/webinar-recap-mapreduce-querying-in-riak/">http://basho.com/posts/technical/webinar-recap-mapreduce-querying-in-riak/</a>
+&gt;
+&gt; Specifically, the use of riak:local_client() and C:put
+&gt; --
+&gt; Luke Bakken
+&gt; Engineer
+&gt; lbak...@basho.com
+&gt;
+&gt;
+&gt; On Thu, Feb 23, 2017 at 10:38 AM, Grigory Fateyev &lt;gfb...@gmail.com&gt;
+&gt; wrote:
+&gt; &gt; Hello!
+&gt; &gt;
+&gt; &gt; I'm trying to write riak_pipe command that updates metadata, the code:
+&gt; &gt; <a  rel="nofollow" href="https://gist.github.com/greggy/7d7fa3102d89673019410c6e244650cd">https://gist.github.com/greggy/7d7fa3102d89673019410c6e244650cd</a>
+&gt; &gt;
+&gt; &gt; I'm getting every entry in update_metadata/1 then creating a new
+&gt; metadata,
+&gt; &gt; updating it in Item.
+&gt; &gt;
+&gt; &gt; My question is how to update r_object in a bucket?
+&gt; &gt;
+&gt; &gt; Thank you!
+&gt; &gt;
+&gt; &gt; _______________________________________________
+&gt; &gt; riak-users mailing list
+&gt; &gt; riak-users@lists.basho.com
+&gt; &gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt; &gt;
+&gt;
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg18033.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#18034">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#18034">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg18021.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg18020.html">Update metadata of entries in bucket</a></span> <span class="sender italic">Grigory Fateyev</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg18033.html">Re: Update metadata of entries in bucket</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Update metadata of entries in bucket</span> <span class="sender italic">Grigory Fateyev</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Update metadata of entries in bucket">
+<input type="hidden" name="msgid" value="CAAOqupyQSLazX6uGF2HX+_i0_waL0JmHZkosphdjZeF0W3_O6A@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg18034.html">
+<input type="submit" value=" Grigory Fateyev ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Update+metadata+of+entries+in+bucket%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg18033.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg18021.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAAOqupyQSLazX6uGF2HX+_i0_waL0JmHZkosphdjZeF0W3_O6A@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: Using cursorMark with '_yz_rk'</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17662" id="c">
+<link rel="index" href="maillist.html#17662" id="i">
+<link rel="prev" href="msg17660.html" id="p">
+<link rel="next" href="msg17663.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17662.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+cursorMark+with+%27_yz_rk%27%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: Using cursorMark with '_yz_rk'</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Fred+Dushin%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Fred Dushin</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160921" rel="nofollow">Wed, 21 Sep 2016 08:23:35 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Okay, I probably spoke too soon.
+
+While Solr 4.7 supports cursor marks, we do have an issue in Riak (or Yokozuna) 
+whereby it is actually impractical to use cursor marks for query.  The problem 
+is that while Yokozuna uses coverage plans generate a filter query that will 
+guarantee that we get no replicas in a result set, these coverage plans change 
+every few seconds, in order to ensure we are not constantly querying a subset 
+of the cluster (thus possibly creating hot zones in the cluster, especially for 
+query-heavy work loads).</pre><pre>
+
+Theoretically you could change the interval by which these coverage plans are 
+updated (by setting the yokozuna cover_tick configuration setting in 
+advanced.config [1]), which would be okay in a development or test environment, 
+but which would be unsuitable in production.
+
+The solution is to pin a query to a coverage plan, so that subsequent 
+iterations of the query with the next cursor will use the same filter, and 
+hence will give you proper result sets.  We do not currently have this 
+implemented in Yokozuna.
+
+-Fred
+
+[1] <a  rel="nofollow" href="https://github.com/basho/yokozuna/blob/2.0.4/src/yz_cover.erl#L285">https://github.com/basho/yokozuna/blob/2.0.4/src/yz_cover.erl#L285</a>
+
+&gt; On Sep 21, 2016, at 10:40 AM, Guillaume Boddaert 
+&gt; &lt;guilla...@lighthouse-analytics.co&gt; wrote:
+&gt; 
+&gt; I'm very curious of your cursorMark implementation, I'm in deep need of that 
+&gt; feature.
+&gt; 
+&gt; From my experience I wasn't even able to trigger a query with my riak version 
+&gt; as it was not yet supported by the Solr bundled with it. But I might missed a 
+&gt; point with that.
+&gt; 
+&gt; I'm using 2.1.2.
+&gt; 
+&gt; Guillaume
+&gt; 
+&gt; On 21/09/2016 03:28, Vipin Sharma wrote:
+&gt;&gt; Hi all,
+&gt;&gt;  
+&gt;&gt; In our system we have default implementation of querying the data from riak 
+&gt;&gt; using “pagination”.
+&gt;&gt; For some of the queries, with huge number of resulting records (into the 
+&gt;&gt; tunes of 10,000+) , it is becoming an issue and hence we wanted to change it 
+&gt;&gt; to use “cursorMark” as suggested here : 
+&gt;&gt; <a  rel="nofollow" href="https://cwiki.apache.org/confluence/display/solr/Pagination+of+Results">https://cwiki.apache.org/confluence/display/solr/Pagination+of+Results</a> 
+&gt;&gt; &lt;<a  rel="nofollow" href="https://cwiki.apache.org/confluence/display/solr/Pagination+of+Results">https://cwiki.apache.org/confluence/display/solr/Pagination+of+Results</a>&gt;
+&gt;&gt;  
+&gt;&gt; While using cursorMark, 
+&gt;&gt; -          It asks for unique key in the sort field. We didn’t have a unique 
+&gt;&gt; key of our own so wanted to use “_yz_rk”  but It gives error mentioned below.
+&gt;&gt; -          Query is accepted when sort parameter is changed to use “_yz_id” 
+&gt;&gt; instead but  It gives redundant / duplicate records. It is probably a known 
+&gt;&gt; issue as mentioned here 
+&gt;&gt; &lt;<a  rel="nofollow" href="https://docs.basho.com/riak/kv/2.1.4/developing/usage/search/">https://docs.basho.com/riak/kv/2.1.4/developing/usage/search/</a>&gt; ( Pagination 
+&gt;&gt; Warning). Solution recommended is to use { _yz_rt asc, _yz_rb asc, _yz_rk 
+&gt;&gt; asc } instead but for each of them query is returning the following error :
+&gt;&gt;  
+&gt;&gt;                 &quot;error&quot;:{&quot;msg&quot;:&quot;Cursor functionality requires a sort 
+&gt;&gt; containing a uniqueKey field tie breaker&quot;,&quot;code&quot;:400}
+&gt;&gt;  
+&gt;&gt; Can somebody please share some suggestions on this.
+&gt;&gt;  
+&gt;&gt; Thanks
+&gt;&gt; Vipin 
+&gt;&gt;  
+&gt;&gt;  
+&gt;&gt;  
+&gt;&gt;  
+&gt;&gt; 
+&gt;&gt; 
+&gt;&gt; _______________________________________________
+&gt;&gt; riak-users mailing list
+&gt;&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt;&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+&gt; 
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com &lt;<a  rel="nofollow" href="mailto:riak-users@lists.basho.com">mailto:riak-users@lists.basho.com</a>&gt;
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+&gt; &lt;<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>&gt;
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17660.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17662">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17662">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17663.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg17659.html">Using cursorMark with '_yz_rk'</a></span> <span class="sender italic">Vipin Sharma</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17660.html">Re: Using cursorMark with '_yz_rk'</a></span> <span class="sender italic">Guillaume Boddaert</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: Using cursorMark with '_yz_rk'</span> <span class="sender italic">Fred Dushin</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: Using cursorMark with '_yz_rk'">
+<input type="hidden" name="msgid" value="67848669-6C6A-4BA7-B40A-D1D63CE5398C@basho.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17662.html">
+<input type="submit" value=" Fred Dushin ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+Using+cursorMark+with+%27_yz_rk%27%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17660.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17663.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">67848669-6C6A-4BA7-B40A-D1D63CE5398C@basho.com</li>
+</ul>
+</div>
+</body>
+</html>

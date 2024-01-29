@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Basho Product Alert: Potential data loss on restart with LevelDB	tiered storage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17099" id="c">
+<link rel="index" href="maillist.html#17099" id="i">
+<link rel="prev" href="msg17098.html" id="p">
+<link rel="next" href="msg17100.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17099.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Basho+Product+Alert%5C%3A+Potential+data+loss+on+restart+with+LevelDB%09tiered+storage%22&amp;o=newest" rel="nofollow"><span itemprop="name">Basho Product Alert: Potential data loss on restart with LevelDB	tiered storage</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Seema+Jethani%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Seema Jethani</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160303" rel="nofollow">Thu, 03 Mar 2016 11:38:30 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre> Data loss may occur during node restart when using LevelDB tiered storage
+on a low write volume cluster.</pre><pre>
+
+Overview
+
+This issue is limited to customers using LevelDB tiered storage. There is a
+recognized error in the LevelDB tiered storage subsystem whereby if less
+than 60MB of data is written per vnode before Riak is restarted, the data
+will be unavailable for reads. The data is written to an incorrectly
+located recovery log that is not found on restart. Once more than 60MB of
+data is written to the vnode, no data will be lost upon restart.
+
+Description
+
+When using LevelDB tiered storage as the backend for Riak, LevelDB creates
+the first (and only the first) recovery log per vnode, 0000xxxx.log, in an
+incorrect location. This first recovery log file is only used by LevelDB if
+the Riak server restarts prior to committing it permanently. LevelDB
+obsoletes a recovery file once it writes the newly arrived data to a long
+term storage file (an .sst table file). All subsequent recovery files exist
+in the location anticipated by LevelDB's startup procedures. The data loss
+is therefore limited to the contents of this first recovery log and only if
+LevelDB has not subsequently rewritten the data to long term storage.
+
+The only symptom of this issue is that the data within the first recovery
+is unavailable for reads after a restart. However, Riak has several
+resiliency features that mitigate the likelihood of the read failure. Riak
+defaults to a replication factor of n_val = 3. This means that Riak is
+writing the data to 3 different locations. Therefore, all 3 locations must
+restart within the same short period for data loss to occur. Otherwise,
+Riak will automatically correct individual nodes with missing data from
+other nodes via its read-repair and/or AAE features.
+
+Affected Users
+
+This issue will affect you if ALL of these conditions are true:
+
+- You are using the LevelDB backend, AND
+- LevelDB is configured to use tiered storage (leveldb.tiered settings in
+riak.conf), AND
+- All Riak nodes responsible for the n_val copies of the data are restarted
+before LevelDB rewrites the initial recovery log into a permanent .sst
+table file. (60MB data per vnode).
+
+Mitigation Strategy
+This issue can be mitigated in an existing Riak installation by creating a
+soft link between the incorrect log location and the fast tier directory.
+The same steps can be used if you need to create a fresh install with
+tiered storage before starting Riak the first time.
+
+To mitigate the issue, follow these steps:
+
+- Identify where the first LevelDB files will be written to - look in
+leveldb.data_root
+- Move the existing leveldb.data_root directory out of the way
+- Identify where the fast tiered storage directory is -
+{leveldb.tiered.path.fast}/{leveldb.data_root}
+- Create a symbolic link from the fast path data_root to the standard
+data_root.
+
+Step by Step instructions can be found here:
+<a  rel="nofollow" href="http://docs.basho.com/riak/latest/community/product-advisories/leveldbrestart/#Mitigation-Strategy">http://docs.basho.com/riak/latest/community/product-advisories/leveldbrestart/#Mitigation-Strategy</a>
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17098.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17099">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17099">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17100.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Basho Product Alert: Potential data loss on restart with LevelDB	tiered storage">
+<input type="hidden" name="msgid" value="CAJSrNH3Hx65NYhynosiUjkqHAbP3yGo2-rEHeDf38T0=e2-epw@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17099.html">
+<input type="submit" value=" Seema Jethani ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Basho+Product+Alert%5C%3A+Potential+data+loss+on+restart+with+LevelDB%09tiered+storage%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17098.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17100.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAJSrNH3Hx65NYhynosiUjkqHAbP3yGo2-rEHeDf38T0=e2-epw@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

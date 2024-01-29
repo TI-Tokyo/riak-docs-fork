@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>bitcask merges & deletions</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#17477" id="c">
+<link rel="index" href="maillist.html#17477" id="i">
+<link rel="prev" href="msg17476.html" id="p">
+<link rel="next" href="msg17479.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg17477.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22bitcask+merges+%5C%26+deletions%22&amp;o=newest" rel="nofollow"><span itemprop="name">bitcask merges & deletions</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Johnny+Tan%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Johnny Tan</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20160615" rel="nofollow">Wed, 15 Jun 2016 10:23:57 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>We're running riak-1.4.2
+
+Every few weeks, we have a riak node that starts to slowly fill up on disk
+space for several days, and then suddenly gain that space back again.</pre><pre>
+
+In looking into this more today, I think I see what's going on.
+
+Per the console.log on a node that it's happening to right now, there are
+an unusually large amount of merges happening right now. There are 6 total
+nodes in our cluster, it's only happening to this node today. (In previous
+weeks, it's been other nodes, but it's always been one node at a time.)
+
+Normally, we get 50-70 merges per day per node (according to various nodes'
+console.log, including the node in question). Yesterday and today, the node
+in question has several hundred merges happening.
+
+When I look inside the bitcask directory, I see a lot of files with this
+set of permissions:
+-rwSrw-r--
+
+My understanding is that those are files marked for deletions after bitcask
+merging.
+
+The number of those files is currently growing, and from a spot-check, they
+indeed match up as the files that have been merged.
+
+So it seems the two are related: a lot of merges are happening, which then
+causes a large number of files to be marked for deletion, and those marked
+files are piling up and not getting deleted for some reason.
+
+If I don't do anything, those files eventually get deleted, and everything
+is good again for another couple weeks until it happens to another node.
+But the disk usage does get high enough to alert us, and obviously we don't
+want it to get anywhere near 100%.
+
+
+I'm trying to figure out why there are times when this happens. One thing I
+noticed is a difference in the merge log entries.
+
+Here's one from a &quot;normal&quot; day, nearly all the entries for that day are
+roughly this same length and same amount of time merging:
+2016-06-10 05:27:39.426 UTC [info] &lt;0.15230.160&gt; Merged
+{[&quot;/var/lib/riak/bitcask/890602560248518965780370444936484965102833893376/84000.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/890602560248518965780370444936484965102833893376/83999.bitcask.data&quot;],[]}
+in 11.902028 seconds.
+
+But here's one from today on the problematic node:
+2016-06-15 17:13:40.626 UTC [info] &lt;0.17903.500&gt; Merged
+{[&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83633.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83632.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83631.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83630.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83629.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83628.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83627.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83626.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83625.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83624.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83623.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83622.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83621.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83620.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83619.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83618.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83617.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83616.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83615.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83614.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/1233142006497949337234359077604363797834693083136/83613.bitcask.data&quot;,&quot;/var/lib/riak/bitcask/12331420064979493372343590776043637978346930...&quot;,...],...}
+in 220.186043 seconds.
+
+It's not just that it takes 20x longer to merge, but it seems to be doing a
+lot more files at once.
+
+What is going on?
+
+I'm not sure how much of the app.config is relevant, but I'll at least
+paste just the bitcask and merge sections for now:
+        {bitcask, [
+                {data_root, &quot;/var/lib/riak/bitcask&quot;},
+                {dead_bytes_merge_trigger, 268435456},
+                {dead_bytes_threshold, 67108864},
+                {frag_merge_trigger, 60},
+                {frag_threshold, 40},
+                {io_mode, erlang},
+                {max_file_size, 1073741824},
+                {small_file_threshold, 134217728}
+        ]},
+        {merge_index, [
+                {buffer_rollover_size, 1048576},
+                {data_root, &quot;/var/lib/riak/merge_index&quot;},
+                {max_compact_segments, 20}
+        ]},
+
+
+Thanks for any insight,
+johnny
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg17476.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#17477">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#17477">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg17479.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email tSliceCur"><span class="subject">bitcask merges &amp; deletions</span> <span class="sender italic">Johnny Tan</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17479.html">Re: bitcask merges &amp; deletions</a></span> <span class="sender italic">Luke Bakken</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg17486.html">Re: bitcask merges &amp; deletions</a></span> <span class="sender italic">Johnny Tan</span></li>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="bitcask merges &amp; deletions">
+<input type="hidden" name="msgid" value="CABMVzL0FF9Cm=eDqFz0wCA4kqa-4p5YZpT+6iYELhb7m_WZUvA@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg17477.html">
+<input type="submit" value=" Johnny Tan ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22bitcask+merges+%5C%26+deletions%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg17476.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg17479.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CABMVzL0FF9Cm=eDqFz0wCA4kqa-4p5YZpT+6iYELhb7m_WZUvA@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

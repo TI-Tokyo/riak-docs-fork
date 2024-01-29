@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: riak-cs sync buckets from S3 to Riak-cs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16775" id="c">
+<link rel="index" href="maillist.html#16775" id="i">
+<link rel="prev" href="msg16772.html" id="p">
+<link rel="next" href="msg16778.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16775.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak%5C-cs+sync+buckets+from+S3+to+Riak%5C-cs%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: riak-cs sync buckets from S3 to Riak-cs</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Shunichi+Shinohara%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Shunichi Shinohara</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20151116" rel="nofollow">Mon, 16 Nov 2015 18:52:47 -0800</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Alberto,
+
+I didn't look into boto implementation, but I suspect that COPY Object API
+does NOT work between different S3-like systems.
+The actual interface definition of the API is [1] and source bucket/key
+is just a string in the x-amz-copy-source header. The request went into the
+system that includes rk02.ejemplo.com in your example, but it did not know
+anything about source bucket/key because it does not have the bucket/key.
+Object contents should be transferred in some way, e.g. GET Object from
+source and PUT Object (or Multipart Upload for large objects) to target
+system.</pre><pre>
+
+[1] <a  rel="nofollow" href="http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html">http://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html</a>
+
+Thanks,
+Shino
+
+2015-11-16 21:28 GMT+09:00 Alberto Ayllon &lt;aayl...@qdqmedia.com&gt;:
+&gt; Hello.
+&gt;
+&gt; Thanks for your help Dmitri.
+&gt;
+&gt; Perhaps this is not the correct place to ask this, but maybe someone had
+&gt; have the same problem.
+&gt;
+&gt; I build a test environment with two nodes of RIAK-CS, not in cluster, and
+&gt; I'm trying to move objects from one to another, to a bucket with the same
+&gt; name (testbucket).
+&gt; I'm using BOTO, and the copy_key method, but it fails, I guess that problem
+&gt; is in the HEAD call, this call checks if the key exists in the destination
+&gt; bucket before make the PUT, that copy the key.
+&gt;
+&gt; Here is the code I'm using.
+&gt;
+&gt; from boto.s3.key import Key
+&gt; from boto.s3.connection import S3Connection
+&gt; from boto.s3.connection import OrdinaryCallingFormat
+&gt;
+&gt; apikey04='GFR3O0HFPXQ-BWSXEMAG'
+&gt; secretkey04='eIiigR4Rov2O2kxuSHNW7WPoJE2KmrtMpzzqlg=='
+&gt;
+&gt; apikey02='J0TT_C9MJPWPGHW-KEWY'
+&gt; secretkey02='xcLOt3ANqyNJ0kAjP8Mxx68qr7kgyXG3eqJuMA=='
+&gt; cf=OrdinaryCallingFormat()
+&gt;
+&gt; conn04=S3Connection(aws_access_key_id=apikey04,aws_secret_access_key=secretkey04,
+&gt;
+&gt; is_secure=False,host='rk04.ejemplo.com',port=8080,calling_format=cf)
+&gt;
+&gt; conn02=S3Connection(aws_access_key_id=apikey02,aws_secret_access_key=secretkey02,
+&gt;
+&gt; is_secure=False,host='rk02.ejemplo.com',port=8080,calling_format=cf)
+&gt;
+&gt; bucket04=conn04.get_bucket('testbucket')
+&gt; bucket02=conn02.get_bucket('testbucket')
+&gt;
+&gt; rs04 = bucket04.list()
+&gt;
+&gt; for k in rs04:
+&gt;     print k.name
+&gt;     bucket02.copy_key(k.key, bucket04, k.key)
+&gt;
+&gt;
+&gt; When this script is executed it returns:
+&gt;
+&gt; Traceback (most recent call last):
+&gt;   File &quot;s3_connect_2.py&quot;, line 38, in &lt;module&gt;
+&gt;     bucket02.copy_key(k.key, bucket04, k.key)
+&gt;   File
+&gt; &quot;/home/alberto/.virtualenvs/boto/local/lib/python2.7/site-packages/boto/s3/bucket.py&quot;,
+&gt; line 888, in copy_key
+&gt;     response.reason, body)
+&gt; boto.exception.S3ResponseError: S3ResponseError: 404 Not Found
+&gt; &lt;?xml version=&quot;1.0&quot;
+&gt; encoding=&quot;UTF-8&quot;?&gt;&lt;Error&gt;&lt;Code&gt;NoSuchKey&lt;/Code&gt;&lt;Message&gt;The specified key
+&gt; does not exist.&lt;/Message&gt;&lt;Resource&gt;/&amp;lt;Bucket: testbucket&amp;gt;$
+&gt;
+&gt;
+&gt;
+&gt; The idea is copy all keys in testbucket from rk04.ejemplo.com, to testbucket
+&gt; in test02.ejemplo.com, maybe someone can help me.
+&gt;
+&gt;
+&gt; Thanks a lot.
+&gt;
+&gt;
+&gt; 2015-11-13 17:06 GMT+01:00 Dmitri Zagidulin &lt;dzagidu...@basho.com&gt;:
+&gt;&gt;
+&gt;&gt; Hi Alberto,
+&gt;&gt;
+&gt;&gt; From what I understand, the state of the art in terms of migration of
+&gt;&gt; objects from Amazon S3 to Riak CS is -- writing migration scripts.
+&gt;&gt; Either as shell scripts (using s3cmd), or language-specific libraries like
+&gt;&gt; boto (or even just the S3 SDKs).
+&gt;&gt; And the scripts would consist of:
+&gt;&gt; 1) get a list of the buckets you want to migrate
+&gt;&gt; 2) List the keys in those buckets
+&gt;&gt; 3) Migrate each object from AWS to CS.
+&gt;&gt;
+&gt;&gt; You're right that mounting buckets as filesystems is a (distant)
+&gt;&gt; possibility, but we have not seen much successful use of those (though if
+&gt;&gt; anybody's made that work, let us know).
+&gt;&gt;
+&gt;&gt;
+&gt;&gt;
+&gt;&gt; On Thu, Nov 12, 2015 at 12:40 PM, Alberto Ayllon &lt;aayl...@qdqmedia.com&gt;
+&gt;&gt; wrote:
+&gt;&gt;&gt;
+&gt;&gt;&gt; Hello.
+&gt;&gt;&gt;
+&gt;&gt;&gt; I'm new using Riak and Riak-cs, I have installed a Riak-cs cluster with 4
+&gt;&gt;&gt; nodes and it works fine,
+&gt;&gt;&gt;
+&gt;&gt;&gt; Here is my question,  the company where I work has some buckets in Amazon
+&gt;&gt;&gt; s3, and I would like migrate objects from these buckets to our Riak-cs
+&gt;&gt;&gt; installation, as far as I know I can do it using S3FUSE or S3BACKER,
+&gt;&gt;&gt; mounting buckets as a filesystem, but would like avoid mount it as
+&gt;&gt;&gt; filesystem. I tried it with boto python library, using the copy_key method,
+&gt;&gt;&gt; but it doesn't work.
+&gt;&gt;&gt;
+&gt;&gt;&gt; Has anybody try with success synchronize buckets from AS3 to Riak-CS?
+&gt;&gt;&gt;
+&gt;&gt;&gt; Thanks.
+&gt;&gt;&gt;
+&gt;&gt;&gt; P:D: Excuse for my English.
+&gt;&gt;&gt;
+&gt;&gt;&gt; _______________________________________________
+&gt;&gt;&gt; riak-users mailing list
+&gt;&gt;&gt; riak-users@lists.basho.com
+&gt;&gt;&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;&gt;&gt;
+&gt;&gt;
+&gt;
+&gt;
+&gt; _______________________________________________
+&gt; riak-users mailing list
+&gt; riak-users@lists.basho.com
+&gt; <a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+&gt;
+
+_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16772.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16775">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16775">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16778.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16763.html">riak-cs sync buckets from S3 to Riak-cs</a></span> <span class="sender italic">Alberto Ayllon</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16766.html">Re: riak-cs sync buckets from S3 to Riak-cs</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16772.html">Re: riak-cs sync buckets from S3 to Riak-cs</a></span> <span class="sender italic">Alberto Ayllon</span></li>
+<li><ul>
+<li class="icons-email tSliceCur"><span class="subject">Re: riak-cs sync buckets from S3 to Riak-c...</span> <span class="sender italic">Shunichi Shinohara</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16778.html">Re: riak-cs sync buckets from S3 to Ri...</a></span> <span class="sender italic">Alberto Ayllon</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: riak-cs sync buckets from S3 to Riak-cs">
+<input type="hidden" name="msgid" value="CAMe3p=S8Tuq5USdPFOF5zaTQdPFqVNWOBGjEoq2iUO+AgJ+UEg@mail.gmail.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16775.html">
+<input type="submit" value=" Shunichi Shinohara ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+riak%5C-cs+sync+buckets+from+S3+to+Riak%5C-cs%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16772.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16778.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">CAMe3p=S8Tuq5USdPFOF5zaTQdPFqVNWOBGjEoq2iUO+AgJ+UEg@mail.gmail.com</li>
+</ul>
+</div>
+</body>
+</html>

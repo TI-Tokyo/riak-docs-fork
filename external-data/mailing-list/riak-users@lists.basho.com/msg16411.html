@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Re: why leaving riak cluster so slowly and how to accelerate the speed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="contents" href="index.html#16411" id="c">
+<link rel="index" href="maillist.html#16411" id="i">
+<link rel="prev" href="msg16375.html" id="p">
+<link rel="next" href="msg16378.html" id="n">
+<link rel="canonical" href="https://www.mail-archive.com/riak-users@lists.basho.com/msg16411.html">
+<link rel="stylesheet" href="/normalize.css" media="screen">
+<link rel="stylesheet" href="/master.css" media="screen">
+
+<!--[if lt IE 9]>
+<link rel="stylesheet" href="/ie.css" media="screen">
+<![endif]-->
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+document.onkeydown = NavigateThrough;
+function NavigateThrough (event)
+{
+  if (!document.getElementById) return;
+  if (window.event) event = window.event;
+  if (event.target.tagName == 'INPUT') return;
+  if (event.ctrlKey || event.metaKey) return;
+  var link = null;
+  switch (event.keyCode ? event.keyCode : event.which ? event.which : null) {
+    case 74:
+    case 80:
+      link = document.getElementById ('p');
+      break;
+    case 75:
+    case 78:
+      link = document.getElementById ('n');
+      break;
+    case 69:
+      link = document.getElementById ('e');
+      break;
+    }
+  if (link && link.href) document.location = link.href;
+}
+</script>
+<div itemscope itemtype="http://schema.org/Article" class="container">
+<div class="skipLink">
+<a href="#nav">Skip to site navigation (Press enter)</a>
+</div>
+<div class="content" role="main">
+<div class="msgHead">
+<h1>
+<span class="subject"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+why+leaving+riak+cluster+so+slowly+and+how+to+accelerate+the+speed%22&amp;o=newest" rel="nofollow"><span itemprop="name">Re: why leaving riak cluster so slowly and how to accelerate the speed</span></a></span>
+</h1>
+<p class="darkgray font13">
+<span class="sender pipe"><a href="/search?l=riak-users@lists.basho.com&amp;q=from:%22Changmao.Wang%22" rel="nofollow"><span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Changmao.Wang</span></span></a></span>
+<span class="date"><a href="/search?l=riak-users@lists.basho.com&amp;q=date:20150812" rel="nofollow">Wed, 12 Aug 2015 07:12:08 -0700</a></span>
+</p>
+</div>
+<div itemprop="articleBody" class="msgBody">
+<!--X-Body-of-Message-->
+<pre>Hi Riak users, 
+
+Before adding new nodes, the cluster only have five nodes. The member list are 
+as below: 
+10.21.136.66,10.21.136.71,10.21.136.76,10.21.136.81,10.21.136.86. 
+We did not setup http proxy for the cluster, only one node of the cluster 
+provide the http service. so the CPU load is always high on this node. </pre><pre>
+
+After that, I added four nodes (10.21.136.[91-94]) to those cluster. During the 
+ring/data balance progress, each node failed(riak stopped) because of disk 100% 
+full. 
+I used multi-disk path to &quot;data_root&quot; parameter in '/etc/riak/app.config'. Each 
+disk is only 580MB size. 
+As you know, bitcask storage engine did not support multi-disk path. After one 
+of the disks is 100% full, it can not switch next idle disk. So the &quot;riak&quot; 
+service is down. 
+
+After that, I removed the new add four nodes at active nodes with &quot;riak-admin 
+cluster leave riak@'10.21.136.91' &quot;. 
+and then stop &quot;riak&quot; service on other active new nodes, reformat the above new 
+nodes with LVM disk management (bind 6 disk with virtual disk group). 
+Replace the &quot;data-root&quot; parameter with one folder, and then start &quot;riak&quot; 
+service again. After that, the cluster began the data balance again. 
+That's the whole story. 
+
+
+Amao 
+
+----- Original Message -----
+
+From: &quot;Dmitri Zagidulin&quot; &lt;dzagidu...@basho.com&gt; 
+To: &quot;Changmao.Wang&quot; &lt;changmao.w...@datayes.com&gt; 
+Sent: Thursday, August 6, 2015 10:46:59 PM 
+Subject: Re: why leaving riak cluster so slowly and how to accelerate the speed 
+
+Hi Amao, 
+
+Can you explain a bit more which steps you've taken, and what the problem is? 
+
+Which nodes have been added, and which nodes are leaving the cluster? 
+
+On Tue, Jul 28, 2015 at 11:03 PM, Changmao.Wang &lt; changmao.w...@datayes.com &gt; 
+wrote: 
+
+
+Hi Raik user group, 
+
+I'm using riak and riak-cs 1.4.2. Last weekend, I added four nodes to cluster 
+with 5 nodes. However, it's failed with one of disks 100% full. 
+As you know bitcask storage engine can not support multifolders. 
+
+After that, I restarted the &quot;riak&quot; and leave the cluster with the command 
+&quot;riak-admin cluster leave&quot; and &quot;riak-admin cluster plan&quot;, and the commit. 
+However, riak is always doing KV balance after my submit leaving command. I 
+guess that it's doing join cluster progress. 
+
+Could you show us how to accelerate the leaving progress? I have tuned the 
+&quot;transfer-limit&quot; parameters on 9 nodes. 
+
+below is some commands output: 
+riak-admin member-status 
+================================= Membership ================================== 
+Status Ring Pending Node 
+------------------------------------------------------------------------------- 
+leaving 6.3% 10.9% ' riak@10.21.136.91 ' 
+leaving 9.4% 10.9% ' riak@10.21.136.92 ' 
+leaving 6.3% 10.9% ' riak@10.21.136.93 ' 
+leaving 6.3% 10.9% ' riak@10.21.136.94 ' 
+valid 10.9% 10.9% ' riak@10.21.136.66 ' 
+valid 12.5% 10.9% ' riak@10.21.136.71 ' 
+valid 18.8% 10.9% ' riak@10.21.136.76 ' 
+valid 18.8% 12.5% ' riak@10.21.136.81 ' 
+valid 10.9% 10.9% ' riak@10.21.136.86 ' 
+
+riak-admin transfer_limit 
+=============================== Transfer Limit ================================ 
+Limit Node 
+------------------------------------------------------------------------------- 
+200 ' riak@10.21.136.66 ' 
+200 ' riak@10.21.136.71 ' 
+100 ' riak@10.21.136.76 ' 
+100 ' riak@10.21.136.81 ' 
+200 ' riak@10.21.136.86 ' 
+500 ' riak@10.21.136.91 ' 
+500 ' riak@10.21.136.92 ' 
+500 ' riak@10.21.136.93 ' 
+500 ' riak@10.21.136.94 ' 
+
+Any more details for your diagnosing the problem? 
+
+Amao 
+
+_______________________________________________ 
+riak-users mailing list 
+riak-users@lists.basho.com 
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a> 
+
+
+
+
+
+</pre><pre>_______________________________________________
+riak-users mailing list
+riak-users@lists.basho.com
+<a  rel="nofollow" href="http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com">http://lists.basho.com/mailman/listinfo/riak-users_lists.basho.com</a>
+</pre>
+
+</div>
+<div class="msgButtons margintopdouble">
+<ul class="overflow">
+<li class="msgButtonItems"><a class="button buttonleft " accesskey="p" href="msg16375.html">Previous message</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="c" href="index.html#16411">View by thread</a></li>
+<li class="msgButtonItems textaligncenter"><a class="button" accesskey="i" href="maillist.html#16411">View by date</a></li>
+<li class="msgButtonItems textalignright"><a class="button buttonright " accesskey="n" href="msg16378.html">Next message</a></li>
+</ul>
+</div>
+<a name="tslice"></a>
+<div class="tSliceList margintopdouble">
+<ul class="icons monospace">
+<li class="icons-email"><span class="subject"><a href="msg16346.html">why leaving riak cluster so slowly and how to accelerate ...</a></span> <span class="sender italic">Changmao.Wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16374.html">Fwd: why leaving riak cluster so slowly and how to a...</a></span> <span class="sender italic">Changmao.Wang</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16375.html">Re: why leaving riak cluster so slowly and how to ac...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li class="icons-email tSliceCur"><span class="subject">Re: why leaving riak cluster so slowly and how to ac...</span> <span class="sender italic">Changmao.Wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16378.html">Re: why leaving riak cluster so slowly and how t...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16390.html">Re: why leaving riak cluster so slowly and h...</a></span> <span class="sender italic">changmao wang</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16394.html">Re: why leaving riak cluster so slowly and h...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16401.html">Re: why leaving riak cluster so slowly a...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16402.html">Re: why leaving riak cluster so slo...</a></span> <span class="sender italic">changmao wang</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16414.html">Re: why leaving riak cluster so...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li><ul>
+<li class="icons-email"><span class="subject"><a href="msg16424.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">changmao wang</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16425.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16428.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">Amao</span></li>
+<li class="icons-email"><span class="subject"><a href="msg16427.html">Re: why leaving riak cluste...</a></span> <span class="sender italic">Dmitri Zagidulin</span></li>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</ul>
+</div>
+<div class="overflow msgActions margintopdouble">
+<div class="msgReply" >
+<h2>
+					Reply via email to
+</h2>
+<form method="POST" action="/mailto.php">
+<input type="hidden" name="subject" value="Re: why leaving riak cluster so slowly and how to accelerate the speed">
+<input type="hidden" name="msgid" value="1279335114.5030924.1438900144191.JavaMail.zimbra@datayes.com">
+<input type="hidden" name="relpath" value="riak-users@lists.basho.com/msg16411.html">
+<input type="submit" value=" Changmao.Wang ">
+</form>
+</div>
+</div>
+</div>
+<div class="aside" role="complementary">
+<div class="logo">
+<a href="/"><img src="/logo.png" width=247 height=88 alt="The Mail Archive"></a>
+</div>
+<form class="overflow" action="/search" method="get">
+<input type="hidden" name="l" value="riak-users@lists.basho.com">
+<label class="hidden" for="q">Search the site</label>
+<input class="submittext" type="text" id="q" name="q" placeholder="Search riak-users">
+<input class="submitbutton" name="submit" type="image" src="/submit.png" alt="Submit">
+</form>
+<div class="nav margintop" id="nav" role="navigation">
+<ul class="icons font16">
+<li class="icons-home"><a href="/">The Mail Archive home</a></li>
+<li class="icons-list"><a href="/riak-users@lists.basho.com/">riak-users - all messages</a></li>
+<li class="icons-about"><a href="/riak-users@lists.basho.com/info.html">riak-users - about the list</a></li>
+<li class="icons-expand"><a href="/search?l=riak-users@lists.basho.com&amp;q=subject:%22Re%5C%3A+why+leaving+riak+cluster+so+slowly+and+how+to+accelerate+the+speed%22&amp;o=newest&amp;f=1" title="e" id="e">Expand</a></li>
+<li class="icons-prev"><a href="msg16375.html" title="p">Previous message</a></li>
+<li class="icons-next"><a href="msg16378.html" title="n">Next message</a></li>
+</ul>
+</div>
+<div class="listlogo margintopdouble">
+
+</div>
+<div class="margintopdouble">
+
+</div>
+</div>
+</div>
+<div class="footer" role="contentinfo">
+<ul>
+<li><a href="/">The Mail Archive home</a></li>
+<li><a href="/faq.html#newlist">Add your mailing list</a></li>
+<li><a href="/faq.html">FAQ</a></li>
+<li><a href="/faq.html#support">Support</a></li>
+<li><a href="/faq.html#privacy">Privacy</a></li>
+<li class="darkgray">1279335114.5030924.1438900144191.JavaMail.zimbra@datayes.com</li>
+</ul>
+</div>
+</body>
+</html>
