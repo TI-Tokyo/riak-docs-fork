@@ -173,10 +173,14 @@ window.addEventListener("DOMContentLoaded", function(event)
     var titleTemplate = document.getElementById("search-result-title");
     var titleElement = titleTemplate.content.cloneNode(true);
     if (searchProject) {
+      if (searchProject == "community") {
+        titleElement.querySelector(".title-project-name").innerHTML = "Community";
+      } else {
         titleElement.querySelector(".title-project-name").innerHTML = searchProjectDescriptions[searchProject].project_name_html;
         if (searchVersion) {
             titleElement.querySelector(".title-project-version").textContent = searchVersion;
         }
+      }
     }
 
     var titleText = "";
@@ -215,9 +219,26 @@ window.addEventListener("DOMContentLoaded", function(event)
         element.querySelector(".result-title-link").textContent = doc.title;
       }
       if (doc.project) {
-        element.querySelector(".result-project-name").innerHTML = searchProjectDescriptions[doc.project].project_name_html;
-        if (doc.version) {
+        if (doc.project == "community") {
+          if (doc.project_section) {
+            switch (doc.project_section) {
+              case "mailinglistitem":
+                element.querySelector(".result-project-name").innerHTML = "Mailing List";
+                break;
+              case "technicalblogpost":
+                element.querySelector(".result-project-name").innerHTML = "Technical Blog Post";
+                break;
+              default:
+                element.querySelector(".result-project-name").innerHTML = "Community";
+            }
+          } else {
+            element.querySelector(".result-project-name").innerHTML = "Community";
+          }
+        } else {
+          element.querySelector(".result-project-name").innerHTML = searchProjectDescriptions[doc.project].project_name_html;
+          if (doc.version) {
             element.querySelector(".result-project-version").textContent = doc.version;
+          }
         }
       }
       element.querySelector(".result-summary").textContent = truncate(doc.content, 30);

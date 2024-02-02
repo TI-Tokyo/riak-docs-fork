@@ -1,0 +1,23 @@
+---
+title: "Why I Am Excited About Riak Search"
+description: "October 20, 2010 Last week Riak released Riak 0.13, including (among many other great improvements) the first public release of the much-anticipated Riak Search. There are a number of reasons why I am very excited by this. The first and most obvious reason why Riak Search is exciting is that it"
+project: community
+lastmod: 2016-07-31T22:18:23+00:00
+sitemap:
+  priority: 0.2
+project_section: technicalblogpost
+author_name: "Justin Sheehy"
+pub_date: 2010-10-20T05:17:34+00:00
+---
+October 20, 2010
+Last week Riak released Riak 0.13, including (among many other great improvements) the first public release of the much-anticipated Riak Search. There are a number of reasons why I am very excited by this.
+The first and most obvious reason why Riak Search is exciting is that it’s an excellent piece of software for solving a large class of data retrieval needs. Of course, this isn’t the first search system that is clustered and can grow by adding servers; that idea isn’t groundbreaking or very exciting on its own. However, it is the first such search system that I know of with the powerful and robust systems model that people have come to treasure in the Riak key/value store.
+Being able to grow & shrink and handle failures in an easy and predictable way is much less common in search systems than in “simpler” data management systems. After we demonstrated that we could build something (anything!) with that kind of easy scalability and availability, our friends and customers began to ask if we could apply our ideas to some richer data models. Specifically, a common pattern began to emerge: people would deploy Riak and an indexing system such as Apache Solr system side-by-side. This was a workable solution, but could be operationally frustrating. The systems could get out of sync, capacity planning became more complicated, and most importantly the operations story around failure management became much more challenging. If only we could make the overall collection of systems as good at availability management as Riak was, then a new class of problems would be solved.
+Those conversations began a journey of exploration and experimentation. This essential phase was led by John Muellerleile, one of the most creative and resourceful programmers I know. He did all of the early work, finding places where the state of the art in indexing and search could be merged with the “Riak Way” of doing things. More recently, amazing work was done by the entire Riak Engineering team to make Riak Search move from prototype to product.
+Riak Search has only been out for about a week, but users are already discovering that they can use it in more than one way; it can function in fulltext-analysis, as an easy way to produce simple inverted indices over semi-structured data, and more.
+That’s enough reason to be excited about Riak Search, but I have bigger reasons as well.
+Riak Search is the first public demonstration that Riak Core is a meaningful base on which to build distributed systems beyond just a key/value store. By using the same central code base for distribution, dispatch, ownership, failure management, and node administration, we are able to confidently make many of the same guarantees for Search that we have made all along for Riak’s key/value storage. Even if Search itself wasn’t such a compelling product, it is exciting as a proof of the value of Riak Core.
+That value hints at Riak’s future — not as a single database but as a family of distributed systems for storing, managing, and retrieving data. We’ve now gone from one to two such systems, but we’re not stopping there. The work of creating Search was really two efforts: building Search itself and also the breakout & improvement of our Core. We can (and will) use that improved Core to build new systems in the future.
+The subtlest, but perhaps most important, of the exciting things about Search is that it also uses Core to show how each new Riak system is greater than the sum of its parts. Riak Search is not just a search system using the same Core codebase as KV, it is running on the same actual nodes as KV. This allows us to develop features that don’t make sense in KV alone or in Search alone, but that take advantage of the shared running elements of Core. For instance, users can issue a search/map/reduce query that runs map/reduce style parallel processing with data locality on a dataset determined by a search result. As we develop further systems on Riak Core, we expect further such connections to make each one also benefit the entire Riak family in this way.
+What we have released in the recent past is exciting. The future is even more exciting.
+Justin
