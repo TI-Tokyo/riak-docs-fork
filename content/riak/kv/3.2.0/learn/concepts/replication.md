@@ -2,7 +2,10 @@
 title: "Replication"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "Replication"
@@ -15,6 +18,7 @@ aliases:
   - /riak/kv/3.2.0/theory/concepts/Replication
   - /riak/3.2.0/theory/concepts/replication
   - /riak/kv/3.2.0/theory/concepts/replication
+keywords: "nval n_val"
 ---
 
 [cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.2.0/using/cluster-operations/v3-multi-datacenter

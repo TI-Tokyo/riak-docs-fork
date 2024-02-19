@@ -2,7 +2,10 @@
 title: "Cluster Administration"
 description: ""
 project: "riak_kv"
-project_version: 3.0.11
+project_version: "3.0.11"
+lastmod: 2022-10-12T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.11:
     name: "Cluster Administration"
@@ -17,7 +20,7 @@ aliases:
 
 [use admin commands]: ./commands/
 [use admin riak cli]: ./riak-cli/
-[use admin riak admin]: ./riak admin/
+[use admin riak admin]: ./riak-admin/
 [use admin riak control]: ./riak-control/
 
 ## In This Section

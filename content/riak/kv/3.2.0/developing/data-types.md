@@ -3,7 +3,10 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "Data Types"
@@ -262,12 +265,3 @@ $updateSet = (new \Basho\Riak\Command\Builder\UpdateSet($riak))
 The pages listed above detail using Riak data types at the application level using Basho's [officially supported Riak KV clients](../client-libraries). For more on getting started with client libraries check out the [Developing with Riak KV: Getting Started](../getting-started) section.
 
 All the examples use the bucket type names from above (`counters`, `sets`, and `maps`). You're free to substitute your own bucket type names if you wish.
-
-## Data Types and Search
-
-Riak data types can be searched like any other object, but with the
-added benefit that your data type is indexed as a different type by Solr,
-the search platform behind Riak Search.
-
-In our Search documentation we offer a [full tutorial](../usage/searching-data-types) as well as a variety of [examples](../usage/searching-data-types/), including code
-samples from each of our official client libraries.

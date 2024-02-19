@@ -2,7 +2,10 @@
 title: "Basic Riak KV Configuration"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "Basic Configuration"
@@ -13,11 +16,12 @@ toc: true
 aliases:
   - /riak/3.2.0/ops/building/configuration/
   - /riak/kv/3.2.0/ops/building/configuration/
+keywords: "ring size ringsize ring_size"
 ---
 
 [config reference]: {{<baseurl>}}riak/kv/3.2.0/configuring/reference
 [use running cluster]: {{<baseurl>}}riak/kv/3.2.0/using/running-a-cluster
-[use admin riak admin#member-status]: {{<baseurl>}}riak/kv/3.2.0/using/admin/riak admin/#member-status
+[use admin riak admin#member-status]: {{<baseurl>}}riak/kv/3.2.0/using/admin/riak-admin/#member-status
 [perf erlang]: {{<baseurl>}}riak/kv/3.2.0/using/performance/erlang
 [plan start]: {{<baseurl>}}riak/kv/3.2.0/setup/planning/start
 [plan best practices]: {{<baseurl>}}riak/kv/3.2.0/setup/planning/best-practices
@@ -233,4 +237,3 @@ cluster.
 ## Joining the nodes together
 
 Please see [Running A Cluster][use running cluster] for the cluster creation process.
-

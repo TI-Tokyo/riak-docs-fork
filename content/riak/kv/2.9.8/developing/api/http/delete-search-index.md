@@ -2,7 +2,10 @@
 title: "HTTP Delete Search Index"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: "2.9.8"
+lastmod: 2020-12-08T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-2.9.8:
     name: "Delete Search Index"
@@ -10,6 +13,8 @@ menu:
     weight: 116
     parent: "apis_http"
 toc: true
+version_history:
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.9.8/dev/references/http/delete-search-index
   - /riak/kv/2.9.8/dev/references/http/delete-search-index

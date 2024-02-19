@@ -2,7 +2,10 @@
 title: "Installing Custom Code"
 description: ""
 project: "riak_kv"
-project_version: 3.0.14
+project_version: "3.0.14"
+lastmod: 2023-02-13T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.14:
     name: "Installing Custom Code"
@@ -123,7 +126,7 @@ that you do so in a rolling fashion, taking time to ensure that the Riak key
 value store has fully initialized and become available for use.
 
 This is done with the `riak admin wait-for-service` command as detailed
-in the [Commands documentation]({{<baseurl>}}riak/kv/3.0.14/using/admin/riak admin/#wait-for-service).
+in the [Commands documentation]({{<baseurl>}}riak/kv/3.0.14/using/admin/riak-admin/#wait-for-service).
 
 {{% note %}}
 It is important that you ensure riak_kv is active before restarting the next

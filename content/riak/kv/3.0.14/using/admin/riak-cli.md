@@ -2,7 +2,10 @@
 title: "riak Command Line Interface"
 description: ""
 project: "riak_kv"
-project_version: 3.0.14
+project_version: "3.0.14"
+lastmod: 2023-02-13T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.14:
     name: "riak CLI"
@@ -17,7 +20,7 @@ aliases:
 
 [configuration file]: {{<baseurl>}}riak/kv/3.0.14/configuring/reference/
 [escript]: http://www.erlang.org/doc/man/escript.html
-[`riak admin`]: {{<baseurl>}}riak/kv/3.0.14/using/admin/riak admin/#top
+[`riak admin`]: {{<baseurl>}}riak/kv/3.0.14/using/admin/riak-admin/#top
 [configuration]: {{<baseurl>}}riak/kv/3.0.14/configuring/reference/
 
 ## riak

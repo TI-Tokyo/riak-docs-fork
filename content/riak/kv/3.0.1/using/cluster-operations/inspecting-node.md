@@ -2,7 +2,10 @@
 title: "Inspecting a Node"
 description: ""
 project: "riak_kv"
-project_version: 3.0.1
+project_version: "3.0.1"
+lastmod: 2020-08-20T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.1:
     name: "Inspecting a Node"
@@ -473,7 +476,7 @@ you, but here's how to set them:
 
 ## Related Resources
 
-* [The riak admin configuration management tool](../../admin/riak admin/)
+* [The riak admin configuration management tool](../../admin/riak-admin/)
 * [Riaknostic](http://riaknostic.basho.com/)
 * [HTTP API Status](../../../developing/api/http/status/)
 

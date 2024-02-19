@@ -2,7 +2,10 @@
 title: "Backing Up"
 description: ""
 project: "riak_kv"
-project_version: 3.0.1
+project_version: "3.0.1"
+lastmod: 2020-08-20T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.1:
     name: "Backing Up"
@@ -126,7 +129,7 @@ Strong consistency | `/opt/riak/data/ensembles`
 ## Performing Backups
 
 {{% note title="Deprecation notice" %}}
-In previous versions of Riak KV, there was a [`riak admin backup`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#backup) command commonly used for
+In previous versions of Riak KV, there was a [`riak admin backup`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak-admin/#backup) command commonly used for
 backups. This functionality is now deprecated. We strongly recommend using the backup procedure documented below instead.
 {{% /note %}}
 
@@ -190,11 +193,11 @@ node that the restored backup was taken from, you will need to
 additionally:
 
 1. Mark the original instance down in the cluster using
-   [`riak admin down <node>`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#down)
+   [`riak admin down <node>`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak-admin/#down)
 2. Join the restored node to the cluster using
-   [`riak admin cluster join <node>`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#cluster-join)
+   [`riak admin cluster join <node>`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak-admin/#cluster-join)
 3. Replace the original instance with the renamed instance with
-   [`riak admin cluster force-replace <node1> <node2>`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#cluster-force-replace)
+   [`riak admin cluster force-replace <node1> <node2>`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak-admin/#cluster-force-replace)
 4. Plan the changes to the cluster with `riak admin cluster plan`
 5. Finally, commit the cluster changes with `riak admin cluster commit`
 

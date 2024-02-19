@@ -3,6 +3,9 @@ title: "Custom Extractors"
 description: ""
 project: "riak_kv"
 project_version: "2.0.4"
+lastmod: 2015-01-10T00:00:00-00:00
+sitemap:
+  priority: 0.1
 menu:
   riak_kv-2.0.4:
     name: "Custom Extractors"
@@ -11,7 +14,7 @@ menu:
     parent: "developing_usage"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.0.4/dev/search/custom-extractors
   - /riak/kv/2.0.4/dev/search/custom-extractors

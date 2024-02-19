@@ -3,6 +3,9 @@ title: "Implementing a Document Store"
 description: ""
 project: "riak_kv"
 project_version: "2.2.6"
+lastmod: 2018-05-22T00:00:00-00:00
+sitemap:
+  priority: 0.1
 menu:
   riak_kv-2.2.6:
     name: "Implementing a Document Store"
@@ -11,7 +14,7 @@ menu:
     parent: "developing_usage"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.2.6/dev/search/document-store
   - /riak/kv/2.2.6/dev/search/document-store

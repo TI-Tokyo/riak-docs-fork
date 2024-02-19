@@ -2,7 +2,10 @@
 title: "Dynamo: Amazon’s Highly Available Key-value Store"
 description: ""
 project: "riak_kv"
-project_version: 2.9.10
+project_version: "2.9.10"
+lastmod: 2021-10-06T00:00:00-00:00
+sitemap:
+  priority: 0.3
 menu:
   riak_kv-2.9.10:
     name: "Dynamo"
@@ -328,7 +331,7 @@ services to produce a composite response. Typically, the aggregator services are
 stateless, although they use extensive caching.
 
 **<figure id="figure-1" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure1.png">
+  <img src="{{<baseurl>}}images/dynamo/figure1.png">
   <figcaption>
     Figure 1: Service-oriented architecture of Amazon’s platform.
   </figcaption>
@@ -751,7 +754,7 @@ nodes C and D in addition to storing it locally. Node D will store the keys that
 fall in the ranges (A, B], (B, C], and (C, D].
 
 **<figure id="figure-2" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure2.png">
+  <img src="{{<baseurl>}}images/dynamo/figure2.png">
   <figcaption>
     Figure 2: Partitioning and replication of keys in Dynamo ring.
   </figcaption>
@@ -876,7 +879,7 @@ context is considered to have reconciled the divergent versions and the branches
 are collapsed into a single new version.
 
 **<figure id="figure-3" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure3.png">
+  <img src="{{<baseurl>}}images/dynamo/figure3.png">
   <figcaption>
     Figure 3: Version evolution of an object over time.
   </figcaption>
@@ -1445,7 +1448,7 @@ several factors such as variability in request load, object sizes, and locality
 patterns.
 
 **<figure id="figure-4" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure4.png">
+  <img src="{{<baseurl>}}images/dynamo/figure4.png">
   <figcaption>
     Figure 4: Average and 99.9 percentiles of latencies for read and write
     requests during our peak request season of December 2006. The intervals
@@ -1479,7 +1482,7 @@ responses, the performance of the write operation is not affected by the
 performance of the durable write operation performed by a single replica.
 
 **<figure id="figure-5" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure5.png">
+  <img src="{{<baseurl>}}images/dynamo/figure5.png">
   <figcaption>
     Figure 5: Comparison of performance of 99.9th percentile latencies for
     buffered vs. non-buffered writes over a period of 24 hours. The intervals
@@ -1523,7 +1526,7 @@ distribution of keys the load is evenly distributed. However, during low loads
 accessed, resulting in a higher load imbalance.
 
 **<figure id="figure-6" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure6.png">
+  <img src="{{<baseurl>}}images/dynamo/figure6.png">
   <figcaption>
     Figure 6: Fraction of nodes that are out-of-balance (i.e., nodes whose
     request load is above a certain threshold from the average system load) and
@@ -1594,7 +1597,7 @@ enabling the possibility of changing the placement scheme at runtime.
 > random distribution.
 
 **<figure id="figure-7" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure7-small.png">
+  <img src="{{<baseurl>}}images/dynamo/figure7-small.png">
   <figcaption>
     Figure 7: Partitioning and placement of keys in the three strategies. A, B,
     and C depict the three unique nodes that form the preference list for the
@@ -1663,7 +1666,7 @@ is that changing the node membership requires coordination in order to preserve
 the properties required of the assignment.
 
 **<figure id="figure-8" style="text-align:center;">
-  <img src="/riak-docs/images/dynamo/figure8.png">
+  <img src="{{<baseurl>}}images/dynamo/figure8.png">
   <figcaption>
     Figure 8: Comparison of the load distribution efficiency of different
     strategies for system with 30 nodes and N=3 with equal amount of metadata

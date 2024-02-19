@@ -2,7 +2,10 @@
 title: "riak admin Command Line Interface"
 description: ""
 project: "riak_kv"
-project_version: 3.0.10
+project_version: "3.0.10"
+lastmod: 2022-05-30T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.10:
     name: "riak admin CLI"
@@ -35,7 +38,7 @@ aliases:
 [repair recover index]: {{<baseurl>}}riak/kv/3.0.10/using/repair-recovery
 [cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.0.10/using/cluster-operations/strong-consistency
 [cluster ops handoff]: {{<baseurl>}}riak/kv/3.0.10/using/cluster-operations/handoff
-[use admin riak admin#stats]: {{<baseurl>}}riak/kv/3.0.10/using/admin/riak admin/#stats
+[use admin riak admin#stats]: {{<baseurl>}}riak/kv/3.0.10/using/admin/riak-admin/#stats
 
 ## `riak admin`
 

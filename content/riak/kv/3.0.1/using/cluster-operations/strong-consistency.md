@@ -2,7 +2,10 @@
 title: "Monitoring Strong Consistency"
 description: ""
 project: "riak_kv"
-project_version: 3.0.1
+project_version: "3.0.1"
+lastmod: 2020-08-20T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.1:
     name: "Monitoring Strong Consistency"
@@ -26,7 +29,7 @@ usage in any production environment.
 ## Monitoring Strong Consistency
 
 Riak provides a wide variety of data related to the current operating
-status of a node. This data is available by running the [`riak admin status`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak admin/#status) command. That data now
+status of a node. This data is available by running the [`riak admin status`]({{<baseurl>}}riak/kv/3.0.1/using/admin/riak-admin/#status) command. That data now
 includes statistics specific to strongly consistent operations.
 
 A full listing of these stats is available in [Inspecting a Node]({{<baseurl>}}riak/kv/3.0.1/using/cluster-operations/inspecting-node).

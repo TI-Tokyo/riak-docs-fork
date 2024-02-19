@@ -2,7 +2,10 @@
 title: "riak Command Line Interface"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "riak CLI"
@@ -17,7 +20,7 @@ aliases:
 
 [configuration file]: {{<baseurl>}}riak/kv/3.2.0/configuring/reference/
 [escript]: http://www.erlang.org/doc/man/escript.html
-[`riak admin`]: {{<baseurl>}}riak/kv/3.2.0/using/admin/riak admin/#top
+[`riak admin`]: {{<baseurl>}}riak/kv/3.2.0/using/admin/riak-admin/#top
 [configuration]: {{<baseurl>}}riak/kv/3.2.0/configuring/reference/
 
 ## riak
@@ -122,12 +125,19 @@ Provides a means of calling [escript][escript] scripts using the Riak Erlang run
 riak escript <filename>
 ```
 
-## version
+## versions
 
 Outputs the Riak version identifier:
 
 ```bash
-riak version
+riak versions
+```
+
+In KV 3.2.0 the response to this command would appear as:
+
+```
+Installed versions:
+* 3.2.0 permanent
 ```
 
 ## getpid
@@ -136,6 +146,16 @@ Outputs the process identifier for the currently-running instance of Riak:
 
 ```bash
 riak getpid
+```
+
+Note: `riak getpid` has been replaced by `riak pid` in Riak KV 3.0.1 onwards.
+
+## pid
+
+Outputs the process identifier for the currently-running instance of Riak:
+
+```bash
+riak pid
 ```
 
 ## top

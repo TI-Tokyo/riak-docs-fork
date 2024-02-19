@@ -3,7 +3,10 @@ title_supertext: "Configuring:"
 title: "Legacy Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "Legacy AAE"
@@ -15,6 +18,7 @@ version_history:
   in: "2.9.0p5+"
 since: 2.9.0p5
 aliases:
+keywords: "aae active anti-entropy legacy old"
 ---
 
 The configuration for the legacy AAE is kept in

@@ -2,7 +2,10 @@
 title: "Cluster Capacity Planning"
 description: ""
 project: "riak_kv"
-project_version: 3.0.9
+project_version: "3.0.9"
+lastmod: 2021-11-12T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.9:
     name: "Cluster Capacity"
@@ -19,7 +22,7 @@ aliases:
 [plan bitcask capacity]: {{<baseurl>}}riak/kv/3.0.9/setup/planning/bitcask-capacity-calc
 [plan index]: {{<baseurl>}}riak/kv/3.0.9/setup/planning
 [concept replication]: {{<baseurl>}}riak/kv/3.0.9/learn/concepts/replication
-[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/3.0.9/using/admin/riak admin/#cluster
+[use admin riak admin#cluster]: {{<baseurl>}}riak/kv/3.0.9/using/admin/riak-admin/#cluster
 [config reference]: {{<baseurl>}}riak/kv/3.0.9/configuring/reference
 [perf benchmark]: {{<baseurl>}}riak/kv/3.0.9/using/performance/benchmarking
 [LVM]: http://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)

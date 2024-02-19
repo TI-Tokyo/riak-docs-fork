@@ -2,7 +2,10 @@
 title: "Production Checklist"
 description: ""
 project: "riak_kv"
-project_version: 3.0.11
+project_version: "3.0.11"
+lastmod: 2022-10-12T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.11:
     name: "Production Checklist"
@@ -183,10 +186,8 @@ be addressed before going to production.
 
 ## Troubleshooting and Support
 
-* Does your team, including developing and operations, know how to open
-  support requests with Basho?
-* Is your team familiar with Basho Support's Service-Level Agreement
-  (SLA) levels?
+* For free support, go to the /community page to find helpful links
+* To open a support ticket (which requires a support contact with TI Tokyo), go to https://support.tiot.jp/
   - Normal and Low are for issues not immediately impacting production
     systems
   - High is for problems that impact production or soon-to-be-production

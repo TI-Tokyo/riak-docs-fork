@@ -2,7 +2,10 @@
 title: "Adding / Removing Nodes"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "Adding/Removing Nodes"
@@ -191,3 +194,9 @@ To pause during `riak admin cluster join` or `riak admin cluster leave`, set the
 riak admin transfer-limit <node> 0
 ```
 
+The above should produce the following output:
+
+```
+Set transfer limit for 'node' to 0
+ok
+```

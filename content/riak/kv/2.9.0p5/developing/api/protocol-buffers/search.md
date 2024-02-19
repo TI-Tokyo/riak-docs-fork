@@ -3,6 +3,9 @@ title: "PBC Search"
 description: ""
 project: "riak_kv"
 project_version: "2.9.0p5"
+lastmod: 2019-11-21T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-2.9.0p5:
     name: "Search"
@@ -11,7 +14,7 @@ menu:
     parent: "apis_pbc"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.9.0p5/dev/references/protocol-buffers/search
   - /riak/kv/2.9.0p5/dev/references/protocol-buffers/search

@@ -2,7 +2,10 @@
 title: "Enabling and Disabling Handoff"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "Handoff"
@@ -54,6 +57,12 @@ inbound and outbound handoff on all nodes:
 riak admin handoff enable both --all
 ```
 
+Which produces the following:
+
+```
+All nodes successfully updated
+ok
+```
 As for enabling handoff, the `riak admin disable` command requires that
 you specify both both a node or nodes to be targeted by the command and
 whether you'd like to disable inbound handoff, outbound handoff, or
@@ -65,10 +74,16 @@ example:
 riak admin handoff disable both --all
 ```
 
+Which produces the following:
+
+```
+All nodes successfully updated
+ok
+```
 ## Other Command-line Tools
 
 In addition to enabling and disabling handoff, the
-[`riak admin`]({{<baseurl>}}riak/kv/3.2.0/using/admin/riak admin/) interface enables you to
+[`riak admin`]({{<baseurl>}}riak/kv/3.2.0/using/admin/riak-admin/) interface enables you to
 retrieve a summary of handoff-related activity and other information.
 
 ### summary
@@ -95,6 +110,7 @@ Header | Description
 ### details
 
 This command provides information only about active transfers.
+Note: In KV 3.2.0 + this command has been deprecated and no longer functions.
 
 ```bash
 riak admin handoff details

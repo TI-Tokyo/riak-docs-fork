@@ -2,7 +2,10 @@
 title: "Statistics & Monitoring Reference"
 description: ""
 project: "riak_kv"
-project_version: 3.0.4
+project_version: "3.0.4"
+lastmod: 2021-03-24T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.4:
     name: "Monitoring"
@@ -17,7 +20,7 @@ aliases:
 
 Riak provides data related to current operating status, which includes
 statistics in the form of counters and histograms. These statistics
-are made available through the HTTP API via the [`/stats`]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/status) endpoint, or through the [`riak admin`]({{<baseurl>}}riak/kv/3.0.4/using/admin/riak admin/) interface, in particular the `stat` and `status` commands.
+are made available through the HTTP API via the [`/stats`]({{<baseurl>}}riak/kv/3.0.4/developing/api/http/status) endpoint, or through the [`riak admin`]({{<baseurl>}}riak/kv/3.0.4/using/admin/riak-admin/) interface, in particular the `stat` and `status` commands.
 
 This page presents the most commonly monitored and gathered
 statistics, as well as numerous solutions for monitoring and gathering
@@ -138,7 +141,7 @@ Metric | Also | Notes
 
 ## Command-line Interface
 
-The [`riak admin`]({{<baseurl>}}riak/kv/3.0.4/using/admin/riak admin/) tool provides two
+The [`riak admin`]({{<baseurl>}}riak/kv/3.0.4/using/admin/riak-admin/) tool provides two
 interfaces for retrieving statistics and other information: `status`
 and `stat`.
 
@@ -170,7 +173,7 @@ A comprehensive list of available stats can be found in the
 The `riak admin stat` command is related to the `riak admin status`
 command but provides a more fine-grained interface for interacting with
 stats and information. Full documentation of this command can be found
-in the [Inspecting a Node]({{<baseurl>}}riak/kv/3.0.4/using/admin/riak admin/#stat) document.
+in the [Inspecting a Node]({{<baseurl>}}riak/kv/3.0.4/using/admin/riak-admin/#stat) document.
 
 ## Statistics and Monitoring Tools
 

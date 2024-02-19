@@ -3,6 +3,9 @@ title: "Getting Started Overview"
 description: ""
 project: "riak_kv"
 project_version: "2.1.1"
+lastmod: 2015-05-05T00:00:00-00:00
+sitemap:
+  priority: 0.1
 menu:
   riak_kv-2.1.1:
     name: "Getting Started"
@@ -30,14 +33,14 @@ for various programming languages and environments. Please select the
 language with which you'd like to proceed:
 
 <ul class="clearfix   client-library-logos">
-  <li class="float-left"><a class="block   client-library-logo" href="java/"><img src="/images/client_library_logos/java.png" alt="Java"></a></li>
-  <li class="float-left"><a class="block   client-library-logo" href="ruby/"><img src="/images/client_library_logos/ruby_small.png" alt="Ruby"></a></li>
-  <li class="float-left"><a class="block   client-library-logo" href="python/"><img src="/images/client_library_logos/python.png" alt="Python"></a></li>
-  <li class="float-left"><a class="block   client-library-logo" href="csharp/"><img src="/images/client_library_logos/c_sharp.png" alt="CSharp"></a></li>
-  <li class="float-left"><a class="block   client-library-logo" href="nodejs/"><img src="/images/client_library_logos/nodejs.png" alt="Node.js"></a></li>
-  <li class="float-left"><a class="block   client-library-logo" href="erlang/"><img src="/images/client_library_logos/erlang.png" alt="Erlang"></a></li>
-  <li class="float-left"><a class="block   client-library-logo" href="php/"><img src="/images/client_library_logos/php.png" alt="PHP"></a></li>
-  <li class="float-left"><a class="block   client-library-logo" href="golang/"><img src="/images/client_library_logos/golang.png" alt="GoLang"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="java/"><img src="{{<baseurl>}}images/client_library_logos/java.png" alt="Java"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="ruby/"><img src="{{<baseurl>}}images/client_library_logos/ruby_small.png" alt="Ruby"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="python/"><img src="{{<baseurl>}}images/client_library_logos/python.png" alt="Python"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="csharp/"><img src="{{<baseurl>}}images/client_library_logos/c_sharp.png" alt="CSharp"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="nodejs/"><img src="{{<baseurl>}}images/client_library_logos/nodejs.png" alt="Node.js"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="erlang/"><img src="{{<baseurl>}}images/client_library_logos/erlang.png" alt="Erlang"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="php/"><img src="{{<baseurl>}}images/client_library_logos/php.png" alt="PHP"></a></li>
+  <li class="float-left"><a class="block   client-library-logo" href="golang/"><img src="{{<baseurl>}}images/client_library_logos/golang.png" alt="GoLang"></a></li>
 </ul>
 
 ### Community-supported Client Libraries

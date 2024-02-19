@@ -2,7 +2,10 @@
 title: "Downgrading"
 description: ""
 project: "riak_kv"
-project_version: 3.0.12
+project_version: "3.0.12"
+lastmod: 2022-12-20T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.12:
     name: "Downgrading"
@@ -18,7 +21,7 @@ aliases:
 [rolling upgrade]: {{<baseurl>}}riak/kv/3.0.12/setup/upgrading/cluster
 [config ref]: {{<baseurl>}}riak/kv/3.0.12/configuring/reference
 [concept aae]: {{<baseurl>}}riak/kv/3.0.12/learn/concepts/active-anti-entropy/
-[aae status]: {{<baseurl>}}riak/kv/3.0.12/using/admin/riak admin/#aae-status
+[aae status]: {{<baseurl>}}riak/kv/3.0.12/using/admin/riak-admin/#aae-status
 
 Downgrades of Riak KV are tested and supported for two feature release versions, with the general procedure being similar to that of a [rolling upgrade][rolling upgrade].
 

@@ -2,7 +2,10 @@
 title: "Managing Your Configuration"
 description: ""
 project: "riak_kv"
-project_version: 3.2.0
+project_version: "3.2.0"
+lastmod: 2022-12-30T00:00:00-00:00
+sitemap:
+  priority: 0.9
 menu:
   riak_kv-3.2.0:
     name: "Managing Configuration"
@@ -17,6 +20,8 @@ aliases:
 [use admin riak cli#chkconfig]: {{<baseurl>}}riak/kv/3.2.0/using/admin/riak-cli/#chkconfig
 
 ## Retrieving a Configuration Listing
+
+**Note:** This command has been deprecated in Riak KV 3.2.0 onwards and will no longer function.
 
 At any time, you can get a snapshot of currently applied configurations
 through the command line. For a listing of *all* of the configs
@@ -88,6 +93,8 @@ e.g. if your configuration will cause problems on your operating system
 or doesn't activate subsystems that you would like to use.
 
 ## Debugging Your Configuration
+
+**Note:** This command has been deprecated in Riak KV 3.2.0 onwards and will no longer function.
 
 If there is a problem with your configuration but you're having trouble
 identifying the problem, there is a command that you can use to debug

@@ -3,6 +3,9 @@ title: "Installing the JVM"
 description: ""
 project: "riak_kv"
 project_version: "2.2.2"
+lastmod: 2017-03-24T00:00:00-00:00
+sitemap:
+  priority: 0.1
 menu:
   riak_kv-2.2.2:
     name: "Installing the JVM"
@@ -11,7 +14,7 @@ menu:
     parent: "installing_source"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.2.2/ops/building/installing/jvm
   - /riak/kv/2.2.2/ops/building/installing/jvm

@@ -2,7 +2,10 @@
 title: "PBC Yokozuna Schema Put"
 description: ""
 project: "riak_kv"
-project_version: 2.9.4
+project_version: "2.9.4"
+lastmod: 2020-07-03T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-2.9.4:
     name: "Yokozuna Schema Put"
@@ -11,7 +14,7 @@ menu:
     parent: "apis_pbc"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.9.4/dev/references/protocol-buffers/yz-schema-put
   - /riak/kv/2.9.4/dev/references/protocol-buffers/yz-schema-put

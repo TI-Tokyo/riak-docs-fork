@@ -3,6 +3,9 @@ title: "Riak Search Settings"
 description: ""
 project: "riak_kv"
 project_version: "2.2.6"
+lastmod: 2018-05-22T00:00:00-00:00
+sitemap:
+  priority: 0.1
 menu:
   riak_kv-2.2.6:
     name: "Riak Search Settings"
@@ -11,7 +14,7 @@ menu:
     parent: "configuring"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.2.6/ops/advanced/configs/search/
   - /riak/kv/2.2.6/ops/advanced/configs/search/

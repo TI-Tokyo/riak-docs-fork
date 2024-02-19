@@ -2,7 +2,10 @@
 title: "Search Reference"
 description: ""
 project: "riak_kv"
-project_version: 2.9.8
+project_version: "2.9.8"
+lastmod: 2020-12-08T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-2.9.8:
     name: "Search"
@@ -11,7 +14,7 @@ menu:
     parent: "managing_ref"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.9.8/dev/advanced/search
   - /riak/kv/2.9.8/dev/advanced/search

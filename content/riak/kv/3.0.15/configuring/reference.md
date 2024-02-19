@@ -2,7 +2,10 @@
 title: "Riak KV Configuration Reference"
 description: ""
 project: "riak_kv"
-project_version: 3.0.15
+project_version: "3.0.15"
+lastmod: 2023-02-15T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.15:
     name: "Configuration Reference"
@@ -27,7 +30,7 @@ aliases:
 [plan backend multi]: ../../setup/planning/backend/multi
 [config backend multi]: ../../setup/planning/backend/multi/#configuring-multiple-backends-1
 [use admin riak cli]: ../../using/admin/riak-cli
-[use admin riak admin]: ../../using/admin/riak admin
+[use admin riak admin]: ../../using/admin/riak-admin
 [glossary aae]: ../../learn/glossary/#active-anti-entropy-aae
 [cluster ops bucket types]: ../../using/cluster-operations/bucket-types
 [usage conflict resolution]: ../../developing/usage/conflict-resolution

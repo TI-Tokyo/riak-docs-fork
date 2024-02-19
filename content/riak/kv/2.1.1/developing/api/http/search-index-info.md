@@ -3,6 +3,9 @@ title: "HTTP Search Index Info"
 description: ""
 project: "riak_kv"
 project_version: "2.1.1"
+lastmod: 2015-05-05T00:00:00-00:00
+sitemap:
+  priority: 0.1
 menu:
   riak_kv-2.1.1:
     name: "Search Index Info"
@@ -11,7 +14,7 @@ menu:
     parent: "apis_http"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.1.1/dev/references/http/search-index-info
   - /riak/kv/2.1.1/dev/references/http/search-index-info

@@ -3,6 +3,9 @@ title: "HTTP Store Search Schema"
 description: ""
 project: "riak_kv"
 project_version: "2.0.6"
+lastmod: 2015-06-29T00:00:00-00:00
+sitemap:
+  priority: 0.1
 menu:
   riak_kv-2.0.6:
     name: "Store Search Schema"
@@ -11,7 +14,7 @@ menu:
     parent: "apis_http"
 toc: true
 version_history:
-  in: "2.0.0-2.9.10"
+  in: "2.0.0-2.9999.9999"
 aliases:
   - /riak/2.0.6/dev/references/http/store-search-schema
   - /riak/kv/2.0.6/dev/references/http/store-search-schema

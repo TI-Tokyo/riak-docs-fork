@@ -2,7 +2,10 @@
 title: "Updating Objects"
 description: ""
 project: "riak_kv"
-project_version: 3.0.1
+project_version: "3.0.1"
+lastmod: 2020-08-20T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.1:
     name: "Updating Objects"
@@ -215,6 +218,11 @@ X-Riak-Vclock: a85hYGBgzGDKBVIcWu/1S4OVPaIymBIZ81gZbskuOMOXBQA=
 
 # When performing a write to the same key, that same header needs to
 # accompany the write for Riak to be able to use the context object
+
+curl -XPUT \
+  -H "X-Riak-Vclock: a85hYGBgzGDKBVIcWu/1S4OVPaIymBIZ81gZbskuOMOXBQA=" \
+  -d "Harlem Globetrotters" \
+  http://localhost:8098/types/sports/buckets/nba/keys/champion
 ```
 
 In the samples above, we didn't need to actually interact with the
@@ -292,6 +300,12 @@ fmt.Println(rsp.VClock)
 
 // Output:
 // X3hNXFq3ythUqvvrG9eJEGbUyLS
+```
+```curl
+# When using curl, the context object is attached to the X-Riak-Vclock header
+curl -i http://localhost:8098/types/sports/buckets/nba/keys/champion
+# In the resulting output, the header will look something like this:
+X-Riak-Vclock: a85hYGBgzGDKBVIcWu/1S4OVPaIymBIZ81gZbskuOMOXBQA=
 ```
 
 ## The Object Update Cycle
@@ -467,6 +481,13 @@ if err := cluster.Execute(cmd); err != nil {
 fmt.Println("Stored Pete Carroll")
 ```
 
+```curl
+curl -XPUT \
+  -H "Content-Type: text/plain" \
+  -d "Pete Carroll" \
+  http://localhost:8098/types/siblings/buckets/coaches/keys/seahawks
+```
+
 Every once in a while, though, head coaches change in the NFL, which
 means that our data would need to be updated. Below is an example
 function for updating such objects:
@@ -611,6 +632,27 @@ func updateCoach(cluster *riak.Cluster, team, newCoach string) error {
 
     return nil
 }
+```
+
+
+```curl
+
+# When using curl, the context object is attached to the X-Riak-Vclock header
+
+curl -i http://localhost:8098/types/siblings/buckets/coaches/keys/packers
+
+# In the resulting output, the header will look something like this:
+
+X-Riak-Vclock: a85hYGBgzGDKBVIcWu/1S4OVPaIymBIZ81gZbskuOMOXBQA=
+
+# When performing a write to the same key, that same header needs to
+# accompany the write for Riak to be able to use the context object
+
+curl -XPUT \
+  -H "Content-Type: text/plain" \
+  -H "X-Riak-Vclock: a85hYGBgzGDKBVIcWu/1S4OVPaIymBIZ81gZbskuOMOXBQA=" \
+  -d "Vince Lombardi" \
+  http://localhost:8098/types/siblings/buckets/coaches/keys/packers
 ```
 
 In the example above, you can see the three steps in action: first, the

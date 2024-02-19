@@ -2,7 +2,10 @@
 title: "Enabling and Disabling Handoff"
 description: ""
 project: "riak_kv"
-project_version: 3.0.14
+project_version: "3.0.14"
+lastmod: 2023-02-13T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.14:
     name: "Handoff"
@@ -68,7 +71,7 @@ riak admin handoff disable both --all
 ## Other Command-line Tools
 
 In addition to enabling and disabling handoff, the
-[`riak admin`]({{<baseurl>}}riak/kv/3.0.14/using/admin/riak admin/) interface enables you to
+[`riak admin`]({{<baseurl>}}riak/kv/3.0.14/using/admin/riak-admin/) interface enables you to
 retrieve a summary of handoff-related activity and other information.
 
 ### summary

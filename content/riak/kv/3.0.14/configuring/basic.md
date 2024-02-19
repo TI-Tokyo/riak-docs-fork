@@ -2,7 +2,10 @@
 title: "Basic Riak KV Configuration"
 description: ""
 project: "riak_kv"
-project_version: 3.0.14
+project_version: "3.0.14"
+lastmod: 2023-02-13T00:00:00-00:00
+sitemap:
+  priority: 0.2
 menu:
   riak_kv-3.0.14:
     name: "Basic Configuration"
@@ -17,7 +20,7 @@ aliases:
 
 [config reference]: {{<baseurl>}}riak/kv/3.0.14/configuring/reference
 [use running cluster]: {{<baseurl>}}riak/kv/3.0.14/using/running-a-cluster
-[use admin riak admin#member-status]: {{<baseurl>}}riak/kv/3.0.14/using/admin/riak admin/#member-status
+[use admin riak admin#member-status]: {{<baseurl>}}riak/kv/3.0.14/using/admin/riak-admin/#member-status
 [perf erlang]: {{<baseurl>}}riak/kv/3.0.14/using/performance/erlang
 [plan start]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/start
 [plan best practices]: {{<baseurl>}}riak/kv/3.0.14/setup/planning/best-practices
