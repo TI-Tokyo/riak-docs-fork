@@ -58,6 +58,9 @@ Usage: riak-admin { cluster | join | leave | backup | restore | test |
                     show | describe }
 ```
 
+**Note:**
+In Riak KV 3.0.1+ the `riak-admin` command has been changed to `riak admin` (with no hyphen). For execution purposes, please use `riak admin`. Please be aware that the output from `riak admin` may quote `riak-admin` in command execution examples as it has inherited Riak KV 2.x functionality.
+
 ## Node Naming
 
 An important thing to bear in mind is that all Riak nodes have unique
