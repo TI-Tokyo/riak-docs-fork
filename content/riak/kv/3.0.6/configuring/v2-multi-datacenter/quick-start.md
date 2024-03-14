@@ -69,25 +69,25 @@ addresses would need to be routable over the public Internet.
 ### Set Up the Listeners on Cluster1 (Source cluster)
 
 On a node in Cluster1, `node1` for example, identify the nodes that will
-be listening to connections from replication clients with `riak-repl
+be listening to connections from replication clients with `riak repl
 add-listener <nodename> <listen_ip> <port>` for each node that will be
 listening for replication clients.
 
 ```bash
-riak-repl add-listener riak@172.16.1.11 172.16.1.11 9010
-riak-repl add-listener riak@172.16.1.12 172.16.1.12 9010
-riak-repl add-listener riak@172.16.1.13 172.16.1.13 9010
+riak repl add-listener riak@172.16.1.11 172.16.1.11 9010
+riak repl add-listener riak@172.16.1.12 172.16.1.12 9010
+riak repl add-listener riak@172.16.1.13 172.16.1.13 9010
 ```
 
 ### Set Up the Site on Cluster2 (Site cluster)
 
 On a node in Cluster2, `node4` for example, inform the replication
-clients where the Source Listeners are located with `riak-repl add-site
+clients where the Source Listeners are located with `riak repl add-site
 <ipaddr> <port> <sitename>`. Use the IP address(es) and port(s) you
 configured in the earlier step. For `sitename` enter `Cluster1`.
 
 ```bash
-riak-repl add-site 172.16.1.11 9010 Cluster1
+riak repl add-site 172.16.1.11 9010 Cluster1
 ```
 
 **Note**: While a Listener needs to be added to each node, only a single
@@ -97,10 +97,10 @@ Source cluster.
 
 ### Verify the Replication Configuration
 
-Verify the replication configuration using `riak-repl status` on both a
-Cluster1 node and a Cluster2 node. A full description of the `riak-repl
+Verify the replication configuration using `riak repl status` on both a
+Cluster1 node and a Cluster2 node. A full description of the `riak repl
 status` command's output can be found in the documentation for
-`riak-repl`'s [status output][cluster ops v2 mdc#status].
+`riak repl`'s [status output][cluster ops v2 mdc#status].
 
 On the Cluster1 node, verify that there are `listener_<nodename>`s for
 each listening node, and that `leader` and `server_stats` are populated.
@@ -201,33 +201,33 @@ above in the other direction, i.e. from Cluster2 to Cluster1.
 ### Set Up the Listeners on Cluster2 (Source cluster)
 
 On a node in Cluster2, `node4` for example, identify the nodes that will
-be listening to connections from replication clients with `riak-repl
+be listening to connections from replication clients with `riak repl
 add-listener <nodename> <listen_ip> <port>` for each node that will be
 listening for replication clients.
 
 ```bash
-riak-repl add-listener riak@192.168.1.21 192.168.1.21 9010
-riak-repl add-listener riak@192.168.1.22 192.168.1.22 9010
-riak-repl add-listener riak@192.168.1.23 192.168.1.23 9010
+riak repl add-listener riak@192.168.1.21 192.168.1.21 9010
+riak repl add-listener riak@192.168.1.22 192.168.1.22 9010
+riak repl add-listener riak@192.168.1.23 192.168.1.23 9010
 ```
 
 ### Set Up the Site on Cluster1 (Site cluster)
 
 On a node in Cluster1, `node1` for example, inform the replication
-clients where the Source Listeners are with `riak-repl add-site <ipaddr>
+clients where the Source Listeners are with `riak repl add-site <ipaddr>
 <port> <sitename>`. Use the IP address(es) and port(s) you configured in
 the earlier step. For `sitename` enter **Cluster2**.
 
 ```bash
-riak-repl add-site 192.168.1.21 9010 Cluster2
+riak repl add-site 192.168.1.21 9010 Cluster2
 ```
 
 ### Verify the Replication Configuration
 
-Verify the replication configuration using `riak-repl status` on a
-Cluster1 node and a Cluster2 node. A full description of the `riak-repl
+Verify the replication configuration using `riak repl status` on a
+Cluster1 node and a Cluster2 node. A full description of the `riak repl
 status` command's output can be found in the documentation for
-`riak-repl`'s [status output][cluster ops v2 mdc#status].
+`riak repl`'s [status output][cluster ops v2 mdc#status].
 
 On the Cluster1 node, verify that `Cluster2_ips`, `leader`, and
 `client_stats` are populated. They should look similar to the following:
@@ -353,16 +353,16 @@ To start a fullsync operation, issue the following command on your
 leader node:
 
 ```bash
-riak-repl start-fullsync
+riak repl start-fullsync
 ```
 
 A fullsync operation may also be cancelled. If a partition is in
 progress, synchronization will stop after that partition completes.
-During cancellation, `riak-repl status` will show 'cancelled' in the
+During cancellation, `riak repl status` will show 'cancelled' in the
 status.
 
 ```bash
-riak-repl cancel-fullsync
+riak repl cancel-fullsync
 ```
 
 Fullsync operations may also be paused, resumed, or scheduled for

@@ -139,7 +139,7 @@ the data:
     between two or more clusters, the missing data will gradually be
     restored via realtime replication and fullsync replication. A
     fullsync operation can also be triggered manually via the
-    `riak-repl` command.
+    `riak repl` command.
 3. Restore using intra-cluster repair. Riak versions 1.2 and greater
     include a "repair" feature which will restore lost partitions with
     data from other replicas. This currently has to be invoked manually

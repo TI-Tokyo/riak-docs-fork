@@ -146,7 +146,7 @@ Field | Description
 
 ## Version 2 Replication Statistics
 
-The following definitions describe the output of `riak-repl status`.
+The following definitions describe the output of `riak repl status`.
 Please note that many of these statistics will only appear on the
 current leader node.
 
