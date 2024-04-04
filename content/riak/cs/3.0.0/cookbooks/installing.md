@@ -105,12 +105,12 @@ On Debian and Ubuntu, Riak CS packages are hosted on
 
 Platform-specific pages are linked below:
 
-* [Focal](https://files.tiot.jp/riak/cs/3.0/3.0.0/ubuntu/focal64/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Jammy](https://files.tiot.jp/riak/cs/3.0/3.0.0/ubuntu/jammy64/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Stretch](https://files.tiot.jp/riak/cs/3.0/3.0.0/debian/9/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Buster](https://files.tiot.jp/riak/cs/3.0/3.0.0/debian/10/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Bullseye](https://files.tiot.jp/riak/cs/3.0/3.0.0/debian/11/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Raspbian](https://files.tiot.jp/riak/cs/3.0/3.0.0/raspbian/buster/riak-cs_3.0.0-OTP22_armhf.deb)
+* [Focal](https://files.tiot.jp/riak/cs/3.0/3.0.0/ubuntu/focal64/)
+* [Jammy](https://files.tiot.jp/riak/cs/3.0/3.0.0/ubuntu/jammy64/)
+* [Stretch](https://files.tiot.jp/riak/cs/3.0/3.0.0/debian/9/)
+* [Buster](https://files.tiot.jp/riak/cs/3.0/3.0.0/debian/10/)
+* [Bullseye](https://files.tiot.jp/riak/cs/3.0/3.0.0/debian/11/b)
+* [Raspbian](https://files.tiot.jp/riak/cs/3.0/3.0.0/raspbian/buster/)
 
 #### dpkg Installation
 
@@ -131,29 +131,29 @@ On Amazon Linux, Riak CS packages are hosted on
 
 Platform-specific pages are linked below:
 
-* [amzn2](https://files.tiot.jp/riak/cs/3.0/3.0.0/amazon/2/riak-cs-3.0.0.OTP22-1.amzn2.x86_64.rpm)
+* [amzn2](https://files.tiot.jp/riak/cs/3.0/3.0.0/amazon/2/)
 
 On Oracle Linux, Riak CS packages are hosted on
 [files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/oracle/). 
 
 Platform-specific pages are linked below:
 
-* [el8](https://files.tiot.jp/riak/cs/3.0/3.0.0/oracle/8/riak-cs-3.0.0.OTP22-1.el8.x86_64.rpm)
+* [el8](https://files.tiot.jp/riak/cs/3.0/3.0.0/oracle/8/)
 
 On RHEL or CentOS, Riak CS packages are hosted on
 [files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel). 
 
 Platform-specific pages are linked below:
 
-* [el7](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel/7/riak-cs-3.0.0.OTP22-1.el7.x86_64.rpm)
-* [el8](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel/8/riak-cs-3.0.0.OTP22-1.el8.x86_64.rpm)
+* [el7](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel/7/)
+* [el8](https://files.tiot.jp/riak/cs/3.0/3.0.0/rhel/8/)
 
 On openSUSE, Riak CS packages are hosted on
 [files.tiot.jp](https://files.tiot.jp/riak/cs/3.0/3.0.0/sles). 
 
 Platform-specific pages are linked below:
 
-* [SLES15](https://files.tiot.jp/riak/cs/3.0/3.0.0/sles/15/riak-cs-3.0.0.OTP22-1.SLES15.x86_64.rpm)
+* [SLES15](https://files.tiot.jp/riak/cs/3.0/3.0.0/sles/15/)
 
 #### yum Installation (Amazon Linux, Oracle Linux, RHEL or CentOS)
 
@@ -218,8 +218,8 @@ On FreeBSD and Alpine, Riak CS packages are hosted on
 
 Platform-specific pages are linked below:
 
-* [FreeBSD 13](https://files.tiot.jp/riak/cs/3.0/3.0.0/freebsd/13/riak-cs_3.0.0-OTP22.pkg)
-* [Alpine 3.14](https://files.tiot.jp/riak/cs/3.0/3.0.0/alpine/3.14/riak-cs_3.0.0-r0.apk)
+* [FreeBSD 13](https://files.tiot.jp/riak/cs/3.0/3.0.0/freebsd/13/)
+* [Alpine 3.14](https://files.tiot.jp/riak/cs/3.0/3.0.0/alpine/3.14/)
 
 #### pkg Installation (FreeBSD)
 
@@ -272,7 +272,7 @@ details can be found in [Specifying the Stanchion Node]({{<baseurl>}}riak/cs/3.0
 First, download the appropriate package from the [downloads]({{<baseurl>}}riak/cs/3.0.0/downloads/#stanchion-3-0-0) page.
 
 ```bash
-curl -O https://files.tiot.jp/riak/stanchion/3.0/3.0.0/osx/10.14/stanchion-3.0.0-OTP22.tar.gz
+curl -O https://files.tiot.jp/riak/stanchion/3.0/3.0.0/osx/10.14/
 ```
 
 Then, unpack the downloaded tarball:
@@ -319,12 +319,12 @@ On Debian and Ubuntu, Riak CS packages are hosted on
 
 Platform-specific pages are linked below:
 
-* [Focal](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/focal64/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Jammy](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/jammy64/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Stretch](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/9/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Buster](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/10/riak-cs_3.0.0-OTP22_amd64.deb)
-* [Bullseye](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/11/stanchion_3.0.0-OTP22_amd64.deb)
-* [Raspbian](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/raspbian/buster/stanchion_3.0.0-OTP22_armhf.deb)
+* [Focal](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/focal64/)
+* [Jammy](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/jammy64/)
+* [Stretch](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/9/)
+* [Buster](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/10/)
+* [Bullseye](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/11/)
+* [Raspbian](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/raspbian/buster/)
 
 #### dpkg Installation
 
@@ -339,12 +339,12 @@ On Debian and Ubuntu, Riak CS packages are hosted on
 
 Platform-specific pages are linked below:
 
-* [Focal](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/focal64/stanchion_3.0.0-OTP22_amd64.deb)
-* [Jammy](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/jammy64/stanchion_3.0.0-OTP22_amd64.deb)
-* [Stretch](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/9/stanchion_3.0.0-OTP22_amd64.deb)
-* [Buster](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/10/stanchion_3.0.0-OTP22_amd64.deb)
-* [Bullseye](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/11/stanchion_3.0.0-OTP22_amd64.deb)
-* [Raspbian](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/raspbian/buster/stanchion_3.0.0-OTP22_armhf.deb)
+* [Focal](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/focal64/)
+* [Jammy](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/ubuntu/jammy64/)
+* [Stretch](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/9/)
+* [Buster](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/10/)
+* [Bullseye](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/debian/11/)
+* [Raspbian](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/raspbian/buster/)
 
 #### dpkg Installation
 
@@ -366,29 +366,29 @@ On Amazon Linux, Stanchion packages are hosted on
 
 Platform-specific pages are linked below:
 
-* [amzn2](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/amazon/2/stanchion-3.0.0.OTP22-1.amzn2.x86_64.rpm)
+* [amzn2](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/amazon/2/)
 
 On Oracle Linux, Stanchion packages are hosted on
 [files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/oracle/).
 
 Platform-specific pages are linked below:
 
-* [el8](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/oracle/8/stanchion-3.0.0.OTP22-1.el8.x86_64.rpm)
+* [el8](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/oracle/8/)
 
 On RHEL or CentOS, Stanchion packages are hosted on
 [files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel).
 
 Platform-specific pages are linked below:
 
-* [el7](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel/7/stanchion-3.0.0.OTP22-1.el7.x86_64.rpm)
-* [el8](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel/8/stanchion-3.0.0.OTP22-1.el8.x86_64.rpm)
+* [el7](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel/7)
+* [el8](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/rhel/8/)
 
 On openSUSE, Stanchion packages are hosted on
 [files.tiot.jp](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/sles).
 
 Platform-specific pages are linked below:
 
-* [SLES15](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/sles/15/stanchion-3.0.0.OTP22-1.SLES15.x86_64.rpm)
+* [SLES15](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/sles/15/)
 
 #### yum Installation (Amazon Linux, Oracle Linux, RHEL or CentOS)
 
@@ -422,8 +422,8 @@ On FreeBSD and Alpine, Stanchion packages are hosted on
 
 Platform-specific pages are linked below:
 
-* [FreeBSD 13](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/freebsd/13/stanchion_3.0.0-OTP22.pkg)
-* [Alpine 3.14](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/alpine/3.14/stanchion_3.0.0-r0.apk)
+* [FreeBSD 13](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/freebsd/13/)
+* [Alpine 3.14](https://files.tiot.jp/riak/stanchion/3.0/3.0.0/alpine/3.14/)
 
 #### pkg Installation (FreeBSD)
 
