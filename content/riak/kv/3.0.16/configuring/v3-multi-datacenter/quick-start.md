@@ -79,28 +79,28 @@ Name  | IP          | Node name
 #### Set up the Source on Cluster1
 
 On a node in Cluster1, `node1` for example, initiate and name this
-cluster with `riak-repl clustername <name>`:
+cluster with `riak repl clustername <name>`:
 
 ```bash
-riak-repl clustername Cluster1
+riak repl clustername Cluster1
 ```
 
 #### Setup the Sink on Cluster2
 
 On a node in Cluster2, `node4` for example, initiation and name this
-cluster with `riak-repl clustername <name>`:
+cluster with `riak repl clustername <name>`:
 
 ```bash
-riak-repl clustername Cluster2
+riak repl clustername Cluster2
 ```
 
 #### Connect the Source to the Sink
 
-From Cluster1, connect to the IP and port of Cluster2 with `riak-repl
+From Cluster1, connect to the IP and port of Cluster2 with `riak repl
 connect <sink_ip>:<port>`:
 
 ```bash
-riak-repl connect 10.60.77.10:9080
+riak repl connect 10.60.77.10:9080
 ```
 
 > The port can be found in the `riak_core` section of the `advanced.config`
@@ -108,7 +108,7 @@ riak-repl connect 10.60.77.10:9080
 
 #### View your active connections
 
-From Cluster1, view your active connections with `riak-repl
+From Cluster1, view your active connections with `riak repl
 connections`:
 
 ```
@@ -121,16 +121,16 @@ Cluster2          Cluster2            <0.7985.0>      ["10.60.77.10:9080"] (via 
 
 #### Connect the Source to the Sink
 
-From Cluster2, connect to the IP and port of Cluster1 with `riak-repl
+From Cluster2, connect to the IP and port of Cluster1 with `riak repl
 connect <sink_ip>:<port>`:
 
 ```bash
-riak-repl connect 10.60.67.149:9080
+riak repl connect 10.60.67.149:9080
 ```
 
 #### View Your Active Connections
 
-From Cluster2, view your active connections with `riak-repl
+From Cluster2, view your active connections with `riak repl
 connections`:
 
 ```
@@ -147,18 +147,18 @@ Check your IP bindings by running `netstat -a` on all nodes. You should see
 
 ### Enable Realtime Replication
 
-From Cluster1, run `riak-repl realtime enable <clustername>` to start
+From Cluster1, run `riak repl realtime enable <clustername>` to start
 queuing updates on Cluster1 for replication:
 
 ```bash
-riak-repl realtime enable Cluster2
+riak repl realtime enable Cluster2
 ```
 
-Also on Cluster1, run `riak-repl realtime start <clustername>` to
+Also on Cluster1, run `riak repl realtime start <clustername>` to
 establish connectivity from Cluster1 to Cluster2 to push queued updates:
 
 ```bash
-riak-repl realtime start Cluster2
+riak repl realtime start Cluster2
 ```
 
 To enable bidirectional replication, do the reverse from Cluster2.
@@ -166,6 +166,6 @@ Once this is done, bidirectional replication should be operating.
 
 ## More information
 
-For a full list of commands, you may enter `riak-repl` to see full
+For a full list of commands, you may enter `riak repl` to see full
 instructions on usage, or check the [Operations][cluster ops v3 mdc] documentation.
 

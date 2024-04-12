@@ -86,13 +86,13 @@ Overview of the various statistics used in monitoring strong consistency.
 
 #### [V3 Multi-Datacenter][ops v3 mdc]
 
-Explains how to manage V3 replication with the `riak-repl` command.
+Explains how to manage V3 replication with the `riak repl` command.
 
 [Learn More >>][ops v3 mdc]
 
 #### [V2 Multi-Datacenter][ops v2 mdc]
 
-Explains how to manage V2 replication with the `riak-repl` command.
+Explains how to manage V2 replication with the `riak repl` command.
 
 [Learn More >>][ops v2 mdc]
 

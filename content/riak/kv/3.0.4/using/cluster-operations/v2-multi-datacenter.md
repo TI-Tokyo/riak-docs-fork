@@ -25,7 +25,7 @@ v2 Multi-Datacenter Replication is deprecated and will be removed in a future ve
 {{% /note %}}
 
 Riak's Multi-Datacenter Replication system is largely
-controlled by the `riak-repl` command. The sections below detail the
+controlled by the `riak repl` command. The sections below detail the
 available subcommands.
 
 ## add-listener
@@ -33,13 +33,13 @@ available subcommands.
 Adds a listener (primary) to the given node, IP address, and port.
 
 ```bash
-riak-repl add-listener <nodename> <listen_ip> <port>
+riak repl add-listener <nodename> <listen_ip> <port>
 ```
 
 Below is an example usage:
 
 ```bash
-riak-repl add-listener riak@10.0.1.156 10.0.1.156 9010
+riak repl add-listener riak@10.0.1.156 10.0.1.156 9010
 ```
 
 ## add-nat-listener
@@ -49,13 +49,13 @@ NAT IP, and NAT port. If a non-NAT listener already exists with the same
 internal IP and port, it is "upgraded” to a NAT Listener.
 
 ```bash
-riak-repl add-nat-listener <nodename> <internal_ip> <internal_port> <nat_ip> <nat_port>
+riak repl add-nat-listener <nodename> <internal_ip> <internal_port> <nat_ip> <nat_port>
 ```
 
 Below is an example usage:
 
 ```bash
-riak-repl add-nat-listener riak@10.0.1.156 10.0.1.156 9010 50.16.238.123 9010
+riak repl add-nat-listener riak@10.0.1.156 10.0.1.156 9010 50.16.238.123 9010
 ```
 
 ## del-listener
@@ -64,13 +64,13 @@ Removes and shuts down a listener (primary) on the given node, IP
 address, and port.
 
 ```bash
-riak-repl del-listener <nodename> <listen_ip> <port>
+riak repl del-listener <nodename> <listen_ip> <port>
 ```
 
 Below is an example usage:
 
 ```bash
-riak-repl del-listener riak@10.0.1.156 10.0.1.156 9010
+riak repl del-listener riak@10.0.1.156 10.0.1.156 9010
 ```
 
 ## add-site
@@ -79,13 +79,13 @@ Adds a site (secondary) to the local node, connecting to the specified
 listener.
 
 ```bash
-riak-repl add-site <ipaddr> <portnum> <sitename>
+riak repl add-site <ipaddr> <portnum> <sitename>
 ```
 
 Below is an example usage:
 
 ```bash
-riak-repl add-site 10.0.1.156 9010 newyork
+riak repl add-site 10.0.1.156 9010 newyork
 ```
 
 ## del-site
@@ -93,13 +93,13 @@ riak-repl add-site 10.0.1.156 9010 newyork
 Removes a site (secondary) from the local node by name.
 
 ```bash
-riak-repl del-site <sitename>
+riak repl del-site <sitename>
 ```
 
 Below is an example usage:
 
 ```bash
-riak-repl del-site newyork
+riak repl del-site newyork
 ```
 
 ## status
@@ -111,7 +111,7 @@ status. This command only displays useful information on the leader
 node.
 
 ```bash
-riak-repl status
+riak repl status
 ```
 
 ## start-fullsync
@@ -119,29 +119,29 @@ riak-repl status
 Manually initiates a fullsync operation with connected sites.
 
 ```bash
-riak-repl start-fullsync
+riak repl start-fullsync
 ```
 
 ## cancel-fullsync
 
 Cancels any fullsync operations in progress. If a partition is in
 progress, synchronization will stop after that partition completes.
-During cancellation, `riak-repl status` will show `cancelled` in the
+During cancellation, `riak repl status` will show `cancelled` in the
 status.
 
 ```bash
-riak-repl cancel-fullsync
+riak repl cancel-fullsync
 ```
 
 ## pause-fullsync
 
 Pauses any fullsync operations in progress. If a partition is in
 progress, synchronization will pause after that partition completes.
-While paused, `riak-repl status` will show `paused` in the status
+While paused, `riak repl status` will show `paused` in the status
 information. Fullsync may be cancelled while paused.
 
 ```bash
-riak-repl pause-fullsync
+riak repl pause-fullsync
 ```
 
 ## resume-fullsync
@@ -152,12 +152,12 @@ be synchronized. If not, it will wait until the next `start-fullsync`
 command or `fullsync_interval`.
 
 ```bash
-riak-repl resume-fullsync
+riak repl resume-fullsync
 ```
 
-## riak-repl Status Output
+## riak repl Status Output
 
-The following definitions describe the output of the `riak-repl status`
+The following definitions describe the output of the `riak repl status`
 command. Please note that many of these statistics will only appear on
 the current leader node, and that all counts will be reset to 0 upon
 restarting Riak.
@@ -214,7 +214,7 @@ Field | Description
 Field | Description
 ------|------------
 `node` | A unique ID for the Riak node on which the client (site) is running
-`site` | The connected site name configured with `riak-repl add-site`
+`site` | The connected site name configured with `riak repl add-site`
 `strategy` | A replication strategy defines an implementation of the Riak Replication protocol. Valid values: `keylist`, `syncv1`
 `fullsync_worker` | The Erlang process ID of the fullsync worker
 `waiting_to_retry` | The listeners currently waiting to retry replication after a failure
@@ -242,7 +242,7 @@ Field | Description
 Field | Description
 ------|------------
 `node`  | A unique ID for the Riak node on which the server (listener) is running
-`site` | The connected site name configured with `riak-repl add-site`
+`site` | The connected site name configured with `riak repl add-site`
 `strategy` | A replication strategy defines an implementation of the Riak Replication protocol. Valid values: `keylist` or `syncv1`.
 `fullsync_worker` | The Erlang process ID of the fullsync worker
 `bounded_queue` | See the <a href="{{< baseurl >}}riak/kv/3.0.4/using/cluster-operations/v2-multi-datacenter/#bounded-queue">Bounded Queue</a> section above

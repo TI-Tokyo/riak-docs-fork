@@ -80,6 +80,8 @@ running the `riak` command-line tool:
 riak chkconfig
 ```
 
+
+
 ## riak_repl Settings
 
 Setting | Options | Default | Description
