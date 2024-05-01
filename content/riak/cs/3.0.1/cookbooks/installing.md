@@ -38,6 +38,10 @@ is built
 We strongly recommend using one of the documented [version combinations]({{<baseurl>}}riak/cs/3.0.1/cookbooks/version-compatibility/)
 when installing and running Riak CS.
 
+>**Note on OTP version**
+>
+> **If version of OTP installed with Riak CS is a higher version then the OTP version installed with Riak KV a failure to read BEAM file will occur, therefore it should be ensured that the OTP versions match.
+
 ## Installing Riak KV
 
 Before installing Riak CS, Riak KV must be installed on each node in
