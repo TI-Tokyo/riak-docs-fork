@@ -85,17 +85,17 @@ cascade.
 ## Usage
 
 Riak Cascading Writes can be enabled and disabled using the
-`riak-repl` command. Please see the [Version 3 Operations guide]({{<baseurl>}}riak/kv/3.0.9/using/cluster-operations/v3-multi-datacenter) for more information.
+`riak repl` command. Please see the [Version 3 Operations guide]({{<baseurl>}}riak/kv/3.0.9/using/cluster-operations/v3-multi-datacenter) for more information.
 
 To show current the settings:
 
-`riak-repl realtime cascades`
+`riak repl realtime cascades`
 
 To enable cascading:
 
-`riak-repl realtime cascades always`
+`riak repl realtime cascades always`
 
 To disable cascading:
 
-`riak-repl realtime cascades never`
+`riak repl realtime cascades never`
 

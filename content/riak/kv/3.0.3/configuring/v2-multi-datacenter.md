@@ -81,12 +81,15 @@ errors in your configuration files.
 A full list of configurable parameters can be found in the sections
 below.
 
+**Note:**
+In Riak KV 3.0.1+ the `riak-repl` command has been changed to `riak repl` (with no hyphen). For execution purposes, please use `riak repl`. Please be aware that the output from `riak repl` may quote `riak-repl` in command execution examples as it has inherited Riak KV 2.x functionality.
+
 ## Fullsync Settings
 
 Setting | Options | Default | Description
 :-------|:--------|:--------|:-----------
 `fullsync_on_connect` | `true`, `false` | `true` | Whether or not to initiate a fullsync on initial connection from the secondary cluster
-`fullsync_strategies` | `keylist` | `[keylist]` | A *list* of fullsync strategies to be used by replication.<br />**Note**: Please contact Basho support for more information.
+`fullsync_strategies` | `keylist` | `[keylist]` | A *list* of fullsync strategies to be used by replication.<br />
 `fullsync_interval`   | `mins` (integer), `disabled` | `360` | How often to initiate a fullsync of data, in minutes. This is measured from the completion of one fullsync operation to the initiation of the next. This setting only applies to the primary cluster (listener). To disable fullsync, set `fullsync_interval` to `disabled` and `fullsync_on_connect` to `false`.**
 
 ## SSL Settings
@@ -105,7 +108,7 @@ Setting | Options | Default | Description
 Setting | Options | Default | Description
 :-------|:--------|:--------|:-----------
 `data_root` | `path` (string) | `data/riak_repl` | Path (relative or absolute) to the working directory for the replication process
-`queue_size` | `bytes` (integer) | `104857600` (100 MiB) | The size of the replication queue in bytes before the replication leader will drop requests. If requests are dropped, a fullsync will be required. Information about dropped requests is available using the `riak-repl status` command
+`queue_size` | `bytes` (integer) | `104857600` (100 MiB) | The size of the replication queue in bytes before the replication leader will drop requests. If requests are dropped, a fullsync will be required. Information about dropped requests is available using the `riak repl status` command
 `server_max_pending` | `max` (integer) | `5` | The maximum number of objects the leader will wait to get an acknowledgment from, from the remote location, before queuing the request
 `vnode_gets` | `true`, `false` | `true` | If `true`, repl will do a direct get against the vnode, rather than use a `GET` finite state machine
 `shuffle_ring` | `true`, `false` | `true `| If `true`, the ring is shuffled randomly. If `false`, the ring is traversed in order. Useful when a sync is restarted to reduce the chance of syncing the same partitions.

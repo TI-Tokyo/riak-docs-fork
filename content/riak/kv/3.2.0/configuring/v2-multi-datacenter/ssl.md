@@ -35,10 +35,10 @@ Riak REPL SSL support consists of the following items:
 ## SSL Configuration
 
 To configure SSL, you will need to include the following four settings
-in the `riak-repl` section of your `advanced.config`:
+in the `riak repl` section of your `advanced.config`:
 
 ```advancedconfig
-{riak-repl, [
+{riak repl, [
              % ...
              {ssl_enabled, true},
              {certfile, "/full/path/to/site1-cert.pem"},
