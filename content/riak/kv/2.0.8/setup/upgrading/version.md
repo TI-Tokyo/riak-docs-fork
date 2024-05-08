@@ -91,7 +91,7 @@ riak stop
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib64/riak/lib/basho-patches
 ```
 
-```Ubuntu
+```ubuntudebian
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib/riak/lib/basho-patches
 ```
 
@@ -101,7 +101,7 @@ sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib/riak/lib/basho
 sudo rm -rf /usr/lib64/riak/lib/basho-patches/*
 ```
 
-```Ubuntu
+```ubuntudebian
 sudo rm -rf /usr/lib/riak/lib/basho-patches*
 ```
 
@@ -115,7 +115,7 @@ If you are upgrading from Riak KV OSS to Riak KV EE, you must uninstall your Ria
 sudo rpm -Uvh »riak_package_name«.rpm
 ```
 
-```Ubuntu
+```ubuntudebian
 sudo dpkg -i »riak_package_name«.deb
 ```
 
