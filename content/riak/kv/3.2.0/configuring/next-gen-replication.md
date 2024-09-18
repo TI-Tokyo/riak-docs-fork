@@ -1,10 +1,10 @@
 ---
-tile_supertext: "Configuring:"
+title_supertext: "Configuring:"
 title: "Next Gen Replication"
 description: ""
 project: "riak_kv"
 project_version: "3.2.0"
-lastmod: 2022-12-30T00:00:00-00:00
+lastmod: 2024-09-16T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
@@ -16,14 +16,40 @@ menu:
 version_history:
   in: "2.9.1+"
 toc: true
-commercial_offering: true
+commercial_offering: false
 aliases:
 ---
 
-The configuration for Next Gen Replication is kept in
- the `riak.conf` configuration file.
+[configure tictacaae]: ../active-anti-entropy/tictac-aae/
+[configure nextgenrepl fullsync]: ./fullsync/
+[configure nextgenrepl realtime]: ./realtime/
+[configure nextgenrepl queuing]: ./queuing/
+[tictacaae folds]: ../../using/tictac-aae-fold/
 
-## Settings
+NextGenRepl provides a considerable improvement over the legacy replication engines. It is faster, more efficient, and more reliable. NextGenRepl is the recommended replication engine to use.
+
+## Overview
+
+NextGenRepl comprises of four main parts.
+
+- On the source cluster:
+  - A queuing system holding multiple queues with references to changed objects
+  - FullSync to populate the queuing system with Riak objects that are different from the sink cluster
+  - Realtime to populate the queuing system on each change of a Riak object
+- On the sink cluster:
+  - A consumer process that reads the queue from any source clusters and updates the sink cluster
+
+The configuration is now kept in the `riak.conf` configuration file. The CLI cannot be used to configure NextGenRepl.
+
+All management is now done via `riak attach` and not through the CLI like before.
+
+Best performance and lowest overheads is provided by using the ProtocolBuffer API instead of the HTTP API. Security (TLS and certificate authentication) will only work with ProtocolBuffer API.
+
+{{% note %}}
+NextGenRepl relies on [TicTac AAE](../active-anti-entropy/tictac-aae/), so this must be enabled.
+{{% /note %}}
+
+## Verify Settings
 
 Once your configuration is set, you can verify its correctness by
 running the `riak` command-line tool:
@@ -31,6 +57,60 @@ running the `riak` command-line tool:
 ```bash
 riak chkconfig
 ```
+
+## Queuing System
+
+The heart of the NextGenRepl system is the queuing system.
+
+You can have as many queues are you like with different filters on each queue.
+
+Each queue has 3 levels of priority:
+
+1. RealTime changes - these are normally copies of the Riak object, but can be references to the Riak object if the queue gets too large. These are populated automatically when a PUT (which includes inserts, updartes and deletes) occurs.
+2. FullSync changes - these are references to Riak objects and are populated on the source cluster when the FullSync manager finds differenecs betweem the source cluster and the sink cluster.
+3. Admin changes - these are references to Riak objects and are populated when the administrator performs actions via the [TicTac AAE Fold][tictacaae folds] commands.
+
+The sink side replication manager will connect to its list of replication sources and replicate objects using these priorities - so RealTime changes first, FullSync differences second, and finally the admin changes.
+
+The queuing system is always active.
+
+[Learn More >>][configure nextgenrepl queuing]
+
+## FullSync replication
+
+NextGenRepl's fullsync works by a source cluster node checking on a schedule for changes with the sink cluster node (or load balancer) and pushing the changes found to a specific configured queue in the queuing system.
+
+A source node can connect to 1 sink peer using an IP address or FQDN to check for differences. This can be the IP or FQDN of a load balancer for the sink cluster.
+
+A source node will sync data from all nodes in the source cluster.
+
+A source node will run fullsync according to the schedule on that specific source node. The source nodes will co-ordinate to 
+
+If a source node or sink peer is offline for any reason, Riak will wait until the node is repaired before continuing. You should ensure that sufficient redundancies are in place to ensure uptime. This can be done by having multiple source nodes connecting to the same sink cluster, and by using a load balancer in front of the sink cluster.
+
+Each source node can have the the same or different sink peer settings.
+
+The number of different clusters you can fullsync to is defined by the number of Riak KV nodes in the source cluster.
+
+[Learn More >>][configure nextgenrepl fullsync]
+
+## RealTime replication
+
+NextGenRepl's realtime replication system works by changes to the source cluster being added to the replication queuing system and then the sink nodes continuously pulling changes.
+
+The source nodes are configured to publish changes to Riak objects to a specific named queue.
+
+The sink nodes are configured to pull changes from a specific named queue from a list of source nodes.
+
+A source node can be the source for multiple sink clusters.
+
+It is better to list multiple source nodes in a cluster than to use a load balancer in front of the source cluster.
+
+If a specific source node is offline for any reason, the sink node will automatically change how often it checks that specifc source node for updates. So if a source node is taken down for admin or hardware failure reasons, the sink node will adapt automatically.
+
+You can list as many source nodes from as many clusters as you like for a given sink node, but they must all use the same queue name.
+
+[Learn More >>][configure nextgenrepl realtime]
 
 ## riak.conf Settings
 
