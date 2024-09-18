@@ -11,7 +11,7 @@ menu:
   riak_kv-3.2.0:
     name: "Reference"
     identifier: "nextgen_rep_referemce"
-    weight: 200
+    weight: 300
     parent: "nextgen_rep"
 version_history:
   in: "2.9.1+"
@@ -75,4 +75,114 @@ Please see [Queuing System][configure nextgenrepl queuing] for more detail on ho
 </tbody>
 </table>
 
+## RealTime on Source cluster
 
+Please see [RealTime][configure nextgenrepl realtime] for more detail on how to configure these items.
+
+<table class="riak-conf">
+<thead>
+<tr>
+<th>Config</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td><code></code></td>
+<td></td>
+<td><code></code></td>
+</tr>
+
+</tbody>
+</table>
+
+## Sink
+
+Please see [Sink][configure nextgenrepl sink] for more detail on how to configure these items.
+
+<table class="riak-conf">
+<thead>
+<tr>
+<th>Config</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td><code>replrtq_enablesink</code></td>
+<td>Set to `enabled` to activate replication on this node.</td>
+<td><code>disabled</code></td>
+</tr>
+<tr>
+<td><code>replrtq_sinkpeerlimit</code></td>
+<td>The maximum number of workers that can talk to a specific source node.</td>
+<td><code>24</code></td>
+</tr>
+<tr>
+<td><code>replrtq_sinkpeers</code></td>
+<td>A `|` deliminated list of source node connection strings. A connection string is a `:` deliminated tuple of IP/FQDN, port and protocol.</td>
+<td><code></code></td>
+</tr>
+<tr>
+<td><code>replrtq_sinkqueue</code></td>
+<td>The name of the queue on the source nodes to use for replicatation. The same queue name is used for all source nodes.</td>
+<td><code>q1_ttaaefs</code></td>
+</tr>
+<tr>
+<td><code>replrtq_sinkworkers</code></td>
+<td>The total number of worker processes that can talk to source nodes.</td>
+<td><code>24</code></td>
+</tr>
+
+</tbody>
+</table>
+
+## FullSync on Source cluster
+
+Please see [FullSync][configure nextgenrepl fullsync] for more detail on how to configure these items.
+
+<table class="riak-conf">
+<thead>
+<tr>
+<th>Config</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td><code></code></td>
+<td></td>
+<td><code></code></td>
+</tr>
+
+</tbody>
+</table>
+
+## FullSync on Sink cluster
+
+Please see [FullSync][configure nextgenrepl fullsync] for more detail on how to configure these items.
+
+<table class="riak-conf">
+<thead>
+<tr>
+<th>Config</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+
+<tr>
+<td><code></code></td>
+<td></td>
+<td><code></code></td>
+</tr>
+
+</tbody>
+</table>

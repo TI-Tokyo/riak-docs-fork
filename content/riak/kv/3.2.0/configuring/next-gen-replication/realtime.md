@@ -36,18 +36,11 @@ NextGenRepl relies on [TicTac AAE](../../active-anti-entropy/tictac-aae/), so th
 
 ## Overview
 
-NextGenRepl's realtime replication system works by changes to the source cluster being added to the [replication queuing system][configure nextgenrepl queuing] and then the sink nodes continuously pulling changes.
+As changes occur on the source cluster, NextGenRepl's RealTime replication system will add them to one or more configurable queues within the [replication queuing system][configure nextgenrepl queuing]. 
 
-- The source nodes are configured to publish changes to Riak objects to a specific named queue.
-- The sink nodes are configured to pull changes from a specific named queue from a list of source nodes.
-- A source node can be the source for multiple sink clusters.
-- It is better to list multiple source nodes in a cluster than to use a load balancer in front of the source cluster.
-- If a specific source node is offline for any reason, the sink node will automatically change how often it checks that specifc source node for updates. So if a source node is taken down for admin or hardware failure reasons, the sink node will adapt automatically.
-- You can list as many source nodes from as many clusters as you like for a given sink node, but they must all use the same queue name.
+A source node can be the source for multiple sink clusters by using multiple queues. 
 
-## Source setup
-
-### Enable RealTime
+## Enable RealTime
 
 RealTime changes are added to the queuing system by setting:
 
@@ -57,9 +50,24 @@ replrtq_enablesrc = enabled
 
 By default, RealTime is turned off (`disabled`).
 
-### Queues
+## Queues
 
-At least one replication queue should allow RealTime objects to be added.
+At least one replication queue should allow RealTime objects to be added. The easiest way to do this is to have a queue filter of `any`, but [other options are available][configure nextgenrepl queue filters].
 
-The easiest way to do this is to have a queue filter of `any`, but [other options are available][configure nextgenrepl queue filters].
+By default, there is no queue setup for RealTime. To set the default queue to also allow RealTime queues, change:
 
+```
+replrtq_srcqueue = q1_ttaaefs:block_rtq
+```
+
+to 
+
+```
+replrtq_srcqueue = q1_ttaaefs:any
+```
+
+To add a new queue called `my-replication-queue` that allowed RealTime replication for any bucket, you would add `my-replication-queue:any` to the `replrtq_srcqueue` setting. For example, to keep the default FullSync-only queue and add a second queue for RealTime you would set:
+
+```
+replrtq_srcqueue = q1_ttaaefs:block_rtq|my-replication-queue:any
+```

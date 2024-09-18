@@ -45,23 +45,23 @@ The queuing system is always active.
 
 ## Maximum queue length
 
-The default limit of the number of objects stored in a specific queue is `300000` Riak objects. If more items that this are added, then they will be dropped.
+The default limit of the number of objects stored in a specific queue is `300000` Riak objects. Once this limit is reached, any new items will not be added to the queue.
 
 This can value can be configured on a per-node basis by setting the `replrtq_srcqueuelimit` value to a posiitive integer.
 
-## Maximum number and size of Objects
+## Maximum number and size of objects
 
-For RealTime updates, as a performance boost a queue will contain a copy of the actual object instead of a reference like normal.
+When items are added to a queue, the normal mode is to add them as a reference to the Riak object and not the Riak object itself. However, as a performance boost for RealTime updates, a queue will contain a copy of the actual Riak object instead of a reference.
 
-Having too many of these will increase memory load considerably, so there are two configuration values to limit the number of objects and the maximum size of each object.
+Having too many of these will increase memory load considerably, so there are two configuration values to limit the number of Riak objects and the maximum allowed size of each Riak object in the queue.
 
-The maximum number of these objects can be set through `replrtq_srcobjectlimit` as a positive interger. The default is `1000` objects.
+The maximum number of these objects can be set through `replrtq_srcobjectlimit` as a positive interger. The default is `1000` Riak objects.
 
 The maximum size of these objects can be set through `replrtq_srcobjectsize` as positive interger. The default is `200KB`.
 
 ## Queue filters
 
-You can filter a queue in various ways using `replrtq_srcqueue`. As each sink node can only pull from one queue, this needs to be carefully planned. If want to replciate multiple queues to a specific sink cluster, then you will need to configure the different sink cluster nodes to use different queue names.
+A queue can be filtered in various ways using `replrtq_srcqueue`. As each sink node can only pull from one queue, this needs to be carefully planned. To replicate multiple queues to a specific sink cluster, then different sink cluster nodes will need to be configured to use different queue names.
 
 The filters are:
 
@@ -69,7 +69,7 @@ The filters are:
 - `block_rtq`: RealTime updates are blocked - only FullSync and AAE Fold updates will be replicated.
 - `bucketname`: every RealTime, FullSync and AAE Fold update in any bucket matching this name (regardless of bucket type) will be replicated.
 - `bucketprefix`: every RealTime, FullSync and AAE Fold update in any bucket name where the name starts with the configured ascii string (regardless of bucket type) will be replicated.
-- `buckettype`: every RealTime, FullSync and AAE Fold update in any bucket of the given bucket type (regardless of bucket type) will be replicated.
+- `buckettype`: every RealTime, FullSync and AAE Fold update in any bucket of the given bucket type will be replicated.
 
 For example, you could set `replrtq_srcqueue` to:
 
@@ -79,7 +79,7 @@ For example, you could set `replrtq_srcqueue` to:
 
 ## Multiple queues
 
-You can specific multiple queues by delimiting with the `|` character.
+You can specific multiple queues by deliminating with the `|` character.
 
 For example, this will create two queues - one with realtime updates called `allupdates` and one without realtime updates called `offsite_backup`:
 
