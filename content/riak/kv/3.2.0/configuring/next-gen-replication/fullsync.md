@@ -47,14 +47,18 @@ If a source node or sink peer is offline for any reason, Riak will wait until th
 
 The number of different clusters you can FullSync to is defined by the number of Riak KV nodes in the source cluster.
 
+{{% note %}}
+Currently all changes listed in this documentation to NextGenRepl must be made by changing the values in the `riak.conf` file.
+{{% /note %}}
+
 ## Enable
 
 To turn on FullSync replication, a scope of operation (`ttaaefs_scope`) is needed. The default scope is `disabled` which means that FullSync replication is turned off. The scope can be set to:
 
 - `disabled` - FullSync is disabled
 - `all` - all buckets are replicated
-- `bucket` - only the specific bucket is replicated
-- `type` - only buckets of the specific bucket type are replicated
+- `bucket` - only the specified bucket is replicated
+- `type` - only buckets of the specified bucket type are replicated
 
 To FullSync replicate all buckets, use the `ttaaefs_scope` of `any`. For example, to FullSync replicate all buckets, set this value:
 
@@ -88,7 +92,7 @@ ttaaefs_queuename = q1_ttaaefs
 
 ### Bi-directional FullSync
 
-Since Riak KV 3.0.10, it is possible to have the sink cluster also detect changes from the source cluster (bi-directional FullSync) and queue them on the sink clsuter side. This is configured using the `ttaaefs_queuename_peer` setting. The default for this setting is `disabled`.
+From Riak KV 3.0.10 onwards, it is possible to have the sink cluster also detect changes from the source cluster (bi-directional FullSync) and queue them on the sink clsuter side. This is configured using the `ttaaefs_queuename_peer` setting. The default for this setting is `disabled`.
 
 For example, to set the sink cluster FullSync queue name to the standard name of `q1_ttaaefs`, set `ttaaefs_queuename_peer` like this:
 
@@ -147,7 +151,7 @@ repl_key_filename = /etc/riak/key.pem
 
 ### Riak Security
 
-If Riak Security is enabled on the sink cluster, then the username for replication can be set in the `repl_username` setting:
+If Riak Security is enabled on the sink cluster, then the username for replication can be set with the `repl_username` setting:
 
 ```
 repl_username = source-cluster-replication-user

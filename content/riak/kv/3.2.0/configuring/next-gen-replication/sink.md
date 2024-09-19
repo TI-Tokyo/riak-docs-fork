@@ -38,6 +38,10 @@ NextGenRepl relies on [TicTac AAE](../../active-anti-entropy/tictac-aae/), so th
 
 Sink nodes pull changes from the [Queuing System][configure nextgenrepl queuing] on the source nodes. This will handle both FullSync and RealTime replication as configured on the source nodes.
 
+{{% note %}}
+Currently all changes listed in this documentation to NextGenRepl must be made by changing the values in the `riak.conf` file.
+{{% /note %}}
+
 ## Enable sink
 
 RealTime, FullSync and AAE fold changes will be pulled as part of the NextGenRepl sink process. This is the same process for all NextGenRepl replication types.
