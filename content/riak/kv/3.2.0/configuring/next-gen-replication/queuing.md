@@ -14,7 +14,7 @@ menu:
     weight: 101
     parent: "nextgen_rep"
 version_history:
-  in: "2.9.1+"
+  in: "3.2.0+"
 toc: true
 commercial_offering: false
 aliases:
@@ -26,6 +26,7 @@ aliases:
 [configure nextgenrepl queuing]: ../queuing/
 [configure nextgenrepl queue filters]: ../queuing/#queue-filters
 [configure nextgenrepl reference]: ../reference/
+[tictacaae folds]: ../../../using/cluster-operations/tictac-aae-fold/
 
 NextGenRepl's Queuing feature is the heart of the replication engine. It stores all changes to be replicated using multiple configuarble queues. It's limits and size can be configured for your specific NextGenRepl use case.
 

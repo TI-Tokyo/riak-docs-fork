@@ -14,7 +14,7 @@ menu:
     weight: 200
     parent: "nextgen_rep"
 version_history:
-  in: "2.9.1+"
+  in: "3.2.0+"
 toc: true
 commercial_offering: false
 aliases:
