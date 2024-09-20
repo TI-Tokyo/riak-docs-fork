@@ -25,6 +25,8 @@ aliases:
 [configure nextgenrepl realtime]: ./realtime/
 [configure nextgenrepl queuing]: ./queuing/
 [configure nextgenrepl reference]: ./reference/
+[configure nextgenrepl sink]: ./sink/
+
 [tictacaae folds]: ../../using/tictac-aae-fold/
 
 NextGenRepl provides a considerable improvement over the legacy replication engines. It is faster, more efficient and more reliable. NextGenRepl is the recommended replication engine to use.
@@ -116,13 +118,13 @@ The number of different clusters you can FullSync to is defined by the number of
 
 ## RealTime replication
 
-### Source
-
 As changes occur on the source cluster, NextGenRepl's RealTime replication system will add them to one or more configurable queues within the replication queuing system. 
 
 A source node can be the source for multiple sink clusters by using multiple queues. 
 
-### Sink
+[Learn More >>][configure nextgenrepl realtime]
+
+## Sink Nodes
 
 Each sink node will automatically pull changes on a pseudo-realtime basis from a single configurable queue held by one or more source nodes.
 
@@ -130,4 +132,4 @@ A sink node can pull updates from one or more source nodes but is limited to a s
 
 If a specific source node is offline for any reason, the sink node will automatically change how often it checks that specifc source node for updates. So if a source node is taken down for admin or hardware failure reasons, the sink node will adapt automatically to the failure and the subsequent recovery.
 
-[Learn More >>][configure nextgenrepl realtime]
+[Learn More >>][configure nextgenrepl sink]
