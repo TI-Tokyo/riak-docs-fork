@@ -51,7 +51,7 @@ bucket's [bucket type]({{<baseurl>}}riak/kv/2.9.0p5/developing/usage/bucket-type
 >
 >If you're interested in replication not just within a cluster but across
 multiple clusters, we recommend checking out our documentation on Riak's
-[Multi-Datacenter Replications]({{<baseurl>}}riak/kv/2.9.0p5/setup/planning/backend/multi) capabilities.
+[Multi-Datacenter Replications]({{<baseurl>}}riak/kv/2.9.0p5/configuring/planning/v3-multi-datacenter) capabilities.
 
 ## Selecting an N value (`n_val`)
 
