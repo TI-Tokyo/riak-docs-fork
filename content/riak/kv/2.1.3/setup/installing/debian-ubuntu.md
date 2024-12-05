@@ -33,26 +33,18 @@ The following steps have been tested to work with Riak KV on
 Debian versions 6.05 and 7.6 and Ubuntu version 14.04.
 
 For versions of Riak prior to 2.0, Basho used a self-hosted
-[apt](http://en.wikipedia.org/wiki/Advanced_Packaging_Tool) repository
-for Debian and Ubuntu packages. For versions 2.0 and later, Basho has
-moved those packages to the
-[packagecloud.io](https://packagecloud.io/basho/riak?filter=debs)
-hosting service. Instructions for installing via shell scripts, manual
-installation, Chef, and Puppet can be found in packagecloud's
-[installation docs](https://packagecloud.io/basho/riak/install).
+[rpm](http://www.rpm.org/) repository for CentOS and RHEL packages. For versions 2.0 and later, TI Tokyo hosts these at https://files.tiot.jp.
 
 Platform-specific pages are linked below:
 
-* [Lucid](https://packagecloud.io/basho/riak/packages/ubuntu/lucid/riak_2.1.3-1_amd64.deb)
-* [Precise](https://packagecloud.io/basho/riak/packages/ubuntu/precise/riak_2.1.3-1_amd64.deb)
-* [Squeeze](https://packagecloud.io/basho/riak/packages/debian/squeeze/riak_2.1.3-1_amd64.deb)
-* [Trusty](https://packagecloud.io/basho/riak/packages/ubuntu/trusty/riak_2.1.3-1_amd64.deb)
-* [Wheezy](https://packagecloud.io/basho/riak/packages/debian/wheezy/riak_2.1.3-1_amd64.deb)
+* [Lucid](https://files.tiot.jp/riak/kv/2.1/2.1.2/ubuntu/lucid/riak_2.1.2-1_amd64.deb)
+* [Precise](https://files.tiot.jp/riak/kv/2.1/2.1.2/ubuntu/precise/riak_2.1.2-1_amd64.deb)
+* [Trusty](https://files.tiot.jp/riak/kv/2.1/2.1.2/ubuntu/trusty/riak_2.1.2-1_amd64.deb)
 
 Our documentation also includes instructions regarding signing keys and
 sources lists, which can be found in the section below.
 
-## Installing with apt and Packagecloud
+## Installing with apt
 
 > **Note on Debian 7**
 >
@@ -68,27 +60,6 @@ command:
 >
 >```bash
 apt-get -t sid install libc6 libc6-dev libc6-dbg
-```
-
-For the simplest installation process on LTS (Long-Term Support)
-releases, use `apt-get`. First, you must retrieve the signing key:
-
-```curl
-curl https://packagecloud.io/gpg.key | sudo apt-key add -
-```
-
-Second, you must install the `apt-transport-https` package in order to
-be able to fetch packages over HTTPS:
-
-```bash
-sudo apt-get install -y apt-transport-https
-```
-
-Next download & install Riak KV:
-
-```bash
-curl -s https://packagecloud.io/install/repositories/basho/riak/script.deb.sh | sudo bash
-sudo apt-get install riak=2.1.3-1
 ```
 
 ## Installing From Package

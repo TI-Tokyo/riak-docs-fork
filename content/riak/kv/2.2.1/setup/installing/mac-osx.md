@@ -46,7 +46,7 @@ appropriate platform:
 ### 64-bit
 
 ```bash
-curl -O http://s3.amazonaws.com/downloads.basho.com/riak/2.2/2.2.1/osx/10.8/riak-2.2.1-OSX-x86_64.tar.gz
+curl -O https://files.tiot.jp/riak/kv/2.2/2.2.1/osx/10.8/riak-2.2.1-OSX-x86_64.tar.gz
 tar xzvf riak-2.2.1-osx-x86_64.tar.gz
 ```
 
