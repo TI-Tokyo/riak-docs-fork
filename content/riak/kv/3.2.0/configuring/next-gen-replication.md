@@ -26,7 +26,6 @@ aliases:
 [configure nextgenrepl queuing]: ./queuing/
 [configure nextgenrepl reference]: ./reference/
 [configure nextgenrepl sink]: ./sink/
-
 [tictacaae folds]: ../../using/tictac-aae-fold/
 
 NextGenRepl provides a considerable improvement over the legacy replication engines. It is faster, more efficient and more reliable. NextGenRepl is the recommended replication engine to use.

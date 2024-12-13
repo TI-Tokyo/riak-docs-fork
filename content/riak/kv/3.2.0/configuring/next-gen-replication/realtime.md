@@ -40,6 +40,10 @@ As changes occur on the source cluster, NextGenRepl's RealTime replication syste
 
 A source node can be the source for multiple sink clusters by using multiple queues. 
 
+{{% note %}}
+Currently all changes listed in this documentation to NextGenRepl must be made by changing the values in the `riak.conf` file.
+{{% /note %}}
+
 ## Enable RealTime
 
 RealTime changes are added to the queuing system by setting:

@@ -44,6 +44,10 @@ The sink side replication manager will connect to its list of replication source
 
 The queuing system is always active.
 
+{{% note %}}
+Currently all changes listed in this documentation to NextGenRepl must be made by changing the values in the `riak.conf` file.
+{{% /note %}}
+
 ## Maximum queue length
 
 The default limit of the number of objects stored in a specific queue is `300000` Riak objects. Once this limit is reached, any new items will not be added to the queue.
