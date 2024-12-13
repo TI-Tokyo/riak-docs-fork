@@ -45,7 +45,7 @@ You can install the Riak binary package on FreeBSD remotely using the
 `pkg_add` remote option. For this example, we're installing `riak-2.2.3-FreeBSD-amd64.tbz`.
 
 ```bash
-sudo pkg_add -r http://s3.amazonaws.com/downloads.basho.com/riak/2.2/2.2.3/freebsd/9/riak-2.2.3-FreeBSD-amd64.tbz
+sudo pkg_add -r https://files.tiot.jp/riak/kv/2.2/2.2.3/freebsd/10/riak-2.2.3.txz
 ```
 
 When Riak is installed, a message is displayed with information about the installation and available documentation.

@@ -59,6 +59,7 @@ A [configuration reference][configure nextgenrepl reference] is available for qu
 
 ## Verify Settings
 
+
 Once your configuration is set, you can verify its correctness by
 running the `riak` command-line tool:
 

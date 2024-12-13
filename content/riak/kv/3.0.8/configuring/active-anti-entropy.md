@@ -35,7 +35,8 @@ If you are using the legacy AAE system, it is recommended that you migrate to th
 
 ## TicTac AAE system
 
-The version of TicTac AAE included in 2.9 releases is a working prototype with limited testing. The intention is to full integrate the library into the KV 3.0 release.
+The version of TicTac AAE included in 2.9 releases was a working prototype with limited testing.
+TicTac AAE in KV 3.0.1+ is the release version, with full configuration options implemented.
 
 TicTac Active Anti-Entropy makes two changes to the way Anti-Entropy has previously worked in Riak. The first change is to the way Merkle Trees are contructed so that they are built incrementally. The second change allows the underlying Anti-entropy key store to be key-ordered while still allowing faster access to keys via their Merkle tree location or the last modified date of the object.
 
