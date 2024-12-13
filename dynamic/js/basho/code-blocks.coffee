@@ -109,7 +109,8 @@ language_transforms =
   'language-text'           : { display_name : ' ',                 highlight_as : '' }
   'language-log'            : { display_name : ' ',                 highlight_as : '' }
   'language-erlangsnippet'  : { display_name : ' ',                 highlight_as : 'language-erlang' }
-
+  'language-ubuntudebian'   : { display_name : 'Ubuntu&#92;Debian',  highlight_as : 'language-bash' }
+  'language-rhelcentos'     : { display_name : 'RHEL&#92;CentOS',  highlight_as : 'language-bash' }
 
 ## getLanguage :: (Element) -> Str or None
 ##       Where    Element instanceof $

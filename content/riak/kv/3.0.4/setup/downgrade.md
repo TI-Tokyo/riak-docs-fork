@@ -78,11 +78,11 @@ sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak
 
 3\. Downgrade Riak KV:
 
-```RHEL/CentOS
+```rhelcentos
 sudo rpm -Uvh »riak_package_name«.rpm
 ```
 
-```Ubuntu
+```ubuntudebian
 sudo dpkg -i »riak_package_name«.deb
 ```
 

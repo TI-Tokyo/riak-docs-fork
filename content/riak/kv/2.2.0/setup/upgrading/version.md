@@ -106,21 +106,21 @@ riak stop
 
 2\. Back up your /etc (app.config and vm.args), /data, and /basho-patches directories.
 
-```RHEL/CentOS
+```rhelcentos
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib64/riak/lib/basho-patches
 ```
 
-```Ubuntu
+```ubuntudebian
 sudo tar -czf riak_backup.tar.gz /var/lib/riak /etc/riak /usr/lib/riak/lib/basho-patches
 ```
 
 3\. Remove your /basho-patches directory:
 
-```RHEL/CentOS
+```rhelcentos
 sudo rm -rf /usr/lib64/riak/lib/basho-patches/*
 ```
 
-```Ubuntu
+```ubuntudebian
 sudo rm -rf /usr/lib/riak/lib/basho-patches*
 ```
 
@@ -130,11 +130,11 @@ sudo rm -rf /usr/lib/riak/lib/basho-patches*
 If you are upgrading from Riak KV OSS to Riak KV EE, you must uninstall your Riak KV package right now, before you can install the EE version.
 {{% /note %}}
 
-```RHEL/CentOS
+```rhelcentos
 sudo rpm -Uvh »riak_package_name«.rpm
 ```
 
-```Ubuntu
+```ubuntudebian
 sudo dpkg -i »riak_package_name«.deb
 ```
 
