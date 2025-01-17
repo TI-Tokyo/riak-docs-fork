@@ -20,27 +20,30 @@ aliases:
   - /riak/kv/3.2.3/introduction
 ---
 
-Released Dec 29, 2022.
+Released Dec 09, 2024.
 
 ## Overview
 
-This release is an OTP uplift release. Whereas release 3.0.1 supports OTP 22; the intention is for Release 3.2.n to support OTP 22, OTP 24, and OTP 25. There are potential throughput benefits of up to 10% when using OTP 24/25 rather than OTP 22 where load is CPU bound. OTP 25 is currently the preferred platform for this release.
+Minor fixes and Enhancements, includes NHS releases 3.2.1, 3.2.2 and 3.2.2p1.
 
-There are specific risks associated with OTP uplift releases due to the large volume of underlying changes inherited. It is advised that Riak users should take specific care to test this release in a pre-production environment. Please raise any issues discovered via Github.
+** Fix an issue with the (riak admin services)[https://github.com/OpenRiak/riak/issues/8] command. this is of particular relevance for larger stores (by key count) i.e. >> 1m object keys per vnode.
+** Fix a potential cause of stalling in (leveldb)[https://github.com/martinsumner/leveled/issues/459]; this is of particular relevance for larger stores (by key count) i.e. >> 1m object keys per vnode.
+** Resolved an issue with binary memory  management when using nextgenrepl to replicate objects with keys bigger than 64 bytes to clusters using the leveled backend. Some utility functions have been added to riak_kv_utils, that were helpful in investigating this issue.
+** Resolved an issue with handling of spaces in Riak commands (e.g. within JSON-based definitions of bucket properties, or riak eval statements).
+** Added support for both zstd compression and no compression in the leveled backend.
+** Tidied up the closing of processes within leveled.
+** Improvements to the CPU efficiency of leveled, specificaly when handling secondary index queries and aae folds.
+** Upgraded the json library used in producing 2i query results to the library scheduled for inclusion in OTP 27.
+** Added data size estimation to the riak_kv_leveled_backend to allow for progress reporting on transfers.
+** Prevented the start of replication processes before riak_kv startup has completed.
+** Improved repair-mode efficiency, so that each vnode is only repaired once, significantly reducing the cluster-wide overhead of entering repair mode (for AAE based full-sync).
+** Prevented a potential race condition whereby a queued tree rebuild may lead to an incorrect segment in a cached tree.
+** Reverted to a version of eleveldb based on the 3.0 path, whereby the version of snappy is specifically referenced rather than depending on the OS-supported version.
+** Improved the monitoring of the node worker pools.
+** Minor fixes to build and packaging, as well as addition of further VM configuration options.
 
-**Important logging changes**
-
-As part of this change, the lager dependancy has been removed, with OTP's internal logger used instead. Any logging configuration should be updated as a part of the migration, using the new options made available via riak.conf. Support for logging using syslog has been removed. The leveled backend will still write directly to erlang.log files, but this will be addressed in a future release.
-
-There has been a significant overhaul of the release and packaging scripts in order to adopt changes within relx. Note that due to the updates in relx, riak daemon should be used instead of riak start. Some riak and riak-admin commands may also now return an additional ok output. Going forward, both riak admin and riak-admin should work for admin commands. Packaging suport has now been added for Alpine Linux and FreeBSD.
-
-Note that this release of Riak is packaged with a bespoke build of rebar3, this alters mainstream rebar3/relx to allow us control over deprecation warnings in relx.
-
-When building from source, the snappy dependancy is now made rather than fetched using a cached package, so support for cmake is required to build. Note that on older versions of OSX the current version of snappy will not compile. This will be resolved when their is a formal release version of snappy containing this fix.
-
-In this release, tagging of individual dependencies has not been used. Building consistently with the correct versions of dependencies is therefore dependent on the commit references being used from within the rebar.lock file.
 
 ## Previous Release Notes
 
-Please see the KV 3.0.12 release notes [here]({{<baseurl>}}riak/kv/3.0.12/release-notes/).
+Please see the KV 3.2.0 release notes [here]({{<baseurl>}}riak/kv/3.2.0/release-notes/).
 
