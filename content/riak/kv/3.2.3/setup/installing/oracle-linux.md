@@ -36,7 +36,7 @@ instructions.
 
 **Note** There are various Riak packages available for different OTP versions, please ensure that you are using the correct package for your OTP version.
 
-Before installing Riak on Oracle Linux 8, we need to satisfy some Erlang dependencies
+Before installing Riak on Oracle Linux 9, we need to satisfy some Erlang dependencies
 from EPEL first by installing the EPEL repository:
 
 ```bash
@@ -46,8 +46,8 @@ sudo yum install -y epel-release
 Once the EPEL has been installed, you can install Riak on Oracle Linux 8 using yum, which we recommend::
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.2/3.2.3/oracle/8/riak-3.2.3.OTP24-1.el8.x86_64.rpm
-sudo yum install -y riak-3.2.3-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/oracle/9/riak-3.2.3.OTP25-1.el9.x86_64.rpm
+sudo yum install -y riak-3.2.3.OTP25-1.el9.x86_64.rpm
 ```
 
 ## Next Steps

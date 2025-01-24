@@ -27,7 +27,7 @@ aliases:
 
 Riak KV can be installed on CentOS- or Red-Hat-based systems using a binary
 package or by [compiling Riak from source code][install source index]. The following steps have been tested to work with Riak on
-CentOS/RHEL 6.9, 7.5.1804 and 8.1.1911 .
+CentOS/RHEL 8.1.1911 .
 
 > **Note on SELinux**
 >
@@ -51,8 +51,8 @@ sudo yum install -y epel-release
 Once the EPEL has been installed, you can install CentOS 8/RHEL 8 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/rhel/8/riak-3.2.3-1.el8.x86_64.rpm
-sudo yum localinstall -y riak-3.2.3-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/rhel/8/riak-3.2.3.1.gd26294d.OTP25-1.el8.x86_64.rpm
+sudo yum localinstall -y riak-3.2.3.1.gd26294d.OTP25-1.el8.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:

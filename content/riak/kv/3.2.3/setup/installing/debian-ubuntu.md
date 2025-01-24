@@ -83,85 +83,57 @@ To install:
 ```bash
 sudo apt-get install libpam0g-dev
 ```
+***Note on OTP version***
+Packages for different OTP versions are available at https://iles.tiot.jp
 
-### Riak 64-bit Installation
-
-#### Ubuntu Bionic Beaver (18.04)
-
-```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/ubuntu/bionic64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
-```
-
-#### Ubuntu Xenial Xerus (16.04)
+#### Ubuntu Focal Fossa (OTP 25) (20.04.6)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/ubuntu/xenial64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/ubuntu/focal64/riak_3.2.3-OTP25_amd64.deb
+sudo dpkg -i riak_3.2.3-OTP25_amd64.deb
 ```
 
-#### Ubuntu Trusty Tahr (14.04)
+#### Ubuntu Jammy Jellyfix (OtP 24) (22.04.5)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/ubuntu/trusty64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/ubuntu/jammy64/riak_3.2.3-OTP25_amd64.deb
+sudo dpkg -i riak_3.2.3-OTP25_amd64.deb
 ```
 
-#### Ubuntu Precise Pangolin (12.04)
+#### Ubuntu Noble Numbat (24.04.01)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/ubuntu/precise64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/ubuntu/noble64/riak_3.2.3-OTP25_amd64.deb
+sudo dpkg -i riak_3.2.3-OTP25_amd64.deb
 ```
 
-#### Debian Stretch (9.0)
+#### Debian Buster (10.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/debian/9/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/debian/10/riak_3.2.3-OTP25_amd64.deb
+sudo dpkg -i riak_3.2.3-OTP25_amd64.deb
 ```
 
-#### Debian Jessie (8.0)
+#### Debian bullseye (11.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/debian/8/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/debian/11/riak_3.2.3-OTP25_amd64.deb
+sudo dpkg -i riak_3.2.3-OTP25_amd64.deb
 ```
 
-#### Debian Wheezy (7.0)
+#### Debian Bookworm (12.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/debian/7/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/debian/12/riak_3.2.3-OTP25_amd64.deb
+sudo dpkg -i riak_3.2.3-OTP25_amd64.deb
 ```
 
-#### Raspbian Buster
+#### Raspbian Bullseye
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/raspbian/buster/riak_3.0.11-1_armhf.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/raspbian/bullseye/riak_3.2.3-OTP22_arm64.deb
+sudo dpkg -i riak_3.2.3-OTP22_arm64.deb
 ```
-
-## Installing From Source
-
-First, install Riak dependencies using apt:
-
-```bash
-sudo apt-get install build-essential libc6-dev-i386 git
-```
-
-Riak requires an [Erlang](http://www.erlang.org/) installation.
-Instructions can be found in [Installing Erlang][install source erlang].
-
-```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.3/riak-3.2.3.tar.gz
-tar zxvf riak-3.2.3.tar.gz
-cd riak-3.2.3
-make rel
-```
-
-If the build was successful, a fresh build of Riak will exist in the
-`rel/riak` directory.
 
 ## Next Steps
 
