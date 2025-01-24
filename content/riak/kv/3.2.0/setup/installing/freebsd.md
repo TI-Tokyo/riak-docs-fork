@@ -43,13 +43,13 @@ You can install the Riak binary package on FreeBSD remotely using the
 ### For FreeBSD 11.x
 
 ```bash
-sudo pkg_add -r https://files.tiot.jp/riak/kv/3.0/3.2.0/freebsd/11.1/riak-3.2.0.txz
+sudo pkg_add -r https://files.tiot.jp/riak/kv/3.2/3.2.0/freebsd/11.1/riak-3.2.0.txz
 ```
 
 ### For FreeBSD 10.x
 
 ```bash
-sudo pkg_add -r https://files.tiot.jp/riak/kv/3.0/3.2.0/freebsd/10.4/riak-3.2.0.txz
+sudo pkg_add -r https://files.tiot.jp/riak/kv/3.2/3.2.0/freebsd/10.4/riak-3.2.0.txz
 ```
 
 When Riak is installed, a message is displayed with information about the installation and available documentation.
