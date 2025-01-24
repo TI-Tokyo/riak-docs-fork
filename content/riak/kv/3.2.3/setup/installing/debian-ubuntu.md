@@ -31,30 +31,13 @@ package or by compiling from source code.
 
 The following steps have been tested to work with Riak KV on:
 
-- Ubuntu 18.02
-- Ubuntu 16.04
-- Ubuntu 14.04
-- Ubuntu 12.04
-- Debian 9.2
-- Debian 8.6
-- Debian 7.6
+- Ubuntu 18.04
+- Ubuntu 20.04
+- Ubuntu 22.04
+- Debian 9.0
+- Debian 10.0
+- Debian 11.0
 - Raspbian Buster
-
-> **Note on Debian 7**
->
-> If you wish to install Riak on Debian 7, you may need to install
-[libc6](https://packages.debian.org/search?keywords=libc6) version 2.15 or
-later, which in turn requires upgrading your system to
-[sid](https://www.debian.org/releases/sid/). Installation instructions
-can be found
-[here](https://wiki.debian.org/DebianUnstable#How_do_I_install_Sid.3F).
->
-> Once sid has been installed, you can install libc6 with the following
-command:
->
->```bash
-apt-get -t sid install libc6 libc6-dev libc6-dbg
-```
 
 ## Installing From Package
 
