@@ -89,56 +89,56 @@ sudo apt-get install libpam0g-dev
 #### Ubuntu Bionic Beaver (18.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/ubuntu/bionic64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/ubuntu/bionic64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Ubuntu Xenial Xerus (16.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/ubuntu/xenial64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/ubuntu/xenial64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Ubuntu Trusty Tahr (14.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/ubuntu/trusty64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/ubuntu/trusty64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Ubuntu Precise Pangolin (12.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/ubuntu/precise64/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/ubuntu/precise64/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Debian Stretch (9.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/debian/9/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/debian/9/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Debian Jessie (8.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/debian/8/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/debian/8/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Debian Wheezy (7.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/debian/7/riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/debian/7/riak_3.0.11-1_amd64.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
 #### Raspbian Buster
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/raspbian/buster/riak_3.0.11-1_armhf.deb
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/raspbian/buster/riak_3.0.11-1_armhf.deb
 sudo dpkg -i riak_3.0.11-1_amd64.deb
 ```
 
@@ -154,7 +154,7 @@ Riak requires an [Erlang](http://www.erlang.org/) installation.
 Instructions can be found in [Installing Erlang][install source erlang].
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/riak-3.2.0.tar.gz
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/riak-3.2.0.tar.gz
 tar zxvf riak-3.2.0.tar.gz
 cd riak-3.2.0
 make rel
