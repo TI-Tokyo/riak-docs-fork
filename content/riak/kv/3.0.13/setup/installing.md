@@ -40,11 +40,8 @@ properly install or upgrade Riak in one of the supported environments:
 
   * [Amazon Web Services][install aws]
   * [Debian & Ubuntu][install debian & ubuntu]
-  * [FreeBSD][install freebsd]
   * [Mac OS X][install mac osx]
   * [RHEL & CentOS][install rhel & centos]
-  * [SUSE][install suse]
-  * [Windows Azure][install windows azure]
 
 ## Building from Source
 
