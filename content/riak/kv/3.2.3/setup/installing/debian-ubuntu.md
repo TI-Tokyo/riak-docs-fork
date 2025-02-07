@@ -67,7 +67,7 @@ To install:
 sudo apt-get install libpam0g-dev
 ```
 ***Note on OTP version***
-Packages for different OTP versions are available at https://iles.tiot.jp
+Packages for different OTP versions are available at https://files.tiot.jp
 
 #### Ubuntu Focal Fossa (OTP 25) (20.04.6)
 
