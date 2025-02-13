@@ -25,7 +25,7 @@ The configuration for Next Gen Replication is kept in
  the `riak.conf` configuration file.
 
 {{% note %}}
-Next Gen Replication relies on the TicTac AAE system, which needs to be enabled and configured. See the [TicTac AAE configuration][configure tictacaae] documentaion.
+Next Gen Replication relies on the TicTac AAE system, which needs to be enabled and configured. See the [TicTac AAE configuration]({{<baseurl>}}riak/kv/3.0.1/configuring/active-anti-entropy/tictac-aae/) documentaion.
 {{% /note %}}
 
 ## Validate Settings
@@ -42,9 +42,9 @@ riak chkconfig
 Setting | Options | Default | Description
 :-------|:--------|:--------|:-----------
 `ttaaefs_scope` | `{disabled, all, bucket, type}` | **REQUIRED** | For Tictac full-sync does all data need to be sync'd, or should a specific bucket be sync'd (bucket), or a specific bucket type (type).Note that in most cases sync of all data is lower overhead than sync of a subset of data - as cached AAE trees will be used.
-`ttaaefs_queuename` | `text` | `q1_ttaaefs` | For tictac full-sync what registered queue name on this cluster should be use for passing references to data which needs to be replicated for AAE full-sync. This queue name must be defined as a `riak_kv.replq<n>_queuename`, but need not be exlusive to full-sync (i.e. a real-time replication queue may be used as well).
-`ttaaefs_maxresults` | `any` (integer) | `64` | or tictac full-sync what is the maximum number of AAE segments to be compared per exchange. Reducing this will speed up clock compare queries, but will increase the number of exchanges required to complete a repair.
-`ttaaefs_rangeboost` | `any` (integer) | `8` | For tictac full-sync what is the maximum number of AAE segments to be compared per exchange. When running a range_check query this will be the ttaaefs_max results * ttaaefs_rangeboost.
+`ttaaefs_queuename` | `text` | `q1_ttaaefs` | For TicTac full-sync what registered queue name on this cluster should be use for passing references to data which needs to be replicated for AAE full-sync. This queue name must be defined as a `riak_kv.replq<n>_queuename`, but need not be exlusive to full-sync (i.e. a real-time replication queue may be used as well).
+`ttaaefs_maxresults` | `any` (integer) | `64` | For TicTac full-sync what is the maximum number of AAE segments to be compared per exchange. Reducing this will speed up clock compare queries, but will increase the number of exchanges required to complete a repair.
+`ttaaefs_rangeboost` | `any` (integer) | `8` | For TicTac full-sync what is the maximum number of AAE segments to be compared per exchange. When running a range_check query this will be the ttaaefs_max results * ttaaefs_rangeboost.
 `ttaaefs_bucketfilter_name` | `any`, (text)| `` | For Tictac bucket full-sync which bucket should be sync'd by this node. Only ascii string bucket definitions supported (which will be converted using list_to_binary).
 `ttaaefs_bucketfilter_type` | `any` (text) | `default` | For Tictac bucket full-sync what is the bucket type of the bucket name. Only ascii string type bucket definitions supported (these definitions will be converted to binary using list_to_binary)
 `ttaaefs_localnval` | `any` (integer) | `3` | For Tictac all full-sync which NVAL should be sync'd by this node. This is the `local` nval, as the data in the remote cluster may have an alternative nval.
@@ -58,10 +58,10 @@ Setting | Options | Default | Description
 `ttaaefs_daycheck` | `any` (integer) | `0` | How many times per 24hour period should the last 24-hours of data be checked to confirm it is fully sync'd.
 `ttaaefs_rangecheck` | `any` (integer) | `0` | How many times per 24hour period should the a range_check be run.
 `ttaaefs_logrepairs` | `enabled`, `disabled` | `enabled` | If Tictac AAE full-sync discovers keys to be repaired, should each key that is repaired be logged
-`tictacaae_active` | `active`, `passive` | `passive` | Enable or disable tictacaae. Note that disabling tictacaae will set the use of tictacaae_active only at startup - setting the environment variable at runtime will have no impact.
+`tictacaae_active` | `active`, `passive` | `passive` | Enable or disable TicTac AAE. Note that disabling TicTac AAE will set the use of tictacaae_active only at startup - setting the environment variable at runtime will have no impact.
 `aae_tokenbucket` | `enabled`, `disabled` | `enabled` | To protect against unbounded queues developing and subsequent timeouts/crashes of the AAE process, back-pressure signalling is used to block the vnode should a backlog develop on the AAE process. This can be disabled.
 `tictacaae_dataroot` | `` | `"$platform_data_dir/tictac_aae"` | Set the path for storing tree caches and parallel key stores. Note that at startup folders may be created for every partition, and not removed when that partition hands off (although the contents should be cleared).
-`tictacaae_parallelstore` | `leveled_ko`, `leveled_so` | `leveled_so` | On startup, if tictacaae is enabled, then the vnode will detect of the vnode backend has the capability to be a "native" store. If not, then parallel mode will be entered, and a parallel AAE keystore will be started. There are two potential parallel store backends - leveled_ko, and leveled_so.
+`tictacaae_parallelstore` | `leveled_ko`, `leveled_so` | `leveled_so` | On startup, if TicTac AAE is enabled, then the vnode will detect of the vnode backend has the capability to be a "native" store. If not, then parallel mode will be entered, and a parallel AAE keystore will be started. There are two potential parallel store backends - leveled_ko (Key ordered leveled), and leveled_so(Segment ordered Leveled).
 `tictacaae_rebuildwait` | `` | `336` | This is the number of hours between rebuilds of the Tictac AAE system for each vnode. A rebuild will invoke a rebuild of the key store (which is a null operation when in native mode), and then a rebuild of the tree cache from the rebuilt store.
 `tictacaae_rebuilddelay` | `` | `345600` | Once the AAE system has expired (due to the rebuild wait), the rebuild will not be triggered until the rebuild delay which will be a random number up to the size of this delay (in seconds).
 `tictacaae_storeheads` | `enabled`, `disabled` | `disabled` | By default when running a parallel keystore, only a small amount of metadata is required for AAE purposes, and with store heads disabled only that small amount of metadata is stored.
