@@ -112,36 +112,38 @@ You now have a Riak cluster running on AWS.
 
 ## Installing From Package
 
+There are additional packages for Graviton and Amazon 2023 at https://files.tiot.jp/riak/kv/3.2/3.2.0/amazon/
+
 #### AWS (2)
 
 You can install on AWS 2 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/amazon/2/riak-3.2.0-1.amzn2x86_64.rpm
-sudo yum localinstall -y riak_3.0.11-1.amzn2x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/amazon/2/riak-3.2.0.OTP25-1.amzn2.x86_64.rpm
+sudo yum localinstall -y riak-3.2.0.OTP25-1.amzn2.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/amazon/2/riak-3.2.0-1.amzn2x86_64.rpm
-sudo rpm -i riak_3.0.11-1.amzn2x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/amazon/2/riak-3.2.0.OTP25-1.amzn2.x86_64.rpm
+sudo rpm -i riak-3.2.0.OTP25-1.amzn2.x86_64.rpm
 ```
 
-#### AWS (2016.09)
+#### AWS (2023)
 
 You can install on AWS 2016.09 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/amazon/2016.09/riak-3.2.0-1.amzn1x86_64.rpm
-sudo yum localinstall -y riak_3.0.11-1.amzn1x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/amazon/2023/riak-3.2.0.tiot.OTP25-1.amzn2023.x86_64.rpm
+sudo yum localinstall -y riak-3.2.0.tiot.OTP25-1.amzn2023.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/amazon/2016.09/riak-3.2.0-1.amzn1x86_64.rpm
-sudo rpm -i riak_3.0.11-1.amzn1x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/amazon/2023/riak-3.2.0.tiot.OTP25-1.amzn2023.x86_64.rpm
+sudo rpm -i riak-3.2.0.tiot.OTP25-1.amzn2023.x86_64.rpm
 ```
 ## Next Steps
 

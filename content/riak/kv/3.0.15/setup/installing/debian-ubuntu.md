@@ -31,30 +31,13 @@ package or by compiling from source code.
 
 The following steps have been tested to work with Riak KV on:
 
-- Ubuntu 18.02
-- Ubuntu 16.04
-- Ubuntu 14.04
-- Ubuntu 12.04
-- Debian 9.2
-- Debian 8.6
-- Debian 7.6
+- Ubuntu 18.04
+- Ubuntu 20.04
+- Ubuntu 22.04
+- Debian 9.0
+- Debian 10.0
+- Debian 11.0
 - Raspbian Buster
-
-> **Note on Debian 7**
->
-> If you wish to install Riak on Debian 7, you may need to install
-[libc6](https://packages.debian.org/search?keywords=libc6) version 2.15 or
-later, which in turn requires upgrading your system to
-[sid](https://www.debian.org/releases/sid/). Installation instructions
-can be found
-[here](https://wiki.debian.org/DebianUnstable#How_do_I_install_Sid.3F).
->
-> Once sid has been installed, you can install libc6 with the following
-command:
->
->```bash
-apt-get -t sid install libc6 libc6-dev libc6-dbg
-```
 
 ## Installing From Package
 
@@ -86,60 +69,56 @@ sudo apt-get install libpam0g-dev
 
 ### Riak 64-bit Installation
 
+***Note on OTP version***
+Packages for different OTP versions are available at https://iles.tiot.jp
+
 #### Ubuntu Bionic Beaver (18.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/ubuntu/bionic64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/ubuntu/bionic64/riak_3.0.15-OTP22.3_amd64.deb
+sudo dpkg -i riak_3.0.15-OTP22.3_amd64.deb
 ```
 
-#### Ubuntu Xenial Xerus (16.04)
+#### Ubuntu Focal Fossa (20.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/ubuntu/xenial64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/ubuntu/focal64/riak_3.0.15-OTP22.3_amd64.deb
+sudo dpkg -i riak_3.0.15-OTP22.3_amd64.deb
 ```
 
-#### Ubuntu Trusty Tahr (14.04)
+#### Ubuntu Jammy Jellyfish (22.04)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/ubuntu/trusty64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
-```
-
-#### Ubuntu Precise Pangolin (12.04)
-
-```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/ubuntu/precise64/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/ubuntu/jammy64/riak_3.0.15-OTP22.3_amd64.deb
+sudo dpkg -i riak_3.0.15-OTP22.3_amd64.deb
 ```
 
 #### Debian Stretch (9.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/debian/9/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/debian/9/riak_3.0.15-OTP22.3_amd64.deb
+sudo dpkg -i riak_3.0.15-OTP22.3_amd64.deb
 ```
 
-#### Debian Jessie (8.0)
+#### Debian Buster (10.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/debian/8/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/debian/10/riak_3.0.15-OTP22.3_amd64.deb
+sudo dpkg -i riak_3.0.15-OTP22.3_amd64.deb
 ```
 
-#### Debian Wheezy (7.0)
+#### Debian Bullseye (11.0)
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/debian/7/riak_3.0.11-1_amd64.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/debian/11/riak_3.0.15-OTP22.3_amd64.deb
+sudo dpkg -i riak_3.0.15-OTP22.3_amd64.deb
 ```
 
 #### Raspbian Buster
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.0.15/raspbian/buster/riak_3.0.11-1_armhf.deb
-sudo dpkg -i riak_3.0.11-1_amd64.deb
+wget https://files.tiot.jp/riak/kv/3.0/3.0.15/raspbian/bullseye/riak_3.0.15-OTP22.3_arm64.deb
+sudo dpkg -i riak_3.0.15-OTP22.3_arm64.deb
 ```
 
 ## Installing From Source
