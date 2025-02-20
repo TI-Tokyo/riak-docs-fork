@@ -33,8 +33,8 @@ package from the Riak repository.
 
 The following steps have been tested to work with Riak KV on:
 
-* Alpine Linux 3.18 using aarch64
 * Alpine Linux 3.18 using x86_64
+* Alpine Linux 3.18 using aarch64
 * Alpine Linux 3.21 using x86_64
 * Alpine Linux 3.21 using aarch64
 
