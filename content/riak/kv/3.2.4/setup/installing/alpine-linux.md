@@ -50,8 +50,8 @@ To install Riak on Alpine Linux:
    * Run `apk update`
 4. Install Riak:
    * For the latest version, run `apk add riak`
-   * For version 3.2.4 using OTP 24, run `apk add riak-3.2.4.24-r1`
-   * For version 3.2.4 using OTP 25, run `apk add riak-3.2.4.25-r1`
+   * For version 3.2.4 using OTP 24, run `apk add riak=3.2.4.24-r1`
+   * For version 3.2.4 using OTP 25, run `apk add riak=3.2.4.25-r1`
 
 
 
