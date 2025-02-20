@@ -33,26 +33,23 @@ package from the Riak repository.
 
 The following steps have been tested to work with Riak KV on:
 
-* Alpine Linux 3.16 using x86_64
-* Alpine Linux 3.16 using aarch64
-* Alpine Linux 3.18 using x86_64
-* Alpine Linux 3.18 using aarch64
+* Alpine Linux 3.21 using x86_64
+* Alpine Linux 3.21 using aarch64
 
 ## Riak 64-bit Installation
 
 To install Riak on Alpine Linux:
 
 1. Add the Riak repository:
-   * Run `echo https://files.tiot.jp/alpine/v3.16/main >> /etc/apk/repositories`
+   * Run `echo https://files.tiot.jp/alpine/v3.21/main >> /etc/apk/repositories`
 2. Download and install the Riak repository public key:
    * Run `wget http://files.tiot.jp/alpine/alpine@tiot.jp.rsa.pub -O /etc/apk/keys/alpine@tiot.jp.rsa.pub`
 3. Update your list of packages:
    * Run `apk update`
 4. Install Riak:
    * For the latest version, run `apk add riak`
-   * For version 3.2.3 using OTP 22, run `apk add riak=3.2.3.22-r0`
    * For version 3.2.3 using OTP 24, run `apk add riak=3.2.3.24-r0`
-   * For version 3.2.3 using OTP 25, run `apk add riak=3.2.3.25-r0`
+   * For version 3.2.3 using OTP 25, run `apk add riak-3.2.3.25-r1`
 
 ## Next Steps
 
