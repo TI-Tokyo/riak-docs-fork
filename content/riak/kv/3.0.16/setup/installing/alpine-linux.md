@@ -43,14 +43,15 @@ The following steps have been tested to work with Riak KV on:
 To install Riak on Alpine Linux:
 
 1. Add the Riak repository:
-   * Run `echo https://files.tiot.jp/alpine/v3.21/main >> /etc/apk/repositories`
+   * For Apline Linux 3.18 Run `sudo echo "https://files.tiot.jp/alpine/v3.18/main" >> /etc/apk/repositories`
+   * For Apline Linux 3.21 Run `sudo echo "https://files.tiot.jp/alpine/v3.21/main" >> /etc/apk/repositories`
 2. Download and install the Riak repository public key:
    * Run `wget http://files.tiot.jp/alpine/alpine@tiot.jp.rsa.pub -O /etc/apk/keys/alpine@tiot.jp.rsa.pub`
 3. Update your list of packages:
    * Run `apk update`
 4. Install Riak:
    * For the latest version, run `apk add riak`
-   * For a specific version, run `apk add riak-3.0.16-r0.apk`
+   * For a specific version, run `apk add riak-3.0.16-r0`
 
 ## Next Steps
 
