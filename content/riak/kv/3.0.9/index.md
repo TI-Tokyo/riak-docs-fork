@@ -33,7 +33,7 @@ This release is tested with OTP 20 and OTP 22; but optimal performance is likely
 
 ## Supported Operating Systems
 
-- Alpine Linux 3.14
+- Alpine Linux 3.16
 - Amazon Linux 2016.09 (AWS)
 - Amazon Linux 2 (AWS)
 - CentOS 7
