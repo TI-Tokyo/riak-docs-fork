@@ -21,16 +21,13 @@ aliases:
   - /riak/kv/2.9.4/installing/
 ---
 
-[install aws]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/amazon-web-services
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/debian-ubuntu
-[install freebsd]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/freebsd
-[install mac osx]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/mac-osx
-[install rhel & centos]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/rhel-centos
-[install suse]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/suse
-[install windows azure]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/windows-azure
-[install source index]: {{<baseurl>}}riak/kv/2.9.4/setup/installing/source
-[community projects]: {{<baseurl>}}community/projects
-[upgrade index]: {{<baseurl>}}riak/kv/2.9.4/setup/upgrading
+[install mac osx]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/mac-osx
+[install aws]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/amazon-web-services
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/debian-ubuntu
+[install freebsd]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/freebsd
+[install oracle linux]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/oracle-linux
+[install rhel & centos]: {{<baseurl>}}riak/kv/2.9.1/setup/installing/rhel-centos
+[upgrade index]: {{<baseurl>}}riak/kv/2.9.1/setup/upgrading
 
 ## Supported Platforms
 
@@ -41,10 +38,10 @@ properly install or upgrade Riak in one of the supported environments:
   * [Amazon Web Services][install aws]
   * [Debian & Ubuntu][install debian & ubuntu]
   * [FreeBSD][install freebsd]
-  * [Mac OS X][install mac osx]
   * [RHEL & CentOS][install rhel & centos]
-  * [SUSE][install suse]
-  * [Windows Azure][install windows azure]
+  * [Oracle Linux][install oracle linux]
+  * [Raspbian]
+  * [Mac OS X][install mac osx]
 
 ## Building from Source
 
