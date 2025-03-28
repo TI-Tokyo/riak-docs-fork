@@ -32,7 +32,7 @@ for addressing any SLA-impacting issues or delays. We recommend
 combining the two approaches below when monitoring Riak's realtime
 replication:
 
-* Monitor Riak's replication status output, from either `riak-repl
+* Monitor Riak's replication status output, from either `riak repl
   status` or the HTTP `/riak-repl/stats` endpoint
 * Use canary (test) objects to test replication and establish trip times
   from source to sink clusters
@@ -71,7 +71,7 @@ network, system, or Riak level.
 
 Errors experienced on either the source or sink cluster can result in
 failure to replicate object(s) via realtime replication. The top-level
-`rt_dirty` statistic in `riak-repl status` indicates whether such an
+`rt_dirty` statistic in `riak repl status` indicates whether such an
 error has occurred and how many times. This statistic only tracks
 errors and does not definitively indicate that an object was not
 successfully replicated. For this reason, a fullsync should be performed

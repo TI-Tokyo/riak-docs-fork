@@ -26,7 +26,7 @@ aliases:
 
 #### [Multi-Datacenter Replication Reference: Statistics][ref mdc stats]
 
-Describes the output of `riak-repl status` interface.
+Describes the output of `riak repl status` interface.
 
 [Learn More >>][ref mdc stats]
 

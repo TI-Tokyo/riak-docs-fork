@@ -51,14 +51,14 @@ sudo yum install -y epel-release
 Once the EPEL has been installed, you can install CentOS 8/RHEL 8 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/rhel/8/riak-3.2.0-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/rhel/8/riak-3.2.0-1.el8.x86_64.rpm
 sudo yum localinstall -y riak-3.2.0-1.el8.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/rhel/8/riak-3.2.0-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/rhel/8/riak-3.2.0-1.el8.x86_64.rpm
 sudo rpm -Uvh riak-3.2.0-1.el8.x86_64.rpm
 ```
 
@@ -67,14 +67,14 @@ sudo rpm -Uvh riak-3.2.0-1.el8.x86_64.rpm
 You can install CentOS 7/RHEL 7 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/rhel/7/riak-3.2.0-1.el7.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/rhel/7/riak-3.2.0-1.el7.x86_64.rpm
 sudo yum localinstall -y riak-3.2.0-1.el7.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/rhel/7/riak-3.2.0-1.el7.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/rhel/7/riak-3.2.0-1.el7.x86_64.rpm
 sudo rpm -Uvh riak-3.2.0-1.el7.x86_64.rpm
 ```
 
@@ -83,7 +83,7 @@ sudo rpm -Uvh riak-3.2.0-1.el7.x86_64.rpm
 You can install using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/rhel/6/riak-3.2.0-1.el6.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/rhel/6/riak-3.2.0-1.el6.x86_64.rpm
 sudo yum localinstall -y riak-3.2.0-1.el6.x86_64.rpm
 
 ```
@@ -91,7 +91,7 @@ sudo yum localinstall -y riak-3.2.0-1.el6.x86_64.rpm
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/rhel/6/riak-3.2.0-1.el6.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/rhel/6/riak-3.2.0-1.el6.x86_64.rpm
 sudo rpm -Uvh riak-3.2.0-1.el6.x86_64.rpm
 ```
 
@@ -117,7 +117,7 @@ sudo yum install gcc gcc-c++ glibc-devel make git pam-devel
 Now we can download and install Riak:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.0/3.2.0/riak-3.2.0.tar.gz
+wget https://files.tiot.jp/riak/kv/3.2/3.2.0/riak-3.2.0.tar.gz
 tar zxvf riak-3.2.0.tar.gz
 cd riak-3.2.0
 make rel

@@ -6,6 +6,7 @@ ruby ">2.2.5"
 #      1. Each gem is current
 #      2. Each gem is _used_
 
+gem "ffi", "~>1.16.3"
 gem "sass", "~>3.4.22"
 gem "autoprefixer-rails", "~>6.3.6"
 gem "sprockets", "~>3.7"

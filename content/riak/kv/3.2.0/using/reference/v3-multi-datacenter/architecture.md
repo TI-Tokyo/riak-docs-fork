@@ -67,7 +67,7 @@ cluster. Sink clusters receive data from source clusters.
 The cluster manager is a Riak service that provides
 information regarding nodes and protocols supported by the sink and
 source clusters. This information is primarily consumed by the
-`riak-repl connect` command.
+`riak repl connect` command.
 
 ### Fullsync Coordinator
 
@@ -102,13 +102,13 @@ replication more fault tolerant.
 Before a source cluster can begin pushing realtime updates to a sink,
 the following commands must be issued:
 
-1. `riak-repl realtime enable <sink_cluster>`
+1. `riak repl realtime enable <sink_cluster>`
 
     After this command, the realtime queues (one for each Riak node) are
     populated with updates to the source cluster, ready to be pushed to
     the sink.
 
-2. `riak-repl realtime start <sink_cluster>`
+2. `riak repl realtime start <sink_cluster>`
 
     This instructs the Riak connection manager to contact the sink
     cluster.

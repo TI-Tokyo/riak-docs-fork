@@ -64,7 +64,7 @@ version 3.
   **sinks**. A source is considered the primary provider of replication
   data, whereas a sink is the destination of replication data.
 * Establishing replication connections between clusters has been
-  greatly simplified. A single `riak-repl connect` command needs to be
+  greatly simplified. A single `riak repl connect` command needs to be
   issued from a source cluster to a sink cluster. IP and port
   information of all nodes that can participate in replication on both
   source and sink clusters are exchanged by the **replication cluster

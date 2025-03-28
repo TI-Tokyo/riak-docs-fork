@@ -35,27 +35,20 @@ CentOS/RHEL 5.10, 6.5, and 7.0.1406.
 you encounter errors.
 
 For versions of Riak prior to 2.0, Basho used a self-hosted
-[rpm](http://www.rpm.org/) repository for CentOS and RHEL packages. For
-versions 2.0 and later, Basho has moved those packages to the
-[packagecloud.io](https://packagecloud.io/) hosting service.
-Instructions for installing via shell scripts, manual installation,
-Chef, and Puppet can be found in packagecloud's [installation docs](https://packagecloud.io/basho/riak/install).
+[apt](http://en.wikipedia.org/wiki/Advanced_Packaging_Tool) repository
+for RHEL and CentOS packages. For versions 2.0 and later, TI Tokyo hosts these at https://files.tiot.jp.
 
 Platform-specific pages are linked below:
 
-* [el5](https://packagecloud.io/basho/riak/packages/el/5/riak-2.1.4-1.x86_64.rpm)
-* [el6](https://packagecloud.io/basho/riak/packages/el/6/riak-2.1.4-1.el6.x86_64.rpm)
-* [el7](https://packagecloud.io/basho/riak/packages/el/7/riak-2.1.4-1.el7.centos.x86_64.rpm)
-* [Fedora 19](https://packagecloud.io/basho/riak/packages/fedora/19/riak-2.1.4-1.fc19.x86_64.rpm)
+* [el5](https://files.tiot.jp/riak/kv/2.1/2.1.4/rhel/5/riak-2.1.4-1.el5.x86_64.rpm)
+* [el6](https://files.tiot.jp/riak/kv/2.1/2.1.4/rhel/6/riak-2.1.4-1.el6.x86_64.rpm)
+* [el7](https://files.tiot.jp/riak/kv/2.1/2.1.4/rhel/7/riak-2.1.4-1.el7.centos.x86_64.rpm)
+* [Fedora 19](https://files.tiot.jp/riak/kv/2.1/2.1.4/fedora/19/riak-2.1.4-1.fc19.x86_64.rpm)
 
-## Installing with Yum and Packagecloud
+## Installing with Yum
 
 For the simplest installation process on Long-Term Support (LTS)
-releases, use yum and packagecloud:
-
-```bash
-curl -s https://packagecloud.io/install/repositories/basho/riak/script.rpm.sh | sudo bash
-```
+releases, use yum:
 
 #### For CentOS 5 / RHEL 5:
 
@@ -79,7 +72,7 @@ instructions.
 Download the package and install:
 
 ```bash
-wget http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.4/rhel/5/riak-2.1.4-1.el5.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.1/2.1.4/rhel/5/riak-2.1.4-1.el5.x86_64.rpm
 sudo yum install riak-2.1.4-1.el5.x86_64
 ```
 
@@ -88,7 +81,7 @@ sudo yum install riak-2.1.4-1.el5.x86_64
 Download the package and install:
 
 ```bash
-wget http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.4/rhel/6/riak-2.1.4-1.el6.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.1/2.1.4/rhel/6/riak-2.1.4-1.el6.x86_64.rpm
 sudo yum install riak-2.1.4-1.el6.x86_64
 ```
 
@@ -97,14 +90,14 @@ sudo yum install riak-2.1.4-1.el6.x86_64
 #### For Centos 5 / RHEL 5
 
 ```bash
-wget http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.4/rhel/5/riak-2.1.4-1.el5.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.1/2.1.4/rhel/5/riak-2.1.4-1.el5.x86_64.rpm
 sudo rpm -Uvh riak-2.1.4-1.el5.x86_64.rpm
 ```
 
 #### For Centos 6 / RHEL 6
 
 ```bash
-wget http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.4/rhel/6/riak-2.1.4-1.el6.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/2.1/2.1.4/rhel/6/riak-2.1.4-1.el6.x86_64.rpm
 sudo rpm -Uvh riak-2.1.4-1.el6.x86_64.rpm
 ```
 

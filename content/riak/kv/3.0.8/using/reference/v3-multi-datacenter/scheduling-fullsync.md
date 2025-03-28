@@ -22,7 +22,7 @@ aliases:
 
 [config reference#advanced]: {{<baseurl>}}riak/kv/3.0.8/configuring/reference/#advanced-configuration
 
-The `fullsync_interval` parameter can be configured in the `riak-repl`
+The `fullsync_interval` parameter can be configured in the `riak repl`
 section of [`advanced.config`][config reference#advanced] with either:
 
 * a single integer value representing the duration to wait, in minutes,

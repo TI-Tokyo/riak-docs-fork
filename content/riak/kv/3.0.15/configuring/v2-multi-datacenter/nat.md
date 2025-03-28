@@ -65,18 +65,18 @@ Server C is set up with a single internal IP address: `192.168.1.20`
 Configure a listener on Server A:
 
 ```bash
-riak-repl add-nat-listener riak@192.168.1.10 192.168.1.10 9010 50.16.238.123 9011
+riak repl add-nat-listener riak@192.168.1.10 192.168.1.10 9010 50.16.238.123 9011
 ```
 
 Configure a site (client) on Server B:
 
 ```bash
-riak-repl add-site 50.16.238.123 9011 server_a_to_b
+riak repl add-site 50.16.238.123 9011 server_a_to_b
 ```
 
 Configure a site (client) on Server C:
 
 ```bash
-riak-repl add-site 192.168.1.10 9010 server_a_to_c
+riak repl add-site 192.168.1.10 9010 server_a_to_c
 ```
 

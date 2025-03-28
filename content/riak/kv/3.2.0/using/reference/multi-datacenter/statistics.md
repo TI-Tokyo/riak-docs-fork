@@ -18,9 +18,9 @@ aliases:
   - /riak/kv/3.2.0/ops/mdc/statistics
 ---
 
-The following definitions describe the output of `riak-repl status`.
+The following definitions describe the output of `riak repl status`.
 Both Version 2 and Version 3 Replication statistics can be obtained
-using the `riak-repl status` command.
+using the `riak repl status` command.
 
 There are two things that you should note:
 
@@ -36,10 +36,10 @@ Field | Description
 
 ## Performance
 
-The `riak-repl status` command should not be executed more than once a
+The `riak repl status` command should not be executed more than once a
 minute, as statistics are recalculated every time the command is
 executed, and some statistics require network communication between
-nodes. This performance note also applies to the HTTP `/riak-repl/stats`
+nodes. This performance note also applies to the HTTP `/riak repl/stats`
 endpoint.
 
 ## Realtime Replication Statistics
@@ -146,7 +146,7 @@ Field | Description
 
 ## Version 2 Replication Statistics
 
-The following definitions describe the output of `riak-repl status`.
+The following definitions describe the output of `riak repl status`.
 Please note that many of these statistics will only appear on the
 current leader node.
 
@@ -228,12 +228,12 @@ These stats can be accessed via the command line with the following
 command:
 
 ```curl
-curl -q http://127.0.0.1:8098/riak-repl/stats
+curl -q http://127.0.0.1:8098/riak repl/stats
 ```
 
 A simple way to view formatted statistics is to use a command such as:
 
 ```curl
-curl -q http://127.0.0.1:8098/riak-repl/stats | json_pp
+curl -q http://127.0.0.1:8098/riak repl/stats | json_pp
 ```
 

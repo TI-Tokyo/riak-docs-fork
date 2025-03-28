@@ -55,7 +55,7 @@ Note that you must restart to have the above settings take effect.
 Download your version of the Riak binary package for Solaris 10:
 
 ```bash
-curl -o /tmp/BASHOriak-2.1.3-Solaris10-i386.pkg.gz http://s3.amazonaws.com/downloads.basho.com/riak/2.1/2.1.3/solaris/10/BASHOriak-2.1.3-Solaris10-x86_64.pkg.gz
+curl -o /tmp/BASHOriak-2.1.3-Solaris10-i386.pkg.gz https://files.tiot.jp/riak/kv/2.1/2.1.1/solaris/10/BASHOriak-2.1.1-Solaris10-x86_64.pkg.gz
 ```
 
 Next, install the package:
