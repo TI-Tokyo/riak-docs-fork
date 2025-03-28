@@ -36,23 +36,22 @@ This release is tested with OTP 22, OTP 24 and OTP 25; but optimal performance i
 - Alpine Linux 3.16
 - Alpine Linux 3.18
 - Alpine Linux 3.21
-- Amazon Linux 2016.09 (AWS)
 - Amazon Linux 2 (AWS)
+- Amazon Linux 2023
 - CentOS 7
 - CentOS 8
-- Debian 8.0 ("Jessie")
+- CentOS 9
 - Debian 9.0 ("Stretch")
 - Debian 10.0 ("Buster")
+- Debian 11.0 ("Bullseye")
 - Oracle Linux 8
 - Red Hat Enterprise Linux 7
 - Red Hat Enterprise Linux 8
+- Red Hat Enterprise Linux 9
 - Raspbian Buster
-- Ubuntu 16.04 ("Xenial Xerus")
 - Ubuntu 18.04 ("Bionic Beaver")
 - Ubuntu 20.04.4 ("Focal Fossa")
-- FreeBSD 10.4
-- FreeBSD 11.1
-- Mac OSX 10.11+ (development only)
+- Ubuntu 22.04 ("Jammy Jellyfish")
 
 ## Getting Started
 

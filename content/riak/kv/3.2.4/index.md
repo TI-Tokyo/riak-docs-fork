@@ -33,23 +33,20 @@ This release is tested with OTP 20, OTP 21 and OTP 22; but optimal performance i
 
 ## Supported Operating Systems
 
-- Amazon Linux 2016.09 (AWS)
-- Amazon Linux 2 (AWS)
-- CentOS 7
+- Alpine Linux 3.21
+- Amazon Linux 2023
 - CentOS 8
-- Debian 8.0 ("Jessie")
-- Debian 9.0 ("Stretch")
+- CentOS 9
 - Debian 10.0 ("Buster")
-- Oracle Linux 8
-- Red Hat Enterprise Linux 7
+- Debian 11.0 ("Bullseye")
+- Debian 12.0 ("Bookworm")
+- Oracle Linux 9
 - Red Hat Enterprise Linux 8
-- Raspbian Buster
-- Ubuntu 16.04 ("Xenial Xerus")
-- Ubuntu 18.04 ("Bionic Beaver")
+- Red Hat Enterprise Linux 9
+- Raspbian Bullseye
 - Ubuntu 20.04.4 ("Focal Fossa")
-- FreeBSD 10.4
-- FreeBSD 11.1
-- Mac OSX 10.11+ (development only)
+- Ubuntu 22.04 ("Jammy Jellyfish")
+- Ubuntu 24.04 ("Noble Numbat")
 
 ## Getting Started
 
