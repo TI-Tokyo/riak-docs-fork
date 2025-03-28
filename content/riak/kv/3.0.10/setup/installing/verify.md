@@ -158,6 +158,21 @@ riak admin diag
 
 More extensive documentation for Riaknostic can be found in the [Inspecting a Node][cluster ops inspect node] guide.
 
+## riak chkconfig
+It is good practice to run `riak chkconfig` before starting your node for the first time.
+
+This command will determine whether the syntax in your configuration files is correct.
+
+```
+riak chkconfig
+```
+
+If your configuration files are syntactically sound, you should see the output `config is OK` followed by a listing of files that were checked. If, however, something is syntactically awry, you’ll see an error output that provides details about what is wrong.
+
+The error message will specify which configurable parameters are syntactically unsound and attempt to provide an explanation why.
+
+Please note that the chkconfig command only checks for syntax. It will not be able to discern if your configuration is otherwise unsound, e.g. if your configuration will cause problems on your operating system or doesn’t activate subsystems that you would like to use.
+
 ## Now what?
 
 You have a working Riak node!
