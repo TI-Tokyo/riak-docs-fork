@@ -29,27 +29,22 @@ aliases:
 
 Riak KV is a distributed NoSQL database designed to deliver maximum data availability by distributing data across multiple servers. As long as your Riak KV client can reach one Riak server, it should be able to write data.
 
-This release is tested with OTP 20, OTP 21 and OTP 22; but optimal performance is likely to be achieved when using OTP 22.
+This release is tested with OTP 24 and OTP 25; but optimal performance is likely to be achieved when using OTP 25.
 
 ## Supported Operating Systems
 
-- Amazon Linux 2016.09 (AWS)
-- Amazon Linux 2 (AWS)
-- CentOS 7
+- Alpine Linux 3.21
+- Amazon Linux 2023
 - CentOS 8
-- Debian 8.0 ("Jessie")
-- Debian 9.0 ("Stretch")
 - Debian 10.0 ("Buster")
+- Debian 11.0 ("Bullseye")
+- Debian 12.0 ("Bookworm")
 - Oracle Linux 8
-- Red Hat Enterprise Linux 7
 - Red Hat Enterprise Linux 8
-- Raspbian Buster
-- Ubuntu 16.04 ("Xenial Xerus")
-- Ubuntu 18.04 ("Bionic Beaver")
+- Raspbian Bullseye
 - Ubuntu 20.04.4 ("Focal Fossa")
-- FreeBSD 10.4
-- FreeBSD 11.1
-- Mac OSX 10.11+ (development only)
+- Ubuntu 22.04 ("Jammy Jellyfish")
+- Ubuntu 24.04 ("Noble Numbat")
 
 ## Getting Started
 

@@ -22,14 +22,11 @@ aliases:
 ---
 
 [install aws]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/amazon-web-services
+[install alpine]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/alpine-linux
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/debian-ubuntu
-[install freebsd]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/freebsd
-[install mac osx]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/mac-osx
+[install oracle linux]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/oracle-linux
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/rhel-centos
-[install suse]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/suse
-[install windows azure]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/windows-azure
-[install source index]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/source
-[community projects]: {{<baseurl>}}community/projects
+[install freebsd]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/freebsd
 [upgrade index]: {{<baseurl>}}riak/kv/3.2.0/setup/upgrading
 
 ## Supported Platforms
@@ -39,9 +36,12 @@ environments. The following information will help you to
 properly install or upgrade Riak in one of the supported environments:
 
   * [Amazon Web Services][install aws]
+  * [Alpine Linux][install alpine]
   * [Debian & Ubuntu][install debian & ubuntu]
-  * [Mac OS X][install mac osx]
   * [RHEL & CentOS][install rhel & centos]
+  * [Oracle Linux][install oracle linux]
+  * [freebsd][install freebsd]
+  * [Raspbian]
 
 ## Building from Source
 
