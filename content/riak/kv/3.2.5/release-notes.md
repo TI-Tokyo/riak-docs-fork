@@ -26,10 +26,7 @@ Released Jan 26, 2025.
 
 This release contains the following fixes and enhancements:
 
-* Improve the performance of riak admin status requests whether via or console or web. Note that the statistic for sys_monitor_count will no longer produced as part of this change - but it can be checked if required using the riak_kv_util:sys_monitor_count/0 function.
-* Fix an issue with the partial merge feature introduced to the leveled backend in Riak 3.2.3, which could cause vnodes to crash and restart.
-* Improve the handling of handoff object folds in leveled to prevent handoff crashes due to bugs or inefficiency that could lead to timeouts.
-* Although the issue with partial merge is only expected to occur in relatively rare circumstances, it is recommended that installations presently on Riak 3.2.3 and using the leveled backend, should schedule an upgrade to 3.2.5 as soon as possible.
+This release contains a fix for the nextgen replication full-sync solution, fixing an issue for which there already exists a workaround in Riak 3.2.4. Unless clusters have very high key counts (i.e. around 10 billion objects are larger), the workaround in Riak 3.2.4 should generally be sufficient, and so the update is non-urgent.
 
 
 ## Previous Release Notes
