@@ -37,6 +37,7 @@ The following steps have been tested to work with Riak KV on:
 - Debian 9.0
 - Debian 10.0
 - Debian 11.0
+- Raspbian Buster
 
 ## Installing From Package
 
@@ -97,6 +98,13 @@ sudo dpkg -i riak_3.2.5-OTP25_amd64.deb
 ```bash
 wget https://files.tiot.jp/riak/kv/3.2/3.2.5/debian/12/riak_3.2.5-OTP25_amd64.deb
 sudo dpkg -i riak_3.2.5-OTP25_amd64.deb
+```
+
+#### Raspbian Bullseye
+
+```bash
+wget https://files.tiot.jp/riak/kv/3.2/3.2.5/raspbian/bullseye/riak_3.2.5-OTP22_arm64.deb
+sudo dpkg -i riak_3.2.5-OTP22_arm64.deb
 ```
 
 ## Next Steps
