@@ -31,9 +31,9 @@ package or by compiling from source code.
 
 The following steps have been tested to work with Riak KV on:
 
-- Ubuntu 18.04
 - Ubuntu 20.04
 - Ubuntu 22.04
+- Ubuntu 24.04
 - Debian 9.0
 - Debian 10.0
 - Debian 11.0
@@ -43,17 +43,6 @@ The following steps have been tested to work with Riak KV on:
 
 If you wish to install the deb packages by hand, follow these
 instructions.
-
-### Installing on Non-LTS Ubuntu Releases
-
-Typically we only package Riak for LTS releases to keep our build and
-testing matrix focused.  In some cases, such as the historic Ubuntu 11.04 (Natty),
-there are changes that affect how Riak is packaged, so we will release a
-separate package for that non-LTS release. In most other cases, however,
-if you are running a non-LTS release (such as 12.10) it is safe to
-follow the below instructions for the LTS release prior to your release.
-In the case of later subversions such as Ubuntu 12.10, follow the installation instructions for
-Ubuntu 12.04.
 
 ### PAM Library Requirement for Ubuntu
 
