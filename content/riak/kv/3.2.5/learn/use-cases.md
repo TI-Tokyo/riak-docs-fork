@@ -2,35 +2,35 @@
 title: "Use Cases For Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Use Cases"
     identifier: "learn_use_cases"
     weight: 101
     parent: "learn"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/data-modeling/
-  - /riak/kv/3.2.4/dev/data-modeling/
+  - /riak/3.2.5/dev/data-modeling/
+  - /riak/kv/3.2.5/dev/data-modeling/
 ---
 
-[dev data model articles etc]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#articles-blog-posts-and-other-content
-[dev data model log data]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#log-data
-[dev data model sensor data]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#sensor-data
-[dev data model serve advertisements]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#serving-advertisements
-[dev data model sess storage]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#session-storage
-[dev data model user acct]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#user-accounts
-[dev data model user events]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#user-events-and-timelines
-[dev data model user settings]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling/#user-settings-and-preferences
-[dev data types]: {{<baseurl>}}riak/kv/3.2.4/developing/data-types
-[plan backend bitcask]: {{<baseurl>}}riak/kv/3.2.4/setup/planning/backend/bitcask
-[replication properties]: {{<baseurl>}}riak/kv/3.2.4/developing/app-guide/replication-properties
-[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/mapreduce
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/secondary-indexes
+[dev data model articles etc]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#articles-blog-posts-and-other-content
+[dev data model log data]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#log-data
+[dev data model sensor data]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#sensor-data
+[dev data model serve advertisements]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#serving-advertisements
+[dev data model sess storage]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#session-storage
+[dev data model user acct]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#user-accounts
+[dev data model user events]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#user-events-and-timelines
+[dev data model user settings]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling/#user-settings-and-preferences
+[dev data types]: {{<baseurl>}}riak/kv/3.2.5/developing/data-types
+[plan backend bitcask]: {{<baseurl>}}riak/kv/3.2.5/setup/planning/backend/bitcask
+[replication properties]: {{<baseurl>}}riak/kv/3.2.5/developing/app-guide/replication-properties
+[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/mapreduce
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/secondary-indexes
 
 Riak is a flexible data storage technology capable of addressing a wide variety
 of problems in a scalable way. In this guide, we'll list a number of use cases

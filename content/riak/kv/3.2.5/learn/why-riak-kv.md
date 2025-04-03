@@ -2,30 +2,30 @@
 title: "Why Riak KV?"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Why Riak KV?"
     identifier: "learn_why_riak_kv"
     weight: 100
     parent: "learn"
 toc: true
 aliases:
-  - /riak/3.2.4/theory/why-riak/
-  - /riak/kv/3.2.4/theory/why-riak/
+  - /riak/3.2.5/theory/why-riak/
+  - /riak/kv/3.2.5/theory/why-riak/
 ---
 
-[apps replication properties]: {{<baseurl>}}riak/kv/3.2.4/developing/app-guide/replication-properties
-[Basho Bench]: {{<baseurl>}}riak/kv/3.2.4/using/performance/benchmarking
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/strong-consistency
-[concept eventual consistency]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/eventual-consistency
+[apps replication properties]: {{<baseurl>}}riak/kv/3.2.5/developing/app-guide/replication-properties
+[Basho Bench]: {{<baseurl>}}riak/kv/3.2.5/using/performance/benchmarking
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/strong-consistency
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/eventual-consistency
 [convergent replicated data types]: http://hal.upmc.fr/docs/00/55/55/88/PDF/techreport.pdf
 [Datomic]: http://www.datomic.com/overview.html
-[dev data types]: {{<baseurl>}}riak/kv/3.2.4/developing/data-types
-[glossary read rep]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#read-repair
+[dev data types]: {{<baseurl>}}riak/kv/3.2.5/developing/data-types
+[glossary read rep]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#read-repair
 
 ## What is Riak?
 

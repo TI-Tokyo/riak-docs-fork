@@ -2,26 +2,26 @@
 title: "Installing Erlang"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Installing Erlang"
     identifier: "installing_source_erlang"
     weight: 301
     parent: "installing_source"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/building/installing/erlang
-  - /riak/kv/3.2.4/ops/building/installing/erlang
-  - /riak/3.2.4/installing/source/erlang/
-  - /riak/kv/3.2.4/installing/source/erlang/
+  - /riak/3.2.5/ops/building/installing/erlang
+  - /riak/kv/3.2.5/ops/building/installing/erlang
+  - /riak/3.2.5/installing/source/erlang/
+  - /riak/kv/3.2.5/installing/source/erlang/
 ---
 
-[install index]: {{<baseurl>}}riak/kv/3.2.4/setup/installing
-[security basics]: {{<baseurl>}}riak/kv/3.2.4/using/security/basics
+[install index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing
+[security basics]: {{<baseurl>}}riak/kv/3.2.5/using/security/basics
 
 Pre-packaged versions of Riak include an Erlang installation. If you are building Riak from source, you will need to install [Basho's patched version of Erlang](https://files.tiot.jp/riak/erlang/otp_src_R16B02-basho10.tar.gz). **If you do not use this version of Erlang, you will not be able to use Riak's [security features][security basics].**
 

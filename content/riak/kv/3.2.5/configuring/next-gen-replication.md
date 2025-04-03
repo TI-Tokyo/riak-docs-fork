@@ -3,12 +3,12 @@ title_supertext: "Configuring:"
 title: "Next Gen Replication"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2024-09-16T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Next Gen Replication"
     identifier: "nextgen_rep"
     weight: 200

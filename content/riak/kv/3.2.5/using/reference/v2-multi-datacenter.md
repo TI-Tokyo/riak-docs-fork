@@ -2,12 +2,12 @@
 title: "V2 Multi-Datacenter Replication Reference"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "V2 Replication"
     identifier: "managing_ref_v2"
     weight: 115
@@ -20,7 +20,7 @@ aliases:
 [v2 mdc fullsync]: ./scheduling-fullsync
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.4/using/reference/v3-multi-datacenter/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.5/using/reference/v3-multi-datacenter/) instead.
 {{% /note %}}
 
 ## In This Section

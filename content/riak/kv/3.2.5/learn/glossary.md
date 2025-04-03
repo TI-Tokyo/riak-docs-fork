@@ -2,12 +2,12 @@
 title: "Riak KV Glossary"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Riak KV Glossary"
     identifier: "learn_glossary"
     weight: 103
@@ -16,38 +16,38 @@ toc: true
 aliases:
 ---
 
-[apps replication properties]: {{<baseurl>}}riak/kv/3.2.4/developing/app-guide/replication-properties
+[apps replication properties]: {{<baseurl>}}riak/kv/3.2.5/developing/app-guide/replication-properties
 [basho bench GH]: http://github.com/basho/basho_bench/
-[cluster ops add remove node]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/adding-removing-nodes
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/strong-consistency
-[concept buckets]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/buckets
-[concept causal context vc]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/causal-context/#vector-clocks
-[concept clusters]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/clusters
-[concept crdts]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/crdts
-[concept eventual consistency]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/eventual-consistency
-[concept keys objects]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/keys-and-objects
-[concept replication]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/replication
-[concept strong consistency]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/strong-consistency
-[dev kv model]: {{<baseurl>}}riak/kv/3.2.4/developing/key-value-modeling
-[concept replication aae]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/replication/#active-anti-entropy
-[dev api http]: {{<baseurl>}}riak/kv/3.2.4/developing/api/http
-[dev data model]: {{<baseurl>}}riak/kv/3.2.4/developing/data-modeling
-[dev data types]: {{<baseurl>}}riak/kv/3.2.4/developing/data-types
-[glossary read rep]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#read-repair
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode
+[cluster ops add remove node]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/adding-removing-nodes
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/strong-consistency
+[concept buckets]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/buckets
+[concept causal context vc]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/causal-context/#vector-clocks
+[concept clusters]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/clusters
+[concept crdts]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/crdts
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/eventual-consistency
+[concept keys objects]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/keys-and-objects
+[concept replication]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/replication
+[concept strong consistency]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/strong-consistency
+[dev kv model]: {{<baseurl>}}riak/kv/3.2.5/developing/key-value-modeling
+[concept replication aae]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/replication/#active-anti-entropy
+[dev api http]: {{<baseurl>}}riak/kv/3.2.5/developing/api/http
+[dev data model]: {{<baseurl>}}riak/kv/3.2.5/developing/data-modeling
+[dev data types]: {{<baseurl>}}riak/kv/3.2.5/developing/data-types
+[glossary read rep]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#read-repair
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
 [Lager]: https://github.com/basho/lager
-[learn dynamo]: {{<baseurl>}}riak/kv/3.2.4/learn/dynamo
-[plan cluster capacity]: {{<baseurl>}}riak/kv/3.2.4/setup/planning/cluster-capacity
-[repair recover failure recovery]: {{<baseurl>}}riak/kv/3.2.4/using/repair-recovery/failure-recovery
-[repair recover repairs]: {{<baseurl>}}riak/kv/3.2.4/using/repair-recovery/repairs
+[learn dynamo]: {{<baseurl>}}riak/kv/3.2.5/learn/dynamo
+[plan cluster capacity]: {{<baseurl>}}riak/kv/3.2.5/setup/planning/cluster-capacity
+[repair recover failure recovery]: {{<baseurl>}}riak/kv/3.2.5/using/repair-recovery/failure-recovery
+[repair recover repairs]: {{<baseurl>}}riak/kv/3.2.5/using/repair-recovery/repairs
 [Riak Core]: https://github.com/basho/riak_core
 [Riak KV]: https://github.com/basho/riak_kv
 [Riak Pipe]: https://github.com/basho/riak_pipe
 [Riak Pipe - the New MapReduce Power]: http://basho.com/riak-pipe-the-new-mapreduce-power/
 [Riak Pipe - Riak's Distributed Processing Framework]: http://vimeo.com/53910999
 [Understanding Riak's Configurable Behaviors]: http://basho.com/riaks-config-behaviors-part-2/
-[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/mapreduce
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/secondary-indexes
+[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/mapreduce
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/secondary-indexes
 [Where To Start With Riak Core]: http://basho.com/where-to-start-with-riak-core/
 [Wikipedia:Consistent Hashing]: http://en.wikipedia.org/wiki/Consistent_hashing
 
@@ -74,7 +74,7 @@ Basho Bench is a benchmarking tool created to conduct accurate and
 repeatable performance tests and stress tests and to produce performance
 graphs.
 
-* [Basho Bench]({{<baseurl>}}riak/kv/3.2.4/using/performance/benchmarking)
+* [Basho Bench]({{<baseurl>}}riak/kv/3.2.5/using/performance/benchmarking)
 * [GitHub repository][basho bench GH]
 
 ## Bucket
@@ -93,7 +93,7 @@ Bucket types enable you to create and manage sets of bucket properties
 that, when applied to buckets, dictate those buckets' behavior. They
 also act as a third namespace in Riak in addition to buckets and keys.
 
-* [Bucket Types]({{<baseurl>}}riak/kv/3.2.4/developing/usage/bucket-types)
+* [Bucket Types]({{<baseurl>}}riak/kv/3.2.5/developing/usage/bucket-types)
 
 ## Cluster
 

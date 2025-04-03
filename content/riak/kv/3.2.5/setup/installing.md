@@ -2,12 +2,12 @@
 title: "Installing Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Installing"
     identifier: "installing"
     weight: 101
@@ -15,17 +15,17 @@ menu:
     pre: cog
 toc: true
 aliases:
-  - /riak/3.2.4/ops/building/installing
-  - /riak/kv/3.2.4/ops/building/installing
-  - /riak/3.2.4/installing/
-  - /riak/kv/3.2.4/installing/
+  - /riak/3.2.5/ops/building/installing
+  - /riak/kv/3.2.5/ops/building/installing
+  - /riak/3.2.5/installing/
+  - /riak/kv/3.2.5/installing/
 ---
 
-[install aws]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/amazon-web-services
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/debian-ubuntu
-[install rhel & centos]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/rhel-centos
-[install oracle linux]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/oracle-linux
-[upgrade index]: {{<baseurl>}}riak/kv/3.2.4/setup/upgrading
+[install aws]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/amazon-web-services
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu
+[install rhel & centos]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/rhel-centos
+[install oracle linux]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/oracle-linux
+[upgrade index]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading
 
 ## Supported Platforms
 

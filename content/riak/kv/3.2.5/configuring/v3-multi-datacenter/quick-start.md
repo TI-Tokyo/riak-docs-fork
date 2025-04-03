@@ -3,12 +3,12 @@ title_supertext: "V3 Multi-Datacenter Replication:"
 title: "Quickstart"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Quickstart"
     identifier: "configuring_v3_quickstart"
     weight: 100
@@ -16,13 +16,13 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.4/ops/mdc/v3/quick-start
-  - /riak/kv/3.2.4/ops/mdc/v3/quick-start
+  - /riak/3.2.5/ops/mdc/v3/quick-start
+  - /riak/kv/3.2.5/ops/mdc/v3/quick-start
 ---
 
-[perf index]: {{<baseurl>}}riak/kv/3.2.4/using/performance
-[config v3 mdc]: {{<baseurl>}}riak/kv/3.2.4/configuring/v3-multi-datacenter
-[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/v3-multi-datacenter
+[perf index]: {{<baseurl>}}riak/kv/3.2.5/using/performance
+[config v3 mdc]: {{<baseurl>}}riak/kv/3.2.5/configuring/v3-multi-datacenter
+[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/v3-multi-datacenter
 
 This guide will walk you through the process of configuring Riak's v3
 Replication to perform replication between two sample Riak clusters on

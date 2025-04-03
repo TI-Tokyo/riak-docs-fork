@@ -3,12 +3,12 @@ title_supertext: "Installing on"
 title: "Alpine Linux"
 description: "installing Riak on Alpine Linux"
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Alpine Linux"
     identifier: "installing_alpine_linux"
     weight: 301
@@ -18,15 +18,15 @@ version_history:
   in: "3.0.9+"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/building/installing/installing-on-alpine-linux
-  - /riak/kv/3.2.4/ops/building/installing/installing-on-alpine-linux
-  - /riak/3.2.4/installing/alpine-linux/
-  - /riak/kv/3.2.4/installing/alpine-linux/
+  - /riak/3.2.5/ops/building/installing/installing-on-alpine-linux
+  - /riak/kv/3.2.5/ops/building/installing/installing-on-alpine-linux
+  - /riak/3.2.5/installing/alpine-linux/
+  - /riak/kv/3.2.5/installing/alpine-linux/
 ---
 
-[security index]: {{<baseurl>}}riak/kv/3.2.4/using/security/
-[install source erlang]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/verify
+[security index]: {{<baseurl>}}riak/kv/3.2.5/using/security/
+[install source erlang]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/verify
 
 Riak KV can be installed on Alpine Linux using a binary
 package from the Riak repository.
@@ -50,8 +50,8 @@ To install Riak on Alpine Linux:
    * Run `apk update`
 4. Install Riak:
    * For the latest version, run `apk add riak`
-   * For version 3.2.4 using OTP 24, run `apk add riak=3.2.4.24-r1`
-   * For version 3.2.4 using OTP 25, run `apk add riak=3.2.4.25-r1`
+   * For version 3.2.5 using OTP 24, run `apk add riak=3.2.5.24-r1`
+   * For version 3.2.5 using OTP 25, run `apk add riak=3.2.5.25-r1`
 
 
 

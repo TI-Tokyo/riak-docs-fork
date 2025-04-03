@@ -2,43 +2,43 @@
 title: "riak admin Command Line Interface"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "riak admin CLI"
     identifier: "cluster_admin_cli"
     weight: 101
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/running/tools/riak-admin
-  - /riak/kv/3.2.4/ops/running/tools/riak-admin
+  - /riak/3.2.5/ops/running/tools/riak-admin
+  - /riak/kv/3.2.5/ops/running/tools/riak-admin
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference
-[use admin commands]: {{<baseurl>}}riak/kv/3.2.4/using/admin/commands
-[use admin commands#join]: {{<baseurl>}}riak/kv/3.2.4/using/admin/commands/#join
-[use admin commands#leave]: {{<baseurl>}}riak/kv/3.2.4/using/admin/commands/#leave
-[cluster ops backup]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/backing-up
-[config reference#node-metadata]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference/#node-metadata
-[cluster ops change info]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/changing-cluster-info
-[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/mapreduce
-[usage commit hooks]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/commit-hooks
-[config reference#ring]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference/#ring
-[cluster ops inspect node]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/inspecting-node
-[use ref monitoring]: {{<baseurl>}}riak/kv/3.2.4/using/reference/statistics-monitoring
-[downgrade]: {{<baseurl>}}riak/kv/3.2.4/setup/downgrade
-[security index]: {{<baseurl>}}riak/kv/3.2.4/using/security/
-[security managing]: {{<baseurl>}}riak/kv/3.2.4/using/security/managing-sources
-[cluster ops bucket types]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/bucket-types
-[cluster ops 2i]: {{<baseurl>}}riak/kv/3.2.4/using/reference/secondary-indexes
-[repair recover index]: {{<baseurl>}}riak/kv/3.2.4/using/repair-recovery
-[cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/strong-consistency
-[cluster ops handoff]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/handoff
-[use admin riak admin#stats]: {{<baseurl>}}riak/kv/3.2.4/using/admin/riak-admin/#stats
+[config reference]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference
+[use admin commands]: {{<baseurl>}}riak/kv/3.2.5/using/admin/commands
+[use admin commands#join]: {{<baseurl>}}riak/kv/3.2.5/using/admin/commands/#join
+[use admin commands#leave]: {{<baseurl>}}riak/kv/3.2.5/using/admin/commands/#leave
+[cluster ops backup]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/backing-up
+[config reference#node-metadata]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/#node-metadata
+[cluster ops change info]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/changing-cluster-info
+[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/mapreduce
+[usage commit hooks]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/commit-hooks
+[config reference#ring]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/#ring
+[cluster ops inspect node]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/inspecting-node
+[use ref monitoring]: {{<baseurl>}}riak/kv/3.2.5/using/reference/statistics-monitoring
+[downgrade]: {{<baseurl>}}riak/kv/3.2.5/setup/downgrade
+[security index]: {{<baseurl>}}riak/kv/3.2.5/using/security/
+[security managing]: {{<baseurl>}}riak/kv/3.2.5/using/security/managing-sources
+[cluster ops bucket types]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/bucket-types
+[cluster ops 2i]: {{<baseurl>}}riak/kv/3.2.5/using/reference/secondary-indexes
+[repair recover index]: {{<baseurl>}}riak/kv/3.2.5/using/repair-recovery
+[cluster ops strong consistency]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/strong-consistency
+[cluster ops handoff]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/handoff
+[use admin riak admin#stats]: {{<baseurl>}}riak/kv/3.2.5/using/admin/riak-admin/#stats
 
 ## `riak admin`
 
@@ -202,7 +202,7 @@ useful when deploying custom built-in [MapReduce][usage mapreduce]
 functions.
 
 **Note**: This needs to be run on _all nodes_ in the cluster.
-**Note**: This command has been deprecated in KV 3.2.4 onwards and will no longer function.
+**Note**: This command has been deprecated in KV 3.2.5 onwards and will no longer function.
 
 ```bash
 riak admin js-reload
@@ -526,7 +526,7 @@ like to run, which types of diagnostic messages you wish to see, and so
 on. More comprehensive information can be found in the documentation on
 [inspecting a node][cluster ops inspect node].
 
-**Note**: This command has been deprecated in KV 3.2.4 onwards and will no longer function.
+**Note**: This command has been deprecated in KV 3.2.5 onwards and will no longer function.
 
 ## stat
 

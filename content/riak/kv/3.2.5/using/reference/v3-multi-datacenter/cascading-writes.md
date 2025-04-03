@@ -3,12 +3,12 @@ title_supertext: "V3 Multi-Datacenter Replication Reference:"
 title: "Cascading Realtime Writes"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Cascading Writes"
     identifier: "managing_ref_v3_cascading_writes"
     weight: 102
@@ -16,8 +16,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.4/ops/mdc/v3/cascading-writes
-  - /riak/kv/3.2.4/ops/mdc/v3/cascading-writes
+  - /riak/3.2.5/ops/mdc/v3/cascading-writes
+  - /riak/kv/3.2.5/ops/mdc/v3/cascading-writes
 ---
 
 ## Introduction
@@ -85,7 +85,7 @@ cascade.
 ## Usage
 
 Riak Cascading Writes can be enabled and disabled using the
-`riak repl` command. Please see the [Version 3 Operations guide]({{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/v3-multi-datacenter) for more information.
+`riak repl` command. Please see the [Version 3 Operations guide]({{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/v3-multi-datacenter) for more information.
 
 To show current the settings:
 

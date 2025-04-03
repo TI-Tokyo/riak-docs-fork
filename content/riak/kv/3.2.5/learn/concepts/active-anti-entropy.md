@@ -2,29 +2,29 @@
 title: "Active Anti-Entropy"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Active Anti-Entropy"
     identifier: "learn_concepts_aae"
     weight: 100
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/3.2.4/theory/concepts/aae
-  - /riak/kv/3.2.4/theory/concepts/aae
+  - /riak/3.2.5/theory/concepts/aae
+  - /riak/kv/3.2.5/theory/concepts/aae
 ---
 
-[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/v3-multi-datacenter
-[cluster ops aae]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/active-anti-entropy
-[concept clusters]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/clusters
-[concept eventual consistency]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/eventual-consistency
-[config aae]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference/#active-anti-entropy
-[glossary read rep]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#read-repair
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode
+[cluster ops v3 mdc]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/v3-multi-datacenter
+[cluster ops aae]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/active-anti-entropy
+[concept clusters]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/clusters
+[concept eventual consistency]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/eventual-consistency
+[config aae]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/#active-anti-entropy
+[glossary read rep]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#read-repair
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
 [Merkle tree]: http://en.wikipedia.org/wiki/Merkle_tree
 
 In a [clustered][concept clusters], [eventually consistent][concept eventual consistency] system like Riak, conflicts between object replicas stored

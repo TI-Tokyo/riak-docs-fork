@@ -3,12 +3,12 @@ title_supertext: "Configuring:"
 title: "V2 Multi-Datacenter Replication"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "V2 Multi-Datacenter"
     identifier: "configuring_v2"
     weight: 210
@@ -16,14 +16,14 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.4/ops/mdc/v2/configuration
-  - /riak/kv/3.2.4/ops/mdc/v2/configuration
+  - /riak/3.2.5/ops/mdc/v2/configuration
+  - /riak/kv/3.2.5/ops/mdc/v2/configuration
 ---
 
-[config v2 ssl]: {{<baseurl>}}riak/kv/3.2.4/configuring/v2-multi-datacenter/ssl
+[config v2 ssl]: {{<baseurl>}}riak/kv/3.2.5/configuring/v2-multi-datacenter/ssl
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.4/configuring/v3-multi-datacenter/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.5/configuring/v3-multi-datacenter/) instead.
 {{% /note %}}
 
 Riak's Multi-Datacenter Replication capabilities offer a

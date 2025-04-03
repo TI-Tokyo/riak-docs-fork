@@ -2,12 +2,12 @@
 title: "Write Once"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Write Once"
     identifier: "app_guide_write_once"
     weight: 102
@@ -16,14 +16,14 @@ toc: true
 version_history:
   in: "2.1.0+"
 aliases:
-  - /riak/3.2.4/dev/advanced/write-once
-  - /riak/kv/3.2.4/dev/advanced/write-once
+  - /riak/3.2.5/dev/advanced/write-once
+  - /riak/kv/3.2.5/dev/advanced/write-once
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode
-[bucket type]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/bucket-types
-[Riak data types]: {{<baseurl>}}riak/kv/3.2.4/developing/data-types
-[strong consistency]: {{<baseurl>}}riak/kv/3.2.4/developing/app-guide/strong-consistency
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
+[bucket type]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/bucket-types
+[Riak data types]: {{<baseurl>}}riak/kv/3.2.5/developing/data-types
+[strong consistency]: {{<baseurl>}}riak/kv/3.2.5/developing/app-guide/strong-consistency
 
 Write-once buckets are buckets whose entries are intended to be written exactly once and never updated or overwritten. Buckets of this type circumvent the normal "coordinated PUT" path, which would otherwise result in a read on the coordinating vnode before the write. Avoiding coordinated PUTs results in higher throughput and lower PUT latency, though at the cost of different semantics in the degenerate case of sibling resolution.
 
@@ -150,7 +150,7 @@ LevelDB. Riak will automatically fall back to synchronous writes with all other
 backends.
 
 {{% note title="Note on the `multi` backend" %}}
-The [Multi]({{<baseurl>}}riak/kv/3.2.4/setup/planning/backend/multi) backend does not
+The [Multi]({{<baseurl>}}riak/kv/3.2.5/setup/planning/backend/multi) backend does not
 support asynchronous writes. Therefore, if LevelDB is used with the Multi
 backend, it will be used in synchronous mode.
 {{% /note %}}

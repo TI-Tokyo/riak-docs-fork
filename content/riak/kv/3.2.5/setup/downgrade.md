@@ -2,26 +2,26 @@
 title: "Downgrading"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Downgrading"
     identifier: "downgrading"
     weight: 103
     parent: "setup_index"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/upgrading/rolling-downgrades/
-  - /riak/kv/3.2.4/ops/upgrading/rolling-downgrades/
+  - /riak/3.2.5/ops/upgrading/rolling-downgrades/
+  - /riak/kv/3.2.5/ops/upgrading/rolling-downgrades/
 ---
 
-[rolling upgrade]: {{<baseurl>}}riak/kv/3.2.4/setup/upgrading/cluster
-[config ref]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference
-[concept aae]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/active-anti-entropy/
-[aae status]: {{<baseurl>}}riak/kv/3.2.4/using/admin/riak-admin/#aae-status
+[rolling upgrade]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading/cluster
+[config ref]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference
+[concept aae]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/active-anti-entropy/
+[aae status]: {{<baseurl>}}riak/kv/3.2.5/using/admin/riak-admin/#aae-status
 
 Downgrades of Riak KV are tested and supported for two feature release versions, with the general procedure being similar to that of a [rolling upgrade][rolling upgrade].
 
@@ -51,7 +51,7 @@ For every node in the cluster:
 
 ### When Downgrading is No Longer an Option
 
-If you enabled LZ4 compression in LevelDB and/or enabled global expiration in LevelDB when you installed KV 3.2.4, you cannot downgrade.
+If you enabled LZ4 compression in LevelDB and/or enabled global expiration in LevelDB when you installed KV 3.2.5, you cannot downgrade.
 
 ## General Process
 

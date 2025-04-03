@@ -2,12 +2,12 @@
 title: "Developing with Riak Redis Add-on"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Develop with Redis Add-on"
     identifier: "add-ons_redis_develop"
     weight: 403
@@ -18,12 +18,12 @@ aliases:
 ---
 
 [redis-clients]: http://redis.io/clients
-[usage bucket types]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/bucket-types/
-[dev api http]: {{<baseurl>}}riak/kv/3.2.4/developing/api/http
+[usage bucket types]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/bucket-types/
+[dev api http]: {{<baseurl>}}riak/kv/3.2.5/developing/api/http
 [config-behaviors]: http://basho.com/posts/technical/riaks-config-behaviors-part-4/
-[apps replication properties]: {{<baseurl>}}riak/kv/3.2.4/developing/app-guide/replication-properties
-[usage commit hooks]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/commit-hooks/
-[concept causal context]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/causal-context
+[apps replication properties]: {{<baseurl>}}riak/kv/3.2.5/developing/app-guide/replication-properties
+[usage commit hooks]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/commit-hooks/
+[concept causal context]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/causal-context
 [ee]: https://www.tiot.jp/en/about-us/contact-us/
 
 This page will walk you through setting up your environment for development with Riak Redis Add-on (RRA), as well as present examples and configuration parameters for basic development operations.

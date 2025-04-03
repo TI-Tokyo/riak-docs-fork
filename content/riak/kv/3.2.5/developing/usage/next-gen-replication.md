@@ -2,12 +2,12 @@
 title: "Next-Gen Replication"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Next Gen Replication"
     identifier: "learn_concepts_next_gen_replication"
     weight: 108
@@ -16,15 +16,15 @@ version_history:
   in: "2.9.1+"
 toc: true
 aliases:
-  - /riak-docs/riak/3.2.4/dev/using/nextgenreplication
+  - /riak-docs/riak/3.2.5/dev/using/nextgenreplication
 ---
-[concept TicTac aae]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/tictac-active-anti-entropy
-[concept causal context vc]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/causal-context/#vector-clocks
-[concept clusters]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/clusters
-[concept vnodes]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/vnodes
-[glossary node]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#node
-[glossary ring]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#ring
-[usage replication]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/replication
+[concept TicTac aae]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/tictac-active-anti-entropy
+[concept causal context vc]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/causal-context/#vector-clocks
+[concept clusters]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/clusters
+[concept vnodes]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/vnodes
+[glossary node]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#node
+[glossary ring]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#ring
+[usage replication]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/replication
 
 ## Next Generation Replication - How it Works
 

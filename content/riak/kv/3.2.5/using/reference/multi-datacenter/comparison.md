@@ -2,23 +2,23 @@
 title: "Multi-Datacenter Replication Reference: Comparsion"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Comparison"
     identifier: "managing_ref_mdc_comparison"
     weight: 103
     parent: "managing_ref_mdc"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/mdc/comparison
-  - /riak/kv/3.2.4/ops/mdc/comparison
+  - /riak/3.2.5/ops/mdc/comparison
+  - /riak/kv/3.2.5/ops/mdc/comparison
 ---
 
-This document is a systematic comparison of [Version 2]({{<baseurl>}}riak/kv/3.2.4/using/reference/v2-multi-datacenter) and [Version 3]({{<baseurl>}}riak/kv/3.2.4/using/reference/v3-multi-datacenter) of Riak's Multi-Datacenter
+This document is a systematic comparison of [Version 2]({{<baseurl>}}riak/kv/3.2.5/using/reference/v2-multi-datacenter) and [Version 3]({{<baseurl>}}riak/kv/3.2.5/using/reference/v3-multi-datacenter) of Riak's Multi-Datacenter
 Replication capabilities.
 
 {{% note title="Important note on mixing versions" %}}
@@ -92,7 +92,7 @@ version 3.
   of workers that will run on a source node, a sink node, and across the
   entire source cluster. This allows for limiting impact on the cluster
   and dialing in fullsync performance.
-* Version 3 is able to take advantage of [Active Anti-Entropy]({{<baseurl>}}riak/kv/3.2.4/learn/concepts/active-anti-entropy/) \(AAE)
+* Version 3 is able to take advantage of [Active Anti-Entropy]({{<baseurl>}}riak/kv/3.2.5/learn/concepts/active-anti-entropy/) \(AAE)
   technology, which can greatly improve fullsync performance.
 * Riak CS MDC `proxy_get` connections will be distributed across the
   source cluster (as CS blocks are requested from the sink cluster in

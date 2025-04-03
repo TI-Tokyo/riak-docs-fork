@@ -2,12 +2,12 @@
 title: "Bucket Types"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Bucket Types"
     identifier: "cluster_operations_bucket_types"
     weight: 104
@@ -28,7 +28,7 @@ words, buckets using the `default` bucket type are free. More on that in the
 next section.
 {{% /note %}}
 
-In Riak versions 2.0 and later, Basho suggests that you [use bucket types]({{<baseurl>}}riak/kv/3.2.4/developing/usage/bucket-types) to namespace and configure all buckets you use. Bucket types have a lower overhead within the cluster than the
+In Riak versions 2.0 and later, Basho suggests that you [use bucket types]({{<baseurl>}}riak/kv/3.2.5/developing/usage/bucket-types) to namespace and configure all buckets you use. Bucket types have a lower overhead within the cluster than the
 default bucket namespace but require an additional setup step on the
 command line.
 

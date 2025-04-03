@@ -2,23 +2,23 @@
 title: "Rolling Restarts"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Rolling Restarts"
     identifier: "repair_recover_restart"
     weight: 103
     parent: "managing_repair_recover"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/running/recovery/rolling-restart
-  - /riak/kv/3.2.4/ops/running/recovery/rolling-restart
+  - /riak/3.2.5/ops/running/recovery/rolling-restart
+  - /riak/kv/3.2.5/ops/running/recovery/rolling-restart
 ---
 
-Because Riak functions as a multi-node system, cluster-level [Riak version upgrades]({{<baseurl>}}riak/kv/3.2.4/setup/upgrading/cluster) and restarts can be performed on a node-by-node, "rolling" basis.
+Because Riak functions as a multi-node system, cluster-level [Riak version upgrades]({{<baseurl>}}riak/kv/3.2.5/setup/upgrading/cluster) and restarts can be performed on a node-by-node, "rolling" basis.
 
 The following steps should be undertaken on each Riak node that you wish to restart:
 

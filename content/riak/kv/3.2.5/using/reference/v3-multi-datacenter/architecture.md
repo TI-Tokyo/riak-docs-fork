@@ -3,12 +3,12 @@ title_supertext: "V3 Multi-Datacenter Replication Reference:"
 title: "Architecture"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Architecture"
     identifier: "managing_ref_v3_architecture"
     weight: 100
@@ -16,12 +16,12 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.4/ops/mdc/v3/architecture
-  - /riak/kv/3.2.4/ops/mdc/v3/architecture
+  - /riak/3.2.5/ops/mdc/v3/architecture
+  - /riak/kv/3.2.5/ops/mdc/v3/architecture
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode
-[concept clusters]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/clusters
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
+[concept clusters]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/clusters
 
 ## How Version 3 Replication Works
 

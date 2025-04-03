@@ -2,12 +2,12 @@
 title: "Rolling Replaces"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Rolling Replaces"
     identifier: "repair_recover_replace"
     weight: 106
@@ -16,9 +16,9 @@ toc: true
 aliases:
 ---
 
-[upgrade]: {{<baseurl>}}riak/kv/3.2.4/setup/upgrading/cluster/
-[rolling restarts]: {{<baseurl>}}riak/kv/3.2.4/using/repair-recovery/rolling-restart/
-[add node]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/adding-removing-nodes
+[upgrade]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading/cluster/
+[rolling restarts]: {{<baseurl>}}riak/kv/3.2.5/using/repair-recovery/rolling-restart/
+[add node]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/adding-removing-nodes
 
 Riak KV functions as a multi-node system, so cluster-level [version upgrades][upgrade] and [restarts][rolling restarts] can be performed on a node-by-node or *rolling* basis.
 

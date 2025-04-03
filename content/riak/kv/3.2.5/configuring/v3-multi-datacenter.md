@@ -3,12 +3,12 @@ tile_supertext: "Configuring:"
 title: "V3 Multi-Datacenter Replication"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "V3 Multi-Datacenter"
     identifier: "configuring_v3"
     weight: 200
@@ -16,12 +16,12 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.4/ops/mdc/v3/configuration
-  - /riak/kv/3.2.4/ops/mdc/v3/configuration
+  - /riak/3.2.5/ops/mdc/v3/configuration
+  - /riak/kv/3.2.5/ops/mdc/v3/configuration
 ---
 
-[config reference#advanced]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference/#advanced-configuration
-[config v3 ssl#verify-peer]: {{<baseurl>}}riak/kv/3.2.4/configuring/v3-multi-datacenter/ssl/#verifying-peer-certificates
+[config reference#advanced]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/#advanced-configuration
+[config v3 ssl#verify-peer]: {{<baseurl>}}riak/kv/3.2.5/configuring/v3-multi-datacenter/ssl/#verifying-peer-certificates
 
 > **Note on the `cluster_mgr` setting**
 >

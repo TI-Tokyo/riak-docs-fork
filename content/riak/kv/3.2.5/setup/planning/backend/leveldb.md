@@ -2,27 +2,27 @@
 title: "LevelDB"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "LevelDB"
     identifier: "planning_backend_leveldb"
     weight: 101
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/advanced/backends/leveldb/
-  - /riak/kv/3.2.4/ops/advanced/backends/leveldb/
+  - /riak/3.2.5/ops/advanced/backends/leveldb/
+  - /riak/kv/3.2.5/ops/advanced/backends/leveldb/
 ---
 
 [upgrade 2.0#upgrading-leveldB]: {{<baseurl>}}
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode
-[config reference]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference
-[perf index]: {{<baseurl>}}riak/kv/3.2.4/using/performance
-[config reference#aae]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference/#active-anti-entropy
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
+[config reference]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference
+[perf index]: {{<baseurl>}}riak/kv/3.2.5/using/performance
+[config reference#aae]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/#active-anti-entropy
 
 > **Note on upgrading to 2.0**
 >

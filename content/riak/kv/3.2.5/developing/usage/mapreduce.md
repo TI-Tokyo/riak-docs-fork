@@ -2,29 +2,29 @@
 title: "Using MapReduce"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Using MapReduce"
     identifier: "usage_mapreduce"
     weight: 106
     parent: "developing_usage"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/using/mapreduce
-  - /riak/kv/3.2.4/dev/using/mapreduce
+  - /riak/3.2.5/dev/using/mapreduce
+  - /riak/kv/3.2.5/dev/using/mapreduce
 ---
 
-[usage 2i]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/secondary-indexes
-[usage search]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/search
-[usage types]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/bucket-types
-[api http]: {{<baseurl>}}riak/kv/3.2.4/developing/api/http
-[api pb]: {{<baseurl>}}riak/kv/3.2.4/developing/api/protocol-buffers
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode
-[guide mapreduce]: {{<baseurl>}}riak/kv/3.2.4/developing/app-guide/advanced-mapreduce
+[usage 2i]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/secondary-indexes
+[usage search]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/search
+[usage types]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/bucket-types
+[api http]: {{<baseurl>}}riak/kv/3.2.5/developing/api/http
+[api pb]: {{<baseurl>}}riak/kv/3.2.5/developing/api/protocol-buffers
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
+[guide mapreduce]: {{<baseurl>}}riak/kv/3.2.5/developing/app-guide/advanced-mapreduce
 
 {{% note title="Use MapReduce sparingly" %}}
 In Riak KV, MapReduce is the primary method for non-primary-key-based

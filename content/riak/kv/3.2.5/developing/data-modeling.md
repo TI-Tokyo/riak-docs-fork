@@ -3,7 +3,7 @@ layout: redirect
 sitemap_exclude: true
 sitemap:
   priority: 0
-target: "riak/kv/3.2.4/learn/use-cases/"
+target: "riak/kv/3.2.5/learn/use-cases/"
 aliases:
 ---
 

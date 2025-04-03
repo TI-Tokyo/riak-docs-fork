@@ -2,33 +2,33 @@
 title: "Clusters"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Clusters"
     identifier: "learn_concepts_clusters"
     weight: 103
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/3.2.4/theory/concepts/Clusters
-  - /riak/kv/3.2.4/theory/concepts/Clusters
-  - /riak/3.2.4/theory/concepts/clusters
-  - /riak/kv/3.2.4/theory/concepts/clusters
+  - /riak/3.2.5/theory/concepts/Clusters
+  - /riak/kv/3.2.5/theory/concepts/Clusters
+  - /riak/3.2.5/theory/concepts/clusters
+  - /riak/kv/3.2.5/theory/concepts/clusters
 ---
 
-[concept buckets]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/buckets
-[concept keys objects]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/keys-and-objects
-[concept replication]: {{<baseurl>}}riak/kv/3.2.4/learn/concepts/replication
-[glossary node]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#node
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode
-[learn dynamo]: {{<baseurl>}}riak/kv/3.2.4/learn/dynamo
-[usage bucket types]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/bucket-types
-[usage conflict resolution]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/conflict-resolution
-[usage replication]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/replication
+[concept buckets]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/buckets
+[concept keys objects]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/keys-and-objects
+[concept replication]: {{<baseurl>}}riak/kv/3.2.5/learn/concepts/replication
+[glossary node]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#node
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
+[learn dynamo]: {{<baseurl>}}riak/kv/3.2.5/learn/dynamo
+[usage bucket types]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/bucket-types
+[usage conflict resolution]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/conflict-resolution
+[usage replication]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/replication
 
 Riak's default mode of operation is to work as a cluster consisting of
 multiple [nodes][glossary node], i.e. multiple well-connected data

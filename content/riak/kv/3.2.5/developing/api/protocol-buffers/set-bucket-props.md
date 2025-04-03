@@ -2,20 +2,20 @@
 title: "PBC Set Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Set Bucket Properties"
     identifier: "pbc_set_bucket_props"
     weight: 103
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/references/protocol-buffers/set-bucket-props
-  - /riak/kv/3.2.4/dev/references/protocol-buffers/set-bucket-props
+  - /riak/3.2.5/dev/references/protocol-buffers/set-bucket-props
+  - /riak/kv/3.2.5/dev/references/protocol-buffers/set-bucket-props
 ---
 
 Sets the properties for a bucket.
@@ -32,9 +32,9 @@ message RpbSetBucketReq {
 
 You must specify the name of the bucket (`bucket`) and include an
 `RpbBucketProps` message. More on that message type can be found in the
-[PBC Get Bucket Properties]({{<baseurl>}}riak/kv/3.2.4/developing/api/protocol-buffers/get-bucket-props) documentation.
+[PBC Get Bucket Properties]({{<baseurl>}}riak/kv/3.2.5/developing/api/protocol-buffers/get-bucket-props) documentation.
 
-You can also specify a [bucket type]({{<baseurl>}}riak/kv/3.2.4/developing/usage/bucket-types) using the
+You can also specify a [bucket type]({{<baseurl>}}riak/kv/3.2.5/developing/usage/bucket-types) using the
 `type` value. If you do not specify a bucket type, the `default` bucket
 type will be used by Riak.
 

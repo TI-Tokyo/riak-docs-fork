@@ -2,20 +2,20 @@
 title: "PBC Ping"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Ping"
     identifier: "pbc_ping"
     weight: 110
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/references/protocol-buffers/ping
-  - /riak/kv/3.2.4/dev/references/protocol-buffers/ping
+  - /riak/3.2.5/dev/references/protocol-buffers/ping
+  - /riak/kv/3.2.5/dev/references/protocol-buffers/ping
 ---
 
 Check if the server is alive

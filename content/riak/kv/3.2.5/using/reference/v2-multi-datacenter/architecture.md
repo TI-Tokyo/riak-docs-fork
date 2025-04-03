@@ -2,24 +2,24 @@
 title: "V2 Multi-Datacenter Replication Reference: Architecture"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Architecture"
     identifier: "managing_ref_v2_architecture"
     weight: 100
     parent: "managing_ref_v2"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/mdc/v2/architecture
-  - /riak/kv/3.2.4/ops/mdc/v2/architecture
+  - /riak/3.2.5/ops/mdc/v2/architecture
+  - /riak/kv/3.2.5/ops/mdc/v2/architecture
 ---
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.4/using/reference/v3-multi-datacenter/architecture/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.5/using/reference/v3-multi-datacenter/architecture/) instead.
 {{% /note %}}
 
 This document provides a basic overview of the architecture undergirding
@@ -85,7 +85,7 @@ replication, as illustrated in the Figure below.
 2. The site node in the secondary cluster initiates fullsync replication
    with the primary node by sending a message to the listener node in
    the primary cluster
-3. The site and listener nodes iterate through each [vnode]({{<baseurl>}}riak/kv/3.2.4/learn/glossary/#vnode) in their respective clusters and compute a hash for
+3. The site and listener nodes iterate through each [vnode]({{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode) in their respective clusters and compute a hash for
    each key's object value. The site node on the secondary cluster sends
    its complete list of key/hash pairs to the listener node in the
    primary cluster. The listener node then sequentially compares its
@@ -123,7 +123,7 @@ replication, as illustrated in the Figure below.
 It is important to note that both clusters must have certain attributes
 in common for Multi-Datacenter Replication to work. If you are using
 either fullsync or realtime replication, both clusters must have the
-same [ring size]({{<baseurl>}}riak/kv/3.2.4/learn/concepts/clusters/#the-ring); if you are using fullsync
-replication, every bucket's [`n_val`]({{<baseurl>}}riak/kv/3.2.4/developing/app-guide/replication-properties#n-value-and-replication) must be the same in both the
+same [ring size]({{<baseurl>}}riak/kv/3.2.5/learn/concepts/clusters/#the-ring); if you are using fullsync
+replication, every bucket's [`n_val`]({{<baseurl>}}riak/kv/3.2.5/developing/app-guide/replication-properties#n-value-and-replication) must be the same in both the
 source and sink cluster.
 

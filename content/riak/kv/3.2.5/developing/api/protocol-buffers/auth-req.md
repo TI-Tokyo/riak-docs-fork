@@ -2,20 +2,20 @@
 title: "PBC Auth Request"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Auth Request"
     identifier: "pbc_auth_request"
     weight: 125
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/references/protocol-buffers/auth-req
-  - /riak/kv/3.2.4/dev/references/protocol-buffers/auth-req
+  - /riak/3.2.5/dev/references/protocol-buffers/auth-req
+  - /riak/kv/3.2.5/dev/references/protocol-buffers/auth-req
 ---
 
 Sends a username (`user`) and password (`password`) to Riak as part of
@@ -30,5 +30,5 @@ message RpbAuthReq {
 }
 ```
 
-For more on authentication, see our documentation on [Authentication and Authorization]({{<baseurl>}}riak/kv/3.2.4/using/security/basics).
+For more on authentication, see our documentation on [Authentication and Authorization]({{<baseurl>}}riak/kv/3.2.5/using/security/basics).
 

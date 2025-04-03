@@ -2,23 +2,23 @@
 title: "HTTP Secondary Indexes"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Secondary Indexes"
     identifier: "http_2i"
     weight: 109
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/references/http/secondary-indexes
-  - /riak/kv/3.2.4/dev/references/http/secondary-indexes
+  - /riak/3.2.5/dev/references/http/secondary-indexes
+  - /riak/kv/3.2.5/dev/references/http/secondary-indexes
 ---
 
-[Secondary Indexes]({{<baseurl>}}riak/kv/3.2.4/developing/usage/secondary-indexes) allows an application to tag a Riak object with one or more field/value pairs. The object is indexed under these field/value pairs, and the application can later query the index to retrieve a list of matching keys.
+[Secondary Indexes]({{<baseurl>}}riak/kv/3.2.5/developing/usage/secondary-indexes) allows an application to tag a Riak object with one or more field/value pairs. The object is indexed under these field/value pairs, and the application can later query the index to retrieve a list of matching keys.
 
 ## Request
 

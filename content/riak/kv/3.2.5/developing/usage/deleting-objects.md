@@ -2,12 +2,12 @@
 title: "Deleting Objects"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Deleting Objects"
     identifier: "usage_deleting_objects"
     weight: 103
@@ -107,9 +107,9 @@ curl -XDELETE http://localhost:8098/types/quotes/buckets/oscar_wilde/keys/genius
 
 If you are updating an object that has been deleted---or if an update
 might target a deleted object---we recommend that
-you first fetch the [causal context]({{<baseurl>}}riak/kv/3.2.4/learn/concepts/causal-context) of the object prior to updating.
+you first fetch the [causal context]({{<baseurl>}}riak/kv/3.2.5/learn/concepts/causal-context) of the object prior to updating.
 This can be done by setting the `deletedvclock` parameter to `true` as
-part of the [fetch operation]({{<baseurl>}}riak/kv/3.2.4/developing/api/protocol-buffers/fetch-object). This can also be done
+part of the [fetch operation]({{<baseurl>}}riak/kv/3.2.5/developing/api/protocol-buffers/fetch-object). This can also be done
 with the official Riak clients for Ruby, Java, and Erlang, as in the
 example below:
 

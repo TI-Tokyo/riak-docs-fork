@@ -2,20 +2,20 @@
 title: "HTTP Reset Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Reset Bucket Properties"
     identifier: "http_reset_bucket_props"
     weight: 102
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/references/http/reset-bucket-props
-  - /riak/kv/3.2.4/dev/references/http/reset-bucket-props
+  - /riak/3.2.5/dev/references/http/reset-bucket-props
+  - /riak/kv/3.2.5/dev/references/http/reset-bucket-props
 ---
 
 Resets bucket properties like `n_val` and `allow_mult` back to the

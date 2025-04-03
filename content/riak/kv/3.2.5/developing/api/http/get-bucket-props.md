@@ -2,20 +2,20 @@
 title: "HTTP Get Bucket Properties"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Get Bucket Properties"
     identifier: "http_get_bucket_props"
     weight: 100
     parent: "apis_http"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/references/http/get-bucket-props
-  - /riak/kv/3.2.4/dev/references/http/get-bucket-props
+  - /riak/3.2.5/dev/references/http/get-bucket-props
+  - /riak/kv/3.2.5/dev/references/http/get-bucket-props
 ---
 
 Reads the bucket or bucket type properties.
@@ -36,7 +36,7 @@ Optional query parameters (only valid for the old format):
 
 * `props` - whether to return the bucket properties (`true` is the default)
 * `keys` - whether to return the keys stored in the bucket. (`false` is the
-default). See also [HTTP List Keys]({{<baseurl>}}riak/kv/3.2.4/developing/api/http/list-keys).
+default). See also [HTTP List Keys]({{<baseurl>}}riak/kv/3.2.5/developing/api/http/list-keys).
 
 ## Response
 
@@ -52,8 +52,8 @@ The JSON object in the response will contain up to two entries, `"props"` and
 `"keys"`, which are present or missing, according to the optional query
 parameters.  The default is for only `"props"` to be present.
 
-See [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/3.2.4/developing/api/http/set-bucket-props) for more information about the available
-bucket properties. See [Managing Bucket Types Through the Command Line]({{< baseurl >}}riak/kv/3.2.4/using/reference/bucket-types/#managing-bucket-types-through-the-command-line) for more details about reading bucket types using  the `riak admin bucket-type` interface.
+See [HTTP Set Bucket Properties]({{<baseurl>}}riak/kv/3.2.5/developing/api/http/set-bucket-props) for more information about the available
+bucket properties. See [Managing Bucket Types Through the Command Line]({{< baseurl >}}riak/kv/3.2.5/using/reference/bucket-types/#managing-bucket-types-through-the-command-line) for more details about reading bucket types using  the `riak admin bucket-type` interface.
 
 ## Example
 

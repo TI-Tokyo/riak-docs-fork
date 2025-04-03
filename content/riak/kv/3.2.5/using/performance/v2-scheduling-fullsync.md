@@ -2,12 +2,12 @@
 title: "V2 Scheduling Fullsync"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "V2 Scheduling Fullsync"
     identifier: "performance_v2_scheduling_fullsync"
     weight: 103
@@ -18,7 +18,7 @@ aliases:
 ---
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/v3-multi-datacenter/#fullsync-replication-commands/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/v3-multi-datacenter/#fullsync-replication-commands/) instead.
 {{% /note %}}
 
 With the `pause` and `resume` commands it is possible to limit the

@@ -3,12 +3,12 @@ title_supertext: "V2 Multi-Datacenter Replication:"
 title: "Quickstart"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Quickstart"
     identifier: "configuring_v2_quickstart"
     weight: 100
@@ -16,12 +16,12 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.4/ops/mdc/v2/quick-start
-  - /riak/kv/3.2.4/ops/mdc/v2/quick-start
+  - /riak/3.2.5/ops/mdc/v2/quick-start
+  - /riak/kv/3.2.5/ops/mdc/v2/quick-start
 ---
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.4/configuring/v3-multi-datacenter/quick-start/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.5/configuring/v3-multi-datacenter/quick-start/) instead.
 {{% /note %}}
 
 The Riak Multi-Datacenter Replication Quick Start will walk you through

@@ -3,27 +3,27 @@ title_supertext: "Installing on"
 title: "RHEL and CentOS"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "RHEL & CentOS"
     identifier: "installing_rhel_centos"
     weight: 307
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/building/installing/Installing-on-RHEL-and-CentOS
-  - /riak/kv/3.2.4/ops/building/installing/Installing-on-RHEL-and-CentOS
-  - /riak/3.2.4/installing/rhel-centos/
-  - /riak/kv/3.2.4/installing/rhel-centos/
+  - /riak/3.2.5/ops/building/installing/Installing-on-RHEL-and-CentOS
+  - /riak/kv/3.2.5/ops/building/installing/Installing-on-RHEL-and-CentOS
+  - /riak/3.2.5/installing/rhel-centos/
+  - /riak/kv/3.2.5/installing/rhel-centos/
 ---
 
-[install source index]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/source
-[install source erlang]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/verify
+[install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
+[install source erlang]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/verify
 
 Riak KV can be installed on CentOS- or Red-Hat-based systems using a binary
 package or by [compiling Riak from source code][install source index]. The following steps have been tested to work with Riak on
@@ -51,15 +51,15 @@ sudo yum install -y epel-release
 Once the EPEL has been installed, you can install CentOS 8/RHEL 8 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.2/3.2.4/rhel/8/riak-3.2.4.OTP25-1.el8.x86_64.rpm
-sudo yum localinstall -y riak-3.2.4.1.gd26294d.OTP25-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.5/rhel/8/riak-3.2.5.OTP25-1.el8.x86_64.rpm
+sudo yum localinstall -y riak-3.2.5.1.gd26294d.OTP25-1.el8.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.2/3.2.4/rhel/8/riak-3.2.4.OTP25-1.el8.x86_64.rpm
-sudo rpm -Uvh riak-3.2.4-1.el8.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.5/rhel/8/riak-3.2.5.OTP25-1.el8.x86_64.rpm
+sudo rpm -Uvh riak-3.2.5-1.el8.x86_64.rpm
 ```
 
 ### For Centos 9 / RHEL 9
@@ -67,15 +67,15 @@ sudo rpm -Uvh riak-3.2.4-1.el8.x86_64.rpm
 You can install CentOS 9/RHEL 9 using yum, which we recommend:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.2/3.2.4/rhel/9/riak-3.2.4.OTP25-1.el9.x86_64.rpm
-sudo yum localinstall -y riak-3.2.4.OTP25-1.el9.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.5/rhel/9/riak-3.2.5.OTP25-1.el9.x86_64.rpm
+sudo yum localinstall -y riak-3.2.5.OTP25-1.el9.x86_64.rpm
 ```
 
 Or you can install the `.rpm` package manually:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.2/3.2.4/rhel/9/riak-3.2.4.OTP25-1.el9.x86_64.rpm
-sudo rpm -Uvh riak-3.2.4.OTP25-1.el9.x86_64.rpm
+wget https://files.tiot.jp/riak/kv/3.2/3.2.5/rhel/9/riak-3.2.5.OTP25-1.el9.x86_64.rpm
+sudo rpm -Uvh riak-3.2.5.OTP25-1.el9.x86_64.rpm
 ```
 
 ## Installing From Source
@@ -100,9 +100,9 @@ sudo yum install gcc gcc-c++ glibc-devel make git pam-devel
 Now we can download and install Riak:
 
 ```bash
-wget https://files.tiot.jp/riak/kv/3.2/3.2.4/riak-3.2.4.tar.gz
-tar zxvf riak-3.2.4.tar.gz
-cd riak-3.2.4
+wget https://files.tiot.jp/riak/kv/3.2/3.2.5/riak-3.2.5.tar.gz
+tar zxvf riak-3.2.5.tar.gz
+cd riak-3.2.5
 make rel
 ```
 

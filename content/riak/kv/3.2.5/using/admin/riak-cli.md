@@ -2,26 +2,26 @@
 title: "riak Command Line Interface"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "riak CLI"
     identifier: "cluster_admin_riak_cli"
     weight: 102
     parent: "managing_cluster_admin"
 toc: true
 aliases:
-  - /riak/3.2.4/ops/running/tools/riak
-  - /riak/kv/3.2.4/ops/running/tools/riak
+  - /riak/3.2.5/ops/running/tools/riak
+  - /riak/kv/3.2.5/ops/running/tools/riak
 ---
 
-[configuration file]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference/
+[configuration file]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/
 [escript]: http://www.erlang.org/doc/man/escript.html
-[`riak admin`]: {{<baseurl>}}riak/kv/3.2.4/using/admin/riak-admin/#top
-[configuration]: {{<baseurl>}}riak/kv/3.2.4/configuring/reference/
+[`riak admin`]: {{<baseurl>}}riak/kv/3.2.5/using/admin/riak-admin/#top
+[configuration]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/
 
 ## riak
 
@@ -42,7 +42,7 @@ Provides a brief description of all available commands.
 
 ## daemon
 
-In Riak KV 3.2.4, riak daemon replaces riak start.
+In Riak KV 3.2.5, riak daemon replaces riak start.
 
 Starts the Riak node in the background. If the node is already started, you will receive the message `Node is already running!` If the node is not already running, no output will be given.
 
@@ -133,11 +133,11 @@ Outputs the Riak version identifier:
 riak versions
 ```
 
-In KV 3.2.4 the response to this command would appear as:
+In KV 3.2.5 the response to this command would appear as:
 
 ```
 Installed versions:
-* 3.2.4 permanent
+* 3.2.5 permanent
 ```
 
 ## getpid

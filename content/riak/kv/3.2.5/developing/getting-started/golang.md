@@ -2,23 +2,23 @@
 title: "Getting Started with Go"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Go"
     identifier: "getting_started_go"
     weight: 107
     parent: "developing_getting_started"
 toc: true
 aliases:
-  - /riak/3.2.4/dev/taste-of-riak/golang
-  - /riak/kv/3.2.4/dev/taste-of-riak/golang
+  - /riak/3.2.5/dev/taste-of-riak/golang
+  - /riak/kv/3.2.5/dev/taste-of-riak/golang
 ---
 
-If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.2.4/using/running-a-cluster) first and ensure you have
+If you haven't set up a Riak Node and started it, please visit [Running A Cluster]({{<baseurl>}}riak/kv/3.2.5/using/running-a-cluster) first and ensure you have
 [a working installation of Go](http://golang.org/doc/install).
 
 ## Client Setup
@@ -78,5 +78,5 @@ We are now ready to start interacting with Riak.
 
 ## Next Steps
 
-[CRUD Operations]({{<baseurl>}}riak/kv/3.2.4/developing/getting-started/golang/crud-operations)
+[CRUD Operations]({{<baseurl>}}riak/kv/3.2.5/developing/getting-started/golang/crud-operations)
 

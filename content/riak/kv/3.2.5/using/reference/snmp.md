@@ -2,12 +2,12 @@
 title: "Simple Network Management Protocol"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "SNMP"
     identifier: "managing_ref_snmp"
     weight: 107
@@ -15,8 +15,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.4/ops/running/monitoring/snmp
-  - /riak/kv/3.2.4/ops/running/monitoring/snmp
+  - /riak/3.2.5/ops/running/monitoring/snmp
+  - /riak/kv/3.2.5/ops/running/monitoring/snmp
 ---
 
 Riak Enterprise provided a built-in SNMP server that allows an external system, such as Hyperic, to query the Riak node for statistics such as the average get and put times as well as the number of puts and gets. This document only covers SNMP v2c support at this time which was the last supported version. After the release of Riak KV 2.2.3 Enterprise Edition, support for SNMP has been dropped. The below configuration examples are left for people analysing legacy settings and only work with the Enterprise Edition of Riak KV 2.2.3 or lower.

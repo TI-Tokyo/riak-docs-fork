@@ -2,12 +2,12 @@
 title: "Enabling and Disabling Debug Logging"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
+  riak_kv-3.2.5:
     name: "Logging"
     identifier: "cluster_operations_logging"
     weight: 105
@@ -18,7 +18,7 @@ aliases:
 
 If you'd like to enable debug logging on the current node, i.e. set the
 console log level to `debug`, you can do so without restarting the node
-by accessing the Erlang console directly using the [`riak attach`]({{<baseurl>}}riak/kv/3.2.4/using/admin/riak-cli/#attach) command. Once you run this command and drop into the console, enter the following:
+by accessing the Erlang console directly using the [`riak attach`]({{<baseurl>}}riak/kv/3.2.5/using/admin/riak-cli/#attach) command. Once you run this command and drop into the console, enter the following:
 
 ```erlang
 lager:set_loglevel(lager_file_backend, "/var/log/riak/console.log", debug).

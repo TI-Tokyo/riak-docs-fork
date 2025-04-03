@@ -1,42 +1,42 @@
 ---
-title: "Upgrading to Riak KV 3.2.4"
+title: "Upgrading to Riak KV 3.2.5"
 description: ""
 project: "riak_kv"
-project_version: "3.2.4"
+project_version: "3.2.5"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.4:
-    name: "Upgrading to 3.2.4"
+  riak_kv-3.2.5:
+    name: "Upgrading to 3.2.5"
     identifier: "upgrading_version"
     weight: 101
     parent: "upgrading"
 toc: true
 aliases:
-  - /riak/3.2.4/upgrade-v20/
-  - /riak/kv/3.2.4/ops/upgrading/rolling-upgrades/
-  - /riak/kv/3.2.4/ops/upgrading/rolling-upgrades/
-  - /riak/kv/3.2.4/setup/upgrading/cluster/
+  - /riak/3.2.5/upgrade-v20/
+  - /riak/kv/3.2.5/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.2.5/ops/upgrading/rolling-upgrades/
+  - /riak/kv/3.2.5/setup/upgrading/cluster/
 
 ---
 
-[production checklist]: {{<baseurl>}}riak/kv/3.2.4/setup/upgrading/checklist
-[use admin riak control]: {{<baseurl>}}riak/kv/3.2.4/using/admin/riak-control
-[use admin commands]: {{<baseurl>}}riak/kv/3.2.4/using/admin/commands
-[use admin riak admin]: {{<baseurl>}}riak/kv/3.2.4/using/admin/riak admin
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.4/developing/usage/secondary-indexes
-[release notes]: {{<baseurl>}}riak/kv/3.2.4/release-notes
+[production checklist]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading/checklist
+[use admin riak control]: {{<baseurl>}}riak/kv/3.2.5/using/admin/riak-control
+[use admin commands]: {{<baseurl>}}riak/kv/3.2.5/using/admin/commands
+[use admin riak admin]: {{<baseurl>}}riak/kv/3.2.5/using/admin/riak admin
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/secondary-indexes
+[release notes]: {{<baseurl>}}riak/kv/3.2.5/release-notes
 [riak enterprise]: http://basho.com/products/riak-kv/
-[cluster ops mdc]: {{<baseurl>}}riak/kv/3.2.4/using/cluster-operations/v3-multi-datacenter
-[config v3 mdc]: {{<baseurl>}}riak/kv/3.2.4/configuring/v3-multi-datacenter
-[jmx monitor]: {{<baseurl>}}riak/kv/3.2.4/using/reference/jmx
-[snmp]: {{<baseurl>}}riak/kv/3.2.4/using/reference/snmp
-[Release Notes]: {{<baseurl>}}riak/kv/3.2.4/release-notes
+[cluster ops mdc]: {{<baseurl>}}riak/kv/3.2.5/using/cluster-operations/v3-multi-datacenter
+[config v3 mdc]: {{<baseurl>}}riak/kv/3.2.5/configuring/v3-multi-datacenter
+[jmx monitor]: {{<baseurl>}}riak/kv/3.2.5/using/reference/jmx
+[snmp]: {{<baseurl>}}riak/kv/3.2.5/using/reference/snmp
+[Release Notes]: {{<baseurl>}}riak/kv/3.2.5/release-notes
 
 ## Overview
 
-You can upgrade one node or your whole cluster to Riak KV 3.2.4 by following the instructions below.
+You can upgrade one node or your whole cluster to Riak KV 3.2.5 by following the instructions below.
 
 {{% note title="Tip" %}} KV nodes negotiate with each other to determine supported operating modes. This allows clusters containing mixed-versions of Riak KV to interoperate without special configuration, and simplifies rolling upgrades.
 {{% /note %}}
