@@ -3,7 +3,8 @@ title: "Getting Started with NodeJS"
 description: ""
 project: "riak_kv"
 project_version: "3.2.4"
-lastmod: 2022-12-30T00:00:00-00:00
+lastmod: 2025-01-26T00:00:00-00:00
+
 sitemap:
   priority: 0.9
 menu:
