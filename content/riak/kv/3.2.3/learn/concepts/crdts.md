@@ -7,7 +7,7 @@ project_version: "3.2.3"
 lastmod: 2024-12-09T00:00:00-00:00
 
 sitemap:
-  priority: 0.9
+  priority: 0.2
 menu:
   riak_kv-3.2.3:
     name: "Data Types"
