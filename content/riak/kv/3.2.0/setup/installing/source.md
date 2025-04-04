@@ -9,7 +9,7 @@ sitemap:
   priority: 0.2
 menu:
   riak_kv-3.2.0:
-    name: "Installing From Source"
+    name: "Source"
     identifier: "installing_source"
     weight: 320
     parent: "installing"
