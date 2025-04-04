@@ -6,7 +6,11 @@ project: "riak_kv"
 project_version: "3.2.4"
 lastmod: 2024-09-16T00:00:00-00:00
 sitemap:
+<<<<<<< HEAD
   priority: 0.2
+=======
+  priority: 0.9
+>>>>>>> master
 menu:
   riak_kv-3.2.4:
     name: "Sink Nodes"

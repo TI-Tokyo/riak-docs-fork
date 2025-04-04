@@ -42,7 +42,11 @@ properly install or upgrade Riak in one of the supported environments:
   * [RHEL & CentOS][install rhel & centos]
   * [Oracle Linux][install oracle linux]
   * [freebsd][install freebsd]
+<<<<<<< HEAD
   * [Raspbian][install raspbian]
+=======
+  * [Raspbian]
+>>>>>>> master
 
 ## Building from Source
 

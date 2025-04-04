@@ -40,9 +40,8 @@ properly install or upgrade Riak in one of the supported environments:
   * [Debian & Ubuntu][install debian & ubuntu]
   * [FreeBSD][install freebsd]
   * [RHEL & CentOS][install rhel & centos]
-  * [Oracle Linux][install oracle linux]
-  * [Raspbian][install raspbian]
-  * [Mac OS X][install mac osx]
+  * [SUSE][install suse]
+  * [Windows Azure][install windows azure]
 
 ## Building from Source
 

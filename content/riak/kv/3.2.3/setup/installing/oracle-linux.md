@@ -17,6 +17,20 @@ toc: true
 version_history:
   in: "3.0.3+"
 aliases:
+<<<<<<< HEAD
+=======
+<<<<<<<< HEAD:content/riak/kv/3.2.5/setup/installing/oracle-linux.md
+  - /riak/3.2.5/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/kv/3.2.5/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/3.2.5/installing/Oracle-Linux/
+  - /riak/kv/3.2.5/installing/Oracle-Linux/
+---
+
+[install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
+[install source erlang]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/verify
+========
+>>>>>>> master
   - /riak/3.2.3/ops/building/installing/Installing-on-Oracle-Linux
   - /riak/kv/3.2.3/ops/building/installing/Installing-on-Oracle-Linux
   - /riak/3.2.3/installing/Oracle-Linux/
@@ -26,6 +40,10 @@ aliases:
 [install source index]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/source
 [install source erlang]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/source/erlang
 [install verify]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/verify
+<<<<<<< HEAD
+=======
+>>>>>>>> master:content/riak/kv/3.2.3/setup/installing/oracle-linux.md
+>>>>>>> master
 
 ## Installing From Package
 
@@ -46,8 +64,18 @@ sudo yum install -y epel-release
 Once the EPEL has been installed, you can install Riak on Oracle Linux 8 using yum, which we recommend::
 
 ```bash
+<<<<<<< HEAD
 wget https://files.tiot.jp/riak/kv/3.2/3.2.3/oracle/9/riak-3.2.3.OTP25-1.el9.x86_64.rpm
 sudo yum install -y riak-3.2.3.OTP25-1.el9.x86_64.rpm
+=======
+<<<<<<<< HEAD:content/riak/kv/3.2.5/setup/installing/oracle-linux.md
+wget https://files.tiot.jp/riak/kv/3.2/3.2.5/oracle/9/riak-3.2.5.OTP25-1.el9.x86_64.rpm
+sudo yum install -y riak-3.2.5.OTP25-1.el9.x86_64.rpm
+========
+wget https://files.tiot.jp/riak/kv/3.2/3.2.3/oracle/9/riak-3.2.3.OTP25-1.el9.x86_64.rpm
+sudo yum install -y riak-3.2.3.OTP25-1.el9.x86_64.rpm
+>>>>>>>> master:content/riak/kv/3.2.3/setup/installing/oracle-linux.md
+>>>>>>> master
 ```
 
 ## Next Steps
