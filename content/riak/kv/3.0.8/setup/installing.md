@@ -23,7 +23,7 @@ aliases:
 
 [install aws]: {{<baseurl>}}riak/kv/3.0.8/setup/installing/amazon-web-services
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.0.8/setup/installing/debian-ubuntu
-[install raspbian]: {{<baseurl>}}riak/kv/3.0.10/setup/installing/debian-ubuntu/#raspbian-bullseye
+[install raspbian]: {{<baseurl>}}riak/kv/3.0.8/setup/installing/debian-ubuntu/#raspbian-bullseye
 [install oracle linux]: {{<baseurl>}}riak/kv/3.0.8/setup/installing/oracle-linux
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.0.8/setup/installing/rhel-centos
 [upgrade index]: {{<baseurl>}}riak/kv/3.0.8/setup/upgrading
