@@ -23,6 +23,7 @@ aliases:
 ---
 
 [install aws]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/amazon-web-services
+[install alpine]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/alpine-linux
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/debian-ubuntu
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/rhel-centos
 [install oracle linux]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/oracle-linux
@@ -36,6 +37,7 @@ environments. The following information will help you to
 properly install or upgrade Riak in one of the supported environments:
 
   * [Amazon Web Services][install aws]
+  * [Alpine Linux][install alpine]
   * [Debian & Ubuntu][install debian & ubuntu]
   * [Raspbian][install raspbian]
   * [Oracle Linux][install oracle linux]
