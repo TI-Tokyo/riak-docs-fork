@@ -6,10 +6,10 @@ project: "riak_kv"
 project_version: "3.2.0"
 lastmod: 2022-12-30T00:00:00-00:00
 sitemap:
-  priority: 0.9
+  priority: 0.2
 menu:
   riak_kv-3.2.0:
-    name: "Installing From Source"
+    name: "Source"
     identifier: "installing_source"
     weight: 320
     parent: "installing"
