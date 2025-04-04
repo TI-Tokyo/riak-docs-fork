@@ -20,7 +20,7 @@ aliases:
   - /riak/kv/3.2.5/introduction
 ---
 
-Released Jan 26, 2025.
+Released March 25, 2025.
 
 ## Overview
 
