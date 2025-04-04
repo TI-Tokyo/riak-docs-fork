@@ -3,7 +3,7 @@ title: "Installing Riak KV"
 description: ""
 project: "riak_kv"
 project_version: "3.2.5"
-lastmod: 2022-12-30T00:00:00-00:00
+lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
@@ -25,6 +25,7 @@ aliases:
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/rhel-centos
 [install oracle linux]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/oracle-linux
+[install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
 [upgrade index]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading
 
 ## Supported Platforms

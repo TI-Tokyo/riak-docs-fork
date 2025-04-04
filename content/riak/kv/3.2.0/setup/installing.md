@@ -27,6 +27,7 @@ aliases:
 [install oracle linux]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/oracle-linux
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/rhel-centos
 [install freebsd]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/freebsd
+[install source index]: {{<baseurl>}}riak/kv/3.2.0/setup/installing/source
 [upgrade index]: {{<baseurl>}}riak/kv/3.2.0/setup/upgrading
 
 ## Supported Platforms
