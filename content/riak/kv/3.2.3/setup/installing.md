@@ -24,6 +24,7 @@ aliases:
 [install aws]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/amazon-web-services
 [install alpine]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/alpine-linux
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/debian-ubuntu
+[install raspbian]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/debian-ubuntu/#raspbian-bullseye
 [install oracle linux]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/oracle-linux
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/rhel-centos
 [install source index]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/source
@@ -40,7 +41,7 @@ properly install or upgrade Riak in one of the supported environments:
   * [Debian & Ubuntu][install debian & ubuntu]
   * [RHEL & CentOS][install rhel & centos]
   * [Oracle Linux][install oracle linux]
-  * [Raspbian]
+  * [Raspbian][install raspbian]
 
 ## Building from Source
 
