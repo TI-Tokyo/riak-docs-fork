@@ -25,6 +25,7 @@ aliases:
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/rhel-centos
 [install oracle linux]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/oracle-linux
+[install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
 [upgrade index]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading
 
 ## Supported Platforms
