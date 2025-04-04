@@ -5,7 +5,6 @@ description: ""
 project: "riak_kv"
 project_version: "3.2.4"
 lastmod: 2025-01-26T00:00:00-00:00
-
 sitemap:
   priority: 0.2
 menu:

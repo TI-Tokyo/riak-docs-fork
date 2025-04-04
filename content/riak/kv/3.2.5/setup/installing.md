@@ -24,6 +24,7 @@ aliases:
 [install aws]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/amazon-web-services
 [install alpine]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/alpine-linux
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu
+[install raspbian]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu/#raspbian-bullseye
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/rhel-centos
 [install oracle linux]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/oracle-linux
 [install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
