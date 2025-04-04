@@ -3,9 +3,10 @@ title: "Installing Riak KV"
 description: ""
 project: "riak_kv"
 project_version: "3.2.4"
-lastmod: 2022-12-30T00:00:00-00:00
+lastmod: 2025-01-26T00:00:00-00:00
+
 sitemap:
-  priority: 0.9
+  priority: 0.2
 menu:
   riak_kv-3.2.4:
     name: "Installing"
@@ -22,9 +23,12 @@ aliases:
 ---
 
 [install aws]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/amazon-web-services
+[install alpine]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/alpine-linux
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/debian-ubuntu
+[install raspbian]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/debian-ubuntu/#raspbian-bullseye
 [install rhel & centos]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/rhel-centos
 [install oracle linux]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/oracle-linux
+[install source index]: {{<baseurl>}}riak/kv/3.2.4/setup/installing/source
 [upgrade index]: {{<baseurl>}}riak/kv/3.2.4/setup/upgrading
 
 ## Supported Platforms
@@ -34,6 +38,7 @@ environments. The following information will help you to
 properly install or upgrade Riak in one of the supported environments:
 
   * [Amazon Web Services][install aws]
+  * [Alpine Linux][install alpine]
   * [Debian & Ubuntu][install debian & ubuntu]
   * [Raspbian][install raspbian]
   * [Oracle Linux][install oracle linux]

@@ -4,9 +4,9 @@ title: "Alpine Linux"
 description: "installing Riak on Alpine Linux"
 project: "riak_kv"
 project_version: "3.2.4"
-lastmod: 2022-12-30T00:00:00-00:00
+lastmod: 2025-01-26T00:00:00-00:00
 sitemap:
-  priority: 0.9
+  priority: 0.2
 menu:
   riak_kv-3.2.4:
     name: "Alpine Linux"
@@ -41,9 +41,7 @@ The following steps have been tested to work with Riak KV on:
 To install Riak on Alpine Linux:
 
 1. Add the Riak repository:
-
    * Run `echo https://files.tiot.jp/alpine/v3.21/main >> /etc/apk/repositories`
-
 2. Download and install the Riak repository public key:
    * Run `wget http://files.tiot.jp/alpine/alpine@tiot.jp.rsa.pub -O /etc/apk/keys/alpine@tiot.jp.rsa.pub`
 3. Update your list of packages:
