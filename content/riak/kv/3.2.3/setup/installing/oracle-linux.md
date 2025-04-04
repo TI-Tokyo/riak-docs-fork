@@ -6,7 +6,7 @@ project: "riak_kv"
 project_version: "3.2.3"
 lastmod: 2023-12-08T00:00:00-00:00
 sitemap:
-  priority: 0.9
+  priority: 0.2
 menu:
   riak_kv-3.2.3:
     name: "Oracle Linux"
@@ -17,15 +17,15 @@ toc: true
 version_history:
   in: "3.0.3+"
 aliases:
-  - /riak/3.2.3/ops/building/installing/Installing-on-Oracle-Linux
-  - /riak/kv/3.2.3/ops/building/installing/Installing-on-Oracle-Linux
-  - /riak/3.2.3/installing/Oracle-Linux/
-  - /riak/kv/3.2.3/installing/Oracle-Linux/
+  - /riak/3.2.5/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/kv/3.2.5/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/3.2.5/installing/Oracle-Linux/
+  - /riak/kv/3.2.5/installing/Oracle-Linux/
 ---
 
-[install source index]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/source
-[install source erlang]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.2.3/setup/installing/verify
+[install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
+[install source erlang]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/verify
 
 ## Installing From Package
 

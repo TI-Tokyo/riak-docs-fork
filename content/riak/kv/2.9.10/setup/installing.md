@@ -24,6 +24,7 @@ aliases:
 [install mac osx]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/mac-osx
 [install aws]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/amazon-web-services
 [install debian & ubuntu]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/debian-ubuntu
+[install raspbian]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/debian-ubuntu/#raspbian-bullseye
 [install freebsd]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/freebsd
 [install oracle linux]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/oracle-linux
 [install rhel & centos]: {{<baseurl>}}riak/kv/2.9.10/setup/installing/rhel-centos
@@ -39,9 +40,8 @@ properly install or upgrade Riak in one of the supported environments:
   * [Debian & Ubuntu][install debian & ubuntu]
   * [FreeBSD][install freebsd]
   * [RHEL & CentOS][install rhel & centos]
-  * [Oracle Linux][install oracle linux]
-  * [Raspbian]
-  * [Mac OS X][install mac osx]
+  * [SUSE][install suse]
+  * [Windows Azure][install windows azure]
 
 ## Building from Source
 

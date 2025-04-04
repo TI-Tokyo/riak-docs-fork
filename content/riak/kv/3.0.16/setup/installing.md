@@ -5,7 +5,7 @@ project: "riak_kv"
 project_version: "3.0.16"
 lastmod: 2023-06-23T00:00:00-00:00
 sitemap:
-  priority: 0.9
+  priority: 0.8
 menu:
   riak_kv-3.0.16:
     name: "Installing"
@@ -21,13 +21,14 @@ aliases:
   - /riak/kv/3.0.16/installing/
 ---
 
-[install aws]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/amazon-web-services
-[install alpine]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/alpine-linux
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/debian-ubuntu
-[install oracle linux]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/oracle-linux
-[install rhel & centos]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/rhel-centos
-[install freebsd]: {{<baseurl>}}riak/kv/3.0.13/setup/installing/freebsd
-[upgrade index]: {{<baseurl>}}riak/kv/3.0.13/setup/upgrading
+[install aws]: {{<baseurl>}}riak/kv/3.0.16/setup/installing/amazon-web-services
+[install alpine]: {{<baseurl>}}riak/kv/3.0.16/setup/installing/alpine-linux
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.0.16/setup/installing/debian-ubuntu
+[install raspbian]: {{<baseurl>}}riak/kv/3.0.16/setup/installing/debian-ubuntu/#raspbian-bullseye
+[install oracle linux]: {{<baseurl>}}riak/kv/3.0.16/setup/installing/oracle-linux
+[install rhel & centos]: {{<baseurl>}}riak/kv/3.0.16/setup/installing/rhel-centos
+[install freebsd]: {{<baseurl>}}riak/kv/3.0.16/setup/installing/freebsd
+[upgrade index]: {{<baseurl>}}riak/kv/3.0.16/setup/upgrading
 
 ## Supported Platforms
 
@@ -41,7 +42,7 @@ properly install or upgrade Riak in one of the supported environments:
   * [RHEL & CentOS][install rhel & centos]
   * [Oracle Linux][install oracle linux]
   * [freebsd][install freebsd]
-  * [Raspbian]
+  * [Raspbian][install raspbian]
 
 ## Building from Source
 
