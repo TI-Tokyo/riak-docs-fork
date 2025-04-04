@@ -12,7 +12,7 @@ project_version: "3.2.4"
 lastmod: 2025-01-26T00:00:00-00:00
 
 sitemap:
-  priority: 0.9
+  priority: 0.2
 toc: true
 aliases:
 ---
