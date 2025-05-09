@@ -3,12 +3,12 @@ title_supertext: "Riak Multi-Datacenter Replication:"
 title: "Hooks API"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Multi-Datacenter REPL Hooks API"
     identifier: "apis_repl_hooks"
     weight: 100
@@ -16,8 +16,8 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.5/ops/mdc/v2/hooks
-  - /riak/kv/3.2.5/ops/mdc/v2/hooks
+  - /riak/3.2.6/ops/mdc/v2/hooks
+  - /riak/kv/3.2.6/ops/mdc/v2/hooks
 ---
 [object]: https://github.com/basho/riak_kv/blob/master/src/riak_object.erl
 

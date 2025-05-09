@@ -2,24 +2,24 @@
 title: "PBC Data Type Set Store"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Data Type Set Store"
     identifier: "pbc_dt_set_store"
     weight: 118
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.2.5/dev/references/protocol-buffers/dt-set-store
-  - /riak/kv/3.2.5/dev/references/protocol-buffers/dt-set-store
+  - /riak/3.2.6/dev/references/protocol-buffers/dt-set-store
+  - /riak/kv/3.2.6/dev/references/protocol-buffers/dt-set-store
 ---
 
 An operation to update a set, either on its own (at the bucket/key
-level) or [inside of a map]({{<baseurl>}}riak/kv/3.2.5/developing/api/protocol-buffers/dt-map-store).
+level) or [inside of a map]({{<baseurl>}}riak/kv/3.2.6/developing/api/protocol-buffers/dt-map-store).
 
 ## Request
 

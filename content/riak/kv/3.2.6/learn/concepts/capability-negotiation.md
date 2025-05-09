@@ -2,25 +2,25 @@
 title: "Capability Negotiation"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Capability Negotiation"
     identifier: "learn_concepts_cap_negot"
     weight: 102
     parent: "learn_concepts"
 toc: true
 aliases:
-  - /riak/3.2.5/theory/concepts/capability-negotiation
-  - /riak/kv/3.2.5/theory/concepts/capability-negotiation
+  - /riak/3.2.6/theory/concepts/capability-negotiation
+  - /riak/kv/3.2.6/theory/concepts/capability-negotiation
 ---
 
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
-[upgrade cluster]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading/cluster
-[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/mapreduce
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.6/learn/glossary/#vnode
+[upgrade cluster]: {{<baseurl>}}riak/kv/3.2.6/setup/upgrading/cluster
+[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.6/developing/usage/mapreduce
 
 In early versions of Riak KV, [rolling upgrades][upgrade cluster] from an older version to a newer involved (a) disabling all new features associated with the newer version, and then (b) re-enabling those features once all nodes in the cluster were upgraded.
 

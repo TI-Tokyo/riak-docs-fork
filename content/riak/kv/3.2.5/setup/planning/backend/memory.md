@@ -2,26 +2,26 @@
 title: "Memory"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Memory"
     identifier: "planning_backend_memory"
     weight: 102
     parent: "planning_choose_backend"
 toc: true
 aliases:
-  - /riak/3.2.5/ops/advanced/backends/memory/
-  - /riak/kv/3.2.5/ops/advanced/backends/memory/
+  - /riak/3.2.6/ops/advanced/backends/memory/
+  - /riak/kv/3.2.6/ops/advanced/backends/memory/
 ---
 
-[config reference]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference
-[plan backend multi]: {{<baseurl>}}riak/kv/3.2.5/setup/planning/backend/multi
-[glossary vnode]: {{<baseurl>}}riak/kv/3.2.5/learn/glossary/#vnode
-[plan backend leveldb]: {{<baseurl>}}riak/kv/3.2.5/setup/planning/backend/leveldb
+[config reference]: {{<baseurl>}}riak/kv/3.2.6/configuring/reference
+[plan backend multi]: {{<baseurl>}}riak/kv/3.2.6/setup/planning/backend/multi
+[glossary vnode]: {{<baseurl>}}riak/kv/3.2.6/learn/glossary/#vnode
+[plan backend leveldb]: {{<baseurl>}}riak/kv/3.2.6/setup/planning/backend/leveldb
 
 The Memory storage backend uses in-memory tables to store all data.
 This data is never persisted to disk or to any other storage mechanism.

@@ -2,20 +2,20 @@
 title: "PBC Data Type Union"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Data Type Union"
     identifier: "pbc_dt_union"
     weight: 115
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.2.5/dev/references/protocol-buffers/dt-union
-  - /riak/kv/3.2.5/dev/references/protocol-buffers/dt-union
+  - /riak/3.2.6/dev/references/protocol-buffers/dt-union
+  - /riak/kv/3.2.6/dev/references/protocol-buffers/dt-union
 ---
 
 A "union" type for update operations.
@@ -31,5 +31,5 @@ message DtOp {
 ```
 
 The included operation depends on the Data Type that is being updated.
-`DtOp` messages are sent only as part of a [`DtUpdateReq`]({{<baseurl>}}riak/kv/3.2.5/developing/api/protocol-buffers/dt-store) message.
+`DtOp` messages are sent only as part of a [`DtUpdateReq`]({{<baseurl>}}riak/kv/3.2.6/developing/api/protocol-buffers/dt-store) message.
 

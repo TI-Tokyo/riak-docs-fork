@@ -3,31 +3,31 @@ title_supertext: "Installing"
 title: "Riak KV From Source"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Source"
     identifier: "installing_source"
     weight: 320
     parent: "installing"
 toc: true
 aliases:
-  - /riak/3.2.5/ops/building/Installing-Riak-from-Source
-  - /riak/kv/3.2.5/ops/building/Installing-Riak-from-Source
-  - /riak/3.2.5/installing/source/
-  - /riak/kv/3.2.5/installing/source/
+  - /riak/3.2.6/ops/building/Installing-Riak-from-Source
+  - /riak/kv/3.2.6/ops/building/Installing-Riak-from-Source
+  - /riak/3.2.6/installing/source/
+  - /riak/kv/3.2.6/installing/source/
 ---
 
-[install source erlang]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source/erlang
-[downloads]: {{<baseurl>}}riak/kv/3.2.5/downloads/
-[install debian & ubuntu#source]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu/#installing-from-source
-[install freebsd#source]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/freebsd/#installing-from-source
-[install mac osx#source]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/mac-osx/#installing-from-source
-[install rhel & centos#source]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/rhel-centos/#installing-from-source
-[install verify]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/verify
+[install source erlang]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/source/erlang
+[downloads]: {{<baseurl>}}riak/kv/3.2.6/downloads/
+[install debian & ubuntu#source]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/debian-ubuntu/#installing-from-source
+[install freebsd#source]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/freebsd/#installing-from-source
+[install mac osx#source]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/mac-osx/#installing-from-source
+[install rhel & centos#source]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/rhel-centos/#installing-from-source
+[install verify]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/verify
 
 Riak should be installed from source if you are building on a platform
 for which a package does not exist or if you are interested in

@@ -2,20 +2,20 @@
 title: "Erlang VM Tuning"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Erlang VM"
     identifier: "performance_erlang"
     weight: 105
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/3.2.5/ops/tuning/erlang
-  - /riak/kv/3.2.5/ops/tuning/erlang
+  - /riak/3.2.6/ops/tuning/erlang
+  - /riak/kv/3.2.6/ops/tuning/erlang
 ---
 
 Riak was written almost exclusively in [Erlang](http://www.erlang.org)

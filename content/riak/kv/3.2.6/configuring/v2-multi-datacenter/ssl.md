@@ -3,12 +3,12 @@ title_supertext: "V2 Multi-Datacenter Replication:"
 title: "SSL"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "SSL"
     identifier: "configuring_v2_replication_ssl"
     weight: 103
@@ -16,12 +16,12 @@ menu:
 toc: true
 commercial_offering: true
 aliases:
-  - /riak/3.2.5/ops/mdc/v2/ssl
-  - /riak/kv/3.2.5/ops/mdc/v2/ssl
+  - /riak/3.2.6/ops/mdc/v2/ssl
+  - /riak/kv/3.2.6/ops/mdc/v2/ssl
 ---
 
 {{% note title="Deprecation Warning" %}}
-v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.5/configuring/v3-multi-datacenter/ssl/) instead.
+v2 Multi-Datacenter Replication is deprecated and will be removed in a future version. Please use [v3]({{<baseurl>}}riak/kv/3.2.6/configuring/v3-multi-datacenter/ssl/) instead.
 {{% /note %}}
 
 ## Features

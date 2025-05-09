@@ -2,25 +2,25 @@
 title: "MapReduce Settings"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "MapReduce Settings"
     identifier: "configuring_mapreduce"
     weight: 170
     parent: "configuring"
 toc: true
 aliases:
-  - /riak/3.2.5/ops/advanced/configs/mapreduce/
-  - /riak/kv/3.2.5/ops/advanced/configs/mapreduce/
+  - /riak/3.2.6/ops/advanced/configs/mapreduce/
+  - /riak/kv/3.2.6/ops/advanced/configs/mapreduce/
 ---
 
-[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/mapreduce
-[config reference#appconfig]: {{<baseurl>}}riak/kv/3.2.5/configuring/reference/#app-config
-[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.5/developing/usage/secondary-indexes
+[usage mapreduce]: {{<baseurl>}}riak/kv/3.2.6/developing/usage/mapreduce
+[config reference#appconfig]: {{<baseurl>}}riak/kv/3.2.6/configuring/reference/#app-config
+[usage secondary-indexes]: {{<baseurl>}}riak/kv/3.2.6/developing/usage/secondary-indexes
 
 ## Configuring MapReduce
 

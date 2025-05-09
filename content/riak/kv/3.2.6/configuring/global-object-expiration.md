@@ -2,13 +2,13 @@
 title: "Configure Global Object Expiration"
 description: "Enabling and configuring global object expiration for Riak KV."
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Global Object Expiration"
     identifier: "config_expiry"
     weight: 180
     parent: "configuring"
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9

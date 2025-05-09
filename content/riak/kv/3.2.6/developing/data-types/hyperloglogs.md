@@ -3,12 +3,12 @@ title_supertext: "Developing with Riak KV"
 title: "Data Types: HyperLogLogs"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "HyperLogLogs"
     identifier: "data_types_hyperloglogs"
     weight: 102
@@ -17,10 +17,10 @@ toc: true
 version_history:
   in: "2.0.8+"
 aliases:
-  - /riak/3.2.5/dev/using/data-types/hyperloglogs
-  - /riak/kv/3.2.5/dev/using/data-types/hyperloglogs
-  - /riak/3.2.5/dev/data-modeling/data-types/hyperloglogs
-  - /riak/kv/3.2.5/dev/data-modeling/data-types/hyperloglogs
+  - /riak/3.2.6/dev/using/data-types/hyperloglogs
+  - /riak/kv/3.2.6/dev/using/data-types/hyperloglogs
+  - /riak/3.2.6/dev/data-modeling/data-types/hyperloglogs
+  - /riak/kv/3.2.6/dev/data-modeling/data-types/hyperloglogs
 ---
 
 The examples in this section will show you how to use hyperloglogs on their own.

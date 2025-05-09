@@ -17,15 +17,15 @@ toc: true
 version_history:
   in: "3.0.3+"
 aliases:
-  - /riak/3.2.5/ops/building/installing/Installing-on-Oracle-Linux
-  - /riak/kv/3.2.5/ops/building/installing/Installing-on-Oracle-Linux
-  - /riak/3.2.5/installing/Oracle-Linux/
-  - /riak/kv/3.2.5/installing/Oracle-Linux/
+  - /riak/3.2.6/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/kv/3.2.6/ops/building/installing/Installing-on-Oracle-Linux
+  - /riak/3.2.6/installing/Oracle-Linux/
+  - /riak/kv/3.2.6/installing/Oracle-Linux/
 ---
 
-[install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
-[install source erlang]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source/erlang
-[install verify]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/verify
+[install source index]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/source
+[install source erlang]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/source/erlang
+[install verify]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/verify
 
 ## Installing From Package
 

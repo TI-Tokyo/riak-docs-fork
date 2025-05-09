@@ -2,20 +2,20 @@
 title: "PBC Set Client ID"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Set Client ID"
     identifier: "pbc_set_client_id"
     weight: 126
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.2.5/dev/references/protocol-buffers/set-client-id
-  - /riak/kv/3.2.5/dev/references/protocol-buffers/set-client-id
+  - /riak/3.2.6/dev/references/protocol-buffers/set-client-id
+  - /riak/kv/3.2.6/dev/references/protocol-buffers/set-client-id
 ---
 
 {{% note title="Deprecation notice" %}}

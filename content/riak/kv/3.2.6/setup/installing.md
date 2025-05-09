@@ -2,12 +2,12 @@
 title: "Installing Riak KV"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Installing"
     identifier: "installing"
     weight: 101
@@ -15,20 +15,20 @@ menu:
     pre: cog
 toc: true
 aliases:
-  - /riak/3.2.5/ops/building/installing
-  - /riak/kv/3.2.5/ops/building/installing
-  - /riak/3.2.5/installing/
-  - /riak/kv/3.2.5/installing/
+  - /riak/3.2.6/ops/building/installing
+  - /riak/kv/3.2.6/ops/building/installing
+  - /riak/3.2.6/installing/
+  - /riak/kv/3.2.6/installing/
 ---
 
-[install aws]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/amazon-web-services
-[install alpine]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/alpine-linux
-[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu
-[install raspbian]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/debian-ubuntu/#raspbian-bullseye
-[install rhel & centos]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/rhel-centos
-[install oracle linux]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/oracle-linux
-[install source index]: {{<baseurl>}}riak/kv/3.2.5/setup/installing/source
-[upgrade index]: {{<baseurl>}}riak/kv/3.2.5/setup/upgrading
+[install aws]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/amazon-web-services
+[install alpine]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/alpine-linux
+[install debian & ubuntu]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/debian-ubuntu
+[install raspbian]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/debian-ubuntu/#raspbian-bullseye
+[install rhel & centos]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/rhel-centos
+[install oracle linux]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/oracle-linux
+[install source index]: {{<baseurl>}}riak/kv/3.2.6/setup/installing/source
+[upgrade index]: {{<baseurl>}}riak/kv/3.2.6/setup/upgrading
 
 ## Supported Platforms
 

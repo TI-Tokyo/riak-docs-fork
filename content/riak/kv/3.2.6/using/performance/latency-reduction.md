@@ -2,20 +2,20 @@
 title: "Latency Reduction Checklist"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Latency Reduction"
     identifier: "performance_latency_reduction"
     weight: 104
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/3.2.5/ops/tuning/latency-reduction
-  - /riak/kv/3.2.5/ops/tuning/latency-reduction
+  - /riak/3.2.6/ops/tuning/latency-reduction
+  - /riak/kv/3.2.6/ops/tuning/latency-reduction
 ---
 
 Although latency is unavoidable in distributed systems like Riak, there

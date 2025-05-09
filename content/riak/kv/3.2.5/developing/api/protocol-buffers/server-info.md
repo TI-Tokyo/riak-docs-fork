@@ -2,20 +2,20 @@
 title: "PBC Server Info"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Server Info"
     identifier: "pbc_server_info"
     weight: 111
     parent: "apis_pbc"
 toc: true
 aliases:
-  - /riak/3.2.5/dev/references/protocol-buffers/server-info
-  - /riak/kv/3.2.5/dev/references/protocol-buffers/server-info
+  - /riak/3.2.6/dev/references/protocol-buffers/server-info
+  - /riak/kv/3.2.6/dev/references/protocol-buffers/server-info
 ---
 
 A message from Riak that contains two pieces of information about the

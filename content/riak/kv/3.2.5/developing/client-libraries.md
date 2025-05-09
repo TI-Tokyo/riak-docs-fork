@@ -2,20 +2,20 @@
 title: "Client Libraries"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Client Libraries"
     identifier: "developing_client_libraries"
     weight: 106
     parent: "developing"
 toc: true
 aliases:
-  - /riak/3.2.5/dev/using/libraries
-  - /riak/kv/3.2.5/dev/using/libraries
+  - /riak/3.2.6/dev/using/libraries
+  - /riak/kv/3.2.6/dev/using/libraries
 ---
 
 ## Basho-Supported Libraries

@@ -3,18 +3,18 @@ title_supertext: "Configuring: Next Gen Replication"
 title: "Configuration Reference"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2024-09-16T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Reference"
     identifier: "nextgen_rep_referemce"
     weight: 300
     parent: "nextgen_rep"
 version_history:
-  in: "3.2.5+"
+  in: "3.2.6+"
 toc: true
 commercial_offering: false
 aliases:

@@ -3,20 +3,20 @@ title_supertext: "Getting Started:"
 title: "Object Modeling with Python"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Object Modeling"
     identifier: "getting_started_python_object"
     weight: 102
     parent: "getting_started_python"
 toc: true
 aliases:
-  - /riak/3.2.5/dev/taste-of-riak/object-modeling-python
-  - /riak/kv/3.2.5/dev/taste-of-riak/object-modeling-python
+  - /riak/3.2.6/dev/taste-of-riak/object-modeling-python
+  - /riak/kv/3.2.6/dev/taste-of-riak/object-modeling-python
 ---
 
 To get started, let's create the data structures that we'll be using.

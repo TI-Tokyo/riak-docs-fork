@@ -2,20 +2,20 @@
 title: "Amazon Web Services Performance Tuning"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "Amazon Web Services"
     identifier: "performance_aws"
     weight: 106
     parent: "managing_performance"
 toc: true
 aliases:
-  - /riak/3.2.5/ops/tuning/aws
-  - /riak/kv/3.2.5/ops/tuning/aws
+  - /riak/3.2.6/ops/tuning/aws
+  - /riak/kv/3.2.6/ops/tuning/aws
 ---
 
 This guide introduces best practices for tuning Riak cluster performance

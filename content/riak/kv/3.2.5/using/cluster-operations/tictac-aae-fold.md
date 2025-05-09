@@ -3,12 +3,12 @@ title_supertext: "Using > Cluster Operations:"
 title: "TicTac AAE Folds"
 description: ""
 project: "riak_kv"
-project_version: "3.2.5"
+project_version: "3.2.6"
 lastmod: 2025-03-24T00:00:00-00:00
 sitemap:
   priority: 0.9
 menu:
-  riak_kv-3.2.5:
+  riak_kv-3.2.6:
     name: "TicTac AAE Folds"
     identifier: "cluster_operations_tictac_aae_fold"
     weight: 109
