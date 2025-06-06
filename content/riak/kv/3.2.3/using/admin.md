@@ -22,7 +22,6 @@ aliases:
 [use admin commands]: ./commands/
 [use admin riak cli]: ./riak-cli/
 [use admin riak admin]: ./riak-admin/
-[use admin riak control]: ./riak-control/
 
 ## In This Section
 
@@ -43,10 +42,4 @@ Details the `riak admin` interface.
 Covers the `riak` interface, which enables control of the processes associated with a Riak node.
 
 [Learn More >>][use admin riak cli]
-
-#### [Riak Control][use admin riak control]
-
-Overview of Riak Control, a web-based administrative console for Riak clusters.
-
-[Learn More >>][use admin riak control]
 
