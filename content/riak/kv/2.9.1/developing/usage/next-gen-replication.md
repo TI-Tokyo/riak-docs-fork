@@ -7,7 +7,7 @@ lastmod: 2020-02-16T00:00:00-00:00
 sitemap:
   priority: 0.2
 menu:
-  riak_kv-2.9.0:
+  riak_kv-2.9.1:
     name: "Replication"
     identifier: "learn_concepts_replication"
     weight: 108
