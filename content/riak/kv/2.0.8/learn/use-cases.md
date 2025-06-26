@@ -95,7 +95,7 @@ address), [using secondary indexes][usage secondary-indexes] can provide an easy
 <table class="links">
     <tr>
         <td><a href="https://player.vimeo.com/video/42744689" target="_blank" title="Scaling Riak at Kiip">
-           <img src="http://b.vimeocdn.com/ts/296/624/296624215_960.jpg"/>
+           <img src="http://b.vimeocdn.com/ts/296/624/296624215_960.jpg" />
          </a></td>
         <td><a href="https://player.vimeo.com/video/42744689" target="_blank" title="Riak at OpenX">Scaling Riak at Kiip</a>
         <br />
@@ -127,7 +127,7 @@ involves serving reads.
 
 <table class="links">
   <tr>
-    <td><a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX"><img src="http://b.vimeocdn.com/ts/343/417/343417336_960.jpg"/></a>
+    <td><a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX"><img src="http://b.vimeocdn.com/ts/343/417/343417336_960.jpg" /></a>
     </td>
     <td><a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX">Riak at OpenX</a>
     <br />
@@ -173,7 +173,7 @@ maintain higher performance and yield more predictable latency.
 
 <table class="links">
   <tr>
-    <td><a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank" title="Riak at OpenX"><img src="{{<baseurl>}}images/simon-analyzing-logs.png"/></a>
+    <td><a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank" title="Riak at OpenX"><img src="{{<baseurl>}}images/simon-analyzing-logs.png" /></a>
     </td>
     <td>Simon Buckle on <a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank">analyzing Apache logs with Riak.</a>
     </td>
@@ -245,7 +245,7 @@ contents of the user account.
 
 <table class="links">
   <tr>
-    <td><a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree"><img class="vid_img"src="http://b.vimeocdn.com/ts/329/711/329711886_640.jpg"/></a>
+    <td><a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree"><img class="vid_img"src="http://b.vimeocdn.com/ts/329/711/329711886_640.jpg" /></a>
     </td>
     <td><a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree">Riak at Braintree</a>
     <br />
@@ -292,7 +292,7 @@ modifying it, and writing back the new value.
   <tr>
     <td>
       <a href="http://player.vimeo.com/video/21598799" target="_blank" title="Riak at Yammer">
-      <img src="http://b.vimeocdn.com/ts/139/033/139033664_640.jpg"/>
+      <img src="http://b.vimeocdn.com/ts/139/033/139033664_640.jpg" />
 </a></td>
         <td><a href="http://player.vimeo.com/video/21598799" target="_blank" title="Riak at Yammer">Riak at Yammer</a>
         <br />
@@ -302,7 +302,7 @@ modifying it, and writing back the new value.
 
     <tr>
         <td><a href="http://player.vimeo.com/video/44498491" target="_blank" title="Riak at Voxer">
-           <img src="http://b.vimeocdn.com/ts/309/154/309154350_960.jpg"/>
+           <img src="http://b.vimeocdn.com/ts/309/154/309154350_960.jpg" />
          </a></td>
         <td><a href="http://player.vimeo.com/video/44498491" target="_blank" title="Riak at Voxer">Riak at Voxer</a>
         <br />

@@ -27,8 +27,8 @@ return if h2s.length < 2
 
 # Build DOM elements in JQuery, to be appended later.
 toc_title   = $('<h3 class="table-of-contents__title">Contents</h3>')
-toc_wrapper = $('<div class="table-of-contents__wrapper"/>')
-toc_items   = $('<ol class="table-of-contents__items"/>').appendTo(toc_wrapper)
+toc_wrapper = $('<div class="table-of-contents__wrapper" />')
+toc_items   = $('<ol class="table-of-contents__items" />').appendTo(toc_wrapper)
 
 toc_wrapper.addClass("table-of-contents__wrapper--multi") if h2s.length >= 6
 

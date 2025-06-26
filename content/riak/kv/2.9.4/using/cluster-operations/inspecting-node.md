@@ -274,7 +274,7 @@ node.
 Stat                       | Description
 ---------------------------|---------------------------------------------------
 `leveldb_read_block_error` | The number of LevelDB read block errors.  Will read as undefined if LevelDB is not being used.
-`disk`                     | Information about the disk, taken from Erlang's disksup module.  Reported as [{"ID",KBytes_Used,Percent_Util}].
+`disk`                     | Information about the disk, taken from Erlang's disksup module.  Reported as `[{"ID",KBytes_Used,Percent_Util}]`.
 `storage_backend`          | The storage backend currently in use.
 
 ### Pipeline Metrics

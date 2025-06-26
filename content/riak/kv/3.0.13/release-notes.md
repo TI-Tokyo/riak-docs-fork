@@ -24,7 +24,7 @@ Released Feb 04, 2023.
 
 ## Overview
 
-This release is focused on improving the reliability of handoffs. The speed of handoffs is critical to the recovery times of nodes following failure, and also to the time necessary to expand or contract the cluster. Controlling the speed can be managed by increasing concurrency (using riak admin transfer-limit <limit>), but this can often lead to handoff unreliability due to timeouts.
+This release is focused on improving the reliability of handoffs. The speed of handoffs is critical to the recovery times of nodes following failure, and also to the time necessary to expand or contract the cluster. Controlling the speed can be managed by increasing concurrency (using `riak admin transfer-limit <limit>`), but this can often lead to handoff unreliability due to timeouts.
 
 The main handoff process has been refactored to remove some deprecated messages, simplify the naming of configuration items, improve the logging of handoffs and increase the frequency of handoff sync messages. More frequent sync messages should make the flow of handoffs from the sender more responsive to pressure at the receiver.
 

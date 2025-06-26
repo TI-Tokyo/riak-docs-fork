@@ -195,15 +195,15 @@ other than allow Riak Search to properly manage your stored objects.
  <fields>
 
    <!-- All of these fields are required by Riak Search -->
-   <field name="_yz_id"   type="_yz_str" indexed="true" stored="true"  multiValued="false" required="true"/>
-   <field name="_yz_ed"   type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_pn"   type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_fpn"  type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_vtag" type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_rk"   type="_yz_str" indexed="true" stored="true"  multiValued="false"/>
-   <field name="_yz_rt"   type="_yz_str" indexed="true" stored="true"  multiValued="false"/>
-   <field name="_yz_rb"   type="_yz_str" indexed="true" stored="true"  multiValued="false"/>
-   <field name="_yz_err"  type="_yz_str" indexed="true" stored="false" multiValued="false"/>
+   <field name="_yz_id"   type="_yz_str" indexed="true" stored="true"  multiValued="false" required="true" />
+   <field name="_yz_ed"   type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_pn"   type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_fpn"  type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_vtag" type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_rk"   type="_yz_str" indexed="true" stored="true"  multiValued="false" />
+   <field name="_yz_rt"   type="_yz_str" indexed="true" stored="true"  multiValued="false" />
+   <field name="_yz_rb"   type="_yz_str" indexed="true" stored="true"  multiValued="false" />
+   <field name="_yz_err"  type="_yz_str" indexed="true" stored="false" multiValued="false" />
  </fields>
 
  <uniqueKey>_yz_id</uniqueKey>
@@ -268,15 +268,15 @@ field, you also must set `multiValued` to `true`.
    <dynamicField name="*_de" type="text_de" indexed="true" stored="true" multiValued="true" />
 
    <!-- All of these fields are required by Riak Search -->
-   <field name="_yz_id"   type="_yz_str" indexed="true" stored="true"  multiValued="false" required="true"/>
-   <field name="_yz_ed"   type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_pn"   type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_fpn"  type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_vtag" type="_yz_str" indexed="true" stored="false" multiValued="false"/>
-   <field name="_yz_rk"   type="_yz_str" indexed="true" stored="true"  multiValued="false"/>
-   <field name="_yz_rt"   type="_yz_str" indexed="true" stored="true"  multiValued="false"/>
-   <field name="_yz_rb"   type="_yz_str" indexed="true" stored="true"  multiValued="false"/>
-   <field name="_yz_err"  type="_yz_str" indexed="true" stored="false" multiValued="false"/>
+   <field name="_yz_id"   type="_yz_str" indexed="true" stored="true"  multiValued="false" required="true" />
+   <field name="_yz_ed"   type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_pn"   type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_fpn"  type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_vtag" type="_yz_str" indexed="true" stored="false" multiValued="false" />
+   <field name="_yz_rk"   type="_yz_str" indexed="true" stored="true"  multiValued="false" />
+   <field name="_yz_rt"   type="_yz_str" indexed="true" stored="true"  multiValued="false" />
+   <field name="_yz_rb"   type="_yz_str" indexed="true" stored="true"  multiValued="false" />
+   <field name="_yz_err"  type="_yz_str" indexed="true" stored="false" multiValued="false" />
  </fields>
 
  <uniqueKey>_yz_id</uniqueKey>
@@ -299,30 +299,30 @@ different languages. In our example, we mapped any field that ends with
    <fieldType name="_yz_str" class="solr.StrField" sortMissingLast="true" />
 
    <fieldType name="string" class="solr.StrField" sortMissingLast="true" />
-   <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true"/>
-   <fieldType name="int" class="solr.TrieIntField" precisionStep="0" positionIncrementGap="0"/>
+   <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" />
+   <fieldType name="int" class="solr.TrieIntField" precisionStep="0" positionIncrementGap="0" />
 
    <!-- Spanish -->
    <fieldType name="text_es" class="solr.TextField" positionIncrementGap="100">
      <analyzer>
-       <tokenizer class="solr.StandardTokenizerFactory"/>
-       <filter class="solr.LowerCaseFilterFactory"/>
+       <tokenizer class="solr.StandardTokenizerFactory" />
+       <filter class="solr.LowerCaseFilterFactory" />
        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_es.txt" format="snowball" />
-       <filter class="solr.SpanishLightStemFilterFactory"/>
-       <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="Spanish"/> -->
+       <filter class="solr.SpanishLightStemFilterFactory" />
+       <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="Spanish" /> -->
      </analyzer>
    </fieldType>
 
    <!-- German -->
    <fieldType name="text_de" class="solr.TextField" positionIncrementGap="100">
      <analyzer>
-       <tokenizer class="solr.StandardTokenizerFactory"/>
-       <filter class="solr.LowerCaseFilterFactory"/>
+       <tokenizer class="solr.StandardTokenizerFactory" />
+       <filter class="solr.LowerCaseFilterFactory" />
        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_de.txt" format="snowball" />
-       <filter class="solr.GermanNormalizationFilterFactory"/>
-       <filter class="solr.GermanLightStemFilterFactory"/>
-       <!-- less aggressive: <filter class="solr.GermanMinimalStemFilterFactory"/> -->
-       <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="German2"/> -->
+       <filter class="solr.GermanNormalizationFilterFactory" />
+       <filter class="solr.GermanLightStemFilterFactory" />
+       <!-- less aggressive: <filter class="solr.GermanMinimalStemFilterFactory" /> -->
+       <!-- more aggressive: <filter class="solr.SnowballPorterFilterFactory" language="German2" /> -->
      </analyzer>
    </fieldType>
  </types>

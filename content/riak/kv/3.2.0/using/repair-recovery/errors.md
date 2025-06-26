@@ -265,7 +265,8 @@ Error | Message | Description | Resolution
 `{invalid_config_setting, multi_backend, list_is_empty`} | | Multi backend configuration requires a value | Configure at least one backend under `multi_backend` in `app.config`
 `{invalid_config_setting, multi_backend_default, backend_not_found}` | | | Must choose a valid backend type to configure
 `multi_backend_config_unset` | | No configuration for Multi backend | Configure at least one backend under `multi_backend` in `app.config`
-`not_loaded` | | Native driver not loading | Ensure your native drivers exist (.dll or .so files {riak_kv_multi_backend, undefined_backend, BackendName} | | Backend defined for a bucket is invalid | Define a valid backed before using this bucket under lib/`project`/priv, where `project` is most likely eleveldb).
+`not_loaded` | | Native driver not loading | Ensure your native drivers exist (.dll or .so files)
+`{riak_kv_multi_backend, undefined_backend, BackendName}` | | Backend defined for a bucket is invalid | Define a valid backed before using this bucket under lib/`project`/priv, where `project` is most likely eleveldb).
 `reset_disabled` | | Attempted to reset a Memory backend in production | Don't use this in production
 
 ### JavaScript
@@ -316,18 +317,16 @@ Although you can put together many error causes with the tables above,
 here are some common yet esoteric messages with known causes and
 solutions.
 
- Message | Resolution
-:--------|:----------
-gen_server riak_core_capability terminated with reason: no function clause matching orddict:fetch('`Node`', []) | The Node has been changed, either through change of IP or `vm.args` `-name` without notifying the ring. Either use the `riak admin cluster replace` command, or remove the corrupted ring files `rm -rf /var/lib/riak/ring/*` and rejoin to the cluster
-gen_server <`PID`> terminated with reason: no function clause matching riak_core_pb:encode(`Args`) line 40 | Ensure you do not have different settings on different nodes (for example, a ttl mem setting on one node's mem backend, and another without)
-monitor `busy_dist_port` `Pid` [...{almost_current_function,...] | This message means distributed Erlang buffers are filling up. Try setting zdbbl higher in `vm.args`, such as `+zdbbl 16384`. Or check that your network is not slow. Or ensure you are not slinging large values. If a high bandwidth network is congested, try setting RTO_min down to 0 msec (or 1msec).
-<`PID`>@riak_core_sysmon___handler:handle_event:89 Monitor got {suppressed,port_events,1} | Logged as info, you can add `+swt very_low` to your `vm.args`
-(in LevelDB LOG files) Compaction error | Turn off the node and run repair on the LevelDB partition. See <a href="{{<baseurl>}}riak/kv/3.2.0/using/repair-recovery/errors/#more">Step 2</a>.
-enif_send: env==NULL on non-SMP VM/usr/lib/riak/lib/os_mon-2.2.9/priv/bin/memsup: Erlang has closed. | Riak's Erlang VM is built with SMP support and if Riak is started on a non-SMP system, an error like this one is logged. This is commonly seen in virtualized environments configured for only one CPU core.
-exit with reason bad return value: {error,eaddrinuse} in context start_error | An error like this example can occur when another process is already bound to the same address as the process being started is attempting to bind to. Use operating system tools like `netstat`, `ps`, and `lsof` to determine the root cause for resolving this kind of errors; check for existence of stale  `beam.smp` processes.
-exited with reason: eaddrnotavail in gen_server:init_it/6 line 320 | An error like this example can result when Riak cannot bind to the addresses specified in the configuration. In this case, you should verify HTTP and Protocol Buffers addresses in `app.config` and ensure that the ports being used are not in the privileged (1-1024) range as the `riak` user will not have access to such ports.
-gen_server riak_core_capability terminated with reason: no function clause matching orddict:fetch('riak@192.168.2.2', []) line 72 | Error output like this example can indicate that a previously running Riak node with an original `-name` value in `vm.args` has been modified by simply changing the value in `vm.args` and not properly through `riak admin cluster replace`.
-** Configuration error: [FRAMEWORK-MIB]: missing context.conf file => generating a default file | This error is commonly encountered when starting Riak Enterprise without prior [SNMP]({{<baseurl>}}riak/kv/3.2.0/using/reference/snmp) configuration.
+<code>gen_server riak_core_capability terminated with reason: no function clause matching orddict:fetch('`Node`', [])</code> | The Node has been changed, either through change of IP or `vm.args` `-name` without notifying the ring. Either use the `riak admin cluster replace` command, or remove the corrupted ring files `rm -rf /var/lib/riak/ring/*` and rejoin to the cluster
+<code>gen_server <`PID`> terminated with reason: no function clause matching riak_core_pb:encode(`Args`) line 40</code> | Ensure you do not have different settings on different nodes (for example, a ttl mem setting on one node's mem backend, and another without)
+<code>monitor `busy_dist_port` `Pid` [...{almost_current_function,...]</code> | This message means distributed Erlang buffers are filling up. Try setting zdbbl higher in `vm.args`, such as `+zdbbl 16384`. Or check that your network is not slow. Or ensure you are not slinging large values. If a high bandwidth network is congested, try setting RTO_min down to 0 msec (or 1msec).
+<code><`PID`>@riak_core_sysmon___handler:handle_event:89 Monitor got {suppressed,port_events,1}</code> | Logged as info, you can add `+swt very_low` to your `vm.args`
+(in LevelDB LOG files) <code>Compaction error</code> | Turn off the node and run repair on the LevelDB partition. See <a href="{{<baseurl>}}riak/kv/3.2.0/using/repair-recovery/errors/#more">Step 2</a>.
+<code>enif_send: env==NULL on non-SMP VM/usr/lib/riak/lib/os_mon-2.2.9/priv/bin/memsup: Erlang has closed.</code> | Riak's Erlang VM is built with SMP support and if Riak is started on a non-SMP system, an error like this one is logged. This is commonly seen in virtualized environments configured for only one CPU core.
+<code>exit with reason bad return value: {error,eaddrinuse} in context start_error</code> | An error like this example can occur when another process is already bound to the same address as the process being started is attempting to bind to. Use operating system tools like `netstat`, `ps`, and `lsof` to determine the root cause for resolving this kind of errors; check for existence of stale  `beam.smp` processes.
+<code>exited with reason: eaddrnotavail in gen_server:init_it/6 line 320</code> | An error like this example can result when Riak cannot bind to the addresses specified in the configuration. In this case, you should verify HTTP and Protocol Buffers addresses in `app.config` and ensure that the ports being used are not in the privileged (1-1024) range as the `riak` user will not have access to such ports.
+<code>gen_server riak_core_capability terminated with reason: no function clause matching orddict:fetch('riak@192.168.2.2', []) line 72</code> | Error output like this example can indicate that a previously running Riak node with an original `-name` value in `vm.args` has been modified by simply changing the value in `vm.args` and not properly through `riak admin cluster replace`.
+<code>** Configuration error: [FRAMEWORK-MIB]: missing context.conf file => generating a default file</code> | This error is commonly encountered when starting Riak Enterprise without prior [SNMP]({{<baseurl>}}riak/kv/3.2.0/using/reference/snmp) configuration.
 
 ### More
 

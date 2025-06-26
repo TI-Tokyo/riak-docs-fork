@@ -1648,7 +1648,7 @@ enabled.</td>
 <td>Sets the throttling tiers for Active Anti-Entropy. Each tier is a
 minimum vnode mailbox size and a time-delay that the throttle should
 observe at that size and above. For example,
-<cod>anti_entropy.throttle.tier1.mailbox_size = 0</code>,
+<code>anti_entropy.throttle.tier1.mailbox_size = 0</code>,
 <code>anti_entropy.throttle.tier1.delay = 0ms</code>,
 <code>anti_entropy.throttle.tier2.mailbox_size = 40</code>,
 <code>anti_entropy.throttle.tier2.delay = 5ms</code>, etc. If

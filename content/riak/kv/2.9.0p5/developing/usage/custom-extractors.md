@@ -251,9 +251,9 @@ store in a `http_header_schema.xml` file:
 <fields>
   <!-- other required fields here -->
 
-  <field name="method" type="string" indexed="true" stored="true" multiValued="false"/>
-  <field name="host" type="string" indexed="true" stored="true" multiValued="false"/>
-  <field name="uri" type="string" indexed="true" stored="true" multiValued="false"/>
+  <field name="method" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="host" type="string" indexed="true" stored="true" multiValued="false" />
+  <field name="uri" type="string" indexed="true" stored="true" multiValued="false" />
 </fields>
 ```
 
