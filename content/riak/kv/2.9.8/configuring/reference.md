@@ -210,8 +210,10 @@ executables are stored.</td>
 
 <tr>
 <td><code>platform_data_dir</code></td>
-<td>The directory in which Riak stores its storage backend data, as well
-as <a href="{{<baseurl>}}riak/kv/2.9.8/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
+<td>
+he directory in which Riak stores its storage backend data, as well
+as <a href="{{<baseurl>}}riak/kv/2.9.8/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata
+</td>
 <td><code>./data</code></td>
 </tr>
 
@@ -308,8 +310,10 @@ authorization.
 
 <tr>
 <td><code>riak_control.auth.mode</code></td>
-<td>Authentication mode used for access to the admin panel. Options are
-<code>off</code> (which is the default) or <code>userlist</code>.</td>
+<td>
+uthentication mode used for access to the admin panel. Options are
+<code>off</code> (which is the default) or <code>userlist</code>
+</td>
 <td><code>off</code></td>
 </tr>
 
@@ -342,7 +346,8 @@ operating system.
 
 <tr>
 <td><code>runtime_health.triggers.distribution_port</code></td>
-<td>Whether distribution ports with full input buffers will be counted
+<td>
+Whether distribution ports with full input buffers will be counted
 as busy. Distribution ports connect Riak nodes within a single cluster.
 </td>
 <td><code>on</code></td>
@@ -350,15 +355,19 @@ as busy. Distribution ports connect Riak nodes within a single cluster.
 
 <tr>
 <td><code>runtime_health.triggers.port</code></td>
-<td>Whether ports with full input buffers will be counted as busy.
-Ports can represent open files or network sockets.</td>
+<td>
+hether ports with full input buffers will be counted as busy.
+Ports can represent open files or network sockets
+</td>
 <td><code>on</code></td>
 </tr>
 
 <tr>
 <td><code>runtime_health.triggers.process.heap_size</code></td>
-<td>A process will become busy when its heap exceeds this size
-(in bytes).</td>
+<td>
+ process will become busy when its heap exceeds this size
+(in bytes)
+</td>
 <td><code>160444000</code></td>
 </tr>
 
@@ -492,15 +501,19 @@ allowed, using the <code>module:function</code> format.</td>
 
 <tr>
 <td><code>buckets.default.pr</code></td>
-<td>The number of primary, non-fallback replicas that must reply to a
-read request.</td>
+<td>
+he number of primary, non-fallback replicas that must reply to a
+read request
+</td>
 <td><code>0</code></td>
 </tr>
 
 <tr>
 <td><code>buckets.default.pw</code></td>
-<td>The number of primary, non-fallback replicas which must reply to a
-write request.</td>
+<td>
+he number of primary, non-fallback replicas which must reply to a
+write request
+</td>
 <td><code>0</code></td>
 </tr>
 
@@ -512,8 +525,10 @@ write request.</td>
 
 <tr>
 <td><code>buckets.default.w</code></td>
-<td>The number of replicas which must reply to a write request,
-indicating that the write was received.</td>
+<td>
+he number of replicas which must reply to a write request,
+indicating that the write was received
+</td>
 <td><code>quorum</code></td>
 </tr>
 
@@ -552,29 +567,37 @@ format for more compact storage of small values.</td>
 
 <tr>
 <td><code>object.siblings.maximum</code></td>
-<td>Writing an object with more than this number of siblings will send
-a failure to the client.</td>
+<td>
+riting an object with more than this number of siblings will send
+a failure to the client
+</td>
 <td><code>100</code></td>
 </tr>
 
 <tr>
 <td><code>object.siblings.warning_threshold</code></td>
-<td>Writing an object with more than this number of siblings will
-generate a warning in the logs.</td>
+<td>
+riting an object with more than this number of siblings will
+generate a warning in the logs
+</td>
 <td><code>25</code></td>
 </tr>
 
 <tr>
 <td><code>object.size.maximum</code></td>
-<td>Writing an object larger than this will send a failure to the
-client.</td>
+<td>
+riting an object larger than this will send a failure to the
+client
+</td>
 <td><code>50MB</code></td>
 </tr>
 
 <tr>
 <td><code>object.size.warning_threshold</code></td>
-<td>Reading or writing objects larger than this size will write a
-warning in the logs.</td>
+<td>
+eading or writing objects larger than this size will write a
+warning in the logs
+</td>
 <td><code>5MB</code></td>
 </tr>
 
@@ -742,8 +765,10 @@ href="http://www.erlang.org/doc/man/erlang.html#system_flag-2">here</a>.
 
 <tr>
 <td><code>erlang.max_ports</code></td>
-<td>The number of concurrent ports/sockets. The valid range is 1024 to
-134217727.</td>
+<td>
+he number of concurrent ports/sockets. The valid range is 1024 to
+134217727
+</td>
 <td><code>65536</code></td>
 </tr>
 
@@ -784,8 +809,10 @@ is ignored if the emulator doesn't have SMP support enabled (see the
 
 <tr>
 <td><code>erlang.schedulers.online</code></td>
-<td>See the description for <code>erlang.schedulers.total</code>
-directly above.</td>
+<td>
+ee the description for <code>erlang.schedulers.total</code>
+directly above
+</td>
 <td></td>
 </tr>
 
@@ -815,8 +842,10 @@ href="http://erlang.org/doc/man/erl.html#smp">here</a>.</td>
 
 <tr>
 <td><code>erlang.shutdown_time</code></td>
-<td>Limits how long the Erlang VM spends shutting down. After the
-specified duration elapses, all existing processes are killed.</td>
+<td>
+imits how long the Erlang VM spends shutting down. After the
+specified duration elapses, all existing processes are killed
+</td>
 <td><code>10s</code></td>
 </tr>
 
@@ -840,43 +869,55 @@ Configurable parameters for Riak's now-deprecated JavaScript
 
 <tr>
 <td><code>javascript.source_dir</code></td>
-<td>A directory containing the Javascript source files which will be
-loaded by Riak when it initializes Javascript VMs.</td>
+<td>
+ directory containing the Javascript source files which will be
+loaded by Riak when it initializes Javascript VMs
+</td>
 <td></td>
 </tr>
 
 <tr>
 <td><code>javascript.maximum_stack_size</code></td>
-<td>The maximum amount of thread stack memory to allocate to each
-JavaScript virtual machine.</td>
+<td>
+he maximum amount of thread stack memory to allocate to each
+JavaScript virtual machine
+</td>
 <td><code>16MB</code></td>
 </tr>
 
 <tr>
 <td><code>javascript.maximum_heap_size</code></td>
-<td>The maximum amount of memory allocated to each JavaScript virtual
-machine.</td>
+<td>
+he maximum amount of memory allocated to each JavaScript virtual
+machine
+</td>
 <td><code>8MB</code></td>
 </tr>
 
 <tr>
 <td><code>javascript.hook_pool_size</code></td>
-<td>The number of JavaScript virtual machines available for executing
-pre-commit hook functions.</td>
+<td>
+he number of JavaScript virtual machines available for executing
+pre-commit hook functions
+</td>
 <td><code>2</code></td>
 </tr>
 
 <tr>
 <td><code>javascript.reduce_pool_size</code></td>
-<td>The number of JavaScript virtual machines available for executing
-reduce functions.</td>
+<td>
+he number of JavaScript virtual machines available for executing
+reduce functions
+</td>
 <td><code>6</code></td>
 </tr>
 
 <tr>
 <td><code>javascript.map_pool_size</code></td>
-<td>The number of JavaScript virtual machines available for executing
-map functions.</td>
+<td>
+he number of JavaScript virtual machines available for executing
+map functions
+</td>
 <td><code>8</code></td>
 </tr>
 
@@ -1009,22 +1050,28 @@ simultaneously, set this number higher.</td>
 
 <tr>
 <td><code>listener.protobuf.$name</code></td>
-<td>This is the IP address and TCP port to which the Riak Protocol
-Buffers interface will bind.</td>
+<td>
+his is the IP address and TCP port to which the Riak Protocol
+Buffers interface will bind
+</td>
 <td><code>{"127.0.0.1",8087}</code></td>
 </tr>
 
 <tr>
 <td><code>listener.http.$name</code></td>
-<td>This is the IP address and TCP port to which the Riak HTTP
-interface will bind.</td>
+<td>
+his is the IP address and TCP port to which the Riak HTTP
+interface will bind
+</td>
 <td><code>{"127.0.0.1",8098}</code></td>
 </tr>
 
 <tr>
 <td><code>listener.https.$name</code></td>
-<td>This is the IP address and TCP port to which the Riak HTTPS
-interface will bind.</td>
+<td>
+his is the IP address and TCP port to which the Riak HTTPS
+interface will bind
+</td>
 <td></td>
 </tr>
 
@@ -1089,8 +1136,10 @@ values:
 
 <tr>
 <td><code>log.crash.file</code></td>
-<td>If the crash log is enabled, the file where its messages will be
-written</td>
+<td>
+f the crash log is enabled, the file where its messages will be
+writte
+</td>
 <td><code>./log/crash.log</code></td>
 </tr>
 
@@ -1130,15 +1179,19 @@ Otherwise, an integer can be specified.</td>
 
 <tr>
 <td><code>log.error.messages_per_second</code></td>
-<td>Maximum number of <code>error_logger</code> messages to handle per
-second</td>
+<td>
+aximum number of <code>error_logger</code> messages to handle per
+secon
+</td>
 <td><code>100</code></td>
 </tr>
 
 <tr>
 <td><code>log.error.redirect</code></td>
-<td>Whether to redirect <code>error_logger</code> messages into
-lager</td>
+<td>
+hether to redirect <code>error_logger</code> messages into
+lage
+</td>
 <td><code>on</code></td>
 </tr>
 
@@ -1168,8 +1221,10 @@ through <code>local7</code>.</td>
 
 <tr>
 <td><code>log.syslog.ident</code></td>
-<td>If <code>log.syslog</code> is set to <code>on</code>, this setting
-determines the prefix appended to each syslog message.</td>
+<td>
+f <code>log.syslog</code> is set to <code>on</code>, this setting
+determines the prefix appended to each syslog message
+</td>
 <td><code>riak</code></td>
 </tr>
 
@@ -1222,8 +1277,10 @@ debugging information will be output.</td>
 
 <tr>
 <td><code>search.anti_entropy.throttle</code></td>
-<td>Whether the distributed throttle for Active Anti-Entropy is
-enabled.</td>
+<td>
+hether the distributed throttle for Active Anti-Entropy is
+enabled
+</td>
 <td><code>on</code></td>
 </tr>
 
@@ -1244,8 +1301,10 @@ each tier.</td>
 
 <tr>
 <td><code>search.anti_entropy.throttle.$tier.delay</code></td>
-<td>See the description for
-<code>anti_entropy.throttle.$tier.mailbox_size</code> above.</td>
+<td>
+ee the description for
+<code>anti_entropy.throttle.$tier.mailbox_size</code> above
+</td>
 <td></td>
 </tr>
 
@@ -1265,8 +1324,10 @@ entail a small performance cost.</td>
 
 <tr>
 <td><code>anti_entropy.write_buffer_size</code></td>
-<td>The LevelDB options used by Active Anti-Entropy to generate the
-LevelDB-backed on-disk hashtrees.</td>
+<td>
+he LevelDB options used by Active Anti-Entropy to generate the
+LevelDB-backed on-disk hashtrees
+</td>
 <td><code>4MB</code></td>
 </tr>
 
@@ -1278,7 +1339,8 @@ LevelDB-backed on-disk hashtrees.</td>
 
 <tr>
 <td><code>anti_entropy.trigger_interval</code></td>
-<td>The tick determines how often the Active Anti-Entropy manager looks
+<td>
+The tick determines how often the Active Anti-Entropy manager looks
 for work to do (building/expiring trees, triggering exchanges, etc).
 Lowering this value will speed up the rate at which all replicas are
 synced across the cluster. Increasing the value is not recommended.
@@ -1288,8 +1350,10 @@ synced across the cluster. Increasing the value is not recommended.
 
 <tr>
 <td><code>anti_entropy.concurrency_limit</code></td>
-<td>Limit how many Active Anti-Entropy exchanges or builds can happen
-concurrently.</td>
+<td>
+imit how many Active Anti-Entropy exchanges or builds can happen
+concurrently
+</td>
 <td><code>2</code></td>
 </tr>
 
@@ -1349,7 +1413,8 @@ to <code>off</code> can cut down on system resource usage.
 
 <tr>
 <td><code>tictacaae_active</code></td>
-<td>Changes TicTacAAE from Passive or Active. If you want to run TicTac AAE alongside legacy AAE, set both to Active. Can be <code>active</code> or <code>passive</code>
+<td>
+$1
 </td>
 <td><code>passive</code></td>
 </tr>
@@ -1409,22 +1474,28 @@ ever being blocked by a secondary system, set this parameter to
 
 <tr>
 <td><code>handoff.inbound</code></td>
-<td>Whether inbound handoff is enabled on the node. Possible values are
-<code>on</code> or <code>off</code>.</td>
+<td>
+hether inbound handoff is enabled on the node. Possible values are
+<code>on</code> or <code>off</code>
+</td>
 <td><code>on</code></td>
 </tr>
 
 <tr>
 <td><code>handoff.outbound</code></td>
-<td>Whether outbound handoff is enabled on the node. Possible values are
-<code>on</code> or <code>off</code>.</td>
+<td>
+hether outbound handoff is enabled on the node. Possible values are
+<code>on</code> or <code>off</code>
+</td>
 <td><code>on</code></td>
 </tr>
 
 <tr>
 <td><code>handoff.port</code></td>
-<td>Specifies the TCP port that Riak uses for intra-cluster data
-handoff.</td>
+<td>
+pecifies the TCP port that Riak uses for intra-cluster data
+handoff
+</td>
 <td><code>8099</code></td>
 </tr>
 
@@ -1438,8 +1509,10 @@ certfile and keyfile.</td>
 
 <tr>
 <td><code>handoff.ssl.keyfile</code></td>
-<td>The keyfile paired with the certfile specified in
-<code>.certfile</code>.</td>
+<td>
+he keyfile paired with the certfile specified in
+<code>.certfile</code>
+</td>
 <td></td>
 </tr>
 
@@ -1518,8 +1591,10 @@ node's `riak.conf` file.
 
 <tr>
 <td><code>strong_consistency</code></td>
-<td>Enables the consensus subsystem used for strongly consistent Riak
-operations if set to <code>on</code>.</td>
+<td>
+nables the consensus subsystem used for strongly consistent Riak
+operations if set to <code>on</code>
+</td>
 <td><code>off</code></td>
 </tr>
 
@@ -1809,8 +1884,10 @@ related to Riak's `riak_repl` subsystem.
 
 <tr>
 <td><code>data_root</code></td>
-<td>Path (relative or absolute) to the working directory for the
-replication process.</td>
+<td>
+ath (relative or absolute) to the working directory for the
+replication process
+</td>
 <td><code>/var/db/riak/riak_repl/</code></td>
 </tr>
 
@@ -1851,8 +1928,10 @@ either via the configuration file or command line.</td>
 
 <tr>
 <td><code>fullsync_on_connect</code></td>
-<td>Whether to initiate a fullsync on initial connection from the sink
-cluster.</td>
+<td>
+hether to initiate a fullsync on initial connection from the sink
+cluster
+</td>
 <td><code>true</code></td>
 </tr>
 
@@ -1875,8 +1954,10 @@ replicated with a fullsync.</td>
 
 <tr>
 <td><code>proxy_get</code></td>
-<td>Whether to enable Riak CS <code>proxy_get</code> and block
-filter.</td>
+<td>
+hether to enable Riak CS <code>proxy_get</code> and block
+filter
+</td>
 <td><code>disabled</code></td>
 </tr>
 

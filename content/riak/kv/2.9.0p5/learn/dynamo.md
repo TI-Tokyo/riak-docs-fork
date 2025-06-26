@@ -647,8 +647,10 @@ Handling temporary failures
     <td>
 Sloppy Quorum and hinted handoff
 </td>
-    <td>Provides high availability and durability guarantee when some of the
-        replicas are not available.</td>
+    <td>
+rovides high availability and durability guarantee when some of the
+        replicas are not available
+</td>
   </tr>
   <tr>
     <td>
@@ -668,8 +670,10 @@ Membership and failure detection
     <td>
 Gossip-based membership protocol and failure detection.
 </td>
-    <td>Preserves symmetry and avoids having a centralized registry for storing
-        membership and node liveness information.</td>
+    <td>
+reserves symmetry and avoids having a centralized registry for storing
+        membership and node liveness information
+</td>
   </tr>
 </table>
 

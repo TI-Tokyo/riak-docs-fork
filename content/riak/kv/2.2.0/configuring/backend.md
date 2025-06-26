@@ -47,7 +47,8 @@ which can lead to problems in some clusters.
 <td>
 <code>leveldb.block_cache_threshold</code>
 </td>
-<td>This setting defines the limit past which block cache memory can no
+<td>
+This setting defines the limit past which block cache memory can no
 longer be released in favor of the page cache. This setting has no
 impact in favor of file cache. The value is set on a per-vnode basis.
 </td>
@@ -167,8 +168,10 @@ The number of worker threads performing LevelDB operations.
 <td>
 <code>leveldb.verify_checksums</code>
 </td>
-<td>Enables or disables the verification of the data fetched from
-LevelDB against internal checksums.</td>
+<td>
+nables or disables the verification of the data fetched from
+LevelDB against internal checksums
+</td>
 <td>
 <code>on</code>
 </td>
@@ -178,8 +181,10 @@ LevelDB against internal checksums.</td>
 <td>
 <code>leveldb.verify_compaction</code>
 </td>
-<td>Enables or disables the verification of LevelDB data during
-compaction.</td>
+<td>
+nables or disables the verification of LevelDB data during
+compaction
+</td>
 <td>
 <code>on</code>
 </td>
@@ -306,8 +311,10 @@ feature.</td>
 <td>
 <code>leveldb.tiered.path.fast</code>
 </td>
-<td>The path prefix for <code>.sst</code> files below the level set by
-<code>leveldb.tiered</code>.</td>
+<td>
+he path prefix for <code>.sst</code> files below the level set by
+<code>leveldb.tiered</code>
+</td>
 <td></td>
 </tr>
 
@@ -315,8 +322,10 @@ feature.</td>
 <td>
 <code>leveldb.tiered.path.slow</code>
 </td>
-<td>The path prefix for <code>.sst</code> files below the level set by
-<code>leveldb.tiered</code>.</td>
+<td>
+he path prefix for <code>.sst</code> files below the level set by
+<code>leveldb.tiered</code>
+</td>
 <td></td>
 </tr>
 
@@ -412,8 +421,10 @@ without CRC signatures.</td>
 <td>
 <code>bitcask.fold.max_puts</code>
 </td>
-<td>See the description for the <code>bitcask.fold.max_age</code>
-config directly below.</td>
+<td>
+ee the description for the <code>bitcask.fold.max_age</code>
+config directly below
+</td>
 <td>
 <code>0</code>
 </td>
@@ -508,8 +519,10 @@ value will cause merging to happen more often.</td>
 <td>
 <code>bitcask.merge.window.end</code>
 </td>
-<td>See the description of the <code>bitcask.merge.policy</code> config
-below.</td>
+<td>
+ee the description of the <code>bitcask.merge.policy</code> config
+below
+</td>
 <td>
 <code>23</code>
 </td>
@@ -519,8 +532,10 @@ below.</td>
 <td>
 <code>bitcask.merge.window.start</code>
 </td>
-<td>See the description of the <code>bitcask.merge.policy</code> config
-below.</td>
+<td>
+ee the description of the <code>bitcask.merge.policy</code> config
+below
+</td>
 <td>
 <code>0</code>
 </td>
@@ -574,7 +589,8 @@ expressed as a percentage of <code>bitcask.merge_check_interval</code>.
 <td>
 <code>bitcask.max_merge_size</code>
 </td>
-<td>Maximum amount of data to merge in one go in the Bitcask backend.
+<td>
+$1
 </td>
 <td>
 <code>100GB</code>
@@ -598,8 +614,10 @@ writes.</td>
 <td>
 <code>bitcask.sync.interval</code>
 </td>
-<td>See the description of the <code>bitcask.sync.strategy</code>
-directly below.</td>
+<td>
+ee the description of the <code>bitcask.sync.strategy</code>
+directly below
+</td>
 <td></td>
 </tr>
 
@@ -676,8 +694,10 @@ key. Minimum: <code>1s</code>.</td>
 <td>
 <code>memory_backend.max_memory_per_vnode</code>
 </td>
-<td>The maximum amount of memory consumed per vnode by the memory
-storage backend. Minimum: <code>1MB</code>.</td>
+<td>
+he maximum amount of memory consumed per vnode by the memory
+storage backend. Minimum: <code>1MB</code>
+</td>
 <td></td>
 </tr>
 
@@ -718,8 +738,10 @@ Below is a listing of the available parameters:
 <td>
 <code>multi_backend.$name.storage_backend</code>
 </td>
-<td>This parameter specifies the Erlang module defining the storage
-mechanism that will be used on this node.</td>
+<td>
+his parameter specifies the Erlang module defining the storage
+mechanism that will be used on this node
+</td>
 <td>
 <code>bitcask</code>
 </td>

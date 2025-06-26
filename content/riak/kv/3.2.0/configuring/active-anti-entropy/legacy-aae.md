@@ -73,8 +73,10 @@ entail a small performance cost.</td>
 
 <tr>
 <td><code>anti_entropy.write_buffer_size</code></td>
-<td>The LevelDB options used by Active Anti-Entropy to generate the
-LevelDB-backed on-disk hashtrees.</td>
+<td>
+he LevelDB options used by Active Anti-Entropy to generate the
+LevelDB-backed on-disk hashtrees
+</td>
 <td><code>4MB</code></td>
 </tr>
 
@@ -86,7 +88,8 @@ LevelDB-backed on-disk hashtrees.</td>
 
 <tr>
 <td><code>anti_entropy.trigger_interval</code></td>
-<td>The tick determines how often the Active Anti-Entropy manager looks
+<td>
+The tick determines how often the Active Anti-Entropy manager looks
 for work to do (building/expiring trees, triggering exchanges, etc).
 Lowering this value will speed up the rate at which all replicas are
 synced across the cluster. Increasing the value is not recommended.
@@ -96,8 +99,10 @@ synced across the cluster. Increasing the value is not recommended.
 
 <tr>
 <td><code>anti_entropy.concurrency_limit</code></td>
-<td>Limit how many Active Anti-Entropy exchanges or builds can happen
-concurrently.</td>
+<td>
+imit how many Active Anti-Entropy exchanges or builds can happen
+concurrently
+</td>
 <td><code>2</code></td>
 </tr>
 

@@ -64,8 +64,10 @@ debugging information will be output.</td>
 <td>
 <code>search.anti_entropy.throttle</code>
 </td>
-<td>Whether the distributed throttle for Active Anti-Entropy is
-enabled.</td>
+<td>
+hether the distributed throttle for Active Anti-Entropy is
+enabled
+</td>
 <td>
 <code>on</code>
 </td>
@@ -92,8 +94,10 @@ each tier.</td>
 <td>
 <code>search.anti_entropy.throttle.$tier.delay</code>
 </td>
-<td>See the description for
-<code>anti_entropy.throttle.$tier.mailbox_size</code> above.</td>
+<td>
+ee the description for
+<code>anti_entropy.throttle.$tier.mailbox_size</code> above
+</td>
 <td></td>
 </tr>
 
@@ -123,8 +127,10 @@ entail a small performance cost.</td>
 <td>
 <code>anti_entropy.write_buffer_size</code>
 </td>
-<td>The LevelDB options used by Active Anti-Entropy to generate the
-LevelDB-backed on-disk hashtrees.</td>
+<td>
+he LevelDB options used by Active Anti-Entropy to generate the
+LevelDB-backed on-disk hashtrees
+</td>
 <td>
 <code>4MB</code>
 </td>
@@ -146,7 +152,8 @@ The directory where AAE hash trees are stored.
 <td>
 <code>anti_entropy.trigger_interval</code>
 </td>
-<td>The tick determines how often the Active Anti-Entropy manager looks
+<td>
+The tick determines how often the Active Anti-Entropy manager looks
 for work to do (building/expiring trees, triggering exchanges, etc).
 Lowering this value will speed up the rate at which all replicas are
 synced across the cluster. Increasing the value is not recommended.
@@ -160,8 +167,10 @@ synced across the cluster. Increasing the value is not recommended.
 <td>
 <code>anti_entropy.concurrency_limit</code>
 </td>
-<td>Limit how many Active Anti-Entropy exchanges or builds can happen
-concurrently.</td>
+<td>
+imit how many Active Anti-Entropy exchanges or builds can happen
+concurrently
+</td>
 <td>
 <code>2</code>
 </td>

@@ -48,7 +48,8 @@ which can lead to problems in some clusters.
 
 <tr>
 <td><code>leveldb.block_cache_threshold</code></td>
-<td>This setting defines the limit past which block cache memory can no
+<td>
+This setting defines the limit past which block cache memory can no
 longer be released in favor of the page cache. This setting has no
 impact in favor of file cache. The value is set on a per-vnode basis.
 </td>
@@ -130,15 +131,19 @@ instead.</td>
 
 <tr>
 <td><code>leveldb.verify_checksums</code></td>
-<td>Enables or disables the verification of the data fetched from
-LevelDB against internal checksums.</td>
+<td>
+nables or disables the verification of the data fetched from
+LevelDB against internal checksums
+</td>
 <td><code>on</code></td>
 </tr>
 
 <tr>
 <td><code>leveldb.verify_compaction</code></td>
-<td>Enables or disables the verification of LevelDB data during
-compaction.</td>
+<td>
+nables or disables the verification of LevelDB data during
+compaction
+</td>
 <td><code>on</code></td>
 </tr>
 
@@ -223,15 +228,19 @@ feature.</td>
 
 <tr>
 <td><code>leveldb.tiered.path.fast</code></td>
-<td>The path prefix for <code>.sst</code> files below the level set by
-<code>leveldb.tiered</code>.</td>
+<td>
+he path prefix for <code>.sst</code> files below the level set by
+<code>leveldb.tiered</code>
+</td>
 <td></td>
 </tr>
 
 <tr>
 <td><code>leveldb.tiered.path.slow</code></td>
-<td>The path prefix for <code>.sst</code> files below the level set by
-<code>leveldb.tiered</code>.</td>
+<td>
+he path prefix for <code>.sst</code> files below the level set by
+<code>leveldb.tiered</code>
+</td>
 <td></td>
 </tr>
 
@@ -260,8 +269,10 @@ Configurable Parameters for Riak's [leveled][plan backend leveled] storage backe
 
 <tr>
 <td><code>leveled.sync_strategy</code>
-<td>Strategy for flushing data to disk - Can be set to <code>riak_sync</code>, <code>sync</code> (if OTP > 16) or <code>none</code>. Use <code>none</code>, and the OS will flush when most efficient. Use <code>riak_sync</code> or <code>sync</code> to flush after every PUT (not recommended wihtout some hardware support e.g. flash drives and/or
-Flash-backed Write Caches)</td>
+<td>
+trategy for flushing data to disk - Can be set to <code>riak_sync</code>, <code>sync</code> (if OTP > 16) or <code>none</code>. Use <code>none</code>, and the OS will flush when most efficient. Use <code>riak_sync</code> or <code>sync</code> to flush after every PUT (not recommended wihtout some hardware support e.g. flash drives and/or
+Flash-backed Write Caches
+</td>
 <td><code>none</code></td>
 </tr>
 
@@ -273,8 +284,10 @@ Flash-backed Write Caches)</td>
 
 <tr>
 <td><code>leveled.compression_point</code></td>
-<td>The point at which compression is applied to the Journal (the Ledger is always compressed).  Use on_receipt or on_compact.  on_compact is suitable
-when values are unlikely to yield much benefit from compression(compression is only attempted when compacting)</td>
+<td>
+he point at which compression is applied to the Journal (the Ledger is always compressed).  Use on_receipt or on_compact.  on_compact is suitable
+when values are unlikely to yield much benefit from compression(compression is only attempted when compacting
+</td>
 <td><code>on_receipt</code></td>
 </tr>
 
@@ -385,8 +398,10 @@ without CRC signatures.</td>
 
 <tr>
 <td><code>bitcask.fold.max_puts</code></td>
-<td>See the description for the <code>bitcask.fold.max_age</code>
-config directly below.</td>
+<td>
+ee the description for the <code>bitcask.fold.max_age</code>
+config directly below
+</td>
 <td><code>0</code></td>
 </tr>
 
@@ -453,15 +468,19 @@ value will cause merging to happen more often.</td>
 
 <tr>
 <td><code>bitcask.merge.window.end</code></td>
-<td>See the description of the <code>bitcask.merge.policy</code> config
-below.</td>
+<td>
+ee the description of the <code>bitcask.merge.policy</code> config
+below
+</td>
 <td><code>23</code></td>
 </tr>
 
 <tr>
 <td><code>bitcask.merge.window.start</code></td>
-<td>See the description of the <code>bitcask.merge.policy</code> config
-below.</td>
+<td>
+ee the description of the <code>bitcask.merge.policy</code> config
+below
+</td>
 <td><code>0</code></td>
 </tr>
 
@@ -499,7 +518,8 @@ expressed as a percentage of <code>bitcask.merge_check_interval</code>.
 
 <tr>
 <td><code>bitcask.max_merge_size</code></td>
-<td>Maximum amount of data to merge in one go in the Bitcask backend.
+<td>
+$1
 </td>
 <td><code>100GB</code></td>
 </tr>
@@ -515,8 +535,10 @@ writes.</td>
 
 <tr>
 <td><code>bitcask.sync.interval</code></td>
-<td>See the description of the <code>bitcask.sync.strategy</code>
-directly below.</td>
+<td>
+ee the description of the <code>bitcask.sync.strategy</code>
+directly below
+</td>
 <td></td>
 </tr>
 
@@ -581,8 +603,10 @@ key. Minimum: <code>1s</code>.</td>
 
 <tr>
 <td><code>memory_backend.max_memory_per_vnode</code></td>
-<td>The maximum amount of memory consumed per vnode by the memory
-storage backend. Minimum: <code>1MB</code>.</td>
+<td>
+he maximum amount of memory consumed per vnode by the memory
+storage backend. Minimum: <code>1MB</code>
+</td>
 <td></td>
 </tr>
 
@@ -621,8 +645,10 @@ Below is a listing of the available parameters:
 
 <tr>
 <td><code>multi_backend.$name.storage_backend</code></td>
-<td>This parameter specifies the Erlang module defining the storage
-mechanism that will be used on this node.</td>
+<td>
+his parameter specifies the Erlang module defining the storage
+mechanism that will be used on this node
+</td>
 <td><code>bitcask</code></td>
 </tr>
 

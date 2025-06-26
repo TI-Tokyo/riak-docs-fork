@@ -311,8 +311,10 @@ Settings for the bucket listing request pool for Riak CS
 <td>
 <code>stanchion_host</code>
 </td>
-<td>The IP address/port for the Stanchion node in the cluster. Please note that
-there should be only one Stanchion node in the cluster.</td>
+<td>
+he IP address/port for the Stanchion node in the cluster. Please note that
+there should be only one Stanchion node in the cluster
+</td>
 <td>
 <code>127.0.0.1:8085</code>
 </td>
@@ -321,8 +323,10 @@ there should be only one Stanchion node in the cluster.</td>
 <td>
 <code>stanchion_ssl</code>
 </td>
-<td>Whether SSL is enabled for connections between the Riak CS node and
-Stanchion</td>
+<td>
+hether SSL is enabled for connections between the Riak CS node and
+Stanchio
+</td>
 <td>
 <code>off</code>
 </td>
@@ -339,8 +343,10 @@ Stanchion</td>
 <td>
 <code>stanchion_host</code>
 </td>
-<td>The IP address/port for the Stanchion node in the cluster. Please note that
-there should be only one Stanchion node in the cluster.</td>
+<td>
+he IP address/port for the Stanchion node in the cluster. Please note that
+there should be only one Stanchion node in the cluster
+</td>
 <td>
 <code>{"127.0.0.1",8085}</code>
 </td>
@@ -349,8 +355,10 @@ there should be only one Stanchion node in the cluster.</td>
 <td>
 <code>stanchion_ssl</code>
 </td>
-<td>Whether SSL is enabled for connections between the Riak CS node and
-Stanchion</td>
+<td>
+hether SSL is enabled for connections between the Riak CS node and
+Stanchio
+</td>
 <td>
 <code>false</code>
 </td>
@@ -394,8 +402,10 @@ corresponding settings in the <a href="{{<baseurl>}}riak/cs/2.1.2/theory/stanchi
 <td>
 <code>admin.secret</code>
 </td>
-<td>The admin secret used for administrative access to Riak CS. See the
-description for <code>admin.key</code> above for more information.</td>
+<td>
+he admin secret used for administrative access to Riak CS. See the
+description for <code>admin.key</code> above for more information
+</td>
 <td>
 <code>admin-secret</code>
 </td>
@@ -417,8 +427,10 @@ be able to create accounts.</td>
 <td>
 <code>auth_module</code>
 </td>
-<td>The module used by Riak CS for authentication. We do not recommend changing
-this setting unless you implement a custom authentication scheme.</td>
+<td>
+he module used by Riak CS for authentication. We do not recommend changing
+this setting unless you implement a custom authentication scheme
+</td>
 <td>
 <code>riak_cs_s3_auth</code>
 </td>
@@ -471,8 +483,10 @@ corresponding settings in the <a href="{{<baseurl>}}riak/cs/2.1.2/theory/stanchi
 <td>
 <code>admin_secret</code>
 </td>
-<td>The admin secret used for administrative access to Riak CS. See the
-description for <code>admin_key</code> above for more information.</td>
+<td>
+he admin secret used for administrative access to Riak CS. See the
+description for <code>admin_key</code> above for more information
+</td>
 <td>
 <code></code>
 </td>
@@ -539,8 +553,10 @@ These settings relate to Riak CS's [access logs]({{<baseurl>}}riak/cs/2.1.2/cook
 <td>
 <code>stats.access.archive_period</code>
 </td>
-<td>How large each access archive object is. This setting should be a multiple
-of <code>stats.access.flush_factor</code>. Expressed as a time-value.</td>
+<td>
+ow large each access archive object is. This setting should be a multiple
+of <code>stats.access.flush_factor</code>. Expressed as a time-value
+</td>
 <td>
 <code>1h</code>
 </td>
@@ -582,8 +598,10 @@ Expressed as an integer number of accesses.</td>
 <td>
 <code>riak_cs.usage_request_limit</code>
 </td>
-<td>How many archive periods a user can request in one usage read, applied
-independently to access/usage and billing/storage. Expressed as a time-value</td>
+<td>
+ow many archive periods a user can request in one usage read, applied
+independently to access/usage and billing/storage. Expressed as a time-valu
+</td>
 <td>
 <code>31d</code>
 </td>
@@ -717,8 +735,10 @@ Settings related to Riak CS's [garbage collection]({{<baseurl>}}riak/cs/2.1.2/co
 <td>
 <code>gc.interval</code>
 </td>
-<td>How often the GC daemon waits between GC batch operations. Expressed as a
-time-value.</td>
+<td>
+ow often the GC daemon waits between GC batch operations. Expressed as a
+time-value
+</td>
 <td>
 <code>15m</code>
 </td>
@@ -727,8 +747,10 @@ time-value.</td>
 <td>
 <code>gc.max_workers</code>
 </td>
-<td>The maximum number of worker processes that may be started by the GC daemon
-to use for concurrent reaping of GC-eligible objects.</td>
+<td>
+he maximum number of worker processes that may be started by the GC daemon
+to use for concurrent reaping of GC-eligible objects
+</td>
 <td>
 <code>2</code>
 </td>
@@ -737,8 +759,10 @@ to use for concurrent reaping of GC-eligible objects.</td>
 <td>
 <code>gc.retry_interval</code>
 </td>
-<td>How long a move to the GC to-do list can remain failed before it is
-re-attempted. Expressed as a time-value.</td>
+<td>
+ow long a move to the GC to-do list can remain failed before it is
+re-attempted. Expressed as a time-value
+</td>
 <td>
 <code>6h</code>
 </td>
@@ -793,8 +817,10 @@ results of the secondary index query.</td>
 <td>
 <code>gc_interval</code>
 </td>
-<td>How often the GC daemon waits between GC batch operations. Expressed
-as an integer number of seconds.</td>
+<td>
+ow often the GC daemon waits between GC batch operations. Expressed
+as an integer number of seconds
+</td>
 <td>
 <code>900</code> (15 minutes)
 </td>
@@ -803,8 +829,10 @@ as an integer number of seconds.</td>
 <td>
 <code>gc_max_workers</code>
 </td>
-<td>The maximum number of worker processes that may be started by the GC
-daemon to use for concurrent reaping of GC-eligible objects.</td>
+<td>
+he maximum number of worker processes that may be started by the GC
+daemon to use for concurrent reaping of GC-eligible objects
+</td>
 <td>
 <code>5</code>
 </td>
@@ -823,8 +851,10 @@ this setting.</td>
 <td>
 <code>gc_retry_interval</code>
 </td>
-<td>How long a move to the GC to-do list can remain failed before it is
-re-attempted. Expressed as an integer number of seconds.</td>
+<td>
+ow long a move to the GC to-do list can remain failed before it is
+re-attempted. Expressed as an integer number of seconds
+</td>
 <td>
 <code>21600</code> (6 hours)
 </td>
@@ -876,8 +906,10 @@ client throughput.
 <td>
 <code>put_buffer_factor</code>
 </td>
-<td>The number of blocks that will be buffered in-memory in Riak CS
-before it begins to slow down reading from the HTTP client.</td>
+<td>
+he number of blocks that will be buffered in-memory in Riak CS
+before it begins to slow down reading from the HTTP client
+</td>
 <td>
 <code>1</code>
 </td>
@@ -886,8 +918,10 @@ before it begins to slow down reading from the HTTP client.</td>
 <td>
 <code>put_concurrency</code>
 </td>
-<td>The number of threads inside of Riak CS that are used to write
-blocks to Riak.</td>
+<td>
+he number of threads inside of Riak CS that are used to write
+blocks to Riak
+</td>
 <td>
 <code>1</code>
 </td>
@@ -953,8 +987,10 @@ source IP address as an input (which is the default).</td>
 <td>
 <code>cs_version</code>
 </td>
-<td>The Riak CS version number. This number is used to selectively
-enable new features for the current version to better support <a href="{{<baseurl>}}riak/cs/2.1.2/cookbooks/rolling-upgrades">rolling upgrades</a>. New installs shouldn't need to modify this. If you're performing a rolling upgrade, keep the original value (if not defined, Riak CS uses <code>0</code>) of the old <code>app.config</code> until all nodes have been upgraded. At that point, set to the new value.</td>
+<td>
+he Riak CS version number. This number is used to selectively
+enable new features for the current version to better support <a href="{{<baseurl>}}riak/cs/2.1.2/cookbooks/rolling-upgrades">rolling upgrades</a>. New installs shouldn't need to modify this. If you're performing a rolling upgrade, keep the original value (if not defined, Riak CS uses <code>0</code>) of the old <code>app.config</code> until all nodes have been upgraded. At that point, set to the new value
+</td>
 <td>
 <code></code>
 </td>
@@ -1252,8 +1288,10 @@ server that handles all HTTP and HTTPS connections to Riak CS. The
 <td>
 <code>webmachine_log_handler</code>
 </td>
-<td>If this setting is commented out or removed, access to Webmachine
-log handling will be disabled.</td>
+<td>
+f this setting is commented out or removed, access to Webmachine
+log handling will be disabled
+</td>
 <td>
 <code>["./log"]</code>
 </td>
@@ -1329,8 +1367,10 @@ documentation</a> for more details.</td>
 <td>
 <code>crash_log</code>
 </td>
-<td>Whether to write to a crash log and where. If commented out,
-omitted, or undefined, no crash logging will take place.</td>
+<td>
+hether to write to a crash log and where. If commented out,
+omitted, or undefined, no crash logging will take place
+</td>
 <td>
 <code>./log/crash.log</code>
 </td>
@@ -1361,8 +1401,10 @@ href="https://github.com/basho/lager/blob/master/README.md">here</a>.</td>
 <td>
 <code>crash_log_msg_size</code>
 </td>
-<td>The maximum size of events in the crash log, expressed as a number
-of bytes.</td>
+<td>
+he maximum size of events in the crash log, expressed as a number
+of bytes
+</td>
 <td>
 <code>65536</code>
 </td>
@@ -1371,8 +1413,10 @@ of bytes.</td>
 <td>
 <code>crash_log_size</code>
 </td>
-<td>The maximum size of the crash log, in bytes, before it is rotated.
-Setting this parameter to <code>0</code> disables rotation.</td>
+<td>
+he maximum size of the crash log, in bytes, before it is rotated.
+Setting this parameter to <code>0</code> disables rotation
+</td>
 <td>
 <code>10485760</code>
 </td>
@@ -1381,8 +1425,10 @@ Setting this parameter to <code>0</code> disables rotation.</td>
 <td>
 <code>error_logger_redirect</code>
 </td>
-<td>Whether to redirect <code>error_logger</code> messages into
-lager.</td>
+<td>
+hether to redirect <code>error_logger</code> messages into
+lager
+</td>
 <td>
 <code>true</code>
 </td>

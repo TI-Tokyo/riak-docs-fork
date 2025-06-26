@@ -127,8 +127,10 @@ involves serving reads.
 
 <table class="links">
   <tr>
-    <td><a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX"><img src="http://b.vimeocdn.com/ts/343/417/343417336_960.jpg" /></a>
-    </td>
+    <td>
+a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX"><img src="http://b.vimeocdn.com/ts/343/417/343417336_960.jpg" /></a>
+   
+</td>
     <td><a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX">Riak at OpenX</a>
     <br />
     Los Angeles-based OpenX will serves trillions of ads a year. In this
@@ -173,10 +175,14 @@ maintain higher performance and yield more predictable latency.
 
 <table class="links">
   <tr>
-    <td><a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank" title="Riak at OpenX"><img src="{{<baseurl>}}images/simon-analyzing-logs.png" /></a>
-    </td>
-    <td>Simon Buckle on <a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank">analyzing Apache logs with Riak.</a>
-    </td>
+    <td>
+a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank" title="Riak at OpenX"><img src="{{<baseurl>}}images/simon-analyzing-logs.png" /></a>
+   
+</td>
+    <td>
+imon Buckle on <a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank">analyzing Apache logs with Riak.</a>
+   
+</td>
   </tr>
 </table>
 
@@ -245,8 +251,10 @@ contents of the user account.
 
 <table class="links">
   <tr>
-    <td><a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree"><img class="vid_img"src="http://b.vimeocdn.com/ts/329/711/329711886_640.jpg" /></a>
-    </td>
+    <td>
+a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree"><img class="vid_img"src="http://b.vimeocdn.com/ts/329/711/329711886_640.jpg" /></a>
+   
+</td>
     <td><a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree">Riak at Braintree</a>
     <br />
     Ben Mills, a developer at Braintree, discusses how their backend team came to find and begin to integrate Riak into their production environment. They also cover their model and repository framework for Ruby, Curator. Check out more details and slides on the <a href="http://basho.com/posts/business/riak-at-braintree/" target="_blank">Riak blog.</a>
@@ -354,13 +362,17 @@ pieces of information useful for later retrieval.
 
 <table class="links">
   <tr>
-    <td><a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/linkfluence-case-study.png" title="Milking Performance" /></a>
-    </td>
+    <td>
+a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/linkfluence-case-study.png" title="Milking Performance" /></a>
+   
+</td>
     <td>Linkfluence case study on using Riak to <a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" target="_blank">store social web content</a>.
   </tr>
   <tr>
-    <td><a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/ideeli-case-study.png" title="Milking Performance" /></a>
-    </td>
+    <td>
+a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/ideeli-case-study.png" title="Milking Performance" /></a>
+   
+</td>
     <td>ideeli case study on <a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" target="_blank">serving web pages with Riak</a>.
   </tr>
 </table>
