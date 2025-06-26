@@ -98,7 +98,7 @@ using multiple keys (e.g. a UUID or email address),
     </td>
     <td>
       <a href="https://player.vimeo.com/video/42744689" target="_blank" title="Riak at OpenX">Scaling Riak at Kiip</a>
-      <br>
+      <br />
       In this talk, recorded at the May 2012 San Francisco Riak Meetup, Armon
       Dadgar and Mitchell Hashimoto of Kiip give an overview of how and why they
       are using Riak in production, and the road they took to get there. One of
@@ -139,7 +139,7 @@ advertising traffic, which primarily involves serving reads.
     </td>
     <td>
       <a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX">Riak at OpenX</a>
-      <br>
+      <br />
       Los Angeles-based OpenX will serves trillions of ads a year. In this talk,
       Anthony Molinaro, Engineer at OpenX, goes in depth on their architecture,
       how they've built their system, and why/how they're switching to Riak for
@@ -257,7 +257,7 @@ ahead and either set up additional secondary indexes.
     </td>
     <td>
       <a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree">Riak at Braintree</a>
-      <br>
+      <br />
       Ben Mills, a developer at Braintree, discusses how their backend team came
       to find and begin to integrate Riak into their production environment.
       They also cover their model and repository framework for Ruby, Curator.
@@ -307,7 +307,7 @@ and writing back the new value.
     </td>
     <td>
       <a href="http://player.vimeo.com/video/21598799" target="_blank" title="Riak at Yammer">Riak at Yammer</a>
-      <br>
+      <br />
       This video was recorded at the March 2012 San Francisco Riak Meetup and is
       worth every minute of your time. Coda Hale and Ryan Kennedy of Yammer give
       an excellent and in depth look into how they built “Streamie”, user
@@ -324,7 +324,7 @@ and writing back the new value.
     </td>
     <td>
       <a href="http://player.vimeo.com/video/44498491" target="_blank" title="Riak at Voxer">Riak at Voxer</a>
-      <br>
+      <br />
       The team at Voxer has long relied on Riak as their primary data store for
       various production services. They have put Riak through its paces and have
       served as one of our more exciting customers and use cases: Riak was in
@@ -379,7 +379,7 @@ or other pieces of information useful for later retrieval.
   <tr>
     <td>
       <a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" class="vid_img" link target="_blank">
-        <img src="{{<baseurl>}}images/linkfluence-case-study.png" title="Milking Performance">
+        <img src="{{<baseurl>}}images/linkfluence-case-study.png" title="Milking Performance" />
       </a>
     </td>
     <td>
@@ -389,7 +389,7 @@ or other pieces of information useful for later retrieval.
   <tr>
     <td>
       <a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" class="vid_img" link target="_blank">
-        <img src="{{<baseurl>}}images/ideeli-case-study.png" title="Milking Performance">
+        <img src="{{<baseurl>}}images/ideeli-case-study.png" title="Milking Performance" />
       </a>
     </td>
     <td>

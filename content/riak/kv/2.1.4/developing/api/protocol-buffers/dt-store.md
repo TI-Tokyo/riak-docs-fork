@@ -72,7 +72,7 @@ message DtOp {
 {{% note title="Note on defaults and special values" %}}
 All of the optional parameters below have default values determined on a
 per-bucket basis. Please refer to the documentation on <a
-href="{{< baseurl >}}riak/kv/2.1.4/developing/api/protocol-buffers/set-bucket-props/">setting
+href="{{<baseurl>}}riak/kv/2.1.4/developing/api/protocol-buffers/set-bucket-props/">setting
 bucket properties</a> for more information.
 
 Furthermore, you can assign an integer value to the `w`, `dw`, and `pw`,

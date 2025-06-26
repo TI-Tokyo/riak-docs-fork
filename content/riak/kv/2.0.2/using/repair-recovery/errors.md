@@ -212,8 +212,7 @@ Error | Message | Description | Resolution
 `{could_not_reach_node, Node}` |  | Erlang process was not reachable | Check network settings; ensure remote nodes are running and reachable; ensure all nodes have the same Erlang cookie setting `vm.args` `-setcookie`. See <a href="#f1">1</a>
 `{deleted, Vclock}` |  | The value was already deleted, includes the current vector clock | Riak will eventually clean up this tombstone
 `{dw_val_violation, DW}` |  | Same as `w_val_violation` but concerning durable writes | Set a valid DW value
-`{field_parsing_failed, {Field, Value}}` | `Could not parse field
-<Field>, value <Value>.` | Could not parse an index field | Most commonly an `_int` field which cannot be parsed. For example a query like this is invalid: `/buckets/X/index/Y_int/BADVAL`, since BADVAL should instead be an integer
+`{field_parsing_failed, {Field, Value}}` | `Could not parse field <Field>, value <Value>.` | Could not parse an index field | Most commonly an `_int` field which cannot be parsed. For example a query like this is invalid: `/buckets/X/index/Y_int/BADVAL`, since BADVAL should instead be an integer
 `{hook_crashed, {Mod, Fun, Class, Exception}}` | `Problem invoking pre-commit hook` | Precommit process exited due to some failure | Fix the precommit function code, follow the message's exception and stacktrace to help debug
 `{indexes_not_supported, Mod}` |  | The chosen backend does not support indexes (only LevelDB currently supports secondary indexes) | Set your configuration to use the LevelDB backend
 `{insufficient_vnodes, NumVnodes, need, R}` |  | R was set greater than the total vnodes | Set a proper R value; or too many nodes are down; or too many nodes are unavailable due to crash or network partition. Ensure all nodes are available by running riak-admin ring-status.

@@ -370,9 +370,9 @@ Docs](https://github.com/basho/basho_docs).
 * [Riak Docs on Github](https://github.com/basho/basho_docs)
 
 [sysctl_vm_txt]: https://www.kernel.org/doc/Documentation/sysctl/vm.txt
-[data_types_counters]: {{< baseurl >}}riak/kv/latest/developing/data-types/counters/
-[data_types_sets]: {{< baseurl >}}riak/kv/latest/developing/data-types/sets/
-[data_types_maps]: {{< baseurl >}}riak/kv/latest/developing/data-types/maps/
+[data_types_counters]: {{<baseurl>}}riak/kv/latest/developing/data-types/counters/
+[data_types_sets]: {{<baseurl>}}riak/kv/latest/developing/data-types/sets/
+[data_types_maps]: {{<baseurl>}}riak/kv/latest/developing/data-types/maps/
 [riak_nagios]: https://github.com/basho/riak_nagios
 [tcollector]: https://github.com/stumbleupon/tcollector
 [tcollector_riak_plugin]: https://github.com/stumbleupon/tcollector/blob/master/collectors/0/riak.py

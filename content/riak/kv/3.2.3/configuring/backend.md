@@ -310,6 +310,7 @@ when values are unlikely to yield much benefit from compression(compression is o
 <td>Enable the `recalc` compaction strategy within the leveled backend in riak.</td>
 <td><code>disabled</code></td>
 </tr>
+</tbody>
 </table>
 
 ## Bitcask

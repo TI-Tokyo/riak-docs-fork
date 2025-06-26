@@ -18,15 +18,17 @@ aliases:
   - /riak/kv/2.2.0/theory/dynamo
 ---
 
+[client libraries]: {{<baseurl>}}riak/kv/2.2.0/developing/client-libraries/
+
 <div style="text-align:center;font-style:italic">
   Giuseppe DeCandia, Deniz Hastorun, Madan Jampani, Gunavardhan Kakulapati,
   Avinash Lakshman, Alex Pilchin, Swaminathan Sivasubramanian, Peter Vosshall
   and Werner Vogels
-  <br>
+  <br />
   Amazon.com
 </div>
 
-<br>
+<br />
 
 > *Dynamo: Amazon's Highly Available Key-value Store* is reprinted here in its
 > entirety, images and all.
@@ -331,7 +333,7 @@ services to produce a composite response. Typically, the aggregator services are
 stateless, although they use extensive caching.
 
 **<figure id="figure-1" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure1.png">
+  <img src="{{<baseurl>}}images/dynamo/figure1.png" />
   <figcaption>
     Figure 1: Service-oriented architecture of Amazon’s platform.
   </figcaption>
@@ -610,29 +612,55 @@ Dynamo uses and their respective advantages.
     <th>Advantage</th>
   </tr>
   <tr>
-    <td>Partitioning</td>
-    <td>Consistent Hashing</td>
-    <td>Incremental Scalability</td>
+    <td>
+Partitioning
+</td>
+    <td>
+Consistent Hashing
+</td>
+    <td>
+Incremental Scalability
+</td>
   </tr>
   <tr>
-    <td>High Availability for writes</td>
-    <td>Vector clocks with reconciliation during reads</td>
-    <td>Version size is decoupled from update rates.</td>
+    <td>
+High Availability for writes
+</td>
+    <td>
+Vector clocks with reconciliation during reads
+</td>
+    <td>
+Version size is decoupled from update rates.
+</td>
   </tr>
   <tr>
-    <td>Handling temporary failures</td>
-    <td>Sloppy Quorum and hinted handoff</td>
+    <td>
+Handling temporary failures
+</td>
+    <td>
+Sloppy Quorum and hinted handoff
+</td>
     <td>Provides high availability and durability guarantee when some of the
         replicas are not available.</td>
   </tr>
   <tr>
-    <td>Recovering from permanent failures</td>
-    <td>Anti-entropy using Merkle trees</td>
-    <td>Synchronizes divergent replicas in the background.</td>
+    <td>
+Recovering from permanent failures
+</td>
+    <td>
+Anti-entropy using Merkle trees
+</td>
+    <td>
+Synchronizes divergent replicas in the background.
+</td>
   </tr>
   <tr>
-    <td>Membership and failure detection</td>
-    <td>Gossip-based membership protocol and failure detection.</td>
+    <td>
+Membership and failure detection
+</td>
+    <td>
+Gossip-based membership protocol and failure detection.
+</td>
     <td>Preserves symmetry and avoids having a centralized registry for storing
         membership and node liveness information.</td>
   </tr>
@@ -754,7 +782,7 @@ nodes C and D in addition to storing it locally. Node D will store the keys that
 fall in the ranges (A, B], (B, C], and (C, D].
 
 **<figure id="figure-2" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure2.png">
+  <img src="{{<baseurl>}}images/dynamo/figure2.png" />
   <figcaption>
     Figure 2: Partitioning and replication of keys in Dynamo ring.
   </figcaption>
@@ -879,7 +907,7 @@ context is considered to have reconciled the divergent versions and the branches
 are collapsed into a single new version.
 
 **<figure id="figure-3" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure3.png">
+  <img src="{{<baseurl>}}images/dynamo/figure3.png" />
   <figcaption>
     Figure 3: Version evolution of an object over time.
   </figcaption>
@@ -1448,7 +1476,7 @@ several factors such as variability in request load, object sizes, and locality
 patterns.
 
 **<figure id="figure-4" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure4.png">
+  <img src="{{<baseurl>}}images/dynamo/figure4.png" />
   <figcaption>
     Figure 4: Average and 99.9 percentiles of latencies for read and write
     requests during our peak request season of December 2006. The intervals
@@ -1482,7 +1510,7 @@ responses, the performance of the write operation is not affected by the
 performance of the durable write operation performed by a single replica.
 
 **<figure id="figure-5" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure5.png">
+  <img src="{{<baseurl>}}images/dynamo/figure5.png" />
   <figcaption>
     Figure 5: Comparison of performance of 99.9th percentile latencies for
     buffered vs. non-buffered writes over a period of 24 hours. The intervals
@@ -1526,7 +1554,7 @@ distribution of keys the load is evenly distributed. However, during low loads
 accessed, resulting in a higher load imbalance.
 
 **<figure id="figure-6" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure6.png">
+  <img src="{{<baseurl>}}images/dynamo/figure6.png" />
   <figcaption>
     Figure 6: Fraction of nodes that are out-of-balance (i.e., nodes whose
     request load is above a certain threshold from the average system load) and
@@ -1597,7 +1625,7 @@ enabling the possibility of changing the placement scheme at runtime.
 > random distribution.
 
 **<figure id="figure-7" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure7-small.png">
+  <img src="{{<baseurl>}}images/dynamo/figure7-small.png" />
   <figcaption>
     Figure 7: Partitioning and placement of keys in the three strategies. A, B,
     and C depict the three unique nodes that form the preference list for the
@@ -1666,7 +1694,7 @@ is that changing the node membership requires coordination in order to preserve
 the properties required of the assignment.
 
 **<figure id="figure-8" style="text-align:center;">
-  <img src="{{<baseurl>}}images/dynamo/figure8.png">
+  <img src="{{<baseurl>}}images/dynamo/figure8.png" />
   <figcaption>
     Figure 8: Comparison of the load distribution efficiency of different
     strategies for system with 30 nodes and N=3 with equal amount of metadata
@@ -1747,16 +1775,16 @@ using timestamps based versioning.
 >
 > For example, using the Ruby driver, you could specify three nodes like this:
 >
->     client = Riak::Client.new(nodes: [
->       {host: '10.0.0.1'},
->       {host: '10.0.0.2'},
->       {host: '10.0.0.3'}
->     ])
+> ```
+> client = Riak::Client.new(nodes: [
+>   {host: '10.0.0.1'},
+>   {host: '10.0.0.2'},
+>   {host: '10.0.0.3'}
+> ])
+> ```
 >
 > Note that the Riak clients do not coordinate with Riak's preference list, but
 > simply round-robin requests, letting the Riak cluster handle routing.
-
-[client libraries]: {{<baseurl>}}riak/kv/2.2.0/developing/client-libraries/
 
 An important advantage of the client-driven coordination approach is that a load
 balancer is no longer required to uniformly distribute client load. Fair load
@@ -1799,17 +1827,33 @@ is higher for the 99.9th percentile than the average.
   </tr>
   <tr>
     <th>Server-driven</th>
-    <td>68.9</td>
-    <td>68.5</td>
-    <td>3.9</td>
-    <td>4.02</td>
+    <td>
+68.9
+</td>
+    <td>
+68.5
+</td>
+    <td>
+3.9
+</td>
+    <td>
+4.02
+</td>
   </tr>
   <tr>
     <th>Client-driven</th>
-    <td>30.4</td>
-    <td>30.4</td>
-    <td>1.55</td>
-    <td>1.9</td>
+    <td>
+30.4
+</td>
+    <td>
+30.4
+</td>
+    <td>
+1.55
+</td>
+    <td>
+1.9
+</td>
   </tr>
 </table>
 

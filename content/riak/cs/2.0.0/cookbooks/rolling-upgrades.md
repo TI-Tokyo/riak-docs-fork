@@ -27,30 +27,26 @@ As Riak CS 2.0.0 only works with Riak 2.0.5, the underlying Riak installation
 *must* be upgraded to Riak 2.0.5.
 
 {{% note title="Note on upgrading from Riak CS < 1.5.4" %}}
-<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#notes-on-upgrading">
-Some key objects changed names</a> after the upgrade. Applications may need to
+<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#notes-on-upgrading">Some key objects changed names</a> after the upgrade. Applications may need to
 change their behaviour due to this bugfix.
 {{% /note %}}
 
 {{% note title="Note on upgrading from Riak CS < 1.5.1" %}}
-<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#notes-on-upgrading-1">
-Bucket number limitation per user</a> have been introduced in 1.5.1. Users who
+<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#notes-on-upgrading-1">Bucket number limitation per user</a> have been introduced in 1.5.1. Users who
 have more than 100 buckets cannot create any bucket after the upgrade unless
 the limit is extended in the system configuration.
 {{% /note %}}
 
 {{% note title="Note on upgrading From Riak CS 1.4.x" %}}
 An operational procedure
-<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#incomplete-multipart-uploads">
-to clean up incomplete multipart under deleted buckets</a> is needed.
+<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#incomplete-multipart-uploads">to clean up incomplete multipart under deleted buckets</a> is needed.
 Otherwise new buckets with names that used to exist in the past can't be
 created. The operation will fail with a `409 Conflict` error.
 
 Leeway seconds and disk space should also be carefully watched during the
 upgrade, because timestamp management of garbage collection has changed since
 the 1.5.0 release. Consult the
-<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#leeway-seconds-and-disk-space">
-Leeway seconds and disk space</a> section of the 1.5 release notes for a more
+<a href="https://github.com/basho/riak_cs/blob/release/1.5/RELEASE-NOTES.md#leeway-seconds-and-disk-space">Leeway seconds and disk space</a> section of the 1.5 release notes for a more
 detailed description.
 {{% /note %}}
 
@@ -81,9 +77,9 @@ detailed description.
     </div>
 
 4. Upgrade Riak, Riak CS, and Stanchion. See the <a
-    href="{{< baseurl >}}riak/cs/latest/downloads">Riak
+    href="{{<baseurl>}}riak/cs/latest/downloads">Riak
     CS Downloads</a> and <a
-    href="{{< baseurl >}}riak/kv/latest/downloads">Riak Downloads</a>
+    href="{{<baseurl>}}riak/kv/latest/downloads">Riak Downloads</a>
     pages to find the appropriate packages.
 
     **Debian** / **Ubuntu**
@@ -166,8 +162,7 @@ detailed description.
     <div class="note"><div class="title">Note on Memory Sizing</div>
     Some changes have been made to both Riak and Riak CS that may warrant
     some performance tuning. Please consult the
-    <a href="https://github.com/basho/riak_cs/blob/develop/RELEASE-NOTES.md#redesign-of-memory-sizing">
-    Release Notes</a> for more details.
+    <a href="https://github.com/basho/riak_cs/blob/develop/RELEASE-NOTES.md#redesign-of-memory-sizing">    Release Notes</a> for more details.
     </div>
 
 7. Riak has also moved to the new configuration format, using a file called

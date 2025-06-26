@@ -17,7 +17,7 @@ aliases:
     - /riakts/1.3.1/learn-about/bestpractices/
 ---
 
-[glossary bucket]: {{< baseurl >}}riak/kv/2.1.4/learn/glossary/#bucket
+[glossary bucket]: {{<baseurl>}}riak/kv/2.1.4/learn/glossary/#bucket
 [table arch]: ../tablearchitecture/
 
 There are many ways to interact with and use Riak TS. This page will give recommendations for structuring your storage region (DDL) and choosing your quanta.

@@ -101,9 +101,9 @@ local dictionary.
 The relationship between the `riak_client`, write-once workers, and vnode
 proxies is illustrated in the following diagram:
 
-<br>
+<br />
 ![Write Once]({{<baseurl>}}images/write_once.png)
-<br>
+<br />
 
 ## Client Impacts
 

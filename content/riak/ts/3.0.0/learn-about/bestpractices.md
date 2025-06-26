@@ -19,7 +19,7 @@ aliases:
 
 ---
 
-[glossary bucket]: {{< baseurl >}}riak/kv/2.2.0/learn/glossary/#bucket
+[glossary bucket]: {{<baseurl>}}riak/kv/2.2.0/learn/glossary/#bucket
 [planning column def]: ../../using/planning/#column-definitions
 [planning partition]: ../../using/planning/#partition-key
 [planning primary]: ../../using/planning/#primary-key

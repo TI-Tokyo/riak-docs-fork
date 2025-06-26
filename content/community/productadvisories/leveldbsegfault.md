@@ -59,7 +59,7 @@ If you are unable to upgrade/patch, the occurrence can be reduced by temporarily
 
 Download and update Riak KV using the downloaded package or the package cloud repo.
 
-Packages can be downloaded by going to  [{{< baseurl >}}riak/kv/latest/downloads/]({{< baseurl >}}riak/kv/latest/downloads/) and selecting **2.1.4**, or from PackageCloud at [https://packagecloud.io/basho/riak](https://packagecloud.io/basho/riak).
+Packages can be downloaded by going to  [{{<baseurl>}}riak/kv/latest/downloads/]({{<baseurl>}}riak/kv/latest/downloads/) and selecting **2.1.4**, or from PackageCloud at [https://packagecloud.io/basho/riak](https://packagecloud.io/basho/riak).
 
 ## Patch eleveldb.so
 

@@ -728,19 +728,37 @@ on [configuring directories]({{<baseurl>}}riak/kv/3.0.14/configuring/reference/#
   </thead>
   <tbody>
     <tr>
-      <td><strong>Signing authority</strong></td>
-      <td><code>ssl.cacertfile</code></td>
-      <td><code>#(platform_etc_dir)/cacertfile.pem</code></td>
+      <td>
+<strong>Signing authority</strong>
+</td>
+      <td>
+<code>ssl.cacertfile</code>
+</td>
+      <td>
+<code>#(platform_etc_dir)/cacertfile.pem</code>
+</td>
     </tr>
     <tr>
-      <td><strong>Cert</strong></td>
-      <td><code>ssl.certfile</code></td>
-      <td><code>#(platform_etc_dir)/cert.pem</code></td>
+      <td>
+<strong>Cert</strong>
+</td>
+      <td>
+<code>ssl.certfile</code>
+</td>
+      <td>
+<code>#(platform_etc_dir)/cert.pem</code>
+</td>
     </tr>
     <tr>
-      <td><strong>Key file</strong></td>
-      <td><code>ssl.keyfile</code></td>
-      <td><code>#(platform_etc_dir)/key.pem</code></td>
+      <td>
+<strong>Key file</strong>
+</td>
+      <td>
+<code>ssl.keyfile</code>
+</td>
+      <td>
+<code>#(platform_etc_dir)/key.pem</code>
+</td>
     </tr>
   </tbody>
 </table>

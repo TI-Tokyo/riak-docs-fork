@@ -202,7 +202,7 @@ executables are stored.</td>
 <tr>
 <td><code>platform_data_dir</code></td>
 <td>The directory in which Riak stores its storage backend data, as well
-as <a href="{{< baseurl >}}riak/kv/2.0.7/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
+as <a href="{{<baseurl>}}riak/kv/2.0.7/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata.</td>
 <td><code>./data</code></td>
 </tr>
 
@@ -454,8 +454,7 @@ When configuring buckets [using bucket types][cluster ops bucket types], the tab
 <td><code>buckets.default.allow_mult</code></td>
 <td>Whether or not siblings are allowed
 <br /><br />
-<strong>Note</strong>: See <a href="../../developing/usage/conflict-resolution">
-Conflict Resolution</a> for a discussion of siblings.</td>
+<strong>Note</strong>: See <a href="../../developing/usage/conflict-resolution">Conflict Resolution</a> for a discussion of siblings.</td>
 <td><code>false</code></td>
 </tr>
 
@@ -1216,7 +1215,7 @@ determines the prefix appended to each syslog message.</td>
 determines the log level of syslog output. Possible values:
 <ul><li><code>alert</code></li><li><code>critical</code></li>
 <li><code>debug</code></li><li><code>emergency</code></li>
-<li><code>error</code></li><li><code>info</code></li
+<li><code>error</code></li><li><code>info</code></li>
 <li><code>none</code></li><li><code>notice</code></li>
 <li><code>warning</code></li></ul></td>
 <td><code>info</code></td>
@@ -1730,7 +1729,7 @@ abandons the leader (in milliseconds). This must be set greater than the
 <tr>
 <td><code>alive_tokens</code></td>
 <td>Determines the number of ticks the leader will wait to hear from its
-associated <a href="{{< baseurl >}}riak/kv/2.0.7/learn/glossary/#vnode">vnode</a> before assuming that the vnode
+associated <a href="{{<baseurl>}}riak/kv/2.0.7/learn/glossary/#vnode">vnode</a> before assuming that the vnode
 is unhealthy and stepping down as leader. If the vnode does not respond
 to the leader before <code>ensemble_tick</code> *
 <code>alive_tokens</code> milliseconds have elapsed, the leader will
@@ -1765,8 +1764,7 @@ set to <code>true</code>, a leader with a valid lease will handle the
 read directly without contacting any followers; when set to
 <code>false</code>, the leader will always contact followers. For more
 information, see our internal documentation on
-<a href="https://github.com/basho/riak_ensemble/blob/wip/riak-2.0-user-docs/riak_consistent_user_docs.md#leader-leases">
-leader leases</a>.</td>
+<a href="https://github.com/basho/riak_ensemble/blob/wip/riak-2.0-user-docs/riak_consistent_user_docs.md#leader-leases">leader leases</a>.</td>
 <td><code>true</code></td>
 </tr>
 
@@ -1878,8 +1876,8 @@ package) and in R14B04 via a custom repository and branch.</td>
 <tr>
 <td><code>vnode_management_timer</code></td>
 <td>Sets the frequency with which <a
-href="{{< baseurl >}}riak/kv/2.0.7/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
-href="{{< baseurl >}}riak/kv/2.0.7/learn/glossary/#hinted-handoff">handoff</a> between
+href="{{<baseurl>}}riak/kv/2.0.7/learn/glossary/#vnode">vnodes</a> attempt to trigger <a
+href="{{<baseurl>}}riak/kv/2.0.7/learn/glossary/#hinted-handoff">handoff</a> between
 this node and other nodes in the cluster.</td>
 <td><code>10s</code> (10 seconds)</td>
 </tr>

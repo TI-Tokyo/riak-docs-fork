@@ -106,8 +106,8 @@ cluster on the following TCP ports:
 
 Protocol | Port
 :--------|:----
-<a href="{{< baseurl >}}riak/kv/2.1.4/developing/api/http/">HTTP</a> | TCP port 8098
-<a href="{{< baseurl >}}riak/kv/2.1.4/developing/api/protocol-buffers/">Protocol Buffers</a> | TCP port 8087
+<a href="{{<baseurl>}}riak/kv/2.1.4/developing/api/http/">HTTP</a> | TCP port 8098
+<a href="{{<baseurl>}}riak/kv/2.1.4/developing/api/protocol-buffers/">Protocol Buffers</a> | TCP port 8087
 
 ### Riak Search Ports
 

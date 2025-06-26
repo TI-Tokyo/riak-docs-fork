@@ -55,8 +55,8 @@ participating in the cluster; for example `riak0` with the [`riak-admin cluster 
     riak-admin cluster replace riak4 riak7
     ```
 
-    <div class=info>
-    <div class=title>Single Nodes</div>
+    <div class="info">
+    <div class="title">Single Nodes</div>
     If a node is started singly using default settings (as, for example,
     you might do when you are building your first test environment), you
     will need to remove the ring files from the data directory after you

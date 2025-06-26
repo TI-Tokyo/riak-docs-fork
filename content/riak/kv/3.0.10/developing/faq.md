@@ -95,29 +95,173 @@ E: 4-9-14
   A preflist consists of the vnode which owns the key, and the next `n_val` vnodes in the ring, in order. In this scenario there are 16 preflists:
 
   <table border="1">
-  <tr><td>0-1-2</td><td>1-2-3</td><td>2-3-4</td><td>3-4-5</td></tr>
-  <tr><td>4-5-6</td><td>5-6-7</td><td>6-7-8</td><td>7-8-9</td></tr>
-  <tr><td>8-9-10</td><td>9-10-11</td><td>10-11-12</td><td>11-12-13</td></tr>
-  <tr><td>12-13-14</td><td>13-14-15</td><td>14-15-0</td><td>15-0-1</td></tr>
+  <tr><td>
+0-1-2
+</td><td>
+1-2-3
+</td><td>
+2-3-4
+</td><td>
+3-4-5
+</td></tr>
+  <tr><td>
+4-5-6
+</td><td>
+5-6-7
+</td><td>
+6-7-8
+</td><td>
+7-8-9
+</td></tr>
+  <tr><td>
+8-9-10
+</td><td>
+9-10-11
+</td><td>
+10-11-12
+</td><td>
+11-12-13
+</td></tr>
+  <tr><td>
+12-13-14
+</td><td>
+13-14-15
+</td><td>
+14-15-0
+</td><td>
+15-0-1
+</td></tr>
   </table>
 
   Index information for each partition is co-located with the value data.  In order to get a full result set for a secondary index query, Riak will need to consult a "covering set" of vnodes that includes at least one member of each preflist. This will require a minimum of 1/`n_val` of the vnodes, rounded up, in this case 6. There are 56 possible covering sets consisting of 6 vnodes:
 
   <table border="1">
-  <tr><td>0-1-4-7-10-13</td><td>0-2-4-7-10-13</td><td>0-2-5-7-10-13</td><td>0-2-5-8-10-13</td></tr>
-  <tr><td>0-2-5-8-11-13</td><td>0-2-5-8-11-14</td><td>0-3-4-7-10-13</td><td>0-3-5-7-10-13</td></tr>
-  <tr><td>0-3-5-8-10-13</td><td>0-3-5-8-11-13</td><td>0-3-5-8-11-14</td><td>0-3-6-7-10-13</td></tr>
-  <tr><td>0-3-6-8-10-13</td><td>0-3-6-8-11-13</td><td>0-3-6-8-11-14</td><td>0-3-6-9-10-13</td></tr>
-  <tr><td>0-3-6-9-11-13</td><td>0-3-6-9-11-14</td><td>0-3-6-9-12-13</td><td>0-3-6-9-12-14</td></tr>
-  <tr><td>0-3-6-9-12-15</td><td>1-2-5-8-11-14</td><td>1-3-5-8-11-14</td><td>1-3-6-8-11-14</td></tr>
-  <tr><td>1-3-6-9-11-14</td><td>1-3-6-9-12-14</td><td>1-3-6-9-12-15</td><td>1-4-5-8-11-14</td></tr>
-  <tr><td>1-4-6-8-11-14</td><td>1-4-6-9-11-14</td><td>1-4-6-9-12-14</td><td>1-4-6-9-12-15</td></tr>
-  <tr><td>1-4-7-8-11-14</td><td>1-4-7-9-11-14</td><td>1-4-7-9-12-14</td><td>1-4-7-9-12-15</td></tr>
-  <tr><td>1-4-7-10-11-14</td><td>1-4-7-10-12-14</td><td>1-4-7-10-12-15</td><td>1-4-7-10-13-14</td></tr>
-  <tr><td>1-4-7-10-13-15</td><td>2-3-6-9-12-15</td><td>2-4-6-9-12-15</td><td>2-4-7-9-12-15</td></tr>
-  <tr><td>2-4-7-10-12-15</td><td>2-4-7-10-13-15</td><td>2-5-6-9-12-15</td><td>2-5-7-9-12-15</td></tr>
-  <tr><td>2-5-7-10-12-15</td><td>2-5-7-10-13-15</td><td>2-5-8-9-12-15</td><td>2-5-8-10-12-15</td></tr>
-  <tr><td>2-5-8-10-13-15</td><td>2-5-8-11-12-15</td><td>2-5-8-11-13-15</td><td>2-5-8-11-14-15</td></tr>
+  <tr><td>
+0-1-4-7-10-13
+</td><td>
+0-2-4-7-10-13
+</td><td>
+0-2-5-7-10-13
+</td><td>
+0-2-5-8-10-13
+</td></tr>
+  <tr><td>
+0-2-5-8-11-13
+</td><td>
+0-2-5-8-11-14
+</td><td>
+0-3-4-7-10-13
+</td><td>
+0-3-5-7-10-13
+</td></tr>
+  <tr><td>
+0-3-5-8-10-13
+</td><td>
+0-3-5-8-11-13
+</td><td>
+0-3-5-8-11-14
+</td><td>
+0-3-6-7-10-13
+</td></tr>
+  <tr><td>
+0-3-6-8-10-13
+</td><td>
+0-3-6-8-11-13
+</td><td>
+0-3-6-8-11-14
+</td><td>
+0-3-6-9-10-13
+</td></tr>
+  <tr><td>
+0-3-6-9-11-13
+</td><td>
+0-3-6-9-11-14
+</td><td>
+0-3-6-9-12-13
+</td><td>
+0-3-6-9-12-14
+</td></tr>
+  <tr><td>
+0-3-6-9-12-15
+</td><td>
+1-2-5-8-11-14
+</td><td>
+1-3-5-8-11-14
+</td><td>
+1-3-6-8-11-14
+</td></tr>
+  <tr><td>
+1-3-6-9-11-14
+</td><td>
+1-3-6-9-12-14
+</td><td>
+1-3-6-9-12-15
+</td><td>
+1-4-5-8-11-14
+</td></tr>
+  <tr><td>
+1-4-6-8-11-14
+</td><td>
+1-4-6-9-11-14
+</td><td>
+1-4-6-9-12-14
+</td><td>
+1-4-6-9-12-15
+</td></tr>
+  <tr><td>
+1-4-7-8-11-14
+</td><td>
+1-4-7-9-11-14
+</td><td>
+1-4-7-9-12-14
+</td><td>
+1-4-7-9-12-15
+</td></tr>
+  <tr><td>
+1-4-7-10-11-14
+</td><td>
+1-4-7-10-12-14
+</td><td>
+1-4-7-10-12-15
+</td><td>
+1-4-7-10-13-14
+</td></tr>
+  <tr><td>
+1-4-7-10-13-15
+</td><td>
+2-3-6-9-12-15
+</td><td>
+2-4-6-9-12-15
+</td><td>
+2-4-7-9-12-15
+</td></tr>
+  <tr><td>
+2-4-7-10-12-15
+</td><td>
+2-4-7-10-13-15
+</td><td>
+2-5-6-9-12-15
+</td><td>
+2-5-7-9-12-15
+</td></tr>
+  <tr><td>
+2-5-7-10-12-15
+</td><td>
+2-5-7-10-13-15
+</td><td>
+2-5-8-9-12-15
+</td><td>
+2-5-8-10-12-15
+</td></tr>
+  <tr><td>
+2-5-8-10-13-15
+</td><td>
+2-5-8-11-12-15
+</td><td>
+2-5-8-11-13-15
+</td><td>
+2-5-8-11-14-15
+</td></tr>
   </table>
 
   When a node fails or is marked down, its vnodes will not be considered for coverage queries. Fallback vnodes will be created on other nodes so that PUT and GET operations can be handled, but only primary vnodes are considered for secondary index coverage queries. If a covering set cannot be found, `{error, insufficient_vnodes}` will be returned. Thus, the reply will either be complete or an error.
@@ -163,40 +307,154 @@ E: 4-9-14-12*
 
   * 20 sets (35.7% of sets) will return all 3 keys `{a,b,c}`:
     <table border="1">
-    <tr><td>0-2-5-8-10-13</td><td>0-2-5-8-11-13</td><td>0-2-5-8-11-14</td><td>0-3-5-8-10-13</td></tr>
-    <tr><td>0-3-5-8-11-13</td><td>0-3-5-8-11-14</td><td>0-3-6-8-10-13</td><td>0-3-6-8-11-13</td></tr>
-    <tr><td>0-3-6-8-11-14</td><td>0-3-6-9-10-13</td><td>0-3-6-9-11-13</td><td>0-3-6-9-11-14</td></tr>
-    <tr><td>1-2-5-8-11-14</td><td>1-3-5-8-11-14</td><td>1-3-6-8-11-14</td><td>1-3-6-9-11-14</td></tr>
-    <tr><td>1-4-5-8-11-14</td><td>1-4-6-8-11-14</td><td>1-4-6-9-11-14</td><td>1-4-7-8-11-14</td></tr>
+    <tr><td>
+0-2-5-8-10-13
+</td><td>
+0-2-5-8-11-13
+</td><td>
+0-2-5-8-11-14
+</td><td>
+0-3-5-8-10-13
+</td></tr>
+    <tr><td>
+0-3-5-8-11-13
+</td><td>
+0-3-5-8-11-14
+</td><td>
+0-3-6-8-10-13
+</td><td>
+0-3-6-8-11-13
+</td></tr>
+    <tr><td>
+0-3-6-8-11-14
+</td><td>
+0-3-6-9-10-13
+</td><td>
+0-3-6-9-11-13
+</td><td>
+0-3-6-9-11-14
+</td></tr>
+    <tr><td>
+1-2-5-8-11-14
+</td><td>
+1-3-5-8-11-14
+</td><td>
+1-3-6-8-11-14
+</td><td>
+1-3-6-9-11-14
+</td></tr>
+    <tr><td>
+1-4-5-8-11-14
+</td><td>
+1-4-6-8-11-14
+</td><td>
+1-4-6-9-11-14
+</td><td>
+1-4-7-8-11-14
+</td></tr>
     </table>
 
   * 24 sets (42.9%) will return 2 of the 3 keys:
     <table border="1">
     <tr><td colspan=4>`{a,b}` (7 sets)</td></tr>
-    <tr><td>0-3-6-9-12-13</td><td>0-3-6-9-12-14</td><td>0-3-6-9-12-15</td><td>1-3-6-9-12-14</td></tr>
-    <tr><td>1-3-6-9-12-15</td><td>1-4-6-9-12-14</td><td>1-4-6-9-12-15</td><td>&nbsp;</td></tr>
+    <tr><td>
+0-3-6-9-12-13
+</td><td>
+0-3-6-9-12-14
+</td><td>
+0-3-6-9-12-15
+</td><td>
+1-3-6-9-12-14
+</td></tr>
+    <tr><td>
+1-3-6-9-12-15
+</td><td>
+1-4-6-9-12-14
+</td><td>
+1-4-6-9-12-15
+</td><td>
+&nbsp;
+</td></tr>
     <tr><td colspan=4>`{a,c}` (12 sets)</td></tr>
-    <tr><td>0-1-4-7-10-13</td><td>0-2-4-7-10-13</td><td>0-2-5-7-10-13</td><td>0-3-4-7-10-13</td></tr>
-    <tr><td>0-3-5-7-10-13</td><td>0-3-6-7-10-13</td><td>1-4-7-10-11-14</td><td>1-4-7-10-12-14</td></tr>
-    <tr><td>1-4-7-10-12-15</td><td>1-4-7-10-13-14</td><td>1-4-7-10-13-15</td><td>1-4-7-9-11-14</td></tr>
+    <tr><td>
+0-1-4-7-10-13
+</td><td>
+0-2-4-7-10-13
+</td><td>
+0-2-5-7-10-13
+</td><td>
+0-3-4-7-10-13
+</td></tr>
+    <tr><td>
+0-3-5-7-10-13
+</td><td>
+0-3-6-7-10-13
+</td><td>
+1-4-7-10-11-14
+</td><td>
+1-4-7-10-12-14
+</td></tr>
+    <tr><td>
+1-4-7-10-12-15
+</td><td>
+1-4-7-10-13-14
+</td><td>
+1-4-7-10-13-15
+</td><td>
+1-4-7-9-11-14
+</td></tr>
     <tr><td colspan=4>`{b,c}` (5 sets)</td></tr>
-    <tr><td>2-5-8-10-12-15</td><td>2-5-8-10-13-15</td><td>2-5-8-11-12-15</td><td>2-5-8-11-14-15</td></tr>
-    <tr><td>2-5-8-11-13-15</td><td colspan="3">&nbsp;</td></tr>
+    <tr><td>
+2-5-8-10-12-15
+</td><td>
+2-5-8-10-13-15
+</td><td>
+2-5-8-11-12-15
+</td><td>
+2-5-8-11-14-15
+</td></tr>
+    <tr><td>
+2-5-8-11-13-15
+</td><td colspan="3">&nbsp;</td></tr>
     </table>
 
   * 10 sets (17.8%) will return only one of the 3 keys:
     <table border="1">
     <tr><td colspan=4>`{a}` (2 sets)</td></tr>
-    <tr><td>1-4-7-9-12-14</td><td>1-4-7-9-12-15</td><td colspan="2">&nbsp;</td></tr>
+    <tr><td>
+1-4-7-9-12-14
+</td><td>
+1-4-7-9-12-15
+</td><td colspan="2">&nbsp;</td></tr>
     <tr><td colspan=4>`{b}` (4 sets)</td></tr>
-    <tr><td>2-3-6-9-12-15</td><td>2-4-6-9-12-15</td><td>2-5-6-9-12-15</td><td>2-5-8-9-12-15</td></tr>
+    <tr><td>
+2-3-6-9-12-15
+</td><td>
+2-4-6-9-12-15
+</td><td>
+2-5-6-9-12-15
+</td><td>
+2-5-8-9-12-15
+</td></tr>
     <tr><td colspan=4>`{c}` (4 sets)</td></tr>
-    <tr><td>2-4-7-10-12-15</td><td>2-4-7-10-13-15</td><td>2-5-7-10-12-15</td><td>2-5-7-10-13-15</td></tr>
+    <tr><td>
+2-4-7-10-12-15
+</td><td>
+2-4-7-10-13-15
+</td><td>
+2-5-7-10-12-15
+</td><td>
+2-5-7-10-13-15
+</td></tr>
     </table>
 
   * 2 sets (3.6%) will not return any of the 3 keys
     <table border="1">
-    <tr><td>2-4-7-9-12-15</td><td>2-5-7-9-12-15</td></tr>
+    <tr><td>
+2-4-7-9-12-15
+</td><td>
+2-5-7-9-12-15
+</td></tr>
     </table>
 
 **Q: How do I load 3rd-party Javascript libraries for use in MapReduce functions?**
