@@ -395,7 +395,7 @@ Example: <code>XX:+UseCompressedStrings</code>
 </td>
 <td>
 <code>-d64 -Xms1g -Xmx1g -XX:+UseStringCache
--XX:+UseCompressedOops</code
+-XX:+UseCompressedOops</code>
 </td>
 </tr>
 
