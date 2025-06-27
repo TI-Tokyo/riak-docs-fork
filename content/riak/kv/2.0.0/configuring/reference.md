@@ -90,7 +90,7 @@ and cookie.
 Cookie for distributed node communication within a Riak cluster.
 All nodes in the same cluster should use the same cookie or they will
 not be able to communicate.
-<td>
+</td>
 <td>
 <code>riak</code>
 </td>
@@ -116,7 +116,7 @@ The name of the Riak node.
 Number of partitions in the cluster (only valid when first creating
 the cluster). Must be a power of 2. The minimum is 8 and the maximum is
 1024.
-<td>
+</td>
 <td>
 <code>64</code>
 </td>
@@ -159,7 +159,7 @@ Default location of ringstate.
 Number of partitions in the cluster (only valid when first creating
 the cluster). Must be a power of 2. The minimum is 8 and the maximum is
 1024.
-<td>
+</td>
 <td>
 <code>64</code>
 </td>
@@ -208,7 +208,7 @@ Specifies the storage engine used for Riak's key-value data and
 secondary indexes (if supported).<br /><br />The available options are
 <code>bitcask</code> (the default), <code>leveldb</code>,
 <code>memory</code>, and <code>multi</code>.
-<td>
+</td>
 <td>
 <code>bitcask</code>
 </td>
@@ -241,7 +241,7 @@ parameters below.
 The directory in which the <a href="../../using/admin/riak-admin"><code>riak-admin</code></a>,
 <code>riak-debug</code>, and now-deprecated <code>search-cmd</code>
 executables are stored.
-<td>
+</td>
 <td>
 <code>./bin</code>
 </td>
@@ -292,7 +292,7 @@ The directory in which Riak's dependencies are housed.
 The directory in which Riak's log files are stored, e.g.
 <code>console.log</code>, <code>erlang.log</code>, and
 <code>crash.log</code> files.
-<td>
+</td>
 <td>
 <code>./log</code>
 </td>
@@ -379,7 +379,7 @@ configuration is stored
 The port to which Solr JMX binds.
 <br /><br />
 <strong>Note</strong>: Binds on every interface.
-<td>
+</td>
 <td>
 <code>8985</code>
 </td>
@@ -408,7 +408,7 @@ Example: <code>XX:+UseCompressedStrings</code>
 The port to which Solr binds.
 <br /><br />
 <strong>Note</strong>: Binds on every interface.
-<td>
+</td>
 <td>
 <code>8093</code>
 </td>
@@ -424,7 +424,7 @@ be tried twice. If both attempts time out, the Riak node will be shut
 down. This may need to be increased as more data is indexed and Solr
 takes longer to start. Values lower than <code>1s</code> will be rounded
 up to the minimum <code>1s</code>.
-<td>
+</td>
 <td>
 <code>30s</code>
 </td>
@@ -484,7 +484,7 @@ If Riak Control's authentication mode
 (<code>riak_control.auth.mode</code>) is set to <code>userlist</code>,
 this is the list of usernames and passwords for access to the admin
 panel.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -555,7 +555,7 @@ A process will become busy when it exceeds this amount of time doing
 garbage collection. Set as an integer plus time unit, e.g. `50ms` for 50
 milliseconds, `5s` for 5 seconds, etc.<strong>Note</strong>: Enabling
 this setting can cause performance problems on multi-core systems.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -570,7 +570,7 @@ A process will become busy when it exceeds this amount of time
 during a single process scheduling and execution cycle. Set as an integer
 plus time unit, e.g. `50ms` for 50 milliseconds, `5s` for 5 seconds,
 etc.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -584,7 +584,7 @@ etc.
 The threshold at which a warning will be triggered about the number
 of ports that are overly busy. Ports with full input buffers count
 toward this threshold.
-<td>
+</td>
 <td>
 <code>2</code>
 </td>
@@ -599,7 +599,7 @@ The threshold at which to warn a warning will be triggered about the
 number of processes that are overly busy. Processes with large heaps or
 that take a long time to garbage collect will count toward this
 threshold.
-<td>
+</td>
 <td>
 <code>30</code>
 </td>
@@ -630,7 +630,7 @@ When configuring buckets [using bucket types][cluster ops bucket types], the tab
 Whether or not siblings are allowed
 <br /><br />
 <strong>Note</strong>: See <a href="../../developing/usage/conflict-resolution">Conflict Resolution</a> for a discussion of siblings.
-<td>
+</td>
 <td>
 <code>false</code>
 </td>
@@ -645,7 +645,7 @@ Whether not-founds will invoke the "basic quorum" optimization.
 This setting will short-circuit fetches where the majority of replicas
 report that the key is not found. Only used when
 <code>notfound_ok</code> is set to <code>false</code>.
-<td>
+</td>
 <td>
 <code>false</code>
 </td>
@@ -659,7 +659,7 @@ report that the key is not found. Only used when
 The number of replicas which must reply to a write request
 indicating that the write was committed to durable storage for the write
 to be deemed successful.
-<td>
+</td>
 <td>
 <code>quorum</code>
 </td>
@@ -690,7 +690,7 @@ href="../../learn/concepts/causal-context#dotted-version-vectors">Dotted
 Version Vectors</a>). Setting this to <code>1</code> is the default for
 Riak 1.4 and earlier, and may duplicate siblings that originated in the
 same write.
-<td>
+</td>
 <td>
 <code>1</code>
 </td>
@@ -706,7 +706,7 @@ The number of replicas stored.
 <strong>Note</strong>: See
 <a href="../../developing/app-guide/replication-properties">Replication Properties</a>
 for further discussion.
-<td>
+</td>
 <td>
 <code>3</code>
 </td>
@@ -732,7 +732,7 @@ Whether not-founds will count toward a quorum of reads.
 A space-delimited list of functions that will be run after a value
 is stored. Only Erlang functions are allowed, using the
 <code>module:function</code> format.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -745,7 +745,7 @@ is stored. Only Erlang functions are allowed, using the
 A space-delimited list of functions that will be run before a value
 is stored, and that can abort the write. Only Erlang functions are
 allowed, using the <code>module:function</code> format.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -840,7 +840,7 @@ disk. Options are <code>0</code>, which will use the original
 <code>erlang:term_to_binary</code> format but has a higher space
 overhead, or <code>1</code>, which will tell Riak to utilize a new
 format for more compact storage of small values.
-<td>
+</td>
 <td>
 <code>1</code>
 </td>
@@ -952,7 +952,7 @@ enough for drivers delivered with Erlang/OTP but might not be large
 enough to accommodate drivers that use the <code>driver_async()</code>
 functionality, documented <a
 href="http://www.erlang.org/doc/man/erl_driver.html">here</a>.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -969,7 +969,7 @@ time</strong> is the frequency with which those checks happen. This
 parameter determines that frequency for every <code>N</code>. If you set
 this parameter to <code>10</code>, for example, the tick will occur once
 every 10 seconds.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -987,7 +987,7 @@ made on the port range. Instead, Erlang will listen on a random
 high-numbered port. More information <a
 href="http://www.erlang.org/faq/how_do_i.html#id55090">here</a> and <a
 href="http://www.erlang.org/doc/man/kernel_app.html">here</a>.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -1017,7 +1017,7 @@ which is the default. This feature is a workaround for lengthy executing
 native code, and native code that does not properly bump reductions.
 More information <a
 href="http://www.erlang.org/doc/man/erl.html#+sfwi">here</a>.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -1035,7 +1035,7 @@ accomplished by migrating load, such as running processes, into a
 smaller set of schedulers when schedulers frequently run out of work.
 When disabled, the frequency at which schedulers run out of work will
 not be taken into account by the load balancing logic.
-<td>
+</td>
 <td>
 <code>true</code> (enabled)
 </td>
@@ -1055,7 +1055,7 @@ distribution which causes as many scheduler threads as possible to be
 fully loaded, i.e. to not run out of work. When load balancing is
 enabled using this setting, the system will attempt to equally scheduler
 utilization between schedulers.
-<td>
+</td>
 <td>
 <code>false</code> (disabled)
 </td>
@@ -1072,7 +1072,7 @@ recommends raising the sender-side network distribution buffer size.
 starting point. Erlangers may know this as <code>+zdbbl</code>. See more
 <a href="http://www.erlang.org/doc/man/erl.html#%2bzdbbl">here</a>
 .
-<td>
+</td>
 <td>
 <code>32MB</code>
 </td>
@@ -1153,7 +1153,7 @@ supports it. If the emulator does not support kernel poll, and the
 <code>K</code> flag is passed to the emulator, a warning is issued at
 startup. Similar information <a
 href="http://erlang.org/doc/man/erl.html#emu_flags">here</a>.
-<td>
+</td>
 <td>
 <code>on</code>
 </td>
@@ -1209,7 +1209,7 @@ Sets the mapping of warning messages for <code>error_logger</code>.
 Messages sent to the error logger using one of the warning routines can
 be mapped either to <code>errors</code>, warnings (<code>w</code>,
 which is the default), or info reports (<code>i</code>).
-<td>
+</td>
 <td>
 <code>w</code>
 </td>
@@ -1230,7 +1230,7 @@ support will not be available on all supported platforms. See also the
 <code>erlang.schedulers settings</code>. Some native extensions (NIFs)
 require use of the SMP emulator. More information <a
 href="http://erlang.org/doc/man/erl.html#smp">here</a>.
-<td>
+</td>
 <td>
 <code>enable</code>
 </td>
@@ -1407,7 +1407,7 @@ and request-forgery attacks. Some reverse proxies cannot remove the
 <code>Referer</code> header and make serving data directly from Riak
 impossible. Turning this setting to <code>off</code> disables this
 security check.
-<td>
+</td>
 <td>
 <code>on</code>
 </td>
@@ -1423,7 +1423,7 @@ href="http://en.wikipedia.org/wiki/Revocation_list">certificate
 revocation list</a> (CRL) of a client certificate. This defaults to
 <code>on</code> but some CAs may not maintain or define a CRL, so this
 can be disabled if no CRL is available.
-<td>
+</td>
 <td>
 <code>on</code>
 </td>
@@ -1440,7 +1440,7 @@ support the latest TLS standard. It is strongly recommended that SSLv3
 not be enabled unless absolutely necessary. More than one protocol can
 be enabled at once. The <code>tls_protocols</code> parameters below can
 be used to turn different versions on and off.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -1487,7 +1487,7 @@ be used to turn different versions on and off.
 Whether to prefer the order in which the server lists its ciphers.
 When set to <code>off</code>, the client's preferred cipher order
 dictates which cipher is chosen.
-<td>
+</td>
 <td>
 <code>on</code>
 </td>
@@ -1519,7 +1519,7 @@ Riak's Protocol Buffers or HTTP API.
 Turns off Nagle's algorithm for Protocol Buffers connections. This
 is equivalent to setting the <code>TCP_NODELAY</code> option on the
 socket.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -1534,7 +1534,7 @@ The maximum length to which the queue of pending connections may
 grow. If set, it must be an integer greater than zero. If you
 anticipate a huge number of connections being initialized
 simultaneously, set this number higher.
-<td>
+</td>
 <td>
 <code>128</code>
 </td>
@@ -1610,7 +1610,7 @@ messages to standard output (seen when using <code>riak
 attach-direct</code>); or <code>both</code>, which outputs messages both
 to the file specified in <code>log.console.file</code> and to standard
 out.
-<td>
+</td>
 <td>
 <code>file</code>
 </td>
@@ -1624,7 +1624,7 @@ out.
 When <code>log.console</code> is set to <code>file</code> or
 <code>both</code>, this parameter determines the path of the file to
 which console messages will be logged.
-<td>
+</td>
 <td>
 <code>./log/console.log</code>
 </td>
@@ -1643,7 +1643,7 @@ values:
 <li><code>warning</code></li>
 <li><code>error</code></li>
 </ul>
-<td>
+</td>
 <td>
 <code>info</code>
 </td>
@@ -1707,7 +1707,7 @@ href="https://github.com/basho/lager/blob/master/README.md#internal-log-rotation
 The number of rotated crash logs to keep. When set to
 <code>current</code>, only the current open log file is kept.
 Otherwise, an integer can be specified.
-<td>
+</td>
 <td>
 <code>5</code>
 </td>
@@ -1793,7 +1793,7 @@ level</a> of syslog output if <code>log.syslog</code> is set to
 <li><code>uucp</code></li></ul>
 In addition to these settings, you may also select <code>local0</code>
 through <code>local7</code>.
-<td>
+</td>
 <td>
 <code>daemon</code>
 </td>
@@ -1824,7 +1824,7 @@ determines the log level of syslog output. Possible values:
 <li><code>error</code></li><li><code>info</code></li>
 <li><code>none</code></li><li><code>notice</code></li>
 <li><code>warning</code></li></ul>
-<td>
+</td>
 <td>
 <code>info</code>
 </td>
@@ -1838,7 +1838,7 @@ determines the log level of syslog output. Possible values:
 Whether to enable <a
 href="http://www.erlang.org/doc/man/sasl_app.html">sasl</a>, Erlang's
 built-in error logger
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -1871,7 +1871,7 @@ How Riak will repair out-of-sync keys. If set to
 background; if set to <code>passive</code>, out-of-sync keys are only
 repaired on read; and if set to <code>active-debug</code>, verbose
 debugging information will be output.
-<td>
+</td>
 <td>
 <code>active</code>
 </td>
@@ -1905,7 +1905,7 @@ observe at that size and above. For example,
 configured, there must be a tier which includes a mailbox size of 0.
 Both <code>.mailbox_size</code> and <code>.delay</code> must be set for
 each tier.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -1930,7 +1930,7 @@ See the description for
 Bloom filters are highly effective in shortcutting data queries
 that are destined to not find the requested key, though they tend to
 entail a small performance cost.
-<td>
+</td>
 <td>
 <code>on</code>
 </td>
@@ -2012,7 +2012,7 @@ Riak identify silent disk failures and bit rot. However, expiration is
 not needed for normal active anti-entropy operations and should be
 infrequent for performance reasons. The time is specified in
 milliseconds.
-<td>
+</td>
 <td>
 <code>1w</code>
 </td>
@@ -2039,7 +2039,7 @@ given partition requires a full scan over that partition's data. Once
 built, trees stay built until they are expired. <code>.number</code> is
 the number of builds; <code>.per_timespan</code> is the amount of time
 in which that number of builds occurs.
-<td>
+</td>
 <td>
 <code>1</code>
 </td>
@@ -2090,7 +2090,7 @@ can be blocked can be determined by multiplying this setting by
 <code>vnode_management_timer</code>. If you want to prevent handoff from
 ever being blocked by a secondary system, set this parameter to
 <code>0</code>.
-<td>
+</td>
 <td>
 <code>6</code>
 </td>
@@ -2143,7 +2143,7 @@ handoff
 To encrypt <code>riak_core</code> intra-cluster data handoff
 traffic, uncomment this line and edit its path to an appropriate
 certfile and keyfile.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -2170,7 +2170,7 @@ This can help to prevent system response degradation during times of
 heavy load caused by multiple background tasks that contend for the same
 system resources; setting this parameter to <code>off</code> can cut
 down on system resource usage.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -2202,7 +2202,7 @@ level. When set to an integer, the parameter refers to the
 aggressiveness of compression, on a scale from 0 to 9. <code>on</code>
 is equivalent to 6, whereas <code>off</code> is equivalent to 0. Higher
 values for compression tend to be more CPU intensive.
-<td>
+</td>
 <td>
 <code>1</code>
 </td>
@@ -2349,7 +2349,7 @@ gauge crosses below the threshold. In the case of the
 <code>nodeGetTimeMeanAlarmRising</code>, and the falling trap is
 <code>nodeGetTimeMeanFalling</code>. Other gauge thresholds follow this
 naming pattern.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -2559,7 +2559,7 @@ mean that leaders perform their duties more frequently, which can allow
 for faster convergence if a leader goes offline and then returns to the
 ensemble; higher values mean that leaders perform their duties less
 frequently, which can reduce network overhead.
-<td>
+</td>
 <td>
 <code>500</code>
 </td>
@@ -2589,7 +2589,7 @@ lower than the <code>follower_timeout</code> setting (listed below).
 Determines how long a follower waits to hear from a leader before it
 abandons the leader (in milliseconds). This must be set greater than the
 <code>lease_duration</code> setting.
-<td>
+</td>
 <td>
 <code>lease_duration</code> * 4
 </td>
@@ -2609,7 +2609,7 @@ give up leadership. It may be necessary to raise this setting if your
 Riak vnodes are frequently stalling out on slow backend reads/writes. If
 this setting is too low, it may cause slow requests to time out earlier
 than the request timeout.
-<td>
+</td>
 <td>
 <code>2</code>
 </td>
@@ -2624,7 +2624,7 @@ Determines how long the consensus subsystem delays syncing to disk
 when performing certain metadata operations (in milliseconds). This
 delay allows multiple operations to be coalesced into a single disk
 write. We do not recommend that you change this setting.
-<td>
+</td>
 <td>
 <code>50</code>
 </td>
@@ -2638,7 +2638,7 @@ write. We do not recommend that you change this setting.
 Determines how often the consensus subsystem writes data to disk
 that was requested to be written asynchronously (in milliseconds). We do
 not recommend that you change this setting.
-<td>
+</td>
 <td>
 <code>5000</code>
 </td>
@@ -2655,7 +2655,7 @@ read directly without contacting any followers; when set to
 <code>false</code>, the leader will always contact followers. For more
 information, see our internal documentation on
 <a href="https://github.com/basho/riak_ensemble/blob/wip/riak-2.0-user-docs/riak_consistent_user_docs.md#leader-leases">leader leases</a>.
-<td>
+</td>
 <td>
 <code>true</code>
 </td>
@@ -2669,7 +2669,7 @@ information, see our internal documentation on
 Determines the timeout used internally for reading consistent data,
 in milliseconds. This setting must be greater than the highest request
 timeout used by your application.
-<td>
+</td>
 <td>
 <code>60000</code> (1 minute)
 </td>
@@ -2683,7 +2683,7 @@ timeout used by your application.
 Determines the timeout, in milliseconds, used internally for writing
 consistent data. This setting must be greater than the highest request
 timeout used by your application.
-<td>
+</td>
 <td>
 <code>60000</code> (1 minute)
 </td>
@@ -2697,7 +2697,7 @@ timeout used by your application.
 The number of concurrent workers used by the leader to service
 requests. Increasing this setting may boost performance depending on the
 workload.
-<td>
+</td>
 <td>
 <code>1</code>
 </td>
@@ -2715,7 +2715,7 @@ sync with a trusted majority. This is the safest option, as it protects
 Riak against undetected corruption of the Merkle tree. However, this
 mode reduces Riak availability since it can sometimes require more than
 a simple majority of nodes to be online and reachable.
-<td>
+</td>
 <td>
 <code>true</code>
 </td>
@@ -2742,7 +2742,7 @@ to the object value immediately prior to a write request, a future read
 could return the immediately preceding value without realizing that it
 was incorrect. Given that this scenario is unlikely, this setting
 defaults to <code>false</code> in the name of improved performance.
-<td>
+</td>
 <td>
 <code>false</code>
 </td>
@@ -2778,7 +2778,7 @@ simple size * number-of-vnodes calculation would imply.
 <br /><br />
 <strong>Caution</strong>: This setting should not be changed without
 extensive benchmarking.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -2793,7 +2793,7 @@ The maximum number of concurrent requests of each type (GET or PUT)
 that is allowed. Setting this value to <code>infinite</code> disables
 overload protection. The <code>erlang.process_limit</code> should be at
 least 3 times this setting.
-<td>
+</td>
 <td>
 <code>50000</code>
 </td>
@@ -2808,7 +2808,7 @@ Whether <a href="http://dtrace.org/blogs/">DTrace</a> is enabled.
 Do not enable unless your Erlang/OTP runtime is compiled to support
 DTrace, which is available in R15B01 (supported by the official source
 package) and in R14B04 via a custom repository and branch.
-<td>
+</td>
 <td>
 <code>off</code>
 </td>
@@ -2823,7 +2823,7 @@ Sets the frequency with which <a
 href="../../learn/glossary/#vnode">vnodes</a> attempt to trigger <a
 href="../../learn/glossary/#hinted-handoff">handoff</a> between
 this node and other nodes in the cluster.
-<td>
+</td>
 <td>
 <code>10s</code> (10 seconds)
 </td>
@@ -2840,7 +2840,7 @@ if this setting is set to <code>on</code>, which is the default. Setting
 it to <code>off</code> will speed response times on PUT requests in
 general, but at the risk of potentially increasing the likelihood of
 write failure.
-<td>
+</td>
 <td>
 <code>on</code>
 </td>
@@ -2855,7 +2855,7 @@ Riak's background manager is a subsystem that coordinates access to
 shared resources from other Riak subsystems. The background manager can
 help to prevent system response degradation under times of heavy load
 caused by multiple background tasks.
-<td>
+</td>
 <td>
 <code>on</code>
 </td>
@@ -2929,7 +2929,7 @@ two different clusters, both with a <code>max_fssource_cluster</code> of
 5, 10 fullsync workers can be in progress. This only affects nodes on
 the source cluster on which this parameter is defined, either via the
 configuration file or command line.
-<td>
+</td>
 <td>
 <code>5</code>
 </td>
@@ -2963,7 +2963,7 @@ fullsyncs enabled; additional fullsync configurations will not increase
 the number of fullsync workers allowed to run on any node. This only
 affects nodes on the source cluster on which this parameter is defined,
 either via the configuration file or command line.
-<td>
+</td>
 <td>
 <code>1</code>
 </td>
@@ -2991,7 +2991,7 @@ A single-integer value representing the duration to wait, in
 minutes, between fullsyncs, or a list of <code>{clustername,
 time_in_minutes}</code> pairs for each sink participating in fullsync
 replication.
-<td>
+</td>
 <td>
 <code>30</code>
 </td>
@@ -3005,7 +3005,7 @@ replication.
 The maximum size, in bytes, to which the realtime replication queue
 can grow before new objects are dropped. Dropped objects will need to be
 replicated with a fullsync.
-<td>
+</td>
 <td>
 <code>104857600</code>
 </td>
@@ -3034,7 +3034,7 @@ A heartbeat message is sent from the source to the sink every
 <code>rt_heartbeat_interval </code> to <code>undefined</code> disables
 the realtime heartbeat. This feature is available only in Riak
 Enterprise 1.3.2 and later.
-<td>
+</td>
 <td>
 <code>15</code>
 </td>
@@ -3049,7 +3049,7 @@ If a heartbeat response is not received within the time period
 specified by this setting (in seconds), the source connection exits and
 will be re-established. This feature is available only in Riak
 Enterprise 1.3.2 and later.
-<td>
+</td>
 <td>
 <code>15</code>
 </td>
@@ -3066,7 +3066,7 @@ This will help to prevent system response degradations during times of
 heavy load from multiple background tasks. To disable background
 coordination, set this parameter to `false`. This feature is available
 only in Riak Enterprise 2.0 and later.
-<td>
+</td>
 <td>
 <code>true</code>
 </td>
@@ -3127,7 +3127,7 @@ href="../../developing/usage/commit-hooks">commit hooks</a>, this setting specif
 the paths to any compiled <code>.beam</code> files that you wish to use.
 This is expressed as a list of absolute paths on the node's filesystem,
 e.g. <code>[ "/tmp", "/other" ]</code>.
-<td>
+</td>
 <td>
 </td>
 </tr>
@@ -3144,7 +3144,7 @@ The cluster manager listens for connections from remote clusters on
 the specified IP and port. Every node runs one cluster manager, but only
 the cluster manager running on the cluster leader will service requests.
 This can change as nodes enter and leave the cluster.
-<td>
+</td>
 <td>
 <code>&#123;"127.0.0.1", 9080&#125;</code>
 </td>
@@ -3166,7 +3166,7 @@ setting <code>delete_mode</code> to an integer value specifies the
 number of milliseconds to wait before removing tombstones. More
 information can be found in <a href="../../using/reference/object-deletion">Object
 Deletion</a>.
-<td>
+</td>
 <td>
 <code>3000</code> (3 seconds)
 </td>
@@ -3192,7 +3192,7 @@ the ring, i.e. <code>ring_size</code>. The default is <code>4</code>,
 and the number of physical nodes in your cluster must be greater than
 <code>target_n_val</code> for this setting to be effective at preventing
 hot spots.
-<td>
+</td>
 <td>
 <code>4</code>
 </td>

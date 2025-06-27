@@ -2520,7 +2520,8 @@ This is a pool of workers per-vnode, to be used for general queries, in
 %% to release 3.0.9 it was set to a default of 10.
 </td>
 <td>
-<code>5</code></td><td>
+<code>5</code>
+</td>
 </tr>
 
 </tbody>

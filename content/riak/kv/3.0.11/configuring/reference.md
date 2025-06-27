@@ -2579,7 +2579,7 @@ This is a pool of workers per-vnode, to be used for general queries, in
 </td>
 <td>
 <code>5</code>
-</td><td>
+</td>
 </tr>
 
 </tbody>
