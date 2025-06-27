@@ -267,53 +267,103 @@ another. Incompatibilities are marked with a
   <thead>
     <tr>
       <td></td>
-      <td>Search 2.0</td>
-      <td>Strong consistency</td>
-      <td>Data Types</td>
-      <td>Secondary indexes</td>
-      <td>Legacy Search</td>
+      <td>
+Search 2.0
+</td>
+      <td>
+Strong consistency
+</td>
+      <td>
+Data Types
+</td>
+      <td>
+Secondary indexes
+</td>
+      <td>
+Legacy Search
+</td>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>Strong consistency</td>
-      <td><abbr class="unsupported">&dagger;</abbr></td>
+      <td>
+Strong consistency
+</td>
+      <td>
+<abbr class="unsupported">&dagger;</abbr>
+</td>
       <td class="dark-grayed"></td>
       <td class="grayed"></td>
       <td class="grayed"></td>
       <td class="grayed"></td>
     </tr>
     <tr>
-      <td>Data Types</td>
-      <td><abbr class="supported">✓</abbr></td>
-      <td><abbr class="unsupported">✗</abbr></td>
+      <td>
+Data Types
+</td>
+      <td>
+<abbr class="supported">✓</abbr>
+</td>
+      <td>
+<abbr class="unsupported">✗</abbr>
+</td>
       <td class="dark-grayed"></td>
       <td class="grayed"></td>
       <td class="grayed"></td>
     </tr>
     <tr>
-      <td>Secondary indexes</td>
-      <td><abbr class="unsupported">✗</abbr></td>
-      <td><abbr class="unsupported">&Dagger;</abbr></td>
-      <td><abbr class="unsupported">✗</abbr></td>
+      <td>
+Secondary indexes
+</td>
+      <td>
+<abbr class="unsupported">✗</abbr>
+</td>
+      <td>
+<abbr class="unsupported">&Dagger;</abbr>
+</td>
+      <td>
+<abbr class="unsupported">✗</abbr>
+</td>
       <td class="dark-grayed"></td>
       <td class="grayed"></td>
     </tr>
     <tr>
-      <td>Legacy Search</td>
-      <td><abbr class="unsupported">*</abbr></td>
-      <td><abbr class="unsupported">✗</abbr></td>
-      <td><abbr class="unsupported">✗</abbr></td>
-      <td><abbr class="unsupported">✗</abbr></td>
+      <td>
+Legacy Search
+</td>
+      <td>
+<abbr class="unsupported">*</abbr>
+</td>
+      <td>
+<abbr class="unsupported">✗</abbr>
+</td>
+      <td>
+<abbr class="unsupported">✗</abbr>
+</td>
+      <td>
+<abbr class="unsupported">✗</abbr>
+</td>
       <td class="dark-grayed"></td>
     </tr>
     <tr>
-      <td>Security</td>
-      <td><abbr class="supported">✓</abbr></td>
-      <td><abbr class="supported">✓</abbr></td>
-      <td><abbr class="supported">✓</abbr></td>
-      <td><abbr class="supported">✓</abbr></td>
-      <td><abbr class="unsupported">✗</abbr></td>
+      <td>
+Security
+</td>
+      <td>
+<abbr class="supported">✓</abbr>
+</td>
+      <td>
+<abbr class="supported">✓</abbr>
+</td>
+      <td>
+<abbr class="supported">✓</abbr>
+</td>
+      <td>
+<abbr class="supported">✓</abbr>
+</td>
+      <td>
+<abbr class="unsupported">✗</abbr>
+</td>
     </tr>
   </tbody>
 </table>

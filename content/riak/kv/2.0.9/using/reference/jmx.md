@@ -45,7 +45,7 @@ Riak JMX has been tested with the Sun JRE 1.6.0_12 and 1.6.0_20. Some older/non-
 
 ## Exported JMX Attributes
 
-<br>
+<br />
 <table>
     <tr>
         <th WIDTH="30%">Attribute</th>

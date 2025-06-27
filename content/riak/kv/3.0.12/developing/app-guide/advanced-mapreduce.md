@@ -746,7 +746,7 @@ $ curl -XPOST localhost:8098/mapred \
 ```bash
 $ curl -XPOST localhost:8098/mapred   -H 'Content-Type: application/json'     -d '{"inputs":"messages","query":[{"map":{"language":"erlang","module":"mr_example","function":"get_keys"}}]}'
 
-<html><head><title>500 Internal Server Error</title></head><body><h1>Internal Server Error</h1>The server encountered an error while processing this request:<br><pre>{error,{error,function_clause,
+<html><head><title>500 Internal Server Error</title></head><body><h1>Internal Server Error</h1>The server encountered an error while processing this request:<br /><pre>{error,{error,function_clause,
               [{chashbin,itr_value,
                          [done],
                          [{file,"src/chashbin.erl"},{line,139}]},

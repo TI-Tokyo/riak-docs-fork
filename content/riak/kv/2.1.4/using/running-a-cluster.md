@@ -105,7 +105,7 @@ systems. Bear in mind that you need to use either the older or the newer but
 never both simultaneously.
 
 More on configuring Riak can be found in the <a
-href="{{< baseurl >}}riak/kv/2.1.4/configuring/">Configuration
+href="{{<baseurl>}}riak/kv/2.1.4/configuring/">Configuration
 Files</a> documentation.
 {{% /note %}}
 

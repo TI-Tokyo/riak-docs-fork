@@ -75,7 +75,7 @@ Additional storage usage metrics are also available. . These metrics are gathere
 
 #### `riak-cs-admin`
 
-The following administration CLIs have been replaced by the [`riak-cs-admin` command]({{< baseurl >}}riak/cs/latest/cookbooks/command-line-tools/):
+The following administration CLIs have been replaced by the [`riak-cs-admin` command]({{<baseurl>}}riak/cs/latest/cookbooks/command-line-tools/):
 
 * `riak-cs-storage`
 * `riak-cs-gc`
@@ -96,7 +96,7 @@ Several new options have been added to the `riak-cs-admin gc` command:
 * Riak S2 2.0 (and older) has a race condition where fullsync replication and garbage collection may resurrect deleted blocks without any way to delete them again. When real-time replication and replication of a garbage collection bucket entry object being dropped from the real-time queue are combined, blocks may remain on the sink side without being collected. Riak S2 2.1 introduces deterministic garbage collection to avoid fullsync replication. Additionally, garbage collection and fullsync replication run concurrently, and work on the same blocks and manifests. You can now specify the range of time using the `--start` and `--end` flags with `riak-cs-admin gc batch` for garbage collector in order to collect deleted objects synchronously on both sink and source sides. [[PR 1147 ](https://github.com/basho/riak_cs/pull/1147)]
 * `riak-cs-admin gc earliest-keys` is available so you can find the oldest entry after `epoch_start` in garbage collection. With this option, you can stay informed of garbage collection progress. [[PR 1160](https://github.com/basho/riak_cs/pull/1160)]
 
-More information on garbage collection can be found in the [documentation]({{< baseurl >}}riak/cs/latest/cookbooks/garbage-collection/).
+More information on garbage collection can be found in the [documentation]({{<baseurl>}}riak/cs/latest/cookbooks/garbage-collection/).
 
 ### Additions
 
@@ -121,7 +121,7 @@ More information on garbage collection can be found in the [documentation]({{< b
 * An option has been added to replace the `PR=all user GET` option with `PR=one` just before authentication. This option improves latency, especially in the presence of slow (or actually-failing) nodes blocking the whole request flow because of PR=all. When enabled, a user's owned-bucket list is never pruned after a bucket is deleted, instead it is just marked as deleted. [[PR 1191](https://github.com/basho/riak_cs/pull/1191)]
 * An info log has been added when starting a storage calculation batch. [[PR 1238](https://github.com/basho/riak_cs/pull/1238)]
 * `GET Bucket` requests now have clearer responses. A 501 stub for Bucket lifecycle and a  simple stub for Bucket requestPayment have been added. [[PR 1223](https://github.com/basho/riak_cs/pull/1223)]
-* Several user-friendly features have been added to [`riak-cs-debug`]({{< baseurl >}}riak/cs/latest/cookbooks/command-line-tools/): fine-grained information gathering options, user-defined filtering for configuration files, and verbose output for failed commands. [[PR 1236](https://github.com/basho/riak_cs/pull/1236)]
+* Several user-friendly features have been added to [`riak-cs-debug`]({{<baseurl>}}riak/cs/latest/cookbooks/command-line-tools/): fine-grained information gathering options, user-defined filtering for configuration files, and verbose output for failed commands. [[PR 1236](https://github.com/basho/riak_cs/pull/1236)]
 
 #### Enterprise
 
@@ -530,7 +530,7 @@ None
 ### Download
 
 Please see the [Riak CS Downloads
-Page]({{< baseurl >}}riak/cs/latest/downloads/).
+Page]({{<baseurl>}}riak/cs/latest/downloads/).
 
 ### Feedback
 
@@ -576,7 +576,7 @@ None
 ### Download
 
 Please see the [Riak CS Downloads
-Page]({{< baseurl >}}riak/cs/latest/downloads)
+Page]({{<baseurl>}}riak/cs/latest/downloads)
 
 ### Feedback
 
@@ -593,7 +593,7 @@ venues:
 
 ### Additions
 
-* Bucket restrictions --- Similar to S3, you can now limit the number of buckets created per user to prevent users from creating an unusually large number of buckets. More details are included [here]({{< baseurl >}}riak/cs/latest/cookbooks/configuration/riak-cs/).
+* Bucket restrictions --- Similar to S3, you can now limit the number of buckets created per user to prevent users from creating an unusually large number of buckets. More details are included [here]({{<baseurl>}}riak/cs/latest/cookbooks/configuration/riak-cs/).
 
 ### Changes
 
@@ -649,7 +649,7 @@ To avoid having a limit, set `max_buckets_per_user_user` to `unlimited`.
 
 ### Download
 
-Please see the [Riak CS Downloads Page]({{< baseurl >}}riak/cs/latest/downloads/).
+Please see the [Riak CS Downloads Page]({{<baseurl>}}riak/cs/latest/downloads/).
 
 ### Feedback
 
@@ -665,7 +665,7 @@ Or Via **[email]({{<contactusemail>}})**.
 
 ### Additions
 
-* Added Multibag Technical Preview to Riak CS. More info is available [here]({{< baseurl >}}riak/cs/latest/cookbooks/multibag/)
+* Added Multibag Technical Preview to Riak CS. More info is available [here]({{<baseurl>}}riak/cs/latest/cookbooks/multibag/)
 * A new command `riak-cs-debug` including `cluster-info` [riak_cs/#769](https://github.com/basho/riak_cs/pull/769), [riak_cs/#832](https://github.com/basho/riak_cs/pull/832)
 * Tie up all existing commands into a new command `riak-cs-admin` [riak_cs/#839](https://github.com/basho/riak_cs/pull/839)
 * Add a command `riak-cs-admin stanchion` to switch Stanchion IP and port manually [riak_cs/#657](https://github.com/basho/riak_cs/pull/657)

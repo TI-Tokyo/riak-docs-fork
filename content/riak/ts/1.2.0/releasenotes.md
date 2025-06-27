@@ -25,7 +25,7 @@ Riak TS 1.2.0 introduces riak_shell, a shell that allows you to run SQL within R
 
 ## New Features
 
-* riak_shell is a configurable, extendable shell for Riak that allows you to run SQL commands and logging in a single shell within Riak TS. You can find more information about riak_shell [here]({{< baseurl >}}riak/ts/1.2.0/using/riakshell/).
+* riak_shell is a configurable, extendable shell for Riak that allows you to run SQL commands and logging in a single shell within Riak TS. You can find more information about riak_shell [here]({{<baseurl>}}riak/ts/1.2.0/using/riakshell/).
 
 ## Changes
 

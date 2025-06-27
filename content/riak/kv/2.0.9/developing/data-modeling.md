@@ -84,10 +84,10 @@ address), [using secondary indexes]({{<baseurl>}}riak/kv/2.0.9/developing/usage/
 <table class="links">
     <tr>
         <td><a href="https://player.vimeo.com/video/42744689" target="_blank" title="Scaling Riak at Kiip">
-           <img src="http://b.vimeocdn.com/ts/296/624/296624215_960.jpg"/>
+           <img src="http://b.vimeocdn.com/ts/296/624/296624215_960.jpg" />
          </a></td>
         <td><a href="https://player.vimeo.com/video/42744689" target="_blank" title="Riak at OpenX">Scaling Riak at Kiip</a>
-        <br>
+        <br />
     In this talk, recorded at the May 2012 San Francisco Riak Meetup, Armon Dadgar and Mitchell Hashimoto of Kiip give an overview of how and why they are using Riak in production, and the road they took to get there. One of the first subsystems they switched over to Riak was Sessions. You can also read the blog post and catch the slides <a href="http://basho.com/posts/business/Scaling-Riak-At-Kiip/" class="riak" target="_blank">here.</a>
         </td>
     </tr>
@@ -116,10 +116,12 @@ involves serving reads.
 
 <table class="links">
   <tr>
-    <td><a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX"><img src="http://b.vimeocdn.com/ts/343/417/343417336_960.jpg"/></a>
-    </td>
+    <td>
+<a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX"><img src="http://b.vimeocdn.com/ts/343/417/343417336_960.jpg" /></a>
+   
+</td>
     <td><a href="http://player.vimeo.com/video/49775483" target="_blank" title="Riak at OpenX">Riak at OpenX</a>
-    <br>
+    <br />
     Los Angeles-based OpenX will serves trillions of ads a year. In this
     talk, Anthony Molinaro, Engineer at OpenX, goes in depth on their
     architecture, how they've built their system, and why/how they're
@@ -162,10 +164,14 @@ maintain higher performance and yield more predictable latency.
 
 <table class="links">
   <tr>
-    <td><a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank" title="Riak at OpenX"><img src="{{<baseurl>}}images/simon-analyzing-logs.png"/></a>
-    </td>
-    <td>Simon Buckle on <a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank">analyzing Apache logs with Riak.</a>
-    </td>
+    <td>
+<a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank" title="Riak at OpenX"><img src="{{<baseurl>}}images/simon-analyzing-logs.png" /></a>
+   
+</td>
+    <td>
+Simon Buckle on <a href="http://www.simonbuckle.com/2011/08/27/analyzing-apache-logs-with-riak/" target="_blank">analyzing Apache logs with Riak.</a>
+   
+</td>
   </tr>
 </table>
 
@@ -234,10 +240,12 @@ contents of the user account.
 
 <table class="links">
   <tr>
-    <td><a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree"><img class="vid_img"src="http://b.vimeocdn.com/ts/329/711/329711886_640.jpg"/></a>
-    </td>
+    <td>
+<a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree"><img class="vid_img"src="http://b.vimeocdn.com/ts/329/711/329711886_640.jpg" /></a>
+   
+</td>
     <td><a href="https://player.vimeo.com/video/47535803" target="_blank" title="Riak at Braintree">Riak at Braintree</a>
-    <br>
+    <br />
     Ben Mills, a developer at Braintree, discusses how their backend team came to find and begin to integrate Riak into their production environment. They also cover their model and repository framework for Ruby, Curator. Check out more details and slides on the <a href="http://basho.com/posts/business/riak-at-braintree/" target="_blank">Riak blog.</a>
     </td>
   </tr>
@@ -281,20 +289,20 @@ modifying it, and writing back the new value.
   <tr>
     <td>
       <a href="http://player.vimeo.com/video/21598799" target="_blank" title="Riak at Yammer">
-      <img src="http://b.vimeocdn.com/ts/139/033/139033664_640.jpg"/>
+      <img src="http://b.vimeocdn.com/ts/139/033/139033664_640.jpg" />
 </a></td>
         <td><a href="http://player.vimeo.com/video/21598799" target="_blank" title="Riak at Yammer">Riak at Yammer</a>
-        <br>
+        <br />
     This video was recorded at the March 2012 San Francisco Riak Meetup and is worth every minute of your time. Coda Hale and Ryan Kennedy of Yammer give an excellent and in depth look into how they built “Streamie”, user notifications, why Riak was the right choice, and the lessons learned in the process. Read more and get the slides in the Riak blog <a href="http://basho.com/posts/business/Riak-And-Scala-At-Yammer/" target="_blank">here.</a>
         </td>
     </tr>
 
     <tr>
         <td><a href="http://player.vimeo.com/video/44498491" target="_blank" title="Riak at Voxer">
-           <img src="http://b.vimeocdn.com/ts/309/154/309154350_960.jpg"/>
+           <img src="http://b.vimeocdn.com/ts/309/154/309154350_960.jpg" />
          </a></td>
         <td><a href="http://player.vimeo.com/video/44498491" target="_blank" title="Riak at Voxer">Riak at Voxer</a>
-        <br>
+        <br />
     The team at Voxer has long relied on Riak as their primary data store for various production services. They have put Riak through its paces and have served as one of our more exciting customers and use cases: Riak was in place when they shot to the top of the App Store at the end of 2011. We also love them because they open-sourced their Node.js client. Read more and get the slides in the Riak blog <a href="http://basho.com/posts/business/Riak-in-Production-at-Voxer/" target="_blank">here.</a>
         </td>
     </tr>
@@ -343,13 +351,17 @@ pieces of information useful for later retrieval.
 
 <table class="links">
   <tr>
-    <td><a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/linkfluence-case-study.png" title="Milking Performance"></a>
-    </td>
+    <td>
+<a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/linkfluence-case-study.png" title="Milking Performance" /></a>
+   
+</td>
     <td>Linkfluence case study on using Riak to <a href="http://media.basho.com/pdf/Linkfluence-Case-Study-v2-1.pdf" target="_blank">store social web content</a>.
   </tr>
   <tr>
-    <td><a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/ideeli-case-study.png" title="Milking Performance"></a>
-    </td>
+    <td>
+<a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" class="vid_img" link target="_blank"><img src="{{<baseurl>}}images/ideeli-case-study.png" title="Milking Performance" /></a>
+   
+</td>
     <td>ideeli case study on <a href="http://basho.com/assets/Basho-Case-Study-ideeli.pdf" target="_blank">serving web pages with Riak</a>.
   </tr>
 </table>

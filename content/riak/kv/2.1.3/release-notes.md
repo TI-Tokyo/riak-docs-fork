@@ -48,7 +48,7 @@ In the above example, the corrected `default_bucket_props` section would look li
         }]
 ```
 
-If you have been depending on this behavior unintentionally, learn more about what  `allow_mult` and `dvv_enabled` imply in our [Conflict Resolution]({{< baseurl >}}riak/kv/latest/dev/using/conflict-resolution/) documentation.
+If you have been depending on this behavior unintentionally, learn more about what  `allow_mult` and `dvv_enabled` imply in our [Conflict Resolution]({{<baseurl>}}riak/kv/latest/dev/using/conflict-resolution/) documentation.
 
 For more information about this change, please see [issue #727](https://github.com/basho/riak/issues/727).
 
@@ -208,7 +208,7 @@ Updates the Riak API with an operation to GET, e.g. `/types/Type/buckets/Bucket/
   * [riak-erlang-client/pull/207](https://github.com/basho/riak-erlang-client/pull/207)
   * [yokozuna/pull/463](https://github.com/basho/yokozuna/pull/463)
 
-* [yokozuna/issues/450](https://github.com/basho/yokozuna/issues/450): AAE Failing hourly, with exit value {badarg,46}, [{base64,decode_binary[{base64.erl…
+* [yokozuna/issues/450](https://github.com/basho/yokozuna/issues/450): AAE Failing hourly, with exit value &#123;badarg,46&#125;, [&#123;base64,decode_binary[&#123;base64.erl…
   * [yokozuna/pull/459](https://github.com/basho/yokozuna/pull/459)
 
 * [yokozuna/issues/437](https://github.com/basho/yokozuna/issues/437): yz_events:handle_info called with bad arguments.

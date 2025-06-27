@@ -18,7 +18,7 @@ aliases:
     - /riakts/1.4.0/learn-about/bestpractices/
 ---
 
-[glossary bucket]: {{< baseurl >}}riak/kv/2.1.4/learn/glossary/#bucket
+[glossary bucket]: {{<baseurl>}}riak/kv/2.1.4/learn/glossary/#bucket
 [planning column def]: ../../using/planning/#column-definitions
 [planning partition]: ../../using/planning/#partition-key
 [planning primary]: ../../using/planning/#primary-key

@@ -45,7 +45,7 @@ Riak JMX has been tested with the Sun JRE 1.6.0_12 and 1.6.0_20. Some older/non-
 
 ## Exported JMX Attributes
 
-<br>
+<br />
 <table>
     <tr>
         <th WIDTH="30%">Attribute</th>
@@ -53,139 +53,301 @@ Riak JMX has been tested with the Sun JRE 1.6.0_12 and 1.6.0_20. Some older/non-
         <th WIDTH="55%">Description</th>
     </tr>
     <tr>
-        <td><tt>CPUNProcs</tt></td>
-        <td>int</td>
-        <td>Number of running processes</td>
+        <td>
+<tt>CPUNProcs</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of running processes
+</td>
     </tr>
     <tr>
-        <td><tt>CpuAvg1</tt></td>
-        <td>int</td>
-        <td>1 minute load average</td>
+        <td>
+<tt>CpuAvg1</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+1 minute load average
+</td>
     </tr>
     <tr>
-        <td><tt>CpuAvg5</tt></td>
-        <td>int</td>
-        <td>5 minute load average</td>
+        <td>
+<tt>CpuAvg5</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+5 minute load average
+</td>
     </tr>
     <tr>
-        <td><tt>CpuAvg15</tt></td>
-        <td>int</td>
-        <td>15 minute load average</td>
+        <td>
+<tt>CpuAvg15</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+15 minute load average
+</td>
     </tr>
     <tr>
-        <td><tt>NodeGetFsmTime95</tt></td>
-        <td>float</td>
-        <td>95th percentile GET time (microseconds)</td>
+        <td>
+<tt>NodeGetFsmTime95</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+95th percentile GET time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodeGetFsmTime99</tt></td>
-        <td>float</td>
-        <td>99th percentile GET time (microseconds)</td>
+        <td>
+<tt>NodeGetFsmTime99</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+99th percentile GET time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodeGetFsmTimeMax</tt></td>
-        <td>float</td>
-        <td>Maximum GET time (microseconds)</td>
+        <td>
+<tt>NodeGetFsmTimeMax</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+Maximum GET time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodeGetFsmTimeMean</tt></td>
-        <td>float</td>
-        <td>Mean GET time (microseconds)</td>
+        <td>
+<tt>NodeGetFsmTimeMean</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+Mean GET time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodeGetFsmTimeMedian</tt></td>
-        <td>float</td>
-        <td>Median GET time (microseconds)</td>
+        <td>
+<tt>NodeGetFsmTimeMedian</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+Median GET time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodeGets</tt></td>
-        <td>int</td>
-        <td>Number of GETs in past minute</td>
+        <td>
+<tt>NodeGets</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of GETs in past minute
+</td>
     </tr>
     <tr>
-        <td><tt>NodeGetsTotal</tt></td>
-        <td>int</td>
-        <td>Number of GETs since node start</td>
+        <td>
+<tt>NodeGetsTotal</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of GETs since node start
+</td>
     </tr>
     <tr>
-        <td><tt>NodeName</tt></td>
-        <td>string</td>
-        <td>Node name</td>
+        <td>
+<tt>NodeName</tt>
+</td>
+        <td>
+string
+</td>
+        <td>
+Node name
+</td>
     </tr>
     <tr>
-        <td><tt>NodePutFsmTime95</tt></td>
-        <td>float</td>
-        <td>95th percentile PUT time (microseconds)</td>
+        <td>
+<tt>NodePutFsmTime95</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+95th percentile PUT time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodePutFsmTime99</tt></td>
-        <td>float</td>
-        <td>99th percentile PUT time (microseconds)</td>
+        <td>
+<tt>NodePutFsmTime99</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+99th percentile PUT time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodePutFsmTimeMax</tt></td>
-        <td>float</td>
-        <td>Maximum PUT time (microseconds)</td>
+        <td>
+<tt>NodePutFsmTimeMax</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+Maximum PUT time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodePutFsmTimeMean</tt></td>
-        <td>float</td>
-        <td>Mean PUT time (microseconds)</td>
+        <td>
+<tt>NodePutFsmTimeMean</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+Mean PUT time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodePutFsmTimeMedian</tt></td>
-        <td>float</td>
-        <td>Median PUT time (microseconds)</td>
+        <td>
+<tt>NodePutFsmTimeMedian</tt>
+</td>
+        <td>
+float
+</td>
+        <td>
+Median PUT time (microseconds)
+</td>
     </tr>
     <tr>
-        <td><tt>NodePuts</tt></td>
-        <td>int</td>
-        <td>Number of PUTs in past minute</td>
+        <td>
+<tt>NodePuts</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of PUTs in past minute
+</td>
     </tr>
     <tr>
-        <td><tt>NodePutsTotal</tt></td>
-        <td>int</td>
-        <td>Number of PUTs since node start</td>
+        <td>
+<tt>NodePutsTotal</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of PUTs since node start
+</td>
     </tr>
     <tr>
-        <td><tt>PBCActive</tt></td>
-        <td>int</td>
-        <td>Number of active Protocol Buffers connections</td>
+        <td>
+<tt>PBCActive</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of active Protocol Buffers connections
+</td>
     </tr>
     <tr>
-        <td><tt>PBCConnects</tt></td>
-        <td>int</td>
-        <td>Number of Protocol Buffers connections in past minute</td>
+        <td>
+<tt>PBCConnects</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of Protocol Buffers connections in past minute
+</td>
     </tr>
     <tr>
-        <td><tt>PBCConnectsTotal</tt></td>
-        <td>int</td>
-        <td>Number of Protocol Buffers connections since node start</td>
+        <td>
+<tt>PBCConnectsTotal</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of Protocol Buffers connections since node start
+</td>
     </tr>
     <tr>
-        <td><tt>RingCreationSize</tt></td>
-        <td>int</td>
-        <td>Number of partitions in Riak ring</td>
+        <td>
+<tt>RingCreationSize</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of partitions in Riak ring
+</td>
     </tr>
     <tr>
-        <td><tt>VnodeGets</tt></td>
-        <td>int</td>
-        <td>Number of vnode-level GETs in past minute</td>
+        <td>
+<tt>VnodeGets</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of vnode-level GETs in past minute
+</td>
     </tr>
     <tr>
-        <td><tt>VnodeGetsTotal</tt></td>
-        <td>int</td>
-        <td>Number of vnode-level GETs since node start</td>
+        <td>
+<tt>VnodeGetsTotal</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of vnode-level GETs since node start
+</td>
     </tr>
     <tr>
-        <td><tt>VnodePuts</tt></td>
-        <td>int</td>
-        <td>Number of vnode-level PUTs in past minute</td>
+        <td>
+<tt>VnodePuts</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of vnode-level PUTs in past minute
+</td>
     </tr>
     <tr>
-        <td><tt>VnodePutsTotal</tt></td>
-        <td>int</td>
-        <td>Number of vnode-level PUTs since node start</td>
+        <td>
+<tt>VnodePutsTotal</tt>
+</td>
+        <td>
+int
+</td>
+        <td>
+Number of vnode-level PUTs since node start
+</td>
     </tr>
 </table>
 

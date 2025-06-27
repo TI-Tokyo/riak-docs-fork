@@ -347,4 +347,4 @@ javascript.hook_pool_size = 0
 ]}
 ```
 
-[riak_conf_files]: {{< baseurl >}}riak/kv/2.0.5/ops/advanced/configs/configuration-files/
+[riak_conf_files]: {{<baseurl>}}riak/kv/2.0.5/ops/advanced/configs/configuration-files/

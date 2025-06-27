@@ -284,13 +284,13 @@ The `<fields>` element is where the field name, type, and overriding
 options are declared. Here is an example of a field for indexing dates.
 
 ```xml
-<field name="created" type="date" indexed="true" stored="true"/>
+<field name="created" type="date" indexed="true" stored="true" />
 ```
 
 The corresponding date type is declared under `<types>` like so.
 
 ```xml
-<fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0"/>
+<fieldType name="date" class="solr.TrieDateField" precisionStep="0" positionIncrementGap="0" />
 ```
 
 You can also find more information on to how customize your own [search schema]({{<baseurl>}}riak/kv/2.9.1/developing/usage/search-schemas).

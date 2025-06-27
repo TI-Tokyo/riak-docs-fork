@@ -94,7 +94,7 @@ cluster on the following TCP ports:
 
 Protocol | Port
 :--------|:----
-<a href="{{< baseurl >}}riak/kv/2.1.4/developing/api/protocol-buffers/">Protocol Buffers</a> | TCP port 8087
+<a href="{{<baseurl>}}riak/kv/2.1.4/developing/api/protocol-buffers/">Protocol Buffers</a> | TCP port 8087
 
 ## Best Practices
 

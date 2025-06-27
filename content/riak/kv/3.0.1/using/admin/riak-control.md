@@ -106,7 +106,7 @@ change to take effect.
 After restarting the node, you should be able to access it by going
 to `http://ip_address_of_listener:port/admin`. In the case of a development
 cluster using the default configuration, you would access Riak Control at
-<http://127.0.0.1:8098/admin></a>
+[http://127.0.0.1:8098/admin](http://127.0.0.1:8098/admin)
 
 If you enabled authentication for Riak Control while performing the above
 configuration, you will be unable to access Riak Control until you have enabled
@@ -166,7 +166,7 @@ riak_control.auth.user.riakrocks.password = cap_theorem_4_life
 ## User Interface
 
 To begin using Riak Control, navigate to https://ip_address_of_https_listener:https_port/admin
-For a default configuration, this will be <https://localhost:8069/admin>.
+For a default configuration, this will be [https://localhost:8069/admin](https://localhost:8069/admin).
 
 If your browser warns you that it cannot authenticate the page, this may
 be because you are using self-signed certificates. If you have

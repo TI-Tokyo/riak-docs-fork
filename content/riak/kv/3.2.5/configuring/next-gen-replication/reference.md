@@ -44,33 +44,63 @@ Please see [Queuing System][configure nextgenrepl queuing] for more detail on ho
 <tbody>
 
 <tr>
-<td><code>replrtq_compressonwire</code></td>
-<td>Controls if Riak objects are compressed before being pulled to the sink. Note that this can slow down replication due to the increased overhead, but can speed up transmission.</td>
-<td><code>disabled</code></td>
+<td>
+<code>replrtq_compressonwire</code>
+</td>
+<td>
+Controls if Riak objects are compressed before being pulled to the sink. Note that this can slow down replication due to the increased overhead, but can speed up transmission.
+</td>
+<td>
+<code>disabled</code>
+</td>
 </tr>
 
 <tr>
-<td><code>replrtq_srcobjectlimit</code></td>
-<td>The maximum number of actual Riak objects that can be stored in a specific queue. This is only used for RealTime Riak objects as all other queued items are references to a Riak object.</td>
-<td><code>1000</code></td>
+<td>
+<code>replrtq_srcobjectlimit</code>
+</td>
+<td>
+The maximum number of actual Riak objects that can be stored in a specific queue. This is only used for RealTime Riak objects as all other queued items are references to a Riak object.
+</td>
+<td>
+<code>1000</code>
+</td>
 </tr>
 
 <tr>
-<td><code>replrtq_srcobjectsize</code></td>
-<td>The maximum size of an actual Riak object that can be stored in a specific queue. This is only used for RealTime Riak objects as all other queued items are references to a Riak object.</td>
-<td><code>200K</code></td>
+<td>
+<code>replrtq_srcobjectsize</code>
+</td>
+<td>
+The maximum size of an actual Riak object that can be stored in a specific queue. This is only used for RealTime Riak objects as all other queued items are references to a Riak object.
+</td>
+<td>
+<code>200K</code>
+</td>
 </tr>
 
 <tr>
-<td><code>replrtq_srcqueue</code></td>
-<td>The default queue is setup for FullSync only.</td>
-<td><code>q1_ttaaefs:block_rtq</code></td>
+<td>
+<code>replrtq_srcqueue</code>
+</td>
+<td>
+The default queue is setup for FullSync only.
+</td>
+<td>
+<code>q1_ttaaefs:block_rtq</code>
+</td>
 </tr>
 
 <tr>
-<td><code>replrtq_srcqueuelimit</code></td>
-<td>The maximum number of copies of Riak objects or references to Riak objects that can be stored in a each queue at each level of priority.</td>
-<td><code>300000</code></td>
+<td>
+<code>replrtq_srcqueuelimit</code>
+</td>
+<td>
+The maximum number of copies of Riak objects or references to Riak objects that can be stored in a each queue at each level of priority.
+</td>
+<td>
+<code>300000</code>
+</td>
 </tr>
 
 </tbody>
@@ -91,15 +121,27 @@ Please see [RealTime][configure nextgenrepl realtime] for more detail on how to 
 <tbody>
 
 <tr>
-<td><code>replrtq_enablesrc</code></td>
-<td>Enable RealTime by setting to <code>enabled</code>.</td>
-<td><code>disabled</code></td>
+<td>
+<code>replrtq_enablesrc</code>
+</td>
+<td>
+Enable RealTime by setting to <code>enabled</code>.
+</td>
+<td>
+<code>disabled</code>
+</td>
 </tr>
 
 <tr>
-<td><code>replrtq_srcqueue</code></td>
-<td>At least one queue should have RealTime allowed. Set a queue to <code>any</code> or one of the other filter options.</td>
-<td><code>q1_ttaaefs:block_rtq</code></td>
+<td>
+<code>replrtq_srcqueue</code>
+</td>
+<td>
+At least one queue should have RealTime allowed. Set a queue to <code>any</code> or one of the other filter options.
+</td>
+<td>
+<code>q1_ttaaefs:block_rtq</code>
+</td>
 </tr>
 
 </tbody>
@@ -144,29 +186,59 @@ Please see [Sink][configure nextgenrepl sink] for more detail on how to configur
 <tbody>
 
 <tr>
-<td><code>replrtq_enablesink</code></td>
-<td>Set to `enabled` to activate replication on this node.</td>
-<td><code>disabled</code></td>
+<td>
+<code>replrtq_enablesink</code>
+</td>
+<td>
+Set to `enabled` to activate replication on this node.
+</td>
+<td>
+<code>disabled</code>
+</td>
 </tr>
 <tr>
-<td><code>replrtq_sinkpeerlimit</code></td>
-<td>The maximum number of workers that can talk to a specific source node.</td>
-<td><code>24</code></td>
+<td>
+<code>replrtq_sinkpeerlimit</code>
+</td>
+<td>
+The maximum number of workers that can talk to a specific source node.
+</td>
+<td>
+<code>24</code>
+</td>
 </tr>
 <tr>
-<td><code>replrtq_sinkpeers</code></td>
-<td>A <code>|</code> deliminated list of source node connection strings. A connection string is a <code>:</code> deliminated tuple of IP/FQDN, port and protocol.</td>
-<td><code></code></td>
+<td>
+<code>replrtq_sinkpeers</code>
+</td>
+<td>
+A <code>|</code> deliminated list of source node connection strings. A connection string is a <code>:</code> deliminated tuple of IP/FQDN, port and protocol.
+</td>
+<td>
+<code></code>
+</td>
 </tr>
 <tr>
-<td><code>replrtq_sinkqueue</code></td>
-<td>The name of the queue on the source nodes to use for replicatation. The same queue name is used for all source nodes.</td>
-<td><code>q1_ttaaefs</code></td>
+<td>
+<code>replrtq_sinkqueue</code>
+</td>
+<td>
+The name of the queue on the source nodes to use for replicatation. The same queue name is used for all source nodes.
+</td>
+<td>
+<code>q1_ttaaefs</code>
+</td>
 </tr>
 <tr>
-<td><code>replrtq_sinkworkers</code></td>
-<td>The total number of worker processes that can talk to source nodes.</td>
-<td><code>24</code></td>
+<td>
+<code>replrtq_sinkworkers</code>
+</td>
+<td>
+The total number of worker processes that can talk to source nodes.
+</td>
+<td>
+<code>24</code>
+</td>
 </tr>
 
 </tbody>
