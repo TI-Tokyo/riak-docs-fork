@@ -37,11 +37,11 @@ The table below gives a high-level comparison of Riak CS and Atmos features and 
 Interfaces
 </td>
         <td>
-iak CS offers an S3-compatible interface that can be used with existing S3 clients and libraries.
+Riak CS offers an S3-compatible interface that can be used with existing S3 clients and libraries.
    
 </td>
         <td>
-tmos offers a REST and SOAP API, an S3-compatible API, and an Atmos SDK as well as interfaces to traditional storage solutions, including NFS/CIF and CAS.
+Atmos offers a REST and SOAP API, an S3-compatible API, and an Atmos SDK as well as interfaces to traditional storage solutions, including NFS/CIF and CAS.
    
 </td>
     </tr>
@@ -63,11 +63,11 @@ Availability and Architecture for Reads/Writes
 Users and Multitenancy
 </td>
         <td>
-iak exposes multitenancy using S3 conventions for user provisioning and management. Administrators can create users which are then able to authenticate, create buckets, upload and download data, retrieve account information and other user privileges.
+Riak exposes multitenancy using S3 conventions for user provisioning and management. Administrators can create users which are then able to authenticate, create buckets, upload and download data, retrieve account information and other user privileges.
        
 </td>
         <td>
-MC Atmos implements a more complex tenant scheme. Atmos recommends implementing 1-2 tenants in a system and using multiple sub-tenants underneath each tenant. The number of tenants is limited to the number of physical nodes, as front-end nodes are assigned to a specific tenant for client access. Configuring tenants and subtenants may be operationally complex, while assigning specific tenants to specific front-end nodes may cause end-user availability issues in the event of node failure.
+EMC Atmos implements a more complex tenant scheme. Atmos recommends implementing 1-2 tenants in a system and using multiple sub-tenants underneath each tenant. The number of tenants is limited to the number of physical nodes, as front-end nodes are assigned to a specific tenant for client access. Configuring tenants and subtenants may be operationally complex, while assigning specific tenants to specific front-end nodes may cause end-user availability issues in the event of node failure.
        
 </td>
     </tr>
@@ -76,11 +76,11 @@ MC Atmos implements a more complex tenant scheme. Atmos recommends implementing 
 Hardware
 </td>
         <td>
-iak CS ships as software and can be installed from source or with packages, including Ubuntu and CentOS. There is no hardware lock-in to specific vendors, and Riak CS is designed to be run on commodity hardware so that enterprises can achieve economies of scale.
+Riak CS ships as software and can be installed from source or with packages, including Ubuntu and CentOS. There is no hardware lock-in to specific vendors, and Riak CS is designed to be run on commodity hardware so that enterprises can achieve economies of scale.
        
 </td>
         <td>
-MC Atmos can be deployed as a software/hardware bundle on Atmos Hardware or as a virtual edition deployed on a VMware-certified third-party storage system.
+EMC Atmos can be deployed as a software/hardware bundle on Atmos Hardware or as a virtual edition deployed on a VMware-certified third-party storage system.
        
 </td>
     </tr>
@@ -89,11 +89,11 @@ MC Atmos can be deployed as a software/hardware bundle on Atmos Hardware or as a
 Multi-Datacenter Replication
 </td>
         <td>
-or multi-site replication in Riak CS, global information for users, bucket information, and manifests are streamed in real time from a primary implementation to a secondary site, so that global state is maintained across locations. Objects can then be replicated in either fullsync or realtime sync mode. The secondary site will replicate the object as in normal operations. Additional datacenters can be added in order to create availability zones or additional data redundancy and locality. Riak CS can also be configured for bi-directional replication.
+For multi-site replication in Riak CS, global information for users, bucket information, and manifests are streamed in real time from a primary implementation to a secondary site, so that global state is maintained across locations. Objects can then be replicated in either fullsync or realtime sync mode. The secondary site will replicate the object as in normal operations. Additional datacenters can be added in order to create availability zones or additional data redundancy and locality. Riak CS can also be configured for bi-directional replication.
    
 </td>
         <td>
-n EMC Atmos, object replication to secondary sites is done via synchronous or asynchronous replication configured by policies. These policies are implemented as part of the Metadata Service. A read-only copy of the metadata is maintained at secondary sites.
+In EMC Atmos, object replication to secondary sites is done via synchronous or asynchronous replication configured by policies. These policies are implemented as part of the Metadata Service. A read-only copy of the metadata is maintained at secondary sites.
   
 </td>
     </tr>

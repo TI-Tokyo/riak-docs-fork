@@ -50,11 +50,13 @@ Configurable parameters for Riak's legacy active anti-entropy subsystem.
 <td>
 <code>anti_entropy</code>
 </td>
-<td>How Riak will repair out-of-sync keys. If set to
+<td>
+How Riak will repair out-of-sync keys. If set to
 <code>active</code>, out-of-sync keys will be repaired in the
 background; if set to <code>passive</code>, out-of-sync keys are only
 repaired on read; and if set to <code>active-debug</code>, verbose
-debugging information will be output.</td>
+debugging information will be output.
+</td>
 <td>
 <code>active</code>
 </td>
@@ -65,7 +67,7 @@ debugging information will be output.</td>
 <code>search.anti_entropy.throttle</code>
 </td>
 <td>
-hether the distributed throttle for Active Anti-Entropy is
+Whether the distributed throttle for Active Anti-Entropy is
 enabled
 </td>
 <td>
@@ -77,7 +79,8 @@ enabled
 <td>
 <code>search.anti_entropy.throttle.$tier.solrq_queue_length</code>
 </td>
-<td>Sets the throttling tiers for Active Anti-Entropy. Each tier is a
+<td>
+Sets the throttling tiers for Active Anti-Entropy. Each tier is a
 minimum vnode mailbox size and a time-delay that the throttle should
 observe at that size and above. For example,
 <code>anti_entropy.throttle.tier1.mailbox_size = 0</code>,
@@ -86,8 +89,10 @@ observe at that size and above. For example,
 <code>anti_entropy.throttle.tier2.delay = 5ms</code>, etc. If
 configured, there must be a tier which includes a mailbox size of 0.
 Both <code>.mailbox_size</code> and <code>.delay</code> must be set for
-each tier.</td>
-<td></td>
+each tier.
+</td>
+<td>
+</td>
 </tr>
 
 <tr>
@@ -95,19 +100,22 @@ each tier.</td>
 <code>search.anti_entropy.throttle.$tier.delay</code>
 </td>
 <td>
-ee the description for
+See the description for
 <code>anti_entropy.throttle.$tier.mailbox_size</code> above
 </td>
-<td></td>
+<td>
+</td>
 </tr>
 
 <tr>
 <td>
 <code>anti_entropy.bloomfilter</code>
 </td>
-<td>Bloom filters are highly effective in shortcutting data queries
+<td>
+Bloom filters are highly effective in shortcutting data queries
 that are destined to not find the requested key, though they tend to
-entail a small performance cost.</td>
+entail a small performance cost.
+</td>
 <td>
 <code>on</code>
 </td>
@@ -117,7 +125,8 @@ entail a small performance cost.</td>
 <td>
 <code>anti_entropy.max_open_files</code>
 </td>
-<td></td>
+<td>
+</td>
 <td>
 <code>20</code>
 </td>
@@ -128,7 +137,7 @@ entail a small performance cost.</td>
 <code>anti_entropy.write_buffer_size</code>
 </td>
 <td>
-he LevelDB options used by Active Anti-Entropy to generate the
+The LevelDB options used by Active Anti-Entropy to generate the
 LevelDB-backed on-disk hashtrees
 </td>
 <td>
@@ -168,7 +177,7 @@ synced across the cluster. Increasing the value is not recommended.
 <code>anti_entropy.concurrency_limit</code>
 </td>
 <td>
-imit how many Active Anti-Entropy exchanges or builds can happen
+Limit how many Active Anti-Entropy exchanges or builds can happen
 concurrently
 </td>
 <td>
@@ -180,13 +189,15 @@ concurrently
 <td>
 <code>anti_entropy.tree.expiry</code>
 </td>
-<td>Determines how often hash trees are expired after being built.
+<td>
+Determines how often hash trees are expired after being built.
 Periodically expiring a hash tree ensures that the on-disk hash tree
 data stays consistent with the actual K/V backend data. It also helps
 Riak identify silent disk failures and bit rot. However, expiration is
 not needed for normal active anti-entropy operations and should be
 infrequent for performance reasons. The time is specified in
-milliseconds.</td>
+milliseconds.
+</td>
 <td>
 <code>1w</code>
 </td>
@@ -196,7 +207,8 @@ milliseconds.</td>
 <td>
 <code>anti_entropy.tree.build_limit.per_timespan</code>
 </td>
-<td></td>
+<td>
+</td>
 <td>
 <code>1h</code>
 </td>
@@ -206,11 +218,13 @@ milliseconds.</td>
 <td>
 <code>anti_entropy.tree.build_limit.number</code>
 </td>
-<td>Restrict how fast AAE can build hash trees. Building the tree for a
+<td>
+Restrict how fast AAE can build hash trees. Building the tree for a
 given partition requires a full scan over that partition's data. Once
 built, trees stay built until they are expired. <code>.number</code> is
 the number of builds; <code>.per_timespan</code> is the amount of time
-in which that number of builds occurs.</td>
+in which that number of builds occurs.
+</td>
 <td>
 <code>1</code>
 </td>
@@ -220,7 +234,8 @@ in which that number of builds occurs.</td>
 <td>
 <code>anti_entropy.use_background_manager</code>
 </td>
-<td>Whether AAE is to use a background process to limit AAE tree
+<td>
+Whether AAE is to use a background process to limit AAE tree
 rebuilds. If set to <code>on</code>, this will help to prevent system
 response degradation under times of heavy load from multiple background
 tasks that contend for the same system resources; setting this parameter

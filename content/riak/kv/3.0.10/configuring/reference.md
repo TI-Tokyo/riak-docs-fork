@@ -240,7 +240,7 @@ parameters below.
 <code>platform_bin_dir</code>
 </td>
 <td>
-he directory in which the <a href="../../using/admin/riak admin"><code>riak admin</code></a>,
+The directory in which the <a href="../../using/admin/riak admin"><code>riak admin</code></a>,
 <code>riak-debug</code>executables are stored
 </td>
 <td>
@@ -253,7 +253,7 @@ he directory in which the <a href="../../using/admin/riak admin"><code>riak admi
 <code>platform_data_dir</code>
 </td>
 <td>
-he directory in which Riak stores its storage backend data, as well
+The directory in which Riak stores its storage backend data, as well
 as <a href="{{<baseurl>}}riak/kv/3.0.10/learn/glossary/#active-anti-entropy-aae">active anti-entropy</a> data, and cluster metadata
 </td>
 <td>
@@ -354,7 +354,7 @@ Set to <code>off</code> to disable the admin panel.
 <code>riak_control.auth.mode</code>
 </td>
 <td>
-uthentication mode used for access to the admin panel. Options are
+Authentication mode used for access to the admin panel. Options are
 <code>off</code> (which is the default) or <code>userlist</code>
 </td>
 <td>
@@ -412,7 +412,7 @@ as busy. Distribution ports connect Riak nodes within a single cluster.
 <code>runtime_health.triggers.port</code>
 </td>
 <td>
-hether ports with full input buffers will be counted as busy.
+Whether ports with full input buffers will be counted as busy.
 Ports can represent open files or network sockets
 </td>
 <td>
@@ -642,7 +642,7 @@ allowed, using the <code>module:function</code> format.
 <code>buckets.default.pr</code>
 </td>
 <td>
-he number of primary, non-fallback replicas that must reply to a
+The number of primary, non-fallback replicas that must reply to a
 read request
 </td>
 <td>
@@ -655,7 +655,7 @@ read request
 <code>buckets.default.pw</code>
 </td>
 <td>
-he number of primary, non-fallback replicas which must reply to a
+The number of primary, non-fallback replicas which must reply to a
 write request
 </td>
 <td>
@@ -680,7 +680,7 @@ The number of replicas which must reply to a read request.
 <code>buckets.default.w</code>
 </td>
 <td>
-he number of replicas which must reply to a write request,
+The number of replicas which must reply to a write request,
 indicating that the write was received
 </td>
 <td>
@@ -738,7 +738,7 @@ format for more compact storage of small values.
 <code>object.siblings.maximum</code>
 </td>
 <td>
-riting an object with more than this number of siblings will send
+Writing an object with more than this number of siblings will send
 a failure to the client
 </td>
 <td>
@@ -751,7 +751,7 @@ a failure to the client
 <code>object.siblings.warning_threshold</code>
 </td>
 <td>
-riting an object with more than this number of siblings will
+Writing an object with more than this number of siblings will
 generate a warning in the logs
 </td>
 <td>
@@ -764,7 +764,7 @@ generate a warning in the logs
 <code>object.size.maximum</code>
 </td>
 <td>
-riting an object larger than this will send a failure to the
+Writing an object larger than this will send a failure to the
 client
 </td>
 <td>
@@ -777,7 +777,7 @@ client
 <code>object.size.warning_threshold</code>
 </td>
 <td>
-eading or writing objects larger than this size will write a
+Reading or writing objects larger than this size will write a
 warning in the logs
 </td>
 <td>
@@ -1022,7 +1022,7 @@ href="http://www.erlang.org/doc/man/erlang.html#system_flag-2">here</a>.
 <code>erlang.max_ports</code>
 </td>
 <td>
-he number of concurrent ports/sockets. The valid range is 1024 to
+The number of concurrent ports/sockets. The valid range is 1024 to
 134217727
 </td>
 <td>
@@ -1080,7 +1080,7 @@ is ignored if the emulator doesn't have SMP support enabled (see the
 <code>erlang.schedulers.online</code>
 </td>
 <td>
-ee the description for <code>erlang.schedulers.total</code>
+See the description for <code>erlang.schedulers.total</code>
 directly above
 </td>
 <td>
@@ -1128,7 +1128,7 @@ href="http://erlang.org/doc/man/erl.html#smp">here</a>.
 <code>erlang.shutdown_time</code>
 </td>
 <td>
-imits how long the Erlang VM spends shutting down. After the
+Limits how long the Erlang VM spends shutting down. After the
 specified duration elapses, all existing processes are killed
 </td>
 <td>
@@ -1171,7 +1171,7 @@ loaded by Riak when it initializes Javascript VMs
 <code>javascript.maximum_stack_size</code>
 </td>
 <td>
-he maximum amount of thread stack memory to allocate to each
+The maximum amount of thread stack memory to allocate to each
 JavaScript virtual machine
 </td>
 <td>
@@ -1184,7 +1184,7 @@ JavaScript virtual machine
 <code>javascript.maximum_heap_size</code>
 </td>
 <td>
-he maximum amount of memory allocated to each JavaScript virtual
+The maximum amount of memory allocated to each JavaScript virtual
 machine
 </td>
 <td>
@@ -1197,7 +1197,7 @@ machine
 <code>javascript.hook_pool_size</code>
 </td>
 <td>
-he number of JavaScript virtual machines available for executing
+The number of JavaScript virtual machines available for executing
 pre-commit hook functions
 </td>
 <td>
@@ -1210,7 +1210,7 @@ pre-commit hook functions
 <code>javascript.reduce_pool_size</code>
 </td>
 <td>
-he number of JavaScript virtual machines available for executing
+The number of JavaScript virtual machines available for executing
 reduce functions
 </td>
 <td>
@@ -1223,7 +1223,7 @@ reduce functions
 <code>javascript.map_pool_size</code>
 </td>
 <td>
-he number of JavaScript virtual machines available for executing
+The number of JavaScript virtual machines available for executing
 map functions
 </td>
 <td>
@@ -1432,11 +1432,11 @@ simultaneously, set this number higher.
 <code>listener.protobuf.$name</code>
 </td>
 <td>
-his is the IP address and TCP port to which the Riak Protocol
+This is the IP address and TCP port to which the Riak Protocol
 Buffers interface will bind
 </td>
 <td>
-<code>{"127.0.0.1",8087}</code>
+<code>&#123;"127.0.0.1",8087&#125;</code>
 </td>
 </tr>
 
@@ -1445,11 +1445,11 @@ Buffers interface will bind
 <code>listener.http.$name</code>
 </td>
 <td>
-his is the IP address and TCP port to which the Riak HTTP
+This is the IP address and TCP port to which the Riak HTTP
 interface will bind
 </td>
 <td>
-<code>{"127.0.0.1",8098}</code>
+<code>&#123;"127.0.0.1",8098&#125;</code>
 </td>
 </tr>
 
@@ -1458,7 +1458,7 @@ interface will bind
 <code>listener.https.$name</code>
 </td>
 <td>
-his is the IP address and TCP port to which the Riak HTTPS
+This is the IP address and TCP port to which the Riak HTTPS
 interface will bind
 </td>
 <td>
@@ -1553,7 +1553,7 @@ Whether to enable the crash log
 <code>log.crash.file</code>
 </td>
 <td>
-f the crash log is enabled, the file where its messages will be
+If the crash log is enabled, the file where its messages will be
 writte
 </td>
 <td>
@@ -1629,7 +1629,7 @@ The file where error messages will be logged.
 <code>log.error.messages_per_second</code>
 </td>
 <td>
-aximum number of <code>error_logger</code> messages to handle per
+Maximum number of <code>error_logger</code> messages to handle per
 secon
 </td>
 <td>
@@ -1642,7 +1642,7 @@ secon
 <code>log.error.redirect</code>
 </td>
 <td>
-hether to redirect <code>error_logger</code> messages into
+Whether to redirect <code>error_logger</code> messages into
 lage
 </td>
 <td>
@@ -1691,7 +1691,7 @@ through <code>local7</code>.
 <code>log.syslog.ident</code>
 </td>
 <td>
-f <code>log.syslog</code> is set to <code>on</code>, this setting
+If <code>log.syslog</code> is set to <code>on</code>, this setting
 determines the prefix appended to each syslog message
 </td>
 <td>
@@ -1794,7 +1794,7 @@ entail a small performance cost.
 <code>anti_entropy.write_buffer_size</code>
 </td>
 <td>
-he LevelDB options used by Active Anti-Entropy to generate the
+The LevelDB options used by Active Anti-Entropy to generate the
 LevelDB-backed on-disk hashtrees
 </td>
 <td>
@@ -1834,7 +1834,7 @@ synced across the cluster. Increasing the value is not recommended.
 <code>anti_entropy.concurrency_limit</code>
 </td>
 <td>
-imit how many Active Anti-Entropy exchanges or builds can happen
+Limit how many Active Anti-Entropy exchanges or builds can happen
 concurrently
 </td>
 <td>
@@ -1977,6 +1977,8 @@ The number of seconds which represents the length of the period in which the nex
 <code>345600</code>
 </td>
 </tr>
+</tbody>
+</table>
 
 ## Intra-Cluster Handoff
 
@@ -2015,7 +2017,7 @@ ever being blocked by a secondary system, set this parameter to
 <code>handoff.inbound</code>
 </td>
 <td>
-hether inbound handoff is enabled on the node. Possible values are
+Whether inbound handoff is enabled on the node. Possible values are
 <code>on</code> or <code>off</code>
 </td>
 <td>
@@ -2028,7 +2030,7 @@ hether inbound handoff is enabled on the node. Possible values are
 <code>handoff.outbound</code>
 </td>
 <td>
-hether outbound handoff is enabled on the node. Possible values are
+Whether outbound handoff is enabled on the node. Possible values are
 <code>on</code> or <code>off</code>
 </td>
 <td>
@@ -2041,7 +2043,7 @@ hether outbound handoff is enabled on the node. Possible values are
 <code>handoff.port</code>
 </td>
 <td>
-pecifies the TCP port that Riak uses for intra-cluster data
+Specifies the TCP port that Riak uses for intra-cluster data
 handoff
 </td>
 <td>
@@ -2067,7 +2069,7 @@ certfile and keyfile.
 <code>handoff.ssl.keyfile</code>
 </td>
 <td>
-he keyfile paired with the certfile specified in
+The keyfile paired with the certfile specified in
 <code>.certfile</code>
 </td>
 <td>
@@ -2164,7 +2166,7 @@ node's `riak.conf` file.
 <code>strong_consistency</code>
 </td>
 <td>
-nables the consensus subsystem used for strongly consistent Riak
+Enables the consensus subsystem used for strongly consistent Riak
 operations if set to <code>on</code>
 </td>
 <td>
@@ -2582,7 +2584,7 @@ related to Riak's `riak_repl` subsystem.
 <code>data_root</code>
 </td>
 <td>
-ath (relative or absolute) to the working directory for the
+Path (relative or absolute) to the working directory for the
 replication process
 </td>
 <td>
@@ -2647,7 +2649,7 @@ either via the configuration file or command line.
 <code>fullsync_on_connect</code>
 </td>
 <td>
-hether to initiate a fullsync on initial connection from the sink
+Whether to initiate a fullsync on initial connection from the sink
 cluster
 </td>
 <td>
@@ -2689,7 +2691,7 @@ replicated with a fullsync.
 <code>proxy_get</code>
 </td>
 <td>
-hether to enable Riak CS <code>proxy_get</code> and block
+Whether to enable Riak CS <code>proxy_get</code> and block
 filter
 </td>
 <td>
@@ -2812,7 +2814,7 @@ the cluster manager running on the cluster leader will service requests.
 This can change as nodes enter and leave the cluster.
 <td>
 <td>
-<code>{"127.0.0.1", 9080}</code>
+<code>&#123;"127.0.0.1", 9080&#125;</code>
 </td>
 </tr>
 
