@@ -91,7 +91,7 @@ C: 2-7-12
 D: 3-8-12
 E: 4-9-14
 ```
-  When a value is stored in Riak, the `{bucket, key}` is hashed to determine its first primary partition, and the value is stored in that partition and the next `n_val` - 1 partitions in the ring.
+  When a value is stored in Riak, the `&#123;bucket, key&#125;` is hashed to determine its first primary partition, and the value is stored in that partition and the next `n_val` - 1 partitions in the ring.
   A preflist consists of the vnode which owns the key, and the next `n_val` vnodes in the ring, in order. In this scenario there are 16 preflists:
 
   <table border="1">
@@ -120,7 +120,7 @@ E: 4-9-14
   <tr><td>2-5-8-10-13-15</td><td>2-5-8-11-12-15</td><td>2-5-8-11-13-15</td><td>2-5-8-11-14-15</td></tr>
   </table>
 
-  When a node fails or is marked down, its vnodes will not be considered for coverage queries. Fallback vnodes will be created on other nodes so that PUT and GET operations can be handled, but only primary vnodes are considered for secondary index coverage queries. If a covering set cannot be found, `{error, insufficient_vnodes}` will be returned. Thus, the reply will either be complete or an error.
+  When a node fails or is marked down, its vnodes will not be considered for coverage queries. Fallback vnodes will be created on other nodes so that PUT and GET operations can be handled, but only primary vnodes are considered for secondary index coverage queries. If a covering set cannot be found, `&#123;error, insufficient_vnodes&#125;` will be returned. Thus, the reply will either be complete or an error.
 
   When a node is `force-remove`d, it is dropped from the cluster without transferring its data to other nodes, and the remaining nodes then claim the unowned partitions, designating new primary replicas to comply with `n_val`, but they do not immediately populate the data or indexes.
 
@@ -161,7 +161,7 @@ E: 4-9-14-12*
 
   The results from secondary index queries that should return all 3 keys will vary depending on the nodes chosen for the coverage set. Of the 56 possible covering sets ...
 
-  * 20 sets (35.7% of sets) will return all 3 keys `{a,b,c}`:
+  * 20 sets (35.7% of sets) will return all 3 keys `&#123;a,b,c&#125;`:
     <table border="1">
     <tr><td>0-2-5-8-10-13</td><td>0-2-5-8-11-13</td><td>0-2-5-8-11-14</td><td>0-3-5-8-10-13</td></tr>
     <tr><td>0-3-5-8-11-13</td><td>0-3-5-8-11-14</td><td>0-3-6-8-10-13</td><td>0-3-6-8-11-13</td></tr>
@@ -172,25 +172,25 @@ E: 4-9-14-12*
 
   * 24 sets (42.9%) will return 2 of the 3 keys:
     <table border="1">
-    <tr><td colspan=4>`{a,b}` (7 sets)</td></tr>
+    <tr><td colspan=4>`&#123;a,b&#125;` (7 sets)</td></tr>
     <tr><td>0-3-6-9-12-13</td><td>0-3-6-9-12-14</td><td>0-3-6-9-12-15</td><td>1-3-6-9-12-14</td></tr>
     <tr><td>1-3-6-9-12-15</td><td>1-4-6-9-12-14</td><td>1-4-6-9-12-15</td><td>&nbsp;</td></tr>
-    <tr><td colspan=4>`{a,c}` (12 sets)</td></tr>
+    <tr><td colspan=4>`&#123;a,c&#125;` (12 sets)</td></tr>
     <tr><td>0-1-4-7-10-13</td><td>0-2-4-7-10-13</td><td>0-2-5-7-10-13</td><td>0-3-4-7-10-13</td></tr>
     <tr><td>0-3-5-7-10-13</td><td>0-3-6-7-10-13</td><td>1-4-7-10-11-14</td><td>1-4-7-10-12-14</td></tr>
     <tr><td>1-4-7-10-12-15</td><td>1-4-7-10-13-14</td><td>1-4-7-10-13-15</td><td>1-4-7-9-11-14</td></tr>
-    <tr><td colspan=4>`{b,c}` (5 sets)</td></tr>
+    <tr><td colspan=4>`&#123;b,c&#125;` (5 sets)</td></tr>
     <tr><td>2-5-8-10-12-15</td><td>2-5-8-10-13-15</td><td>2-5-8-11-12-15</td><td>2-5-8-11-14-15</td></tr>
     <tr><td>2-5-8-11-13-15</td><td colspan="3">&nbsp;</td></tr>
     </table>
 
   * 10 sets (17.8%) will return only one of the 3 keys:
     <table border="1">
-    <tr><td colspan=4>`{a}` (2 sets)</td></tr>
+    <tr><td colspan=4>`&#123;a&#125;` (2 sets)</td></tr>
     <tr><td>1-4-7-9-12-14</td><td>1-4-7-9-12-15</td><td colspan="2">&nbsp;</td></tr>
-    <tr><td colspan=4>`{b}` (4 sets)</td></tr>
+    <tr><td colspan=4>`&#123;b&#125;` (4 sets)</td></tr>
     <tr><td>2-3-6-9-12-15</td><td>2-4-6-9-12-15</td><td>2-5-6-9-12-15</td><td>2-5-8-9-12-15</td></tr>
-    <tr><td colspan=4>`{c}` (4 sets)</td></tr>
+    <tr><td colspan=4>`&#123;c&#125;` (4 sets)</td></tr>
     <tr><td>2-4-7-10-12-15</td><td>2-4-7-10-13-15</td><td>2-5-7-10-12-15</td><td>2-5-7-10-13-15</td></tr>
     </table>
 
@@ -377,8 +377,8 @@ E: 4-9-14-12*
 
   The default triggers for a Bitcask directory:
 
-  * `{frag_merge_trigger, 60}, % >= 60% fragmentation`
-  * `{dead_bytes_merge_trigger, 536870912}, % Dead bytes > 512 MB`
+  * `&#123;frag_merge_trigger, 60}, % >= 60% fragmentation`
+  * `&#123;dead_bytes_merge_trigger, 536870912}, % Dead bytes > 512 MB`
 
   In the described scenario, merging has not occurred because none of the data files have triggered the merge. After restarting the node, however, the previously active file is now included in the merge trigger analysis and triggers a merge on the Bitcask directory.
 
@@ -427,7 +427,7 @@ E: 4-9-14-12*
   * `queue_if_disconnected` (default: `false`) - requests will be queued when the connection to the server is lost.
   * `auto_reconnect` (default: `false`) - if the connection is lost, `riakc_pb_socket` will attempt to reconnect automatically. This is set to `true` if `queue_if_disconnected` is set to `true`.
 
-  If these options are both false, connection errors will be returned to the process-making requests as `{error, Reason}` tuples.
+  If these options are both false, connection errors will be returned to the process-making requests as `&#123;error, Reason&#125;` tuples.
 
 **Q: Is there a limiting factor for the number of buckets in a cluster?**
 

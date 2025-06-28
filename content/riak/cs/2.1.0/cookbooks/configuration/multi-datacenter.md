@@ -36,7 +36,7 @@ the [comparison]({{<baseurl>}}riak/kv/2.1.3/using/reference/multi-datacenter/com
 ### Replication Version 3 Configuration
 
 For each Riak node in the cluster, update the `mdc.proxy_get` setting in
-`riak.conf`, or by appending the `{proxy_get, enabled}` setting to the
+`riak.conf`, or by appending the `&#123;proxy_get, enabled&#125;` setting to the
 `riak_repl` section of the old-style `advanced.config` or `app.config` files,
  as shown in the following example:
 
@@ -89,7 +89,7 @@ For each Riak CS node in the cluster, update the `riak_cs` section of the
 `proxy_get` setting as shown in the following example:
 
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {proxy_get, enabled},
            %% Other configs
@@ -97,7 +97,7 @@ For each Riak CS node in the cluster, update the `riak_cs` section of the
 ```
 
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {proxy_get, enabled},
            %% Other configs

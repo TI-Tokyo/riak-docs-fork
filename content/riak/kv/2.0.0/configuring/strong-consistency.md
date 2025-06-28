@@ -81,7 +81,7 @@ strong_consistency = on
 %% In the older, app.config-based system, the strong consistency
 %% parameter is enable_consensus:
 
-{riak_core, [
+&#123;riak_core, [
     % ...
     {enable_consensus, on},
     % ...

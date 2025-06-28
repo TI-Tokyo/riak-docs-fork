@@ -57,7 +57,7 @@ The Id element specifies an optional identifier for the policy.
 
 #### Statement
 
-The Statement element is the main element for a policy. This element is required. It can include multiple elements. The Statement element contains an array of individual statements. Each individual statement is a JSON block enclosed in braces, i.e. `{ ... }`. Below is a list of currently supported statements.
+The Statement element is the main element for a policy. This element is required. It can include multiple elements. The Statement element contains an array of individual statements. Each individual statement is a JSON block enclosed in braces, i.e. `&#123; ... &#125;`. Below is a list of currently supported statements.
 
 **SID** : The Sid (statement ID) is an optional identifier that you provide for the policy statement. You can assign a Sid value to each statement in a statement array.
 

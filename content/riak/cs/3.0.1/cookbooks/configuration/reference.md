@@ -29,8 +29,8 @@ aliases:
   - `stanchion_ip` and `stanchion_port` have been combined into `stanchion_host`.
   - `admin_ip` and `admin_port` have been combined into `admin_listener`.
   - `webmachine_log_handler` has become `webmachine_access_log_handler`.
-  - `{max_open_files, 50}` has been depricated and should be replaced with
-    `{total_leveldb_mem_percent, 30}`.
+  - `&#123;max_open_files, 50&#125;` has been depricated and should be replaced with
+    `&#123;total_leveldb_mem_percent, 30&#125;`.
 
   For the Stanchion `app.config`:
 
@@ -41,7 +41,7 @@ aliases:
   `app.config` configuration was previously:
 
   ```
-  {riak_cs, [
+  &#123;riak_cs, [
       {cs_ip, "127.0.0.1"},
       {cs_port, 8080 },
       . . .
@@ -51,7 +51,7 @@ aliases:
   It should now read:
 
   ```
-  {riak_cs, [
+  &#123;riak_cs, [
       {listener, {"127.0.0.1", 8080}},
       . . .
   ]},
@@ -266,7 +266,7 @@ Overflow-size settings for the bucket listing request pool for Riak CS.
 In these files, each pool is specified as a nested tuple of the following form:
 
 ```advanced.config
-{riak_cs, [
+&#123;riak_cs, [
            {Name, {FixedSize, OverflowSize}}
           ]}
 ```
@@ -1266,7 +1266,7 @@ server that handles all HTTP and HTTPS connections to Riak CS. The
               %% Other configs
               {log_handlers, [
                               {webmachine_access_log_handler, ...},
-                              {riak_cs_access_log_handler, ...},
+                              &#123;riak_cs_access_log_handler, ...},
                               ]},
               %% Other configs
              ]}

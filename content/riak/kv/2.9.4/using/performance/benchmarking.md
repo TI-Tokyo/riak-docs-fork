@@ -223,18 +223,18 @@ in the `/examples` directory.
 #### mode
 
 The `mode` setting controls the rate at which workers invoke the
-`{driver:run/4}` function with a new operation. There are two possible
+`&#123;driver:run/4&#125;` function with a new operation. There are two possible
 values:
 
-* `{max}`
+* `&#123;max&#125;`
 ---
 generate as many ops per second as possible
-* `{rate, N}`
+* `&#123;rate, N&#125;`
 ---
 generate N ops per second, with exponentially distributed interarrival times
 
 Note that this setting is applied to each driver independently. For
-example, if `{rate, 5}` is used with 3 concurrent workers, Basho Bench
+example, if `&#123;rate, 5&#125;` is used with 3 concurrent workers, Basho Bench
 will be generating 15 (i.e. 5 * 3) operations per second.
 
 ```erlang
@@ -331,18 +331,18 @@ Directly invokes the DETS API
 On invocation of the `driver:run/4` method, the driver may return one of
 the following results:
 
-* `{ok, NewState}`
+* `&#123;ok, NewState&#125;`
 ---
 operation completed successfully
-* `{error, Reason, NewState}`
+* `&#123;error, Reason, NewState&#125;`
 ---
 operation failed but the driver can
     continue processing (i.e. recoverable error)
-* `{stop, Reason}`
+* `&#123;stop, Reason&#125;`
 ---
 operation failed; driver can't/won't continue
     processing
-* `{'EXIT', Reason}`
+* `&#123;'EXIT', Reason&#125;`
 ---
 operation failed; driver crashed
 
@@ -356,53 +356,53 @@ paths to this code using the `code_paths` configuration setting.
 The generator function to use for creating keys. Generators are defined
 in `basho_bench_keygen.erl`. Available generators include:
 
-* `{sequential_int, MaxKey}`
+* `&#123;sequential_int, MaxKey&#125;`
 ---
 generates integers from 0..`MaxKey`
     in order and then stops the system. Note that each instance of
     this keygen is specific to a worker.
-* `{partitioned_sequential_int, MaxKey}`
+* `&#123;partitioned_sequential_int, MaxKey&#125;`
 ---
 the same as
-    `{sequential_int}`, but splits the keyspace evenly among the
+    `&#123;sequential_int&#125;`, but splits the keyspace evenly among the
     worker processes. This is useful for pre-loading a large dataset.
-* `{partitioned_sequential_int, StartKey, NumKeys}`
+* `&#123;partitioned_sequential_int, StartKey, NumKeys&#125;`
 ---
 the same as
     `partitioned_sequential_int`, but starting at the defined
     `StartKey` and going up to `StartKey + NumKeys`.
-* `{uniform_int, MaxKey}`
+* `&#123;uniform_int, MaxKey&#125;`
 ---
 selects an integer from uniform
     distribution of 0..`MaxKey`, i.e. all integers are equally probable.
-* `{pareto_int, MaxKey}`
+* `&#123;pareto_int, MaxKey&#125;`
 ---
 selects an integer from a Pareto
     distribution, such that 20% of the available keys get selected 80%
     of the time. Note that the current implementation of this
     generator _may_ yield values larger than `MaxKey` due to the
     mathematical properties of the Pareto distribution.
-* `{truncated_pareto_int, MaxKey}`
+* `&#123;truncated_pareto_int, MaxKey&#125;`
 ---
-the same as `{pareto_int}`, but
+the same as `&#123;pareto_int&#125;`, but
     will _not> yield values above `MaxKey`.
-* `{function, Module, Function, Args}`
+* `&#123;function, Module, Function, Args&#125;`
 ---
 specifies an external
     function that should return a key generator function. The worker
     `Id` will be prepended to `Args` when the function is called.
-* `{int_to_bin, Generator}`
+* `&#123;int_to_bin, Generator&#125;`
 ---
 takes any of the above `_int`
     generators and converts the number to a 32-bit binary. This is
     needed for some drivers that require a binary key.
-* `{int_to_str, Generator}`
+* `&#123;int_to_str, Generator&#125;`
 ---
 takes any of the above `_int`
     generators and converts the number to a string. This is needed for
     some drivers that require a string key.
 
-The default key generator is `{uniform_int, 100000}`.
+The default key generator is `&#123;uniform_int, 100000&#125;`.
 
 Examples:
 
@@ -423,28 +423,28 @@ Examples:
 The generator function to use for creating values. Generators are
 defined in `basho_bench_valgen.erl`. Available generators include:
 
-* `{fixed_bin, Size}`
+* `&#123;fixed_bin, Size&#125;`
 ---
 generates a random binary of `Size`
     bytes. Every binary is the same size, but varies in content.
-* `{exponential_bin, MinSize, Mean}`
+* `&#123;exponential_bin, MinSize, Mean&#125;`
 ---
 generates a random binary
     which has an exponentially distributed size. Most values will be
     approximately `MinSize` + `Mean` bytes in size, with a long tail
     of larger values.
-* `{uniform_bin, MinSize, MaxSize}`
+* `&#123;uniform_bin, MinSize, MaxSize&#125;`
 ---
 generates a random binary
     which has an evenly distributed size between `MinSize` and
     `MaxSize`.
-* `{function, Module, Function, Args}`
+* `&#123;function, Module, Function, Args&#125;`
 ---
 specifies an external
     function that should return a value generator function. The worker
     `Id` will be prepended to `Args` when the function is called.
 
-The default value generator is `{value_generator, {fixed_bin, 100}}`.
+The default value generator is `&#123;value_generator, {fixed_bin, 100}&#125;`.
 
 Examples:
 
@@ -463,7 +463,7 @@ The initial random seed to use. This is explicitly seeded, rather than
 seeded from the current time, so that a test can be run in a
 predictable, repeatable fashion.
 
-Default is `{rng_seed, {42, 23, 12}}`.
+Default is `&#123;rng_seed, {42, 23, 12}&#125;`.
 
 ```erlang
 % Seed to {12, 34, 56}
@@ -550,7 +550,7 @@ The Riak bucket to use for reading and writing values. The Default is
 A list of IP addresses to connect the workers to. A random IP will be
 chosen for each worker.
 
-The default is `{riakc_pb_ips, [{127,0,0,1}]}`
+The default is `&#123;riakc_pb_ips, [{127,0,0,1}]&#125;`
 
 ```erlang
 % Connect to a cluster of 3 machines
@@ -561,13 +561,13 @@ The default is `{riakc_pb_ips, [{127,0,0,1}]}`
 
 The port on which to connect to the PBC interface.
 
-The default is `{riakc_pb_port, 8087}`
+The default is `&#123;riakc_pb_port, 8087&#125;`
 
 #### riakc_pb_bucket
 
 The bucket to use for testing.
 
-The default is `{riakc_pb_bucket, <<"test">>}`
+The default is `&#123;riakc_pb_bucket, <<"test">>&#125;`
 
 ### basho_bench_driver_http_raw Settings
 
@@ -576,7 +576,7 @@ The default is `{riakc_pb_bucket, <<"test">>}`
 A list of IP addresses to connect the workers to. Each worker makes
 requests to each IP in a round-robin fashion.
 
-The default is `{http_raw_ips, ["127.0.0.1"]}`
+The default is `&#123;http_raw_ips, ["127.0.0.1"]&#125;`
 
 ```erlang
 % Connect to a cluster of machines in the 10.x network
@@ -587,7 +587,7 @@ The default is `{http_raw_ips, ["127.0.0.1"]}`
 
 Select the default port to connect to for the HTTP server.
 
-The default is `{http_raw_port, 8098}`.
+The default is `&#123;http_raw_port, 8098&#125;`.
 
 ```erlang
 % Connect on port 8090
@@ -598,7 +598,7 @@ The default is `{http_raw_port, 8098}`.
 
 The base path to use for accessing Riak, usually `"/riak/<bucket>"`.
 
-The default is `{http_raw_path, "/riak/test"}`.
+The default is `&#123;http_raw_path, "/riak/test"&#125;`.
 
 ```erlang
 % Place test data in another_bucket
@@ -610,7 +610,7 @@ The default is `{http_raw_path, "/riak/test"}`.
 Additional parameters to add to the end of the URL. This can be used
 to set the `r`/`w`/`dw`/`rw` parameters as desired.
 
-The default is `{http_raw_params, ""}`.
+The default is `&#123;http_raw_params, ""&#125;`.
 
 ```erlang
 % Set R=1, W=1 for testing a system with n_val set to 1
@@ -622,7 +622,7 @@ The default is `{http_raw_params, ""}`.
 How often, in seconds or number of operations, the HTTP clients
 (workers) should forcibly disconnect from the server.
 
-The default is `{http_raw_disconnect_frequency, infinity}` (which
+The default is `&#123;http_raw_disconnect_frequency, infinity&#125;` (which
 means that Basho Bench should never forcibly disconnect).
 
 ```erlang

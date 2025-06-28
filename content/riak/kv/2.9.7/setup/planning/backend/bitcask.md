@@ -275,7 +275,7 @@ bitcask.max_file_size = 1GB
 
 {bitcask, [
     ...,
-    {max_file_size, 16#40000000}, %% 1 GB expressed in bytes
+    &#123;max_file_size, 16#40000000}, %% 1 GB expressed in bytes
     ...
     ]}
 ```
@@ -681,8 +681,8 @@ bitcask.max_puts = 1000
 
 {bitcask, [
     ...,
-    {max_fold_age, 500},
-    {max_fold_puts, 1000},
+    &#123;max_fold_age, 500},
+    &#123;max_fold_puts, 1000},
     ...
     ]}
 

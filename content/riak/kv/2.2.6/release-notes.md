@@ -129,16 +129,16 @@ entries.
 Example default entries to add to your existing advanced.config:
 
 ```
-{riak_core,
+&#123;riak_core,
   [
    {cluster_mgr, {"0.0.0.0", 9080 } }
   ]},
  {riak_repl,
   [
    {data_root, "/var/lib/riak/riak_repl/"},
-   {max_fssource_cluster, 5},
-   {max_fssource_node, 1},
-   {max_fssink_node, 1},
+   &#123;max_fssource_cluster, 5},
+   &#123;max_fssource_node, 1},
+   &#123;max_fssink_node, 1},
    {fullsync_on_connect, true},
    {fullsync_interval, 30},
    {rtq_max_bytes, 104857600},

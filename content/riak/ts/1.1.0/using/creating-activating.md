@@ -115,7 +115,7 @@ ddl: {ddl_v1,<<"GeoCheckin">>,
 Using one of the Riak Client libraries, execute the `CREATE TABLE` statement via that library's query functionality. This will create and activate the table in one step. The result of the operation is library-dependent:
 
 * [Java][java]: the `QueryResult` object will be returned without any data for rows or columns.
-* [Erlang][erlang]: the returned term will consist of two empty lists `{[],[]}`
+* [Erlang][erlang]: the returned term will consist of two empty lists `&#123;[],[]&#125;`
 * [Ruby][ruby]: no exception thrown and result collection is empty.
 * [Python][python]: no exception thrown. Result object is present with `rows` and `columns` being empty.
 * [Node.js][nodejs]:  no exception thrown. Result object is present with `rows` and `columns` being empty.

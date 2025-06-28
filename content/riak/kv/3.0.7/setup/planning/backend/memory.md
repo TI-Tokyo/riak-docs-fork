@@ -103,7 +103,7 @@ memory_backend.max_memory_per_vnode = 2GB
     {storage_backend, riak_kv_memory_backend},
     {memory_backend, [
         ...,
-            {max_memory, 4096}, %% 4GB in megabytes
+            &#123;max_memory, 4096}, %% 4GB in megabytes
         ...
     ]}
 ```

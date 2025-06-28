@@ -325,12 +325,12 @@ the `nodename` parameter.
 
     **Note**: The above is an [Erlang list
     comprehension](http://www.erlang.org/doc/programming_examples/list_comprehensions.html)
-    that loops over each `{Partition, Node}` tuple in the ring and
+    that loops over each `&#123;Partition, Node&#125;` tuple in the ring and
     extracts only the partitions that match the given node name, as a
     list.
 
 4. Execute the repair on all the partitions. Executing the repairs all
-at once will cause a lot of `{shutdown, max_concurrency}` messages in
+at once will cause a lot of `&#123;shutdown, max_concurrency&#125;` messages in
 the logs. These can be safely ingored, as it is just the transfers
 mechanism enforcing an upper limit on the number of concurrent
 transfers.

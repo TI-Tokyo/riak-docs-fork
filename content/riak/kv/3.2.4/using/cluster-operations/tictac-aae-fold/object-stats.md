@@ -90,10 +90,10 @@ The response will look something like this:
 
 Field | Example | Description
 :-------|:--------|:--------
-total_count | `{total_count,100}` | The total number of objects. In the example, 100 objects were found.
-total_size | `{total_size,500000}` | The total size of all objects found in bytes. In the example, all found objects came to a total size of 500,000 bytes.
-sizes | `{sizes,[{1,90},{2,5},{3,4}]}` | A set of tuples giving a histogram of object size. The first number in each tuple is the order of magnitude starting at 1=1KB (1024 bytes x 10^N). The second number is the number of objects of that magnitude. In the example, there are 90 objects under 1KB, 5 objects between 1KB and 10KB, and 4 objects between 10KB and 100KB.
-siblings | `{siblings,[{1,90},{2,6},{3,4}]}` | A set of tuples giving the sibling count of objects. The first number in each tuple is the number of siblings. The second number in each tuple is the number of objects that have that many siblings. A sibling count of `1` means that there are no siblings (there is only 1 value). In the example, there are 90 objects with no siblings, 6 objects with 2 siblings, and 4 objects with 3 siblings.
+total_count | `&#123;total_count,100&#125;` | The total number of objects. In the example, 100 objects were found.
+total_size | `&#123;total_size,500000&#125;` | The total size of all objects found in bytes. In the example, all found objects came to a total size of 500,000 bytes.
+sizes | `&#123;sizes,[{1,90},{2,5},{3,4}]&#125;` | A set of tuples giving a histogram of object size. The first number in each tuple is the order of magnitude starting at 1=1KB (1024 bytes x 10^N). The second number is the number of objects of that magnitude. In the example, there are 90 objects under 1KB, 5 objects between 1KB and 10KB, and 4 objects between 10KB and 100KB.
+siblings | `&#123;siblings,[{1,90},{2,6},{3,4}]&#125;` | A set of tuples giving the sibling count of objects. The first number in each tuple is the number of siblings. The second number in each tuple is the number of objects that have that many siblings. A sibling count of `1` means that there are no siblings (there is only 1 value). In the example, there are 90 objects with no siblings, 6 objects with 2 siblings, and 4 objects with 3 siblings.
 
 {{% note title="`object_size` reference table" %}}
 For quick reference, here is a table of magnitude and object size range for the first 10 orders of magnitude:

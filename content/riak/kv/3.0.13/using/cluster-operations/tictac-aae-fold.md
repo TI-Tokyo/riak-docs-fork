@@ -90,7 +90,7 @@ riak_client:aae_fold(
     Client).
 ```
 
-`query` is a tuple describing the function to run and the parameters to use. The first value in the tuple is always the function name. For example, if calling the `list_buckets` function the tuple would look like `{list_buckets, ...}`. The number of values in the tuple depends on the function being called.
+`query` is a tuple describing the function to run and the parameters to use. The first value in the tuple is always the function name. For example, if calling the `list_buckets` function the tuple would look like `&#123;list_buckets, ...&#125;`. The number of values in the tuple depends on the function being called.
 
 As an example, this will call `list_buckets`, which takes a single parameter:
 
@@ -115,7 +115,7 @@ For these calls to work, you will need a Riak client. This will create one in a 
 
 The calls to `aae_fold` are synchronous calls with a 1 hour timeout, but they start an asynchronous process in the background.
 
-If your command takes longer than 1 hour, then you will get `{error,timeout}` as a response after 1 hour. Note that the requested command continues to run in the background, so re-calling the same method will take up more resources.
+If your command takes longer than 1 hour, then you will get `&#123;error,timeout&#125;` as a response after 1 hour. Note that the requested command continues to run in the background, so re-calling the same method will take up more resources.
 
 To timeout you typically have to have a very large number of keys in the bucket.
 

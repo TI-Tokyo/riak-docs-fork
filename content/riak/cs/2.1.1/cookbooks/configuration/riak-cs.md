@@ -30,7 +30,7 @@ that can only be changed through the `advanced.config` file. That file looks
 something like:
 
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
     {parameter1, value},
     {parameter2, value},
     %% and so on...
@@ -113,7 +113,7 @@ stanchion_ssl = on
 ```
 
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
     %% Other configs
     {stanchion_host, {"127.0.0.1", 8085}},
     {stanchion_ssl, true},
@@ -148,7 +148,7 @@ other user account. **You must create an admin user to use Riak CS**.
 
 {{% note title="Note on anonymous user creation" %}}
 Before creating an admin user, you must first set `anonymous_user_creation =
-on` in the Riak CS `riak-cs.conf` (or set `{anonymous_user_creation, true}` in
+on` in the Riak CS `riak-cs.conf` (or set `&#123;anonymous_user_creation, true&#125;` in
 the old-style `advanced.config`/`app.config`). You may disable this again once
 the admin user has been created.
 {{% /note %}}
@@ -191,7 +191,7 @@ admin.secret = a58Mqd3qN-SqCoFIta58Mqd3qN7umE2hnunGag==
 ```
 
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Admin user credentials
            {admin_key, "OUCXMB6I3HOZ6D0GWO2D"},
            {admin_secret, "a58Mqd3qN-SqCoFIta58Mqd3qN7umE2hnunGag=="},
@@ -210,9 +210,9 @@ node's `advanced.config` file---there is no equivalent configuration for the
 1000:
 
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
-           {max_buckets_per_user, 1000},
+           &#123;max_buckets_per_user, 1000},
            %% Other configs
           ]}
 ```
@@ -245,7 +245,7 @@ pool.list.overflow = 0
 ```
 
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {connection_pools,
            [
@@ -269,7 +269,7 @@ particular use case.
 We strongly recommend that you take care when setting the value of the
 [`pb_backlog` setting]({{<baseurl>}}riak/cs/2.1.1/cookbooks/configuration/riak-for-cs/#setting-up-riak-to-use-protocol-buffers) in Riak. When a Riak CS node is
 started, each connection pool begins to establish connections to Riak. This can
-result in a [thundering herd problem](http://en.wikipedia.org/wiki/Thundering_herd_problem) in which connections in the pool believe they are connected to Riak, but in reality some of the connections have been reset. Due to TCP `RST` packet rate limiting (controlled by `net.inet.icmp.icmplim`) some of the connections may not receive notification until they are used to service a user's request. This manifests itself as an `{error, disconnected}` message in the Riak CS logs and an error returned to the user.
+result in a [thundering herd problem](http://en.wikipedia.org/wiki/Thundering_herd_problem) in which connections in the pool believe they are connected to Riak, but in reality some of the connections have been reset. Due to TCP `RST` packet rate limiting (controlled by `net.inet.icmp.icmplim`) some of the connections may not receive notification until they are used to service a user's request. This manifests itself as an `&#123;error, disconnected&#125;` message in the Riak CS logs and an error returned to the user.
 
 ## Enabling SSL in Riak CS
 

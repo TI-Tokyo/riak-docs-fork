@@ -477,12 +477,11 @@ For the Stanchion `app.config`:
 - `riak_ip` and `riak_port` have been combined into `riak_host`.
 
 Each of the above pairs follows a similar form. Where the old form used a
-separate IP and Port parameter, the new form combines those as `{new_option, {
-"IP", Port}}`. For example, if your legacy `app.config` configuration was
+separate IP and Port parameter, the new form combines those as `&#123;new_option, &#123;"IP", Port&#125;&#125;`. For example, if your legacy `app.config` configuration was
 previously:
 
 ```erlangsnippet
-{riak_cs, [
+&#123;riak_cs, [
     {cs_ip, "127.0.0.1"},
     {cs_port, 8080 },
     . . .
@@ -492,7 +491,7 @@ previously:
 It should now read:
 
 ```erlangsnippet
-{riak_cs, [
+&#123;riak_cs, [
     {listener, {"127.0.0.1", 8080}},
     . . .
 ]},
@@ -600,12 +599,12 @@ The tables show the old and new configuration format and default values.
 
 |      1.5.4 (`app.config`)          |        2.0.0 (`stanchion.conf`)       |
 |:-----------------------------------|:--------------------------------------|
-|`{stanchion_ip, "127.0.0.1"}`       |`listener = 127.0.0.1:8080`            |
-|`{stanchion_port, 8085}`            |                                       |
-|`{riak_ip, "127.0.0.1"}`            |`riak_host = 127.0.0.1:8087`           |
-|`{riak_pb_port, 8087}`              |                                       |
-|`{admin_key, "admin-key"}`          |`admin.key = admin-key`                |
-|`{admin_secret, "admin-secret"}`    |`admin.secret = admin-secret`          |
+|`&#123;stanchion_ip, "127.0.0.1"&#125;`       |`listener = 127.0.0.1:8080`            |
+|`&#123;stanchion_port, 8085&#125;`            |                                       |
+|`&#123;riak_ip, "127.0.0.1"&#125;`            |`riak_host = 127.0.0.1:8087`           |
+|`&#123;riak_pb_port, 8087&#125;`              |                                       |
+|`&#123;admin_key, "admin-key"&#125;`          |`admin.key = admin-key`                |
+|`&#123;admin_secret, "admin-secret"&#125;`    |`admin.secret = admin-secret`          |
 
 ###### `lager` section of the Stanchion app.config
 
@@ -615,8 +614,8 @@ Riak's Lager configuration can be copied directly to the `advanced.config` file.
 
 |      1.5.4 (`app.config`)          |        2.0.0 (`stanchion.conf`)       |
 |:-----------------------------------|:--------------------------------------|
-|`{ssl, [`                           |                                       |
-|`  {certfile, "./etc/cert.pem"}`    |`ssl.certfile`                         |
+|`&#123;ssl, [`                           |                                       |
+|`  {certfile, "./etc/cert.pem"&#125;`    |`ssl.certfile`                         |
 |`  {keyfile, "./etc/key.pem"}`      |`ssl.keyfile`                          |
 
 ### Upgrade Riak to 2.0.5 and Configure for Riak CS 2.0.0
@@ -636,9 +635,9 @@ In older versions of Riak, default bucket properties has been configured in the
 `app.config` as follows:
 
 ```erlangsnippet
-{riak_core, [
+&#123;riak_core, [
    ...
-   {default_bucket_props, [{allow_mult, true}]},
+   {default_bucket_props, [&#123;allow_mult, true&#125;]},
    ...
 ]}.
 ```
@@ -806,45 +805,45 @@ example is added.
 
 |      1.5.4 (`app.config`)          |        2.x (`riak-cs.conf`)            |   Note     |
 |:-----------------------------------|:---------------------------------------|:-----------|
-|`{cs_ip, "127.0.0.1"}`              |`listener = 127.0.0.1:8080`             |            |
-|`{cs_port, 8080}`                   |                                        |            |
-|`{riak_ip, "127.0.0.1"}`            |`riak_host = 127.0.0.1:8087`            |            |
-|`{riak_pb_port, 8087}`              |                                        |            |
-|`{stanchion_ip, "127.0.0.1"}`       |`stanchion_host = 127.0.0.1:8085`       |            |
-|`{stanchion_port, 8085 }`           |                                        |            |
-|`{stanchion_ssl, false }`           |`stanchion_ssl = off`                   |            |
-|`{anonymous_user_creation, false}`  |`anonymous_user_creation = off`         |            |
-|`{admin_key, "admin-key"}`          |`admin.key = admin-key`                 |            |
-|`{admin_secret, "admin-secret"}`    |`admin.secret = admin-secret`           |            |
-|`{cs_root_host, "s3.amazonaws.com"}`|`root_host = s3.amazonaws.com`          |            |
-|`{connection_pools,[`               |                                        |            |
+|`&#123;cs_ip, "127.0.0.1"&#125;`              |`listener = 127.0.0.1:8080`             |            |
+|`&#123;cs_port, 8080&#125;`                   |                                        |            |
+|`&#123;riak_ip, "127.0.0.1"&#125;`            |`riak_host = 127.0.0.1:8087`            |            |
+|`&#123;riak_pb_port, 8087&#125;`              |                                        |            |
+|`&#123;stanchion_ip, "127.0.0.1"&#125;`       |`stanchion_host = 127.0.0.1:8085`       |            |
+|`&#123;stanchion_port, 8085 &#125;`           |                                        |            |
+|`&#123;stanchion_ssl, false &#125;`           |`stanchion_ssl = off`                   |            |
+|`&#123;anonymous_user_creation, false&#125;`  |`anonymous_user_creation = off`         |            |
+|`&#123;admin_key, "admin-key"&#125;`          |`admin.key = admin-key`                 |            |
+|`&#123;admin_secret, "admin-secret"&#125;`    |`admin.secret = admin-secret`           |            |
+|`&#123;cs_root_host, "s3.amazonaws.com"&#125;`|`root_host = s3.amazonaws.com`          |            |
+|`&#123;connection_pools,[`               |                                        |            |
 |` {request_pool, {128, 0} },`       |`pool.request.size = 128`               |            |
 |                                    |`pool.request.overflow = 0`             |            |
 |` {bucket_list_pool, {5, 0} }`      |`pool.list.size = 5`                    |            |
 |                                    |`pool.list.overflow = 0`                |            |
-|`{max_buckets_per_user, 100}`       |`max_buckets_per_user = 100`            | from 2.0.1 |
-|`{trust_x_forwarded_for, false}`    |`trust_x_forwarded_for = off`           |            |
-|`{leeway_seconds, 86400}`           |`gc.leeway_period = 24h`                |            |
-|`{gc_interval, 900}`                |`gc.interval = 15m`                     |            |
-|`{gc_retry_interval, 21600}`        |`gc.retry_interval = 6h`                |            |
-|`{gc_batch_size, 1000}`             |`gc.batch_size = 1000`                  | from 2.0.1 |
-|`{access_log_flush_factor, 1}`      |`stats.access.flush_factor = 1`         |            |
-|`{access_log_flush_size, 1000000}`  |`stats.access.flush_size = 1000000`     |            |
-|`{access_archive_period, 3600}`     |`stats.access.archive_period = 1h`      |            |
-|`{access_archiver_max_backlog, 2}`  |`stats.access.archiver.max_backlog = 2` |            |
+|`&#123;max_buckets_per_user, 100&#125;`       |`max_buckets_per_user = 100`            | from 2.0.1 |
+|`&#123;trust_x_forwarded_for, false&#125;`    |`trust_x_forwarded_for = off`           |            |
+|`&#123;leeway_seconds, 86400&#125;`           |`gc.leeway_period = 24h`                |            |
+|`&#123;gc_interval, 900&#125;`                |`gc.interval = 15m`                     |            |
+|`&#123;gc_retry_interval, 21600&#125;`        |`gc.retry_interval = 6h`                |            |
+|`&#123;gc_batch_size, 1000&#125;`             |`gc.batch_size = 1000`                  | from 2.0.1 |
+|`&#123;access_log_flush_factor, 1&#125;`      |`stats.access.flush_factor = 1`         |            |
+|`&#123;access_log_flush_size, 1000000&#125;`  |`stats.access.flush_size = 1000000`     |            |
+|`&#123;access_archive_period, 3600&#125;`     |`stats.access.archive_period = 1h`      |            |
+|`&#123;access_archiver_max_backlog, 2&#125;`  |`stats.access.archiver.max_backlog = 2` |            |
 |(no explicit default)               |`stats.access.archiver.max_workers = 2` |            |
-|`{storage_schedule, []}`            |`stats.storage.schedule.$time = 0600`   |            |
-|`{storage_archive_period, 86400}`   |`stats.storage.archive_period = 1d`     |            |
-|`{usage_request_limit, 744}`        |`riak_cs.usage_request_limit = 31d`     |            |
-|`{cs_version, 10300 }`              |`cs_version = 10300`                    |            |
-|`{dtrace_support, false}`           |`dtrace = off`                          |            |
+|`&#123;storage_schedule, []&#125;`            |`stats.storage.schedule.$time = 0600`   |            |
+|`&#123;storage_archive_period, 86400&#125;`   |`stats.storage.archive_period = 1d`     |            |
+|`&#123;usage_request_limit, 744&#125;`        |`riak_cs.usage_request_limit = 31d`     |            |
+|`&#123;cs_version, 10300 &#125;`              |`cs_version = 10300`                    |            |
+|`&#123;dtrace_support, false&#125;`           |`dtrace = off`                          |            |
 
 ###### `webmachine` section of the Riak CS app.config
 
 |      1.5.4 (`app.config`)          |        2.0.0 (`riak-cs.conf`)         |   note     |
 |:-----------------------------------|:--------------------------------------|:-----------|
-|`{server_name, "Riak CS"}`          |`server_name = Riak CS`                |            |
-|`{log_handlers, ....}`              |`log.access = true`                    | from 2.0.1 |
+|`&#123;server_name, "Riak CS"&#125;`          |`server_name = Riak CS`                |            |
+|`&#123;log_handlers, ....&#125;`              |`log.access = true`                    | from 2.0.1 |
 |                                    |`log.access.dir = /var/log/riak-cs`    |            |
 
 Due to a WebMachine change, if `log_handlers` are defined in `app.config` or
@@ -853,7 +852,7 @@ Due to a WebMachine change, if `log_handlers` are defined in `app.config` or
 ```erlangsnippet
     {log_handlers, [
         {webmachine_access_log_handler, ["/var/log/riak-cs"]},
-        {riak_cs_access_log_handler, []}
+        &#123;riak_cs_access_log_handler, []}
         ]},
 ```
 
@@ -874,12 +873,12 @@ change these settings to the OOS API.
 
 |      1.5.4 (`app.config`)             |      2.0.0 (`riak-cs.conf`)     |
 |:--------------------------------------|:--------------------------------|
-|`{rewrite_module, riak_cs_s3_rewrite }`|`rewrite_module`                 |
-|`{auth_module, riak_cs_s3_auth },`     |`auth_module`                    |
-|`{admin_ip, "127.0.0.1"}`              |`admin.listener = 127.0.0.1:8000`|
-|`{admin_port, 8000 }`                  |                                 |
-|`{ssl, [`                              |                                 |
-|`  {certfile, "./etc/cert.pem"}`       |`ssl.certfile`                   |
+|`&#123;rewrite_module, riak_cs_s3_rewrite &#125;`|`rewrite_module`                 |
+|`&#123;auth_module, riak_cs_s3_auth &#125;,`     |`auth_module`                    |
+|`&#123;admin_ip, "127.0.0.1"&#125;`              |`admin.listener = 127.0.0.1:8000`|
+|`&#123;admin_port, 8000 &#125;`                  |                                 |
+|`&#123;ssl, [`                              |                                 |
+|`  {certfile, "./etc/cert.pem"&#125;`       |`ssl.certfile`                   |
 |`  {keyfile, "./etc/key.pem"}`         |`ssl.keyfile`                    |
 
 ##### Upgrading Riak CS - Step 4: Other Configurations
@@ -1011,7 +1010,7 @@ that behavior by modifying your Riak CS configuration upon upgrade.
 Change the `rewrite_module` setting as follows:
 
 ```erlangsnippet
-{riak_cs, [
+&#123;riak_cs, [
     %% Other settings
     {rewrite_module, riak_cs_s3_rewrite_legacy},
     %% Other settings
@@ -1096,9 +1095,9 @@ deletion. To change the default limit, add the following line to the
 `riak_cs` section of `app.config`:
 
 ```erlangsnippet
-{riak_cs, [
+&#123;riak_cs, [
     %% ...
-    {max_buckets_per_user, 5000},
+    &#123;max_buckets_per_user, 5000},
     %% ...
     ]}
 ```
@@ -1143,7 +1142,7 @@ To avoid having a limit, set `max_buckets_per_user` to `unlimited`.
 - Fix inconsistent ETag on objects uploaded by multipart [riak_cs/#855](https://github.com/basho/riak_cs/issues/855)
 - Fix policy version validation in PUT Bucket Policy [riak_cs/#911](https://github.com/basho/riak_cs/issues/911)
 - Fix return code of several commands, to return 0 for success [riak_cs/#908](https://github.com/basho/riak_cs/issues/908)
-- Fix `{error, disconnected}` repainted with notfound [riak_cs/#929](https://github.com/basho/riak_cs/issues/929)
+- Fix `&#123;error, disconnected&#125;` repainted with notfound [riak_cs/#929](https://github.com/basho/riak_cs/issues/929)
 
 ### Notes on Upgrading
 

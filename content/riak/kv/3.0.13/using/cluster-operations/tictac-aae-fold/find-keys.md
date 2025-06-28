@@ -102,7 +102,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 ## The response using the `sibling_count` filter
 
-The response will be an array of `{bucket_name,key_name,sibling_count}` tuples that will look something like this:
+The response will be an array of `&#123;bucket_name,key_name,sibling_count&#125;` tuples that will look something like this:
 
 ```erlang
 {ok,[{{<<"animals">>,<<"dogs">>},<<"Barkie">>,15},
@@ -114,11 +114,11 @@ This indicates that two objects were found with more than 5 siblings:
 - "Barkie" in the bucket "dogs" of bucket type "animals" has 15 siblings
 - "Lord Snuffles III" in the bucket "dogs" of bucket type "animals" has 6 siblings
 
-For each object found, an additional `{bucket_name,key_name,sibling_count}` tuple will be added to the array.
+For each object found, an additional `&#123;bucket_name,key_name,sibling_count&#125;` tuple will be added to the array.
 
 Field | Example | Description
 :-------|:--------|:--------
-bucket_name | `<<"cars">>` or `{<<"animals">>,<<"dogs">>}` | The bucket name as an Erlang binary. In the case of a bucket with a bucket type, a tuple of bucket type and bucket name.
+bucket_name | `<<"cars">>` or `&#123;<<"animals">>,<<"dogs">>&#125;` | The bucket name as an Erlang binary. In the case of a bucket with a bucket type, a tuple of bucket type and bucket name.
 key_name | `<<"Barkie">>` | The key name as an Erlang binary.
 sibling_count | 15 | The number of siblings of the object.
 
@@ -162,7 +162,7 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 ## The response using the `object_size` filter
 
-The response will be an array of `{bucket_name,key_name,object_size}` tuples that will look something like this:
+The response will be an array of `&#123;bucket_name,key_name,object_size&#125;` tuples that will look something like this:
 
 ```erlang
 {ok,[{{<<"animals">>,<<"dogs">>},<<"Barkie">>,5000},
@@ -174,11 +174,11 @@ This indicates that two objects were found with more than 5 siblings:
 - "Barkie" in the bucket "dogs" of bucket type "animals" has a size of 5000 bytes
 - "Lord Snuffles III" in the bucket "dogs" of bucket type "animals" has a size of 10,550,400 bytes
 
-For each object found, an additional `{bucket_name,key_name,object_size}` tuple will be added to the array.
+For each object found, an additional `&#123;bucket_name,key_name,object_size&#125;` tuple will be added to the array.
 
 Field | Example | Description
 :-------|:--------|:--------
-bucket_name | `<<"cars">>` or `{<<"animals">>,<<"dogs">>}` | The bucket name as an Erlang binary. In the case of a bucket with a bucket type, a tuple of bucket type and bucket name.
+bucket_name | `<<"cars">>` or `&#123;<<"animals">>,<<"dogs">>&#125;` | The bucket name as an Erlang binary. In the case of a bucket with a bucket type, a tuple of bucket type and bucket name.
 key_name | `<<"Barkie">>` | The key name as an Erlang binary.
 object_size | 5000 | The size of the object.
 

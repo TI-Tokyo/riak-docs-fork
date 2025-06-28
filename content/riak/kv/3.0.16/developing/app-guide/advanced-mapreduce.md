@@ -447,9 +447,9 @@ about using this in a production environment.
 #### Inputs
 
 The `mapred/3` input objects are given as a list of tuples in the
-format `{Bucket, Key}` or `{{Bucket, Key}, KeyData}`. `Bucket` and
+format `&#123;Bucket, Key}` or `&#123;{Bucket, Key}, KeyData&#125;`. `Bucket` and
 `Key` should be binaries, and `KeyData` can be any Erlang term.  The
-former form is equivalent to `{{Bucket,Key},undefined}`.
+former form is equivalent to `&#123;{Bucket,Key},undefined&#125;`.
 
 #### Query
 
@@ -469,15 +469,15 @@ final phase will return results.
 `FunTerm` is a reference to the function that the phase will execute and
 takes any of the following forms:
 
-* `{modfun, Module, Function}` where `Module` and `Function` are atoms
+* `&#123;modfun, Module, Function&#125;` where `Module` and `Function` are atoms
   that name an Erlang function in a specific module
-* `{qfun,Fun}` where `Fun` is a callable fun term (closure or anonymous
+* `&#123;qfun,Fun&#125;` where `Fun` is a callable fun term (closure or anonymous
   function)
-* `{jsfun,Name}` where `Name` is a binary that, when evaluated in
+* `&#123;jsfun,Name&#125;` where `Name` is a binary that, when evaluated in
   Javascript, points to a built-in Javascript function
-* `{jsanon, Source}` where `Source` is a binary that, when evaluated in
+* `&#123;jsanon, Source&#125;` where `Source` is a binary that, when evaluated in
   Javascript is an anonymous function
-* `{jsanon, {Bucket, Key}}` where the object at `{Bucket, Key}` contains
+* `&#123;jsanon, {Bucket, Key}}` where the object at `&#123;Bucket, Key&#125;` contains
   the source for an anonymous Javascript function
 
 {{% note title="qfun Note" %}}

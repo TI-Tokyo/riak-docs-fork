@@ -86,11 +86,11 @@ Error | Message
 `function not exported` | `call to undefined function <Func> from <Mod>`
 `if_clause` | `no true branch found while evaluating if expression in <Mod>`
 `noproc` | `no such process or port in call to <Mod>`
-`{system_limit, {erlang, open_port}}` | `maximum number of ports exceeded`
-`{system_limit, {erlang, spawn}}` | `maximum number of processes exceeded`
-`{system_limit, {erlang, spawn_opt}}` | `maximum number of processes exceeded`
-`{system_limit, {erlang, list_to_atom}}` | `tried to create an atom larger than 255, or maximum atom count exceeded`
-`{system_limit, {ets, new}}` | `maximum number of Erlang Term Storage (ETS) tables exceeded`
+`&#123;system_limit, {erlang, open_port}&#125;` | `maximum number of ports exceeded`
+`&#123;system_limit, {erlang, spawn}&#125;` | `maximum number of processes exceeded`
+`&#123;system_limit, {erlang, spawn_opt}&#125;` | `maximum number of processes exceeded`
+`&#123;system_limit, {erlang, list_to_atom}&#125;` | `tried to create an atom larger than 255, or maximum atom count exceeded`
+`&#123;system_limit, {ets, new}&#125;` | `maximum number of Erlang Term Storage (ETS) tables exceeded`
 `try_clause` | `no try clause matching <Val> in <Mod>`
 `undef` | `call to undefined function <Mod>`
 
@@ -98,9 +98,9 @@ Error | Message
 
 Since Erlang programming support is a "happy path/fail fast" style, one
 of the more common error log strings you might encounter contain
-`{error,{badmatch,{...`.  This is Erlang's way of telling you that an
+`&#123;error,{badmatch,{...`.  This is Erlang's way of telling you that an
 unexpected value was assigned, so these errors can prefix the more
-descriptive parts. In this case, `{error,{badmatch,{...` prefixes the
+descriptive parts. In this case, `&#123;error,{badmatch,{...` prefixes the
 more interesting `insufficient_vnodes_available` error, which can be
 found in the `riak_kv` table later on in this document.
 
@@ -122,12 +122,12 @@ generally due to network, permission, or configuration problems.
 
 Error | Description | Resolution
 :-----|:------------|:----------
-`{error,duplicate_name}` | You are trying to start a new Erlang node, but another node with the same name is already running | You might be attempting to start multiple nodes on the same machine with the same `vm.args` `-name` value; or if Riak is already running, check for `beam.smp`; or epmd thinks Riak is running, check/kill epmd
-`{error,econnrefused}` | Remote Erlang node connection refused | Ensure your cluster is up and nodes are able to communicate with each other. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more">Step 1</a>.
-`{error,ehostunreach}` | Remote node cannot be connected to | Ensure that nodes are able to communicate with each other. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more">Step 1</a>.
-`{error,eacces}` | Cannot write a given file | Ensure the Riak beam process has permission to write to all `*_dir` values in `app.config`, for example, `ring_state_dir`, `platform_data_dir`, and others
-`{error,enoent}` | Missing an expected file or directory | Ensure all `*_dir` values in `app.config` exist, for example, `ring_state_dir`, `platform_data_dir`, and others
-`{error,erofs}` | A file/directory is attempted to be written to a read-only filesystem | Only set Riak directories to read/write filesystems
+`&#123;error,duplicate_name&#125;` | You are trying to start a new Erlang node, but another node with the same name is already running | You might be attempting to start multiple nodes on the same machine with the same `vm.args` `-name` value; or if Riak is already running, check for `beam.smp`; or epmd thinks Riak is running, check/kill epmd
+`&#123;error,econnrefused&#125;` | Remote Erlang node connection refused | Ensure your cluster is up and nodes are able to communicate with each other. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more">Step 1</a>.
+`&#123;error,ehostunreach&#125;` | Remote node cannot be connected to | Ensure that nodes are able to communicate with each other. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more">Step 1</a>.
+`&#123;error,eacces&#125;` | Cannot write a given file | Ensure the Riak beam process has permission to write to all `*_dir` values in `app.config`, for example, `ring_state_dir`, `platform_data_dir`, and others
+`&#123;error,enoent&#125;` | Missing an expected file or directory | Ensure all `*_dir` values in `app.config` exist, for example, `ring_state_dir`, `platform_data_dir`, and others
+`&#123;error,erofs&#125;` | A file/directory is attempted to be written to a read-only filesystem | Only set Riak directories to read/write filesystems
 `system_memory_high_watermark` | Often a sign than an <a href="http://www.erlang.org/doc/man/ets.html">ETS table</a> has grown too large | Check that you are using a backend appropriate for your needs (LevelDB for very large key counts) and that your vnode count is reasonable (measured in dozens per node rather than hundreds)
 `temp_alloc` | Erlang attempting to allocate memory | Often associated with `Cannot allocate X bytes of memory`, which means that you're either creating too large of an object or that you simply don't have enough RAM. Base minimum suggested RAM per node is 4GB.
 
@@ -144,7 +144,7 @@ target tuples or modfun tuple: `INPUT`.
 {{% /note %}}
 
 For the remaining common error codes, they are often marked by Erlang
-atoms (and quite often wrapped within an `{error,{badmatch,{...` tuple,
+atoms (and quite often wrapped within an `&#123;error,{badmatch,{...` tuple,
 as described in the [Error](#erlang-errors) section
 above). This table lays out those terse error codes and related log
 messages, if they exist.
@@ -160,7 +160,7 @@ Error | Message | Description | Resolution
 `behavior` | | Attempting to execute an unknown behavior | Ensure that your configuration file choices (e.g. backends) support the behaviors you're attempting to use, such as configuring LevelDB to use secondary indexes
 `already_leaving` | `Node is already in the process of leaving the cluster` | An error marking a node to leave when it is already leaving | No need to duplicate the `leave` command
 `already_replacement` |  | This node is already in the replacements request list | You cannot replace the same node twice
-`{different_owners, N1, N2}` |  | Two nodes list different partition owners, meaning the ring is not ready | When the ring is ready, the status should be ok
+`&#123;different_owners, N1, N2&#125;` |  | Two nodes list different partition owners, meaning the ring is not ready | When the ring is ready, the status should be ok
 `different_ring_sizes` |  | The joining ring is a different size from the existing cluster ring | Don't join a node already joined to a cluster
 `insufficient_vnodes_available` |  | When creating a query coverage plan, not enough vnodes are available | Check the `riak admin ring-status` and ensure all of your nodes are healthy and connected
 `invalid_replacement` |  | A new node is currently joining from a previous operation, so a replacement request is invalid until it is no longer joining | Wait until the node is finished joining
@@ -169,10 +169,10 @@ Error | Message | Description | Resolution
 `is_up` |  | Node is expected to be down but is up | When a node is downed, it should be down
 `legacy` |  | Attempting to stage a plan against a legacy ring | Staging is a feature only of Riak versions 1.2.0+
 `max_concurrency` | `Handoff receiver for partition <Partition> exited abnormally after processing <Count> objects: <Reason>` | Disallow more handoff processes than the `riak_core` `handoff_concurrency` setting (defaults to 2) | If this routinely kills vnodes, this issue has been linked to LevelDB compactions which can build up and block writing, which will also be accompanied by LevelDB logs saying `Waiting...` or `Compacting`
-`{nodes_down, Down}` |  | All nodes must be up to check |
+`&#123;nodes_down, Down&#125;` |  | All nodes must be up to check |
 `not_member` |  | This node is not a member of the ring | Cannot leave/remove/down when this is not a ring member
 `not_reachable` |  | Cannot join unreachable node | Check your network connections, ensure Erlang cookie setting `vm.args` `-setcookie`
-`{not_registered, App}` |  | Attempting to use an unregistered process | Ensure that your `app.config` choices contain the app you're attempting to use `{riak_kv_stat, true}`
+`&#123;not_registered, App}` |  | Attempting to use an unregistered process | Ensure that your `app.config` choices contain the app you're attempting to use `&#123;riak_kv_stat, true&#125;`
 `not_single_node` |  | There are no other members to join | Join with at least one other node
 `nothing_planned` |  | Cannot commit a plan without changes | Ensure at least one ring change is planned before running commit
 `only_member` |  | This is the only member of the ring | Cannot leave/remove/down when this is the only member of the ring
@@ -180,7 +180,7 @@ Error | Message | Description | Resolution
 `self_join` |  | Cannot join node with itself | Join another node to form a valid cluster
 `timeout` | `<Type> transfer of <Module> from <SrcNode> <SrcPartition> to <TargetNode> <TargetPartition> failed because of TCP recv timeout` |  | Ensure that ports chosen in your configuration files do not overlap with ports being used by your system, or with each other
 `unable_to_get_join_ring` |  | Cannot access cluster ring to join | Possible corrupted ring
-`{unknown_capability, Capability}` |  | Attempting to use a capability unsupported by this implementation | Ensure that your configuration choices support the capability you're attempting to use, such as Pipe MapReduce (setting a `mapred_2i_pipe` value in `app.config`)
+`&#123;unknown_capability, Capability&#125;` |  | Attempting to use a capability unsupported by this implementation | Ensure that your configuration choices support the capability you're attempting to use, such as Pipe MapReduce (setting a `mapred_2i_pipe` value in `app.config`)
 `vnode_exiting` | `<Mod> failed to store handoff obj: <Err>` |  | A vnode fails to hand off data because the handoff state is deleted
 `vnode_shutdown` |  | The vnode worker pool is shutting down | Various reasons can cause a shutdown, check other log messages
  | `Bucket validation failed <Detail>` |  | Only set value bucket properties
@@ -208,45 +208,45 @@ most of the error messages.
 Error | Message | Description | Resolution
 :-----|:--------|:------------|:----------
 `all_nodes_down` |  | No nodes are available | Check `riak admin member-status` and ensure that all expected nodes in the cluster are of `valid` Status
-`{bad_qterm, QueryTerm}` |  | Bad query when performing MapReduce | Fix your MapReduce query
-`{coord_handoff_failed, Reason}` | `Unable to forward put for <Key> to <CoordNode> - <Reason>` | Vnodes unable to communicate | Check that coordinating vnode is not down. Ensure your cluster is up and nodes are able to communicate with each other. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more"> Step 1</a>.
-`{could_not_reach_node, Node}` |  | Erlang process was not reachable | Check network settings; ensure remote nodes are running and reachable; ensure all nodes have the same Erlang cookie setting `vm.args` `-setcookie`. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more"> Step 1</a>.
-`{deleted, Vclock}` |  | The value was already deleted, includes the current vector clock | Riak will eventually clean up this tombstone
-`{dw_val_violation, DW}` |  | Same as `w_val_violation` but concerning durable writes | Set a valid DW value
-`{field_parsing_failed, {Field, Value}}` | `Could not parse field <Field>, value <Value>.` | Could not parse an index field | Most commonly an `_int` field which cannot be parsed. For example a query like this is invalid: `/buckets/X/index/Y_int/BADVAL`, since BADVAL should instead be an integer
-`{hook_crashed, {Mod, Fun, Class, Exception}}` | `Problem invoking pre-commit hook` | Precommit process exited due to some failure | Fix the precommit function code, follow the message's exception and stacktrace to help debug
-`{indexes_not_supported, Mod}` |  | The chosen backend does not support indexes (only LevelDB currently supports secondary indexes) | Set your configuration to use the LevelDB backend
-`{insufficient_vnodes, NumVnodes, need, R}` |  | R was set greater than the total vnodes | Set a proper R value; or too many nodes are down; or too many nodes are unavailable due to crash or network partition. Ensure all nodes are available by running riak admin ring-status.
-`{invalid_hook_def, HookDef}` | `Invalid post-commit hook definition <Def>` | No Erlang module and function or JavaScript function name | Define the hook with the correct settings
-`{invalid_inputdef, InputDef}` |  | Bad inputs definitions when running MapReduce | Fix inputs settings; set `mapred_system` from `legacy` to `pipe`
+`&#123;bad_qterm, QueryTerm&#125;` |  | Bad query when performing MapReduce | Fix your MapReduce query
+`&#123;coord_handoff_failed, Reason&#125;` | `Unable to forward put for <Key> to <CoordNode> - <Reason>` | Vnodes unable to communicate | Check that coordinating vnode is not down. Ensure your cluster is up and nodes are able to communicate with each other. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more"> Step 1</a>.
+`&#123;could_not_reach_node, Node&#125;` |  | Erlang process was not reachable | Check network settings; ensure remote nodes are running and reachable; ensure all nodes have the same Erlang cookie setting `vm.args` `-setcookie`. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more"> Step 1</a>.
+`&#123;deleted, Vclock&#125;` |  | The value was already deleted, includes the current vector clock | Riak will eventually clean up this tombstone
+`&#123;dw_val_violation, DW&#125;` |  | Same as `w_val_violation` but concerning durable writes | Set a valid DW value
+`&#123;field_parsing_failed, {Field, Value}&#125;` | `Could not parse field <Field>, value <Value>.` | Could not parse an index field | Most commonly an `_int` field which cannot be parsed. For example a query like this is invalid: `/buckets/X/index/Y_int/BADVAL`, since BADVAL should instead be an integer
+`&#123;hook_crashed, {Mod, Fun, Class, Exception}&#125;` | `Problem invoking pre-commit hook` | Precommit process exited due to some failure | Fix the precommit function code, follow the message's exception and stacktrace to help debug
+`&#123;indexes_not_supported, Mod&#125;` |  | The chosen backend does not support indexes (only LevelDB currently supports secondary indexes) | Set your configuration to use the LevelDB backend
+`&#123;insufficient_vnodes, NumVnodes, need, R&#125;` |  | R was set greater than the total vnodes | Set a proper R value; or too many nodes are down; or too many nodes are unavailable due to crash or network partition. Ensure all nodes are available by running riak admin ring-status.
+`&#123;invalid_hook_def, HookDef&#125;` | `Invalid post-commit hook definition <Def>` | No Erlang module and function or JavaScript function name | Define the hook with the correct settings
+`&#123;invalid_inputdef, InputDef&#125;` |  | Bad inputs definitions when running MapReduce | Fix inputs settings; set `mapred_system` from `legacy` to `pipe`
 `invalid_message` | | Unknown event sent to module | Ensure you're running similar versions of Riak across (and specifically poolboy) across all nodes
-`{invalid_range, Args}` |  | Index range query hasStart > End | Fix your query
-`{invalid_return, {Mod, Fun, Result}}` | `Problem invoking pre-commit hook <Mod>:<Fun>, invalid return <Result>` | The given precommit function gave an invalid return for the given `Result` | Ensure your pre-commit functions return a valid result
+`&#123;invalid_range, Args&#125;` |  | Index range query hasStart > End | Fix your query
+`&#123;invalid_return, {Mod, Fun, Result}&#125;` | `Problem invoking pre-commit hook <Mod>:<Fun>, invalid return <Result>` | The given precommit function gave an invalid return for the given `Result` | Ensure your pre-commit functions return a valid result
 `invalid_storage_backend` | `storage_backend <Backend> is non-loadable.` | Invalid backend choice when starting up Riak | Set a valid backend in your configuration files
 `key_too_large` |  | The key was larger than 65536 bytes | Use a smaller key
 `local_put_failed` |  | A local vnode PUT operation failed | This has been linked to a LevelDB issue related to restricted memory usage and inability to flush a write to disk.  If this happens repetitively, stop/start the riak node, forcing a memory realloc
-`{n_val_violation, N}` |  | (W > N) or (DW > N) or (PW > N) or (R > N) or (PR > N) | No W or R values may be greater than N
-`{nodes_not_synchronized, Members}` |  | Rings of all members are not synchronized | Backups will fail if nodes are not synchronized
-`{not_supported, mapred_index, FlowPid}` |  | Index lookups for MapReduce are only supported with Pipe | Set mapred_system from legacy to pipe
+`&#123;n_val_violation, N&#125;` |  | (W > N) or (DW > N) or (PW > N) or (R > N) or (PR > N) | No W or R values may be greater than N
+`&#123;nodes_not_synchronized, Members&#125;` |  | Rings of all members are not synchronized | Backups will fail if nodes are not synchronized
+`&#123;not_supported, mapred_index, FlowPid&#125;` |  | Index lookups for MapReduce are only supported with Pipe | Set mapred_system from legacy to pipe
 `notfound` |  | No value found | Value was deleted, or was not yet stored or replicated
-`{pr_val_unsatisfied, PR, Primaries}` |  | Same as `r_val_unsatisfied` but only counts `Primary` node replies | Too many primary nodes are down or the `PR` value was set too high
-`{pr_val_violation, R}` |  | Same as `r_val_violation` but concerning `Primary` reads | Set a valid `PR` value
+`&#123;pr_val_unsatisfied, PR, Primaries&#125;` |  | Same as `r_val_unsatisfied` but only counts `Primary` node replies | Too many primary nodes are down or the `PR` value was set too high
+`&#123;pr_val_violation, R&#125;` |  | Same as `r_val_violation` but concerning `Primary` reads | Set a valid `PR` value
 `precommit_fail` | `Pre-commit hook <Mod>:<Fun> failed with reason <Reason>` | The given precommit function failed for the given `Reason` | Fix the precommit function code
-`{pw_val_unsatisfied, PR, Primaries}` | | Same as `w_val_unsatisfied` but only counts `Primary` node replies | Too many primary nodes are down or the `PW` value was set too high
-`{pw_val_violation, PW}` |  | Same as `w_val_violation` but concerning primary writes | Set a valid `PW` value
-`{r_val_unsatisfied, R, Replies}` |  | Not enough nodes replied to satisfy the `R` value, contains the given `R` value and the actual number of `Replies` | Too many nodes are down or the R value was set too high
-`{r_val_violation, R}` |  | The given R value was non-numeric and not a valid setting (`on`, `all`, `quorum`) | Set a valid R value
+`&#123;pw_val_unsatisfied, PR, Primaries&#125;` | | Same as `w_val_unsatisfied` but only counts `Primary` node replies | Too many primary nodes are down or the `PW` value was set too high
+`&#123;pw_val_violation, PW&#125;` |  | Same as `w_val_violation` but concerning primary writes | Set a valid `PW` value
+`&#123;r_val_unsatisfied, R, Replies&#125;` |  | Not enough nodes replied to satisfy the `R` value, contains the given `R` value and the actual number of `Replies` | Too many nodes are down or the R value was set too high
+`&#123;r_val_violation, R&#125;` |  | The given R value was non-numeric and not a valid setting (`on`, `all`, `quorum`) | Set a valid R value
 `receiver_down` |  | Remote process failed to acknowledge request | Can occur when listkeys is called
-`{rw_val_violation, RW}` |  | The given `RW` property was non-numeric and not a valid setting (`one`, `all`, `quorum`) | Set a valid `RW` value
-`{siblings_not_allowed, Object}` | `Siblings not allowed: <Object>` | The hook to index cannot abide siblings | Set the buckets `allow_mult` property to `false`
+`&#123;rw_val_violation, RW&#125;` |  | The given `RW` property was non-numeric and not a valid setting (`one`, `all`, `quorum`) | Set a valid `RW` value
+`&#123;siblings_not_allowed, Object&#125;` | `Siblings not allowed: <Object>` | The hook to index cannot abide siblings | Set the buckets `allow_mult` property to `false`
 `timeout`|  | The given action took too long to reply | Ensure your cluster is up and nodes are able to communicate with each other. See <a href="{{<baseurl>}}riak/kv/3.0.11/using/repair-recovery/errors/#more"> Step 1</a>. Or check you have a reasonable `ulimit` size. Note that listkeys commands can easily timeout and shouldn't be used in production.
-`{too_few_arguments, Args}` |  | Index query requires at least one argument | Fix your query format
-`{too_many_arguments, Args}` |  | Index query is malformed with more than 1 (exact) or 2 (range) values | Fix your query format
+`&#123;too_few_arguments, Args&#125;` |  | Index query requires at least one argument | Fix your query format
+`&#123;too_many_arguments, Args&#125;` |  | Index query is malformed with more than 1 (exact) or 2 (range) values | Fix your query format
 `too_many_fails` |  | Too many write failures to satisfy W or DW | Try writing again. Or ensure your nodes/network is healthy. Or set a lower W or DW value
 `too_many_results` | | Too many results are attempted to be returned | This is a protective error. Either change your query to return fewer results, or change your `max_search_results` setting in `app.config` (it defaults to 100,000)
-`{unknown_field_type, Field}` | `Unknown field type for field: <Field>.` | Unknown index field extension (begins with underscore) | The only value field types are `_int` and `_bin`
-`{w_val_unsatisfied, RepliesW, RepliesDW, W, DW}` | | Not enough nodes replied to satisfy the W value, contains the given W value and the actual number of `Replies*` for either `W` or `DW` | Too many nodes are down or the `W` or `DW` value was set too high
-`{w_val_violation, W}` |  | The given W property was non-numeric and not a valid setting (on, all, quorum) | Set a valid W value
+`&#123;unknown_field_type, Field&#125;` | `Unknown field type for field: <Field>.` | Unknown index field extension (begins with underscore) | The only value field types are `_int` and `_bin`
+`&#123;w_val_unsatisfied, RepliesW, RepliesDW, W, DW&#125;` | | Not enough nodes replied to satisfy the W value, contains the given W value and the actual number of `Replies*` for either `W` or `DW` | Too many nodes are down or the `W` or `DW` value was set too high
+`&#123;w_val_violation, W&#125;` |  | The given W property was non-numeric and not a valid setting (on, all, quorum) | Set a valid W value
  | `Invalid equality query <SKey>` | Equality query is required and must be binary for an index call | Pass in an equality value when performing a 2i equality query
  | `Invalid range query: <Min> -> <Max>` | Both range query values are required and must be binary an index call | Pass in both range values when performing a 2i equality query
  | `Failed to start <Mod> <Reason>:<Reason>` | Riak KV failed to start for given `Reason` | Several possible reasons for failure, read the attached reason for insight into resolution
@@ -262,12 +262,12 @@ Error | Message | Description | Resolution
 :-----|:--------|:------------|:----------
 `data_root_not_set` | | Same as `data_root_unset` | Set the `data_root` directory in config
 `data_root_unset` | `Failed to create bitcask dir: data_root is not set` | The `data_root` config setting is required | Set `data_root` as the base directory where to store bitcask data, under the `bitcask` section
-`{invalid_config_setting, multi_backend, list_expected}` | | Multi backend configuration requires a list | Wrap `multi_backend` config value in a list
-`{invalid_config_setting, multi_backend, list_is_empty`} | | Multi backend configuration requires a value | Configure at least one backend under `multi_backend` in `app.config`
-`{invalid_config_setting, multi_backend_default, backend_not_found}` | | | Must choose a valid backend type to configure
+`&#123;invalid_config_setting, multi_backend, list_expected&#125;` | | Multi backend configuration requires a list | Wrap `multi_backend` config value in a list
+`&#123;invalid_config_setting, multi_backend, list_is_empty`} | | Multi backend configuration requires a value | Configure at least one backend under `multi_backend` in `app.config`
+`&#123;invalid_config_setting, multi_backend_default, backend_not_found&#125;` | | | Must choose a valid backend type to configure
 `multi_backend_config_unset` | | No configuration for Multi backend | Configure at least one backend under `multi_backend` in `app.config`
 `not_loaded` | | Native driver not loading | Ensure your native drivers exist (.dll or .so files)
-`{riak_kv_multi_backend, undefined_backend, BackendName}` | | Backend defined for a bucket is invalid | Define a valid backed before using this bucket under lib/`project`/priv, where `project` is most likely eleveldb).
+`&#123;riak_kv_multi_backend, undefined_backend, BackendName&#125;` | | Backend defined for a bucket is invalid | Define a valid backed before using this bucket under lib/`project`/priv, where `project` is most likely eleveldb).
 `reset_disabled` | | Attempted to reset a Memory backend in production | Don't use this in production
 
 ### JavaScript
@@ -284,7 +284,7 @@ Error    | Message | Description | Resolution
 `bad_utf8_character_code` | `Error JSON encoding arguments: <Args>` | A UTF-8 character give was a bad format | Only use correct UTF-8 characters for JavaScript code and arguments
 `bad_json` | | Bad JSON formatting | Only use correctly formatted JSON for JavaScript command arguments
  | `Invalid bucket properties: <Details>` | Listing bucket properties will fail if invalid | Fix bucket properties
-`{load_error, "Failed to load spidermonkey_drv.so"}` | | The JavaScript driver is corrupted or missing | In OS X you may have compiled with `llvm-gcc` rather than `gcc`.
+`&#123;load_error, "Failed to load spidermonkey_drv.so"&#125;` | | The JavaScript driver is corrupted or missing | In OS X you may have compiled with `llvm-gcc` rather than `gcc`.
 
 ### MapReduce
 
@@ -297,18 +297,18 @@ Error | Message | Description | Resolution
 `bad_mapper_props_no_keys` | | At least one property should be found by default. *Unused in Riak 1.3+* | Set mapper properties, or don't use it
 `bad_mapred_inputs` | | A bad value sent to MapReduce. *Unused in Riak 1.3+* | When using the Erlang client interface, ensure all MapReduce and search queries are correctly binary
 `bad_fetch` | | An expected local query was not retrievable.  *Unused in Riak 1.3+* | Placing javascript MapReduce query code as a riak value must first be stored before execution
-`{bad_filter, <Filter>}` | | An invalid keyfilter was used | Ensure your MapReduce keyfilter is correct
-`{dead_mapper, <Stacktrace>, <MapperData>}` | | Getting a reply from a mapper for a job that has already exited.  *Unused in Riak 1.3+* | Check for a stuck Erlang process, or if using legacy MR ensure `map_cache_size` is set (Both issues may require a node restart)
-`{inputs, Reason}` | `An error occurred parsing the "inputs" field.` | MapReduce request has invalid input field | Fix MapReduce fields
-`{invalid_json, Message}` | `The POST body was not valid JSON. The error from the parser was: <Message>` | Posting a MapReduce command requires correct JSON | Format MapReduce requests correctly
+`&#123;bad_filter, <Filter>&#125;` | | An invalid keyfilter was used | Ensure your MapReduce keyfilter is correct
+`&#123;dead_mapper, <Stacktrace>, <MapperData>&#125;` | | Getting a reply from a mapper for a job that has already exited.  *Unused in Riak 1.3+* | Check for a stuck Erlang process, or if using legacy MR ensure `map_cache_size` is set (Both issues may require a node restart)
+`&#123;inputs, Reason&#125;` | `An error occurred parsing the "inputs" field.` | MapReduce request has invalid input field | Fix MapReduce fields
+`&#123;invalid_json, Message&#125;` | `The POST body was not valid JSON. The error from the parser was: <Message>` | Posting a MapReduce command requires correct JSON | Format MapReduce requests correctly
 `javascript_reduce_timeout` | | JavaScript reduce function taking too long | For large numbers of objects, your JavaScript functions may become bottlenecks. Decrease the quantity of values being passed to and returned from the reduce functions, or rewrite as Erlang functions
 `missing_field` | `The post body was missing the "inputs" or "query" field.` | Either an inputs or query field is required | Post MapReduce request with at least one
-`{error,notfound}` | | Used in place of a RiakObject in the mapping phase | Your custom Erlang map function should deal with this type of value
+`&#123;error,notfound&#125;` | | Used in place of a RiakObject in the mapping phase | Your custom Erlang map function should deal with this type of value
 `not_json` | `The POST body was not a JSON object.` | Posting a MapReduce command requires correct JSON | Format MapReduce requests correctly
-`{no_candidate_nodes, exhausted_prefist, <Stacktrace>, <MapperData>}` | | Some map phase workers died | Possibly a long running job hitting MapReduce timeout, upgrade to Pipe
-`{<query>, Reason}` | `An error occurred parsing the "query" field.` | MapReduce request has invalid query field | Fix MapReduce query
-`{unhandled_entry, Other}` | `Unhandled entry: <Other>` | The `reduce_identity` function is unused | If you don't need `reduce_identity`, just don't set reduce phase at all
-`{unknown_content_type, ContentType}` | | Bad content type for MapReduce query | Only `application/json` and `application/x-erlang-binary` are accepted
+`&#123;no_candidate_nodes, exhausted_prefist, <Stacktrace>, <MapperData>&#125;` | | Some map phase workers died | Possibly a long running job hitting MapReduce timeout, upgrade to Pipe
+`&#123;<query>, Reason&#125;` | `An error occurred parsing the "query" field.` | MapReduce request has invalid query field | Fix MapReduce query
+`&#123;unhandled_entry, Other&#125;` | `Unhandled entry: <Other>` | The `reduce_identity` function is unused | If you don't need `reduce_identity`, just don't set reduce phase at all
+`&#123;unknown_content_type, ContentType&#125;` | | Bad content type for MapReduce query | Only `application/json` and `application/x-erlang-binary` are accepted
  | `Phase <Fitting>: <Reason>` | A general error when something happens using the Pipe MapReduce implementation with a bad argument or configuration | Can happen with a bad map or reduce implementation, most recent known gotcha is when a JavaScript function improperly deals with tombstoned objects
  | `riak_kv_w_reduce requires a function as argument, not a <Type>` | Reduce requires a function object, not any other type | This shouldn't happen
  
@@ -346,7 +346,7 @@ solutions.
 
         ```erlang
         [application:set_env(eleveldb, Var, Val) || {Var, Val} <-
-        [{max_open_files, 2000},
+        [&#123;max_open_files, 2000},
         {block_size, 1048576},
         {cache_size, 20*1024*1024*1024},
         {sync, false},

@@ -55,7 +55,7 @@ section of your advanced.config file by adding the following setting:
     {ts_realtime, false}
 ```
 
->**Note:** If `{ts_realtime, false}` is not the last entry in your `riak_repl` configuration block, be sure to add a comma at the end of the line.
+>**Note:** If `&#123;ts_realtime, false&#125;` is not the last entry in your `riak_repl` configuration block, be sure to add a comma at the end of the line.
 
 See [below](#turn-off-replication-per-table) for more granular controls.
 

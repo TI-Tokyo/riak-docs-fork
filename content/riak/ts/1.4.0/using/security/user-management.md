@@ -195,7 +195,7 @@ Now, the `print-users` command should return this:
 Usernames CANNOT be changed using the `alter-user` command.
 If you attempt to do so by running `alter-user riakuser
 username=other-name`, for example, this will add the
-`{"username","other-name"}` tuple to `riakuser`'s options.
+`&#123;"username","other-name"&#125;` tuple to `riakuser`'s options.
 {{% /note %}}
 
 ## Managing Groups for a User

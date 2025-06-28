@@ -275,8 +275,8 @@ In particular, for the Riak CS `app.config`:
  - `stanchion_ip` and `stanchion_port` have been combined into `stanchion_host`.
  - `admin_ip` and `admin_port` have been combined into `admin_listener`.
  - `webmachine_log_handler` has become `webmachine_access_log_handler`.
- - `{max_open_files, 50}` has been deprecated and should be replaced with
-   `{total_leveldb_mem_percent, 30}`.
+ - `&#123;max_open_files, 50&#125;` has been deprecated and should be replaced with
+   `&#123;total_leveldb_mem_percent, 30&#125;`.
 
 For the Stanchion `app.config`:
 
@@ -284,12 +284,11 @@ For the Stanchion `app.config`:
  - `riak_ip` and `riak_port` have been combined into `riak_host`.
 
 Each of the above pairs follows a similar form. Where the old form used a
-separate IP and Port parameter, the new form combines those as `{new_option, {
-"IP", Port}}`. For example, if your legacy `app.config` configuration was
+separate IP and Port parameter, the new form combines those as `&#123;new_option, &#123;"IP", Port&#125;&#125;`. For example, if your legacy `app.config` configuration was
 previously:
 
 ```
-{riak_cs, [
+&#123;riak_cs, [
     {cs_ip, "127.0.0.1"},
     {cs_port, 8080 },
     . . .
@@ -299,7 +298,7 @@ previously:
 It should now read:
 
 ```
-{riak_cs, [
+&#123;riak_cs, [
     {listener, {"127.0.0.1", 8080}},
     . . .
 ]},
@@ -487,7 +486,7 @@ behavior on upgrade by modifying your Riak CS configuration. Change the
 `rewrite_module` setting as follows:
 
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other settings
            {rewrite_module, riak_cs_s3_rewrite_legacy},
            %% Other settings
@@ -638,9 +637,9 @@ None
 Beginning with Riak CS 1.5.1, you can limit the number of buckets that can be created per user. The default maximum number is 100. While this limitation prohibits the creation of new buckets by users, users that exceed the limit can still perform other operations, including bucket deletion. To change the default limit, add the following line to the `riak_cs` section of `app.config`:
 
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
     %% ...
-    {max_buckets_per_user, 5000},
+    &#123;max_buckets_per_user, 5000},
     %% ...
 ]}
 ```
@@ -700,7 +699,7 @@ Or Via **[email]({{<contactusemail>}})**.
 * Fix inconsistent ETag on objects uploaded by multipart [riak_cs/#855](https://github.com/basho/riak_cs/issues/855)
 * Fix policy version validation in PUT Bucket Policy [riak_cs/#911](https://github.com/basho/riak_cs/issues/911)
 * Fix return code of several commands, to return 0 for success [riak_cs/#908](https://github.com/basho/riak_cs/issues/908)
-* Fix `{error, disconnected}` repainted with notfound [riak_cs/#929](https://github.com/basho/riak_cs/issues/929)
+* Fix `&#123;error, disconnected&#125;` repainted with notfound [riak_cs/#929](https://github.com/basho/riak_cs/issues/929)
 
 ### Notes on Upgrading
 

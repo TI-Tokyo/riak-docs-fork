@@ -32,7 +32,7 @@ If you are upgrading from previous 2.1 releases or from Riak KV 2.0.6, you will 
 For example, if your advanced.config file has a section similar to:
 
 ```
-[{riak_core,[{default_bucket_props,[{n_val,1}]}]
+[&#123;riak_core,[{default_bucket_props,[{n_val,1}]}]
 ```
 
 In order to maintain the current behavior of your 2.1.1 node, you will need to make sure to include, at minimum, `allow_mult` and `dvv_enabled` settings, as the treatment of these has changed in order to fix a bug that caused `allow_mult` to be `true` when it should have been `false`.
@@ -40,10 +40,10 @@ In order to maintain the current behavior of your 2.1.1 node, you will need to m
 In the above example, the corrected `default_bucket_props` section would look like:
 
 ```
-[{riak_core,[{default_bucket_props,[
+[&#123;riak_core,[{default_bucket_props,[
                {n_val,1},
-               {allow_mult, true},
-               {dvv_enabled, true}
+               &#123;allow_mult, true&#125;,
+               &#123;dvv_enabled, true}
             ]}]
         }]
 ```
@@ -224,7 +224,7 @@ Updates the Riak API with an operation to GET, e.g. `/types/Type/buckets/Bucket/
 ## Known Issues
 
 * [yokozuna/issues/481](https://github.com/basho/yokozuna/issues/481) - Search loses entries when Search AAE trees expire. We are currently investigating this issue.
-* [riak/issues/727](https://github.com/basho/riak/issues/727) - Users upgrading from 1.4.x to 2.1.x that choose to use the traditional `app.config` for configuration should be aware that the default settings for `allow_mult` and `dvv_enabled` have changed from `false` to `true` between these versions.  If your application depends on these being set to 'false', you must explicitly define this by adding `{default_bucket_props, [{allow_mult, false}, {dvv_enabled, false}]},` to the `riak_core` section of your `app.config` file to maintain backwards compatibility.
+* [riak/issues/727](https://github.com/basho/riak/issues/727) - Users upgrading from 1.4.x to 2.1.x that choose to use the traditional `app.config` for configuration should be aware that the default settings for `allow_mult` and `dvv_enabled` have changed from `false` to `true` between these versions.  If your application depends on these being set to 'false', you must explicitly define this by adding `&#123;default_bucket_props, [&#123;allow_mult, false&#125;, &#123;dvv_enabled, false&#125;]&#125;,` to the `riak_core` section of your `app.config` file to maintain backwards compatibility.
 
 ## Notes on upgrading
 

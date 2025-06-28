@@ -58,7 +58,7 @@ supercluster.member.Bravo = 127.0.0.1:10027
 supercluster.member.Charlie = 127.0.0.1:10037
 ```
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
   %% Other configs
     {supercluster_members,
      [
@@ -70,7 +70,7 @@ supercluster.member.Charlie = 127.0.0.1:10037
 ]},
 ```
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
   %% Other configs
     {supercluster_members,
      [

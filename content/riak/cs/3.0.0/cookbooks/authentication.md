@@ -46,7 +46,7 @@ auth_module = riak_cs_s3_auth
 ```
 
 ```advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {auth_module, riak_cs_s3_auth},
            %% Other configs
@@ -54,7 +54,7 @@ auth_module = riak_cs_s3_auth
 ```
 
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {auth_module, riak_cs_s3_auth},
            %% Other configs

@@ -101,9 +101,9 @@ This can either be the same object passed to the function or an updated version 
 - `fail`
 ---
 The atom `fail` will cause Riak to fail the write and send a 403 Forbidden error response (in the [HTTP API]({{<baseurl>}}riak/kv/2.9.4/developing/api/http)) along with a generic error message about why the write was blocked.
-- `{fail, Reason}`
+- `&#123;fail, Reason&#125;`
 ---
-The tuple `{fail, Reason}` will cause the same behavior as in the case above, but with the addition of `Reason` used as the error text.
+The tuple `&#123;fail, Reason&#125;` will cause the same behavior as in the case above, but with the addition of `Reason` used as the error text.
 
 Errors that occur when processing Erlang pre-commit hooks will be
 reported in the `sasl-error.log` file with lines that start with
@@ -116,7 +116,7 @@ This Erlang pre-commit hook will limit object values to 5 MB or smaller:
 ```erlang
 precommit_limit_size(Object) ->
   case erlang:byte_size(riak_object:get_value(Object)) of
-    Size when Size > 5242880 -> {fail, "Object is larger than 5MB."};
+    Size when Size > 5242880 -> &#123;fail, "Object is larger than 5MB."};
     _ -> Object
   end.
 ```
@@ -170,9 +170,9 @@ validate(Object) ->
     Object
   catch
     throw:invalid_utf8 ->
-      {fail, "Invalid JSON: Illegal UTF-8 character"};
+      &#123;fail, "Invalid JSON: Illegal UTF-8 character"};
     error:Error ->
-      {fail, lists:flatten(io_lib:format("Invalid JSON: ~p",[Error]))}
+      &#123;fail, lists:flatten(io_lib:format("Invalid JSON: ~p",[Error]))}
   end.
 ```
 

@@ -79,7 +79,7 @@ to use the custom backend provided by Riak CS. We need to use either the
 
 ```advancedconfig
 {eleveldb, [
-    {total_leveldb_mem_percent, 30}
+    &#123;total_leveldb_mem_percent, 30&#125;
     ]},
 {riak_kv, [
     %% Other configs
@@ -101,7 +101,7 @@ to use the custom backend provided by Riak CS. We need to use either the
 
 ```appconfig
 {eleveldb, [
-    {total_leveldb_mem_percent, 30}
+    &#123;total_leveldb_mem_percent, 30&#125;
     ]},
 {riak_kv, [
     %% Other configs
@@ -142,17 +142,17 @@ buckets.default.allow_mult = true
 ```
 
 ```advancedconfig
-{riak_core, [
+&#123;riak_core, [
     %% Other configs
-    {default_bucket_props, [{allow_mult, true}]},
+    {default_bucket_props, [&#123;allow_mult, true&#125;]},
     %% Other configs
 ]}
 ```
 
 ```appconfig
-{riak_core, [
+&#123;riak_core, [
     %% Other configs
-    {default_bucket_props, [{allow_mult, true}]},
+    {default_bucket_props, [&#123;allow_mult, true&#125;]},
     %% Other configs
 ]}
 ```

@@ -59,7 +59,7 @@ Using one of the Riak client libraries, execute the `CREATE TABLE` statement via
 * [Python][python]: no exception thrown; result object is present with `rows` and `columns` being empty.
 * [C#][csharp]: no exception thrown; result object is present with `Value` and `Columns` being empty.
 * [Node.js][nodejs]:  no exception thrown; result object is present with `rows` and `columns` being empty.
-* [Erlang][erlang]: the returned term will consist of two empty lists `{[],[]}`.
+* [Erlang][erlang]: the returned term will consist of two empty lists `&#123;[],[]&#125;`.
 * [PHP][php]: the response object has a boolean `isSuccess()` instance method.
 
 ### Using the `WITH` clause

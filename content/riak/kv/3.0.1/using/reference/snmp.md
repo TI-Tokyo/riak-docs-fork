@@ -72,7 +72,7 @@ To force Riak to reload SNMP configuration files on startup:
          {db_dir, "/var/lib/riak/snmp/agent/db/"}]}]}
     ```
 
-  3. Add `{force_load, true}` to the `config` term:
+  3. Add `&#123;force_load, true&#125;` to the `config` term:
 
     ```erlang
       {snmp,

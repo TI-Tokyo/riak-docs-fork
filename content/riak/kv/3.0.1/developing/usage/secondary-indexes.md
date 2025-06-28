@@ -1680,7 +1680,7 @@ do_query();
     {<<"indexes">>, <<"tweets">>}, %% bucket type and bucket name
     {binary_index, "hashtags"}, %% index name
     <<"ri">>, <<"ru">>, %% range query from "ri" to "ru"
-    {max_results, 5}
+    &#123;max_results, 5}
 ).
 ```
 
@@ -1813,7 +1813,7 @@ rslt = client.GetSecondaryIndex(idxId, "ri", "ru", options);
     <<"ri">>, <<"ru">>, %% range query from "ri" to "ru"
     [
         {continuation, <<"g2gCbQAAAAdyaXBqYWtlbQAAABIzNDkyMjA2ODcwNTcxMjk0NzM">>},
-        {max_results, 5},
+        &#123;max_results, 5},
         {return_terms, true}
     ]
 ).

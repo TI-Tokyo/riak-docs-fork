@@ -40,7 +40,7 @@ A: You can specify the location of **all** Riak CS bucket data by changing the s
       {multi_backend_default, be_default},
       {multi_backend, [
         {be_default, riak_kv_eleveldb_backend, [
-          {total_leveldb_mem_percent, 30},
+          &#123;total_leveldb_mem_percent, 30&#125;,
             {data_root, "/var/lib/riak/leveldb"}
         ]},
           {be_blocks, riak_kv_bitcask_backend, [

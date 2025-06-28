@@ -180,10 +180,10 @@ If you choose to keep the existing `app.config` files, you _must_ add the
 following additional settings in the `riak_core` section:
 
 ```appconfig
-{riak_core,
+&#123;riak_core,
      [{default_bucket_props,
-          [{allow_mult,false}, %% or the same as an existing setting
-           {dvv_enabled,false}]},
+          [&#123;allow_mult,false}, %% or the same as an existing setting
+           &#123;dvv_enabled,false}]},
           %% other settings
      ]
 },

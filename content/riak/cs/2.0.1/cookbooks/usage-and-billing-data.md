@@ -360,8 +360,8 @@ the buckets that the user owns.
 For each bucket that a user owns, a MapReduce query is run. The query's
 inputs are the list of the keys in the bucket (the input is
 `BucketName`, so the keys stay on the server). The query then has two
-phases: a map that produces tuples of the form `{1,
-ByteSize(File)}`---if *active*; nothing if *inactive*---and a reduce
+phases: a map that produces tuples of the form `&#123;1,
+ByteSize(File)&#125;`---if *active*; nothing if *inactive*---and a reduce
 that sums those tuples element-wise. The result is one tuple whose first
 element is the number of files in the bucket and whose second element is
 the total number of bytes stored in that file.

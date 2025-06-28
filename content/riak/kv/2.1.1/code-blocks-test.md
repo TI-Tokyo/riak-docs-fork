@@ -165,7 +165,7 @@ Puer undas dignior iam turpe sorores abesse. Deae Saturnia levius viribus membra
 Lorem markdownum Byblida.
 
 ``` advancedconfig
-{riak_cs, [
+&#123;riak_cs, [
     {parameter1, value},
     {parameter2, value},
     %% and so on...

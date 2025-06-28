@@ -29,7 +29,7 @@ multiple clusters.
 Cascading Realtime Writes is enabled by default on new clusters running
 Riak. It will need to be manually enabled on existing clusters.
 
-Cascading realtime requires the `{riak_repl, rtq_meta}` capability to
+Cascading realtime requires the `&#123;riak_repl, rtq_meta&#125;` capability to
 function.
 
 {{% note title="Note on cascading tracking" %}}

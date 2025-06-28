@@ -19,7 +19,7 @@ aliases:
 
 ---
 
-Reports about the performance and configuration of the Riak node to which it was requested. You must have the `{riak_kv_stat,true}` configuration setting in app.config for this endpoint to be active.
+Reports about the performance and configuration of the Riak node to which it was requested. You must have the `&#123;riak_kv_stat,true&#125;` configuration setting in app.config for this endpoint to be active.
 
 ## Performance
 

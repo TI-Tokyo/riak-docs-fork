@@ -133,7 +133,7 @@ the below escript, repair.erl can be used:
 -compile(export_all).
 
 main([Dir]) ->
-  Opts = [{max_open_files, 2000},
+  Opts = [&#123;max_open_files, 2000},
             {use_bloomfilter, true},
             {write_buffer_size, 45 * 1024 * 1024},
             {compression,false}],

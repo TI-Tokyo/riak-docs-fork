@@ -65,7 +65,7 @@ rewrite_module = riak_cs_s3_rewrite
 ```
 
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {rewrite_module, riak_cs_s3_rewrite},
            %% Other configs
@@ -79,7 +79,7 @@ rewrite_module = riak_cs_oos_rewrite
 ```
 
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {rewrite_module, riak_cs_oos_rewrite},
            %% Other configs
@@ -99,7 +99,7 @@ auth_module = riak_cs_keystone_auth
 ```
 
 ```appconfig
-{riak_cs, [
+&#123;riak_cs, [
            %% Other configs
            {auth_module, riak_cs_keystone_auth},
            %% Other configs
@@ -113,7 +113,7 @@ You may optionally override the default list of valid operator roles in the
 and `swiftoperator`, but others may be used:
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_operator_roles, [<<"admin">>, <<"swiftoperator">>, <<"cinnamon">>]},
             %% Other configs
@@ -121,7 +121,7 @@ and `swiftoperator`, but others may be used:
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_operator_roles, [<<"admin">>, <<"swiftoperator">>, <<"cinnamon">>]},
             %% Other configs
@@ -155,7 +155,7 @@ root_host = object.store.host
 ```
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {cs_root_host, "object.store.host"},
             %% Other configs
@@ -163,7 +163,7 @@ root_host = object.store.host
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {cs_root_host, "object.store.host"},
             %% Other configs
@@ -179,7 +179,7 @@ following to the `riak_cs` section of the Riak CS `advanced.config` or
 `app.config` files:
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_admin_token, "SNARFSNARFSNARF"},
             %% Other configs
@@ -187,7 +187,7 @@ following to the `riak_cs` section of the Riak CS `advanced.config` or
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_admin_token, "SNARFSNARFSNARF"},
             %% Other configs
@@ -202,7 +202,7 @@ value add the following to the `riak_cs` section of the Riak CS
 `advanced.config` or `app.config` files:
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_auth_url, "http://host.with.the.most.com:5000/v2.0"},
             %% Other configs
@@ -210,7 +210,7 @@ value add the following to the `riak_cs` section of the Riak CS
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_auth_url, "http://host.with.the.most.com:5000/v2.0"},
             %% Other configs
@@ -230,7 +230,7 @@ The default is `"tokens/"`. To override this, add the following to the `riak_cs`
 section of the Riak CS `advanced.config` or `app.config` files:
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_tokens_resource, "mytokens/"},
             %% Other configs
@@ -238,7 +238,7 @@ section of the Riak CS `advanced.config` or `app.config` files:
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_tokens_resource, "mytokens/"},
             %% Other configs
@@ -253,7 +253,7 @@ following to the `riak_cs` section of the Riak CS `advanced.config` or
 `app.config` files:
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_s3_tokens_resource, "mys3tokens/"},
             %% Other configs
@@ -261,7 +261,7 @@ following to the `riak_cs` section of the Riak CS `advanced.config` or
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_s3_tokens_resource, "mys3tokens/"},
             %% Other configs
@@ -274,7 +274,7 @@ The default is `"users/"`. To override this, add the following to the `riak_cs`
 section of the Riak CS `advanced.config` or `app.config` files:
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_users_resource, "users/"},
             %% Other configs
@@ -282,7 +282,7 @@ section of the Riak CS `advanced.config` or `app.config` files:
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {os_users_resource, "users/"},
             %% Other configs
@@ -344,7 +344,7 @@ Keystone.
     ```
 
     ```advancedconfig
-    {riak_cs, [
+    &#123;riak_cs, [
                %% Other configs
                {rewrite_module, riak_cs_oos_rewrite},
                {auth_module, riak_cs_keystone_auth},
@@ -353,7 +353,7 @@ Keystone.
     ```
 
     ```appconfig
-    {riak_cs, [
+    &#123;riak_cs, [
                %% Other configs
                {rewrite_module, riak_cs_oos_rewrite},
                {auth_module, riak_cs_keystone_auth},
@@ -449,7 +449,7 @@ Keystone.
     ```
 
     ```advancedconfig
-     {riak_cs, [
+     &#123;riak_cs, [
                 %% Other configs
                 {rewrite_module, riak_cs_s3_rewrite},
                 {auth_module, riak_cs_keystone_auth},
@@ -458,7 +458,7 @@ Keystone.
     ```
 
     ```appconfig
-     {riak_cs, [
+     &#123;riak_cs, [
                 %% Other configs
                 {rewrite_module, riak_cs_s3_rewrite},
                 {auth_module, riak_cs_keystone_auth},

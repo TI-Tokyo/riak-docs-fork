@@ -160,7 +160,7 @@ If the highest score is increasing over time (and positive), then there is a bac
 
 ## Change log for this release
 
-- Receive buffer size is now configurable via `advanced.config` with `{webmachine, [{recbuf, 65536}]},`
+- Receive buffer size is now configurable via `advanced.config` with `&#123;webmachine, [{recbuf, 65536}]&#125;,`
 - As part of the change above, mochiweb has been brought up-to-date with the mainstream mochi repository. This brings through all changes since 2.9.0. Users of the HTTP API should consider these changes when testing the release.
 - Log level with the leveled backend can now be set through riak.conf, and the log format has been changed to make the logs easier to index.
 - An issue discovered in property-based testing (by Quviq) with object folds in sqn_order has been resolved.

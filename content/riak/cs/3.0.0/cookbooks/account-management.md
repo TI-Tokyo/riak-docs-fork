@@ -31,7 +31,7 @@ curl -X POST http://localhost:8080/riak-cs/user /
 {{% note title="Note on admin users" %}}
 By default, only the admin user may create new user accounts. If you need to
 create a user account without authenticating yourself, you must set
-`{anonymous_user_creation, true}` in the Riak CS `app.config`.
+`&#123;anonymous_user_creation, true&#125;` in the Riak CS `app.config`.
 {{% /note %}}
 
 The submitted user document may be either JSON or XML, but the type

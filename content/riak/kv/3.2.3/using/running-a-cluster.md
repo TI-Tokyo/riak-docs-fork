@@ -313,7 +313,7 @@ Presuming that you copied `./rel/riak` into `./rel/riak1`, `./rel/riak2`,
     ```
 
     ```advancedconf
-    {riak_core,
+    &#123;riak_core,
     [
       {cluster_mgr, {"127.0.0.1", 9180 } },
       %% more riak_core configs
@@ -340,7 +340,7 @@ Presuming that you copied `./rel/riak` into `./rel/riak1`, `./rel/riak2`,
     ```
 
     ```advancedconf
-    {riak_core,
+    &#123;riak_core,
     [
       {cluster_mgr, {"127.0.0.1", 9280 } },
       %% more riak_core configs

@@ -320,7 +320,7 @@ Now, the `print-users` command should return this:
 **Note**: Usernames _cannot_ be changed using the `alter-user` command.
 For example, running `riak admin security alter-user riakuser
 username=other-name`, will instead add the
-`{"username","other-name"}` tuple to `riakuser`'s options.
+`&#123;"username","other-name"&#125;` tuple to `riakuser`'s options.
 
 ### Managing Groups for a User
 
@@ -673,7 +673,7 @@ listener.https.$name = 127.0.0.1:8088
 ```
 
 ```appconfig
-{riak_core, [
+&#123;riak_core, [
              %% Other configs
              {https, [{"127.0.0.1", 8088}]},
              %% Other configs
@@ -744,7 +744,7 @@ these paths can be set in the `ssl` subsection of the `riak_core`
 section. The corresponding parameters are shown in the example below:
 
 ```appconfig
-{riak_core, [
+&#123;riak_core, [
     %% Other configs
 
     {ssl, [

@@ -42,7 +42,7 @@ To configure SSL, you will need to include the following 4 settings in
 the `riak-core` section of [`advanced.confg`][config reference#advanced.config]:
 
 ```advancedconfig
-{riak_core, [
+&#123;riak_core, [
              % ...
              {ssl_enabled, true},
              {certfile, "/full/path/to/site1-cert.pem"},
@@ -102,7 +102,7 @@ The following example will only allow connections from peer certificate
 names like `db.bashosamplecorp.com` and `security.bashosamplecorp.com`:
 
 ```advancedconfig
-{riak_core, [
+&#123;riak_core, [
              % ...
              {peer_common_name_acl, ["db.bashosamplecorp.com", "security.bashosamplecorp.com"]}
              % ...
@@ -115,7 +115,7 @@ like `foo.bashosamplecorp.com` or `db.bashosamplecorp.com`, but not a
 peer certificate name like `db.backup.bashosamplecorp.com`.
 
 ```advancedconfig
-{riak_core, [
+&#123;riak_core, [
              % ...
              {peer_common_name_acl, ["*.bashosamplecorp.com"]}
              % ...
@@ -126,7 +126,7 @@ peer certificate name like `db.backup.bashosamplecorp.com`.
 This example will match any peer certificate name (and is the default):
 
 ```advancedconfig
-{riak_core, [
+&#123;riak_core, [
              % ...
              {peer_common_name_acl, "*"}
              % ...
@@ -140,7 +140,7 @@ You can adjust the way CA certificates are validated by adding the
 following to the `riak_repl` section of `advanced.config`:
 
 ```advancedconfig
-{riak_core, [
+&#123;riak_core, [
              % ...
              {ssl_depth, 3} % Sets the depth to 3
              % ...

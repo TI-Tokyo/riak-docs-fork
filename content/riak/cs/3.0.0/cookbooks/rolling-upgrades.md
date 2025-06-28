@@ -128,8 +128,8 @@ for a more detailed description.{{% /note %}}
   `stanchion_host`.
   - `admin_ip` and `admin_port` have been combined into `admin_listener`.
   - `webmachine_log_handler` has become `webmachine_access_log_handler`.
-  - `{max_open_files, 50}` has been deprecated and should be replaced with
-    `{total_leveldb_mem_percent, 30}`.
+  - `&#123;max_open_files, 50&#125;` has been deprecated and should be replaced with
+    `&#123;total_leveldb_mem_percent, 30&#125;`.
 
   For the Stanchion `app.config`:
 
@@ -140,7 +140,7 @@ for a more detailed description.{{% /note %}}
   `app.config` configuration was previously:
 
   ```
-  {riak_cs, [`
+  &#123;riak_cs, [`
       {cs_ip, "127.0.0.1"},
       {cs_port, 8080 },
       . . .
@@ -150,7 +150,7 @@ for a more detailed description.{{% /note %}}
   It should now read:
 
   ```
-  {riak_cs, [
+  &#123;riak_cs, [
       {listener, {"127.0.0.1", 8080}},
       . . .
   ]},
@@ -174,9 +174,9 @@ some performance tuning. Please consult the
     ```
 
     ```appconfig
-    {riak_core, [
+    &#123;riak_core, [
        ...
-       {default_bucket_props, [{allow_mult, true}]},
+       {default_bucket_props, [&#123;allow_mult, true&#125;]},
        ...
     ]}.
     ```

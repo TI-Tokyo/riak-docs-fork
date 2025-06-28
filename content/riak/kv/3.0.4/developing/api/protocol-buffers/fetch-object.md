@@ -143,7 +143,7 @@ of the following optional parameters:
 Remember: if a key is not stored in Riak, an `RpbGetResp` response without the
 `content` and `vclock` fields will be returned. This should be mapped to
 whatever convention the client language uses to return not found. The Erlang
-client, for example, returns the atom `{error, notfound}`.
+client, for example, returns the atom `&#123;error, notfound&#125;`.
 {{% /note %}}
 
 ## Example

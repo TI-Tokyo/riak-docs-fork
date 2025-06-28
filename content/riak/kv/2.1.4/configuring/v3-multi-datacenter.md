@@ -40,7 +40,7 @@ of configurable parameters, see our documentation on [Advanced Configuration][co
 Here is a sample of the syntax:
 
 ```advancedconfig
-{riak_core, [
+&#123;riak_core, [
     %% Every *node* runs one cluster_mgr
     {cluster_mgr, {"0.0.0.0", 9080 }},
     % ...
@@ -53,9 +53,9 @@ Here is a sample of the syntax:
     %% {data_root, "/opt/riak/data/riak_repl"},
     %% FreeBSD/SmartOS:
     %% {data_root, "/var/db/riak/riak_repl"},
-    {max_fssource_cluster, 5},
-    {max_fssource_node, 2},
-    {max_fssink_node, 2},
+    &#123;max_fssource_cluster, 5},
+    &#123;max_fssource_node, 2},
+    &#123;max_fssink_node, 2},
     {fullsync_on_connect, false},
     % ...
 ]}
@@ -64,7 +64,7 @@ Here is a sample of the syntax:
 ## Settings
 
 Riak MDC configuration is set using the standard Erlang config file
-syntax `{Setting, Value}`. For example, if you wished to set
+syntax `&#123;Setting, Value&#125;`. For example, if you wished to set
 `fullsync_on_connect` to `false`, you would insert this line into the
 `riak_repl` section (appending a comma if you have more settings to
 follow):
@@ -84,13 +84,13 @@ riak chkconfig
 
 Setting | Options | Default | Description
 :-------|:--------|:--------|:-----------
-`cluster_mgr` | `{ip_address, port}` | **REQUIRED** | The cluster manager will listen for connections from remote clusters on this `ip_address` and `port`. Every node runs one cluster manager, but only the cluster manager running on the `cluster_leader` will service requests. This can change as nodes enter and leave the cluster. The value is a combination of an IP address (**not hostname**) followed by a port number.
+`cluster_mgr` | `&#123;ip_address, port&#125;` | **REQUIRED** | The cluster manager will listen for connections from remote clusters on this `ip_address` and `port`. Every node runs one cluster manager, but only the cluster manager running on the `cluster_leader` will service requests. This can change as nodes enter and leave the cluster. The value is a combination of an IP address (**not hostname**) followed by a port number.
 `max_fssource_cluster` | `nodes` (integer) | `5` | The hard limit on the number of workers which will participate in the source cluster during a fullsync replication. This means that if one has configured fullsync for two different clusters, both with a `max_fssource_cluster` of 5, 10 fullsync workers can be in progress. Only affects nodes on the source cluster on which this parameter is defined via the configuration file or command line.
 `max_fssource_node` | `nodes` (integer) | `1` | Limits the number of fullsync workers that will be running on each individual node in a source cluster. This is a hard limit for all fullsyncs enabled; additional fullsync configurations will not increase the number of fullsync workers allowed to run on any node. Only affects nodes on the source cluster on which this parameter is defined via the configuration file or command line.
 `max_fssink_node` | `nodes` (integer) | `1` | Limits the number of fullsync workers allowed to run on each individual node in a sink cluster.  This is a hard limit for all fullsync sources interacting with the sink cluster. Thus, multiple simultaneous source connections to the sink cluster will have to share the sink nodes number of maximum connections. Only affects nodes on the sink cluster on which this parameter is defined via the configuration file or command line.
 `fullsync_on_connect` | `true`, `false` | `true` | Whether to initiate a fullsync on initial connection from the secondary cluster
 `data_root` | `path` (string) | `data/riak_repl` | Path (relative or absolute) to the working directory for the replication process
-`fullsync_interval` | `minutes` (integer) OR `[{sink_cluster, minutes(integer)}, ...]` | `360` | A single integer value representing the duration to wait in minutes between fullsyncs, or a list of `{"clustername", time_in_minutes}` pairs for each sink participating in fullsync replication.
+`fullsync_interval` | `minutes` (integer) OR `[{sink_cluster, minutes(integer)}, ...]` | `360` | A single integer value representing the duration to wait in minutes between fullsyncs, or a list of `&#123;"clustername", time_in_minutes&#125;` pairs for each sink participating in fullsync replication.
 `rtq_overload_threshold` | `length` (integer) | `2000` | The maximum length to which the Erlang message queue of the realtime queue module can grow before new objects are dropped. Dropped objects will need to be replicated with a fullsync.
 +`rtq_overload_recover` | `length` (integer) | `1000` | The length to which the Erlang message queue of the realtime queue module, in an overload mode, must shrink before new objects are replicated again.
 `rtq_max_bytes` | `bytes` (integer) | `104857600` | The maximum size to which the realtime replication queue can grow before new objects are dropped. Defaults to 100MB. Dropped objects will need to be replicated with a fullsync.

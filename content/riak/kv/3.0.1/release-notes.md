@@ -35,7 +35,7 @@ This major release allows Riak to run on OTP versions 20, 21 and 22 - but is not
 
 - As part of the release there has been a comprehensive review of all tests across the dependencies (riak_test, eunit, eqc and pulse), as well as removal of all dialyzer and xref warnings and addition where possible of travis tests. The intention is to continue to raise the bar on test stability before accepting Pull Requests going forward.
 
-- If using riak_client directly (e.g. `{ok, C} = riak:local_client()`), then please use `riak_client:F(*Args, C) not C:F(*Args)` when calling functions within riak_client - the latter mechanism now has issues within OTP 20+.
+- If using riak_client directly (e.g. `&#123;ok, C} = riak:local_client()`), then please use `riak_client:F(*Args, C) not C:F(*Args)` when calling functions within riak_client - the latter mechanism now has issues within OTP 20+.
 
 - Instead of `riak-admin` the command `riak admin` should now be used for admin CLI commands.
 

@@ -58,11 +58,11 @@ Each node in `riak_kv` starts three processes that manage the inter-cluster repl
   * Queues may have data filtering rules to restrict what changes are distributed via that queue.  The filters can restrict replication to a specific bucket, or bucket type, a bucket name prefix or allow for any change to be published to that queue.
 
   * __Real-time replication__ changes (i.e. PUTs that have just been co-ordinated on this node within the cluster), are sent to the `riak_kv_replrtq_src` in one of the following formats:
-    * `{Bucket, Key, Clock, {tombstone, Object}}`;
-    * `{Bucket, Key, Clock, {object, Object}}`;
-    * `{Bucket, Key, Clock, to_fetch}`.
+    * `&#123;Bucket, Key, Clock, {tombstone, Object}&#125;`;
+    * `&#123;Bucket, Key, Clock, {object, Object}&#125;`;
+    * `&#123;Bucket, Key, Clock, to_fetch&#125;`.
 
-  * Real-time replicated objects are the highest priority items to be queued, and are placed on __every queue whose data filtering rules are matched__ by the object.  If the priority queue has grown beyond a limited number of items (the number being defined in `riak_kv.replrtq_srcobjectlimt`), then any `{object, Object}` references is stripped and replaced with `to_fetch`.  This is to help limit the memory consumed by the queue during failure conditions i.e. when a sink has stopped consuming from the source queue.
+  * Real-time replicated objects are the highest priority items to be queued, and are placed on __every queue whose data filtering rules are matched__ by the object.  If the priority queue has grown beyond a limited number of items (the number being defined in `riak_kv.replrtq_srcobjectlimt`), then any `&#123;object, Object&#125;` references is stripped and replaced with `to_fetch`.  This is to help limit the memory consumed by the queue during failure conditions i.e. when a sink has stopped consuming from the source queue.
 
   * Changes identified by __AAE full-sync replication__ processes run by the `riak_kv_ttaaefs` manager on the local node are sent to the `riak_kv_replrtq_src` as references, and queued as the second highest priority.  These changes are queued only on __a single queue defined within the configuration__ of `riak_kv_ttaaefs_manager`.  The changes queued are only references to the object (Bucket, Key and Clock) not the actual object.
 
@@ -100,7 +100,7 @@ Replication is fired within the `riak_kv_vnode` `actual_put/8`.  On condition of
 
   - If the object is below the `riak_kv.replrtq_srcobjectsize` (default 200KB) then whole object will be sent to the `riak_kv_replrtq_src`, and it will be queued as a whole object as long as the current size of the priority real-time queue does not exceed the `riak_kv.replrtq_srcobjectlimit` (default 1000).  If an object is over the size limit a `to_fetch` references will be sent instead of the object, and if the queue is too large the `riak_kv_replrtq_src` will substitute a `to_fetch` reference before queueing.
 
-- The `{Bucket, Key, Clock, ObjectReference}` is cast to the `riak_kv_replrtq_src` and placed by the `riak_kv_replrtq_src` on the priority queue.
+- The `&#123;Bucket, Key, Clock, ObjectReference&#125;` is cast to the `riak_kv_replrtq_src` and placed by the `riak_kv_replrtq_src` on the priority queue.
 
 - The queue has a configurable absolute limit, that is applied individually for each priority.  The limit is configured via `riak_kv.replrtq_srcqueuelimit` and defaults to 300,000 references (5 minutes of traffic at 1,000 PUTs per second).  When this limit is reached, new replication references are discarded on receipt rather than queued - these discarded references will need to eventually be re-replicated via full-sync.
 
@@ -114,7 +114,7 @@ In order to replicate the object, it must now be fetched from the queue by a sin
 
 On receipt of the `fetch` request the source node should:
 
-- Initiate a `riak_kv_get_fsm`, passing `{queuename, QueueName}` in place of `{Bucket, Key}`.
+- Initiate a `riak_kv_get_fsm`, passing `&#123;queuename, QueueName}` in place of `&#123;Bucket, Key&#125;`.
 
 - The GET FSM should go directly into the `queue_fetch` state, and try and fetch the next replication reference from the given queue name via the `riak_kv_replrtq_src`.
 
@@ -150,5 +150,5 @@ On startup, the manager looks at these wants and provides a random distribution 
 
 When, on a node, a scheduled piece of work comes due, the `riak_kv_ttaaefs_manager` will start an `aae_exchange` to run the work between the two clusters (using the peer configuration to reach the remote cluster).  Once the work is finished, it will schedule the next piece of work - unless the start time for the next piece of work has already passed, in which case the next work is skipped.  When all the work in the schedule is complete, a new schedule is calculated from the wants.
 
-When starting an `aae_exchange` the `riak_kv_ttaaefs_manager` must pass in a repair function.  This function will compare clocks from identified discrepancies, and where the source cluster is ahead of the sink, send the `{Bucket, Key, Clock, to_fetch}` tuple to a configured queue name on `riak_kv_replrtq_src`.  These queued entries will then be replicated through being fetched by the `riak_kv_replrtq_snk` workers, although this will only occur when there is no higher priority work to replicate i.e. real-time replication events prompted by locally co-ordinated PUTs.
+When starting an `aae_exchange` the `riak_kv_ttaaefs_manager` must pass in a repair function.  This function will compare clocks from identified discrepancies, and where the source cluster is ahead of the sink, send the `&#123;Bucket, Key, Clock, to_fetch&#125;` tuple to a configured queue name on `riak_kv_replrtq_src`.  These queued entries will then be replicated through being fetched by the `riak_kv_replrtq_snk` workers, although this will only occur when there is no higher priority work to replicate i.e. real-time replication events prompted by locally co-ordinated PUTs.
 

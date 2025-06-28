@@ -74,7 +74,7 @@ Field | Description
 `acked_seq` | The last realtime queue sequence number that has been acknowledged
 `expect_seq` | The next realtime queue sequence number that is expected
 `hb_rtt` | Realtime replication heartbeat round-trip time in milliseconds, recorded on the replication source
-`hb_last` | `{MegaSeconds, Seconds, MicroSeconds}` since a heartbeat message was received on the realtime sink
+`hb_last` | `&#123;MegaSeconds, Seconds, MicroSeconds&#125;` since a heartbeat message was received on the realtime sink
 
 These values are under `realtime_queue_stats`.
 
@@ -101,7 +101,7 @@ Field | Description
 `fullsync_start_time` | The time the current fullsink to the specified cluster began.
 `last_fullsync_duration `| The duration (in seconds) of the last completed fullsync.
 
-If this cluster is acting as a **source**, the `fullsync_coordinator` field returns a list of `{<sink_clustername>:<fullsync_stats>}`. If this cluster is acting as a **sink**, the `fullsync_coordinator_srv` field returns a list of `{<LocalIP:Port>:<fullsync_coordinator_srv_stats>}`.
+If this cluster is acting as a **source**, the `fullsync_coordinator` field returns a list of `&#123;<sink_clustername>:<fullsync_stats>}`. If this cluster is acting as a **sink**, the `fullsync_coordinator_srv` field returns a list of `&#123;<LocalIP:Port>:<fullsync_coordinator_srv_stats>&#125;`.
 
 Those fields are described in the following tables.
 
@@ -117,7 +117,7 @@ Field | Description
 `socket` | See [Socket Statistics](#socket-statistics)
 `fullsync_suggested` | Realtime replication errors occurred on these nodes, a fullsync is suggested
 `fullsync_suggested_during_fs` | Realtime replication errors occurred on these nodes while a fullsync is already in progress. A fullsync is suggested after the current fullsync completes. These value will be moved to the `fullsync_suggested` value when the current fullsync completes.
-`socket` | `{peername: <RemoteIP:Port>`, `sockname: <LocalIP:Port>}`
+`socket` | `&#123;peername: <RemoteIP:Port>`, `sockname: <LocalIP:Port>&#125;`
 
 The `running_stats` field contains the following fields.
 

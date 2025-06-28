@@ -80,18 +80,18 @@ How to get the value for `Client` is detailed in [The Riak Client](../../tictac-
 
 ## The response
 
-The response will be an array of `{bucket_name,key_name,object_size}` tuples that will look something like this:
+The response will be an array of `&#123;bucket_name,key_name,object_size&#125;` tuples that will look something like this:
 
 ```erlang
 {ok,[{{<<"animals">>,<<"dogs">>},<<"Barkie">>,550000},
     {{<<"animals">>,<<"dogs">>},<<"Lord Snuffles III">>,820000}]}
 ```
 
-This indicates that 2 tombstones were found meeting the filter parameters. For each tombstone object found, an additional `{bucket_name,key_name,object_size}` tuple will be added to the array.
+This indicates that 2 tombstones were found meeting the filter parameters. For each tombstone object found, an additional `&#123;bucket_name,key_name,object_size&#125;` tuple will be added to the array.
 
 Field | Example | Description
 :-------|:--------|:--------
-bucket_name | `<<"cars">>` or `{<<"animals">>,<<"dogs">>}` | The bucket name as an Erlang binary. In the case of a bucket with a bucket type, a tuple of bucket type and bucket name.
+bucket_name | `<<"cars">>` or `&#123;<<"animals">>,<<"dogs">>&#125;` | The bucket name as an Erlang binary. In the case of a bucket with a bucket type, a tuple of bucket type and bucket name.
 key_name | `<<"Barkie">>` | The key name as an Erlang binary.
 object_size | 550000 | The size in bytes of the tombstone object.
 

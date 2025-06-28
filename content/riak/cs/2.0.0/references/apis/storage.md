@@ -139,7 +139,7 @@ rewrite_module = riak_cs_s3_rewrite
 ```
 
 ```advancedconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {rewrite_module, riak_cs_s3_rewrite},
             %% Other configs
@@ -147,7 +147,7 @@ rewrite_module = riak_cs_s3_rewrite
 ```
 
 ```appconfig
- {riak_cs, [
+ &#123;riak_cs, [
             %% Other configs
             {rewrite_module, riak_cs_s3_rewrite},
             %% Other configs

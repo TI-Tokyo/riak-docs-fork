@@ -65,7 +65,7 @@ get(Pid::pid(),
         {Columns::[binary()], Record::[[ts_value()](#type-ts_value)]}
 ```
 
-Get a record by primary key. Specify the primary key by using a list of terms that match the primary key values. The order of the terms must match the order of the values in the primary key. Returns a tuple with a list of column names in its 1st element, and a record found as a list of values in its 2nd element. If no record is found, the return value is `{[], []}`. `Options` is a proplist which can include a value for 'timeout'.
+Get a record by primary key. Specify the primary key by using a list of terms that match the primary key values. The order of the terms must match the order of the values in the primary key. Returns a tuple with a list of column names in its 1st element, and a record found as a list of values in its 2nd element. If no record is found, the return value is `&#123;[], []&#125;`. `Options` is a proplist which can include a value for 'timeout'.
 
 #### `put/3`
 
@@ -76,7 +76,7 @@ put(Pid::pid(),
         ok | {error, Reason::term()}
 ```
 
-Make data records and insert them individually into a Riak TS table using client PID. Each record is a tuple of values of appropriate types for the complete set of table columns, in the order in which they appear in table's DDL. Successful PUTs will return 'ok', while unsuccessful PUTs return an `{error, Reason}` tuple.
+Make data records and insert them individually into a Riak TS table using client PID. Each record is a tuple of values of appropriate types for the complete set of table columns, in the order in which they appear in table's DDL. Successful PUTs will return 'ok', while unsuccessful PUTs return an `&#123;error, Reason&#125;` tuple.
 
 >**Note:** Type validation is done on the first record only. If any subsequent record contains fewer or more elements than there are columns, or some element fails to convert to the appropriate type, the rest of the records will not get inserted.
 
@@ -88,7 +88,7 @@ query(Pid::pid(),
         {ColumnNames::[binary()], Rows::[tuple()]} | {error, Reason::term()}
 ```
 
-Execute a `SELECT ...` query with the client. The result returned is either a tuple containing a list of columns as binaries in the 1st element and a list of records, each represented as a list of values, in the 2nd element, or an `{error, Reason}` tuple.
+Execute a `SELECT ...` query with the client. The result returned is either a tuple containing a list of columns as binaries in the 1st element and a list of records, each represented as a list of values, in the 2nd element, or an `&#123;error, Reason&#125;` tuple.
 
 #### `stream_list_keys/4`
 
@@ -97,6 +97,6 @@ stream_list_keys(pid(), table_name(), proplists:proplist()) ->
     {ok, req_id()} | {error, term()}.
 ```
 
-Streaming list keys in Table, using client Pid.  Parameter Options is a proplist that can include a value for 'timeout'. Returns `{ok, ReqId}` or `{error, Reason}`.
+Streaming list keys in Table, using client Pid.  Parameter Options is a proplist that can include a value for 'timeout'. Returns `&#123;ok, ReqId}` or `&#123;error, Reason&#125;`.
 
 >**Warning:** Listing keys is a very expensive operation for a Riak TS cluster.

@@ -195,7 +195,7 @@ to use the custom backend provided by Riak CS. You'll have to use the old-style
               {multi_backend_default, be_default},
               {multi_backend, [
                   {be_default, riak_kv_eleveldb_backend, [
-                      {total_leveldb_mem_percent, 30},
+                      &#123;total_leveldb_mem_percent, 30&#125;,
                       {data_root, "/var/lib/riak/leveldb"}
                   ]},
                   {be_blocks, riak_kv_bitcask_backend, [

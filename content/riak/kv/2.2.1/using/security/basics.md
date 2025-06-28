@@ -324,7 +324,7 @@ Now, the `print-users` command should return this:
 **Note**: Usernames _cannot_ be changed using the `alter-user` command.
 For example, running `riak-admin security alter-user riakuser
 username=other-name`, will instead add the
-`{"username","other-name"}` tuple to `riakuser`'s options.
+`&#123;"username","other-name"&#125;` tuple to `riakuser`'s options.
 
 ### Managing Groups for a User
 
@@ -507,7 +507,7 @@ Permission | Operation
 permissions. If you attempt to grant/revoke permissions while Search is
 disabled, you will get the following error:
 >
-> `{error,{unknown_permission,"search.query"}}`
+> `&#123;error,{unknown_permission,"search.query"}&#125;`
 >
 > More information on Riak Search and how to enable it can be found in the
 [Riak Search Settings]({{<baseurl>}}riak/kv/2.2.1/configuring/search/) document.
@@ -750,7 +750,7 @@ listener.https.$name = 127.0.0.1:8088
 ```
 
 ```appconfig
-{riak_core, [
+&#123;riak_core, [
              %% Other configs
              {https, [{"127.0.0.1", 8088}]},
              %% Other configs
@@ -821,7 +821,7 @@ these paths can be set in the `ssl` subsection of the `riak_core`
 section. The corresponding parameters are shown in the example below:
 
 ```appconfig
-{riak_core, [
+&#123;riak_core, [
     %% Other configs
 
     {ssl, [

@@ -32,22 +32,22 @@ in 1.x, and defaults to `true` in 2.x.
 
 ## Impact
 
-A switch from `{allow_mult, false}` to `{allow_mult, true}` can cause
+A switch from `&#123;allow_mult, false&#125;` to `&#123;allow_mult, true&#125;` can cause
 unbounded growth of objects as siblings are added each time the object is updated
 unless the client application is explicitly resolving siblings.
 
 ## Mitigation Strategy
 
-This issue can be mitigated by adding `{allow_mult, false}` to
+This issue can be mitigated by adding `&#123;allow_mult, false&#125;` to
 `default_bucket_props` in the `riak_core` section of the app.config.
-`{dvv_enabled, false}` can also be added, however enabling Dotted Version Vectors
+`&#123;dvv_enabled, false&#125;` can also be added, however enabling Dotted Version Vectors
 should have no negative impact on the cluster.
 
 ```app.config
-  {riak_core, [
+  &#123;riak_core, [
     . . .
     {default_bucket_props, [
-      {allow_mult, false},
-      {dvv_enabled, false}]},
+      &#123;allow_mult, false&#125;,
+      &#123;dvv_enabled, false&#125;]},
     . . .
 ```

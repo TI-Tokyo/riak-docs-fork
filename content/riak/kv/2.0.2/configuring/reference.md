@@ -2871,7 +2871,7 @@ example:
 
 ```advancedconfig
 [
-  {riak_core,
+  &#123;riak_core,
     [
       {cluster_mgr, {"127.0.0.1", 8098 } },
       %% more riak_core configs
@@ -2987,8 +2987,8 @@ cluster
 </td>
 <td>
 A single-integer value representing the duration to wait, in
-minutes, between fullsyncs, or a list of <code>{clustername,
-time_in_minutes}</code> pairs for each sink participating in fullsync
+minutes, between fullsyncs, or a list of <code>&#123;clustername,
+time_in_minutes&#125;</code> pairs for each sink participating in fullsync
 replication.
 </td>
 <td>
@@ -3088,7 +3088,7 @@ snippet to your `advanced.config` configuration to do so:
     {merge_index, [
         {data_root, "/var/lib/riak/merge_index"},
         {buffer_rollover_size, 1048576},
-        {max_compact_segments, 20}
+        &#123;max_compact_segments, 20}
     ]},
 
     %% Other configs

@@ -49,7 +49,7 @@ each node's `advanced.config`. That section looks like this:
 ## Usage
 
 These settings are configured using the standard Erlang config file
-syntax, i.e. `{Setting, Value}`. For example, if you wished to set
+syntax, i.e. `&#123;Setting, Value&#125;`. For example, if you wished to set
 `ssl_enabled` to `true`, you would insert the following line into the
 `riak_repl` section (appending a comma if you have more settings to
 follow):

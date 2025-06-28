@@ -34,7 +34,7 @@ to administer.
 ### Configuring Riak CS Control
 
 ``` erlang
-{riak_cs_control, [
+&#123;riak_cs_control, [
   %% What port to run the application on.
   {port, 8000 },
 
