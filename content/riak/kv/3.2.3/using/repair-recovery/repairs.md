@@ -163,7 +163,7 @@ VNodeList = ["»vnode id you want to repair«", ...].
 
 ```erlang
 RepairPath = fun(DataRoot, VNodeNumber) -> Path = lists:flatten(DataRoot ++ "/" ++ VNodeNumber), io:format("Repairing ~s.~n",[Path]), Path end.
-[eleveldb:repair(RepairPath(DataRoot, VNodeList), Options) || VNodeNumber <- VNodeList].
+[eleveldb:repair(RepairPath(DataRoot, VNodeNumber), Options) || VNodeNumber <- VNodeList].
 ```
 
 7\. This process may take several minutes. When it has completed successfully, you can restart the node and continue as usual.
@@ -226,7 +226,7 @@ VNodeList = ["»vnode id you want to repair«", ...].
 
 ```erlang
 RepairPath = fun(DataRoot, VNodeNumber) -> Path = lists:flatten(DataRoot ++ "/" ++ VNodeNumber), io:format("Repairing ~s.~n",[Path]), Path end.
-[eleveldb:repair(RepairPath(DataRoot, VNodeList), Options) || VNodeNumber <- VNodeList].
+[eleveldb:repair(RepairPath(DataRoot, VNodeNumber), Options) || VNodeNumber <- VNodeList].
 ```
 8\. This process may take several minutes. When it has completed successfully, you can restart the node and continue as usual.
 
